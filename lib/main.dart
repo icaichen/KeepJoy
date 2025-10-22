@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import 'features/quick_declutter/quick_declutter_flow.dart';
+import 'utils/localization.dart';
+
 void main() {
   runApp(const KeepJoyApp());
 }
@@ -22,6 +25,7 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
     final pages = <Widget>[
       _DashboardScreen(
         onQuickSweepTap: _openQuickSweepSelection,
+        onQuickDeclutterTap: _openQuickDeclutterFlow,
         activeQuickSweep: _activeQuickSweep,
         onResumeQuickSweep: _openQuickSweepTimer,
       ),
@@ -69,6 +73,7 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
     final area = await navigator.push<String>(
       MaterialPageRoute(builder: (_) => const _QuickSweepAreaPage()),
     );
+    if (!mounted) return;
     if (area != null && area.isNotEmpty) {
       _startQuickSweep(area);
       _openQuickSweepTimer();
@@ -106,6 +111,24 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
     });
     navigator?.popUntil((route) => route.isFirst);
   }
+
+  void _openQuickDeclutterFlow() async {
+    final navigator = _navKey.currentState;
+    if (navigator == null) return;
+    final ctx = navigator.context;
+    final useChinese = isChineseLocale(ctx);
+    final messenger = ScaffoldMessenger.of(ctx);
+    final items = await navigator.push<List<QuickDeclutterItem>>(
+      MaterialPageRoute(builder: (_) => const QuickDeclutterFlowPage()),
+    );
+    if (!navigator.mounted) return;
+    if (items != null && items.isNotEmpty) {
+      final message = useChinese
+          ? '已通过快速整理添加${items.length}件物品。'
+          : 'Added ${items.length} item(s) via Quick Declutter.';
+      messenger.showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
 }
 
 // Theme matching the soft “KeepJoy” palette from the screenshot
@@ -113,6 +136,38 @@ const _headerPurple = Color(0xFF5C4B63);
 const _softSurface = Color(0xFFF2EFEB);
 const _cardSurface = Colors.white;
 const _textInk = Color(0xFF42424A);
+
+class _Quote {
+  const _Quote({required this.en, required this.zh});
+  final String en;
+  final String zh;
+}
+
+const _dailyQuotes = <_Quote>[
+  _Quote(en: 'Let go with gratitude.', zh: '带着感恩放手。'),
+  _Quote(en: 'Joy thrives in tidy spaces.', zh: '喜悦在整洁空间绽放。'),
+  _Quote(en: 'Love what you keep, thank what you release.', zh: '珍爱留下的，感谢放下的。'),
+  _Quote(en: 'Clear clutter, awaken calm.', zh: '清理杂物，唤醒平静。'),
+  _Quote(en: 'Choose items that spark a brighter today.', zh: '选择点亮今天的物品。'),
+  _Quote(en: 'Honor memories, cherish the present.', zh: '尊重回忆，珍惜当下。'),
+  _Quote(
+    en: 'A joyful home begins with one mindful choice.',
+    zh: '喜悦之家源于每个用心选择。',
+  ),
+  _Quote(en: 'Release to invite new blessings.', zh: '放手让祝福有空间。'),
+];
+
+String _quoteForToday(BuildContext context) {
+  final locale = Localizations.maybeLocaleOf(context);
+  final language = locale?.languageCode.toLowerCase();
+  final epoch = DateTime(2020, 1, 1);
+  final days = DateTime.now().difference(epoch).inDays;
+  final quote = _dailyQuotes[days % _dailyQuotes.length];
+  if (language == 'zh' || language == 'zh-hans' || language == 'zh-hant') {
+    return quote.zh;
+  }
+  return quote.en;
+}
 
 final _theme = ThemeData(
   useMaterial3: true,
@@ -144,11 +199,13 @@ class _QuickSweepSession {
 class _DashboardScreen extends StatelessWidget {
   const _DashboardScreen({
     required this.onQuickSweepTap,
+    required this.onQuickDeclutterTap,
     this.activeQuickSweep,
     this.onResumeQuickSweep,
   });
 
   final VoidCallback onQuickSweepTap;
+  final VoidCallback onQuickDeclutterTap;
   final _QuickSweepSession? activeQuickSweep;
   final VoidCallback? onResumeQuickSweep;
 
@@ -176,7 +233,10 @@ class _DashboardScreen extends StatelessWidget {
               const SizedBox(height: 20),
               const _SectionTitle('Core Modules'),
               const SizedBox(height: 12),
-              _CoreModulesRow(onQuickSweepTap: onQuickSweepTap),
+              _CoreModulesRow(
+                onQuickSweepTap: onQuickSweepTap,
+                onQuickDeclutterTap: onQuickDeclutterTap,
+              ),
               const SizedBox(height: 20),
               const _MemoriesHeader(),
               const SizedBox(height: 12),
@@ -228,11 +288,12 @@ class _GreetingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final quote = _quoteForToday(context);
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       color: const Color(0xFFFBEADF),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -242,23 +303,26 @@ class _GreetingCard extends StatelessWidget {
                 children: [
                   Text(
                     'Good Evening',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 26,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 12),
                   Text(
-                    'A quote of the day to spark joy',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    quote,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(fontSize: 16, height: 1.4),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Column(
               children: [
                 _RoundIcon(const Icon(Icons.event_note, color: _textInk)),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 _RoundIcon(const Icon(Icons.edit_outlined, color: _textInk)),
               ],
             ),
@@ -332,8 +396,12 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _CoreModulesRow extends StatelessWidget {
-  const _CoreModulesRow({required this.onQuickSweepTap});
+  const _CoreModulesRow({
+    required this.onQuickSweepTap,
+    required this.onQuickDeclutterTap,
+  });
   final VoidCallback onQuickSweepTap;
+  final VoidCallback onQuickDeclutterTap;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -343,7 +411,7 @@ class _CoreModulesRow extends StatelessWidget {
             color: const Color(0xFFE2F2E5),
             icon: Icons.eco_outlined,
             title: 'Quick\nDeclutter',
-            onTap: () {},
+            onTap: onQuickDeclutterTap,
           ),
         ),
         const SizedBox(width: 12),
