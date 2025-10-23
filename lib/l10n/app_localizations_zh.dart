@@ -48,6 +48,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickDeclutterTitle => '快速整理';
 
   @override
+  String get declutterSession => '整理进程';
+
+  @override
+  String get kept => '保留';
+
+  @override
+  String get letGo => '舍弃';
+
+  @override
+  String get scanYourNextItem => '扫描下一件物品';
+
+  @override
+  String get readyWhenYouAre => '准备好了就开始吧！';
+
+  @override
+  String get finishSession => '结束进程';
+
+  @override
+  String get takePhoto => '拍摄物品';
+
+  @override
+  String get capture => '拍摄';
+
+  @override
+  String get retakePhoto => '重新拍摄';
+
+  @override
   String get finish => '完成';
 
   @override

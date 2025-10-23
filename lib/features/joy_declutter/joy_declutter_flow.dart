@@ -414,31 +414,57 @@ class JoyQuestionPage extends StatelessWidget {
             const SizedBox(height: 32),
             // Joy question
             Card(
-              color: const Color(0xFFFFF4E6),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.auto_awesome,
-                      size: 48,
-                      color: Color(0xFFFF9800),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.doesItSparkJoy,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.joyQuestionDescription,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+              elevation: 4,
+              shadowColor: Colors.black.withValues(alpha: 0.1),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFFFF4E6),
+                      Color(0xFFFFFBF5),
+                    ],
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF9800).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.auto_awesome,
+                          size: 48,
+                          color: Color(0xFFFF9800),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        l10n.doesItSparkJoy,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 22,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        l10n.joyQuestionDescription,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 15,
+                              height: 1.5,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -446,21 +472,25 @@ class JoyQuestionPage extends StatelessWidget {
             // Keep button
             FilledButton.icon(
               onPressed: () => _handleKeep(context),
-              icon: const Icon(Icons.favorite),
+              icon: const Icon(Icons.favorite, size: 22),
               label: Text(l10n.keepItem),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 3,
               ),
             ),
             const SizedBox(height: 12),
             // Let go button
             OutlinedButton.icon(
               onPressed: () => _handleLetGo(context),
-              icon: const Icon(Icons.heart_broken),
+              icon: const Icon(Icons.heart_broken, size: 22),
               label: Text(l10n.letGoItem),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
               ),
             ),
             const SizedBox(height: 20),

@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -55,307 +53,199 @@ class QuickDeclutterFlowPage extends StatefulWidget {
 
 class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   final ImagePicker _picker = ImagePicker();
-  final _nameController = TextEditingController();
-  QuickDeclutterCategory _selectedCategory =
-      QuickDeclutterCategory.miscellaneous;
   bool _isProcessing = false;
-  String? _photoPath;
-  final List<QuickDeclutterItem> _items = [];
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
+  int _keptCount = 0;
+  int _letGoCount = 0;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF5C5C66),
+        foregroundColor: Colors.white,
         title: Text(l10n.quickDeclutterTitle),
-        actions: [
-          TextButton(
-            onPressed: _items.isEmpty ? null : _finish,
-            child: Text(
-              l10n.finish,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
+        elevation: 0,
       ),
-      body: ListView(
+      body: Padding(
         padding: const EdgeInsets.all(20),
-        children: [
-          if (_items.isNotEmpty) _buildSummary(context),
-          _buildCaptureCard(context),
-          const SizedBox(height: 16),
-          if (_photoPath != null) _buildPreviewForm(context),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _captureItem,
-            icon: const Icon(Icons.camera_alt_outlined),
-            label: Text(l10n.captureItem),
-          ),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _photoPath != null && !_isProcessing
-                ? _addCurrentItem
-                : null,
-            child: Text(l10n.addThisItem),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummary(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.itemsAdded,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _items
-                  .map(
-                    (item) => Chip(
-                      avatar: const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 18,
-                      ),
-                      label: Text(
-                        '${item.name} · ${item.category.localized(context)}',
+            // Session summary card
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Text(
+                      l10n.declutterSession,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  )
-                  .toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCaptureCard(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.step1CaptureItem,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(l10n.step1Description),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPreviewForm(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.step2ReviewDetails, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            if (_photoPath != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Image.file(
-                  File(_photoPath!),
-                  height: 180,
-                  fit: BoxFit.cover,
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(
+                                '$_keptCount',
+                                style: TextStyle(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w300,
+                                  color: Colors.teal.shade300,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.kept,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(
+                                '$_letGoCount',
+                                style: TextStyle(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w300,
+                                  color: Colors.pink.shade200,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.letGo,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: l10n.itemName,
-              ),
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<QuickDeclutterCategory>(
-              initialValue: _selectedCategory,
-              onChanged: (value) => setState(() {
-                if (value != null) {
-                  _selectedCategory = value;
-                }
-              }),
-              decoration: InputDecoration(
-                labelText: l10n.category,
-                border: const OutlineInputBorder(),
-              ),
-              items: QuickDeclutterCategory.values
-                  .map(
-                    (category) => DropdownMenuItem(
-                      value: category,
-                      child: Text(category.localized(context)),
-                    ),
-                  )
-                  .toList(),
-            ),
-            if (_isProcessing) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+            const Spacer(),
+            // Scan card
+            GestureDetector(
+              onTap: _isProcessing ? null : _scanItem,
+              child: Card(
+                elevation: 0,
+                color: const Color(0xFFE8F4F4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.camera_alt_outlined,
+                        size: 80,
+                        color: Colors.teal.shade200,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        l10n.scanYourNextItem,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.readyWhenYouAre,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(l10n.identifyingItem),
-                ],
+                ),
               ),
-            ],
+            ),
+            const Spacer(),
+            // Finish session button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: (_keptCount + _letGoCount) > 0 ? _finishSession : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD4D4D8),
+                  foregroundColor: Colors.black54,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  l10n.finishSession,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _captureItem() async {
+  Future<void> _scanItem() async {
     try {
+      setState(() => _isProcessing = true);
+
       final picked = await _picker.pickImage(
         source: ImageSource.camera,
         imageQuality: 85,
       );
-      if (picked == null) return;
 
+      if (picked == null) {
+        setState(() => _isProcessing = false);
+        return;
+      }
+
+      // TODO: Show item review page
+      // For now, just increment kept count
       setState(() {
-        _photoPath = picked.path;
-        _nameController.clear();
-        _selectedCategory = QuickDeclutterCategory.miscellaneous;
-        _isProcessing = true;
-      });
-
-      final suggestion = await _analyzeItem(picked.path);
-      if (!mounted) return;
-
-      setState(() {
+        _keptCount++;
         _isProcessing = false;
-        _nameController.text = suggestion.name;
-        _selectedCategory = suggestion.category;
       });
     } catch (error) {
       if (!mounted) return;
       setState(() => _isProcessing = false);
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.couldNotAccessCamera),
-        ),
+        SnackBar(content: Text(l10n.couldNotAccessCamera)),
       );
     }
   }
 
-  Future<QuickDeclutterItem> _analyzeItem(String path) async {
-    try {
-      final inputImage = InputImage.fromFilePath(path);
-      final imageLabeler = ImageLabeler(
-        options: ImageLabelerOptions(confidenceThreshold: 0.6),
-      );
-      final labels = await imageLabeler.processImage(inputImage);
-      await imageLabeler.close();
-
-      labels.sort((a, b) => b.confidence.compareTo(a.confidence));
-      final top = labels.isNotEmpty ? labels.first : null;
-      final inferredName = top?.label ?? 'Unnamed item';
-      final category = _mapLabelToCategory(top?.label);
-      return QuickDeclutterItem(
-        photoPath: path,
-        name: inferredName,
-        category: category,
-      );
-    } catch (_) {
-      return QuickDeclutterItem(
-        photoPath: path,
-        name: 'Unnamed item',
-        category: QuickDeclutterCategory.miscellaneous,
-      );
-    }
-  }
-
-  QuickDeclutterCategory _mapLabelToCategory(String? label) {
-    if (label == null) return QuickDeclutterCategory.miscellaneous;
-    final lower = label.toLowerCase();
-    if (_matchesAny(lower, [
-      'shirt',
-      'dress',
-      'shoe',
-      'coat',
-      'bag',
-      'pants',
-    ])) {
-      return QuickDeclutterCategory.clothes;
-    }
-    if (_matchesAny(lower, ['book', 'magazine', 'novel', 'comic'])) {
-      return QuickDeclutterCategory.books;
-    }
-    if (_matchesAny(lower, ['document', 'paper', 'file', 'letter'])) {
-      return QuickDeclutterCategory.papers;
-    }
-    if (_matchesAny(lower, ['makeup', 'lipstick', 'cosmetic', 'beauty'])) {
-      return QuickDeclutterCategory.beauty;
-    }
-    if (_matchesAny(lower, ['photo', 'picture', 'souvenir', 'memory'])) {
-      return QuickDeclutterCategory.sentimental;
-    }
-    return QuickDeclutterCategory.miscellaneous;
-  }
-
-  bool _matchesAny(String text, List<String> keywords) {
-    return keywords.any(text.contains);
-  }
-
-  void _addCurrentItem() {
-    final path = _photoPath;
-    if (path == null) return;
-    final l10n = AppLocalizations.of(context)!;
-    final name = _nameController.text.trim().isEmpty
-        ? l10n.unnamedItem
-        : _nameController.text.trim();
-    setState(() {
-      _items.add(
-        QuickDeclutterItem(
-          photoPath: path,
-          name: name,
-          category: _selectedCategory,
-        ),
-      );
-      _photoPath = null;
-      _nameController.clear();
-      _selectedCategory = QuickDeclutterCategory.miscellaneous;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.itemAdded)),
-    );
-  }
-
-  void _finish() {
-    Navigator.of(context).pop(_items);
+  void _finishSession() {
+    Navigator.of(context).pop();
   }
 }

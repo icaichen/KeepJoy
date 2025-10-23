@@ -48,6 +48,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickDeclutterTitle => 'Quick Declutter';
 
   @override
+  String get declutterSession => 'Declutter Session';
+
+  @override
+  String get kept => 'Kept';
+
+  @override
+  String get letGo => 'Let Go';
+
+  @override
+  String get scanYourNextItem => 'Scan Your Next Item';
+
+  @override
+  String get readyWhenYouAre => 'Ready when you are!';
+
+  @override
+  String get finishSession => 'Finish Session';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get capture => 'Capture';
+
+  @override
+  String get retakePhoto => 'Retake Photo';
+
+  @override
   String get finish => 'Finish';
 
   @override

@@ -176,6 +176,60 @@ abstract class AppLocalizations {
   /// **'Quick Declutter'**
   String get quickDeclutterTitle;
 
+  /// No description provided for @declutterSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Declutter Session'**
+  String get declutterSession;
+
+  /// No description provided for @kept.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept'**
+  String get kept;
+
+  /// No description provided for @letGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Let Go'**
+  String get letGo;
+
+  /// No description provided for @scanYourNextItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Your Next Item'**
+  String get scanYourNextItem;
+
+  /// No description provided for @readyWhenYouAre.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready when you are!'**
+  String get readyWhenYouAre;
+
+  /// No description provided for @finishSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Session'**
+  String get finishSession;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// No description provided for @capture.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture'**
+  String get capture;
+
+  /// No description provided for @retakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake Photo'**
+  String get retakePhoto;
+
   /// No description provided for @finish.
   ///
   /// In en, this message translates to:
