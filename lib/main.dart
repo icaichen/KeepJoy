@@ -97,9 +97,43 @@ class _MainNavigatorState extends State<MainNavigator> {
 class _HomeScreen extends StatelessWidget {
   const _HomeScreen();
 
+  String _getQuoteOfDay(AppLocalizations l10n) {
+    // Get day of year to determine which quote to show
+    final now = DateTime.now();
+    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
+
+    // Cycle through 15 quotes based on day of year
+    final quoteIndex = (dayOfYear % 15) + 1;
+
+    // Use reflection-like approach to get quote
+    switch (quoteIndex) {
+      case 1: return l10n.quote1;
+      case 2: return l10n.quote2;
+      case 3: return l10n.quote3;
+      case 4: return l10n.quote4;
+      case 5: return l10n.quote5;
+      case 6: return l10n.quote6;
+      case 7: return l10n.quote7;
+      case 8: return l10n.quote8;
+      case 9: return l10n.quote9;
+      case 10: return l10n.quote10;
+      case 11: return l10n.quote11;
+      case 12: return l10n.quote12;
+      case 13: return l10n.quote13;
+      case 14: return l10n.quote14;
+      case 15: return l10n.quote15;
+      default: return l10n.quote1;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Get quote of the day
+    final quoteOfDay = _getQuoteOfDay(l10n);
 
     return Scaffold(
       appBar: AppBar(
@@ -107,21 +141,21 @@ class _HomeScreen extends StatelessWidget {
         centerTitle: false,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(screenWidth * 0.04), // 4% of screen width
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Greeting card
             Card(
               child: Container(
-                height: 150,
-                padding: const EdgeInsets.all(16),
+                height: screenHeight * 0.18, // 18% of screen height
+                padding: EdgeInsets.all(screenWidth * 0.04),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: screenWidth * 0.1, // 10% of screen width
+                      height: screenWidth * 0.1,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.black87,
@@ -132,19 +166,46 @@ class _HomeScreen extends StatelessWidget {
                         child: Icon(
                           Icons.format_quote,
                           color: Colors.white,
-                          size: 24,
+                          size: screenWidth * 0.06,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: screenWidth * 0.03),
                     Expanded(
-                      child: Container(),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          quoteOfDay,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                fontStyle: FontStyle.italic,
+                                height: 1.4,
+                              ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: screenHeight * 0.03),
+            // Continue Your Session section
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Continue Your Session',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                SizedBox(height: screenHeight * 0.015),
+                Card(
+                  child: Container(
+                    height: screenHeight * 0.12, // 12% of screen height
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.03),
             // Start Declutter section
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +216,7 @@ class _HomeScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: screenHeight * 0.015),
                 Row(
                   children: [
                     Expanded(
@@ -163,20 +224,20 @@ class _HomeScreen extends StatelessWidget {
                         child: InkWell(
                           onTap: () {},
                           child: Container(
-                            height: 120,
+                            height: screenHeight * 0.15, // 15% of screen height
                             alignment: Alignment.center,
                             child: Text('Joy Declutter'),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: screenWidth * 0.03),
                     Expanded(
                       child: Card(
                         child: InkWell(
                           onTap: () {},
                           child: Container(
-                            height: 120,
+                            height: screenHeight * 0.15,
                             alignment: Alignment.center,
                             child: Text('Deep Cleaning'),
                           ),
@@ -185,12 +246,12 @@ class _HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: screenHeight * 0.015),
                 Card(
                   child: InkWell(
                     onTap: () {},
                     child: Container(
-                      height: 60,
+                      height: screenHeight * 0.075, // 7.5% of screen height (half of above)
                       alignment: Alignment.center,
                       child: Text('Quick Declutter'),
                     ),
@@ -198,7 +259,7 @@ class _HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: screenHeight * 0.03),
             // Monthly Achievement section
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,23 +270,23 @@ class _HomeScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: screenHeight * 0.015),
                 Row(
                   children: [
                     Expanded(
                       child: Card(
                         child: Container(
-                          height: 120,
+                          height: screenHeight * 0.15,
                           alignment: Alignment.center,
                           child: Text('Streak'),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: screenWidth * 0.03),
                     Expanded(
                       child: Card(
                         child: Container(
-                          height: 120,
+                          height: screenHeight * 0.15,
                           alignment: Alignment.center,
                           child: Text('Item Decluttered'),
                         ),
@@ -233,26 +294,35 @@ class _HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: screenHeight * 0.015),
                 Card(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                      vertical: screenHeight * 0.015,
+                    ),
                     width: double.infinity,
                     child: Text('Room Cleaned'),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: screenHeight * 0.015),
                 Card(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                      vertical: screenHeight * 0.015,
+                    ),
                     width: double.infinity,
                     child: Text('Memory Created'),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: screenHeight * 0.015),
                 Card(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                      vertical: screenHeight * 0.015,
+                    ),
                     width: double.infinity,
                     child: Text('Items Resell'),
                   ),

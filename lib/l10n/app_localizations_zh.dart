@@ -24,6 +24,51 @@ class AppLocalizationsZh extends AppLocalizations {
   String get insights => '洞察';
 
   @override
+  String get quote1 => '\"我们居住的空间应该是为现在的自己，而不是过去的自己。\" — 近藤麻理惠';
+
+  @override
+  String get quote2 => '\"外在的秩序有助于内心的平静。\" — 格雷琴·鲁宾';
+
+  @override
+  String get quote3 => '\"家中只留下你认为有用或美丽的东西。\" — 威廉·莫里斯';
+
+  @override
+  String get quote4 => '\"杂乱不仅仅是物质上的，还包括旧观念、有毒的关系和坏习惯。\" — 埃莉诺·布朗';
+
+  @override
+  String get quote5 => '\"清洁的目的不仅仅是清洁，而是在这个环境中感到幸福。\" — 近藤麻理惠';
+
+  @override
+  String get quote6 => '\"简约是终极的精致。\" — 列奥纳多·达·芬奇';
+
+  @override
+  String get quote7 => '\"当你的房间干净整洁时，你别无选择，只能审视自己的内心状态。\" — 近藤麻理惠';
+
+  @override
+  String get quote8 => '\"清除杂物，为自己腾出空间。\" — 玛格达莱娜·范登堡';
+
+  @override
+  String get quote9 => '\"打造理想生活的第一步是摆脱你不需要的一切。\" — 约书亚·贝克尔';
+
+  @override
+  String get quote10 => '\"干净的房子是浪费生命的标志。\" — 佚名';
+
+  @override
+  String get quote11 => '\"你拥有的越多，你就越忙碌。你拥有的越少，你就越自由。\" — 特蕾莎修女';
+
+  @override
+  String get quote12 => '\"生活其实很简单，但我们坚持把它复杂化。\" — 孔子';
+
+  @override
+  String get quote13 => '\"极简主义不是缺少什么，而是恰到好处。\" — 尼古拉斯·伯罗斯';
+
+  @override
+  String get quote14 => '\"你的家应该讲述你是谁的故事，是你所爱之物的集合。\" — 内特·伯库斯';
+
+  @override
+  String get quote15 => '\"摆脱所有无关紧要的东西，让你记起自己是谁。\" — 佚名';
+
+  @override
   String get goodEvening => '晚上好';
 
   @override

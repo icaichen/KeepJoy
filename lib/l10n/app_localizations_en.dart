@@ -24,6 +24,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get insights => 'Insights';
 
   @override
+  String get quote1 =>
+      '\"The space in which we live should be for the person we are becoming now, not for the person we were in the past.\" — Marie Kondo';
+
+  @override
+  String get quote2 =>
+      '\"Outer order contributes to inner calm.\" — Gretchen Rubin';
+
+  @override
+  String get quote3 =>
+      '\"Have nothing in your house that you do not know to be useful, or believe to be beautiful.\" — William Morris';
+
+  @override
+  String get quote4 =>
+      '\"Clutter is not just physical stuff. It\'s old ideas, toxic relationships, and bad habits.\" — Eleanor Brownn';
+
+  @override
+  String get quote5 =>
+      '\"The objective of cleaning is not just to clean, but to feel happiness living within that environment.\" — Marie Kondo';
+
+  @override
+  String get quote6 =>
+      '\"Simplicity is the ultimate sophistication.\" — Leonardo da Vinci';
+
+  @override
+  String get quote7 =>
+      '\"When your room is clean and uncluttered, you have no choice but to examine your inner state.\" — Marie Kondo';
+
+  @override
+  String get quote8 =>
+      '\"Clear clutter. Make space for you.\" — Magdalena VandenBerg';
+
+  @override
+  String get quote9 =>
+      '\"The first step in crafting the life you want is to get rid of everything you don\'t.\" — Joshua Becker';
+
+  @override
+  String get quote10 =>
+      '\"A clean house is a sign of a wasted life.\" — Unknown';
+
+  @override
+  String get quote11 =>
+      '\"The more you have, the more you are occupied. The less you have, the more free you are.\" — Mother Teresa';
+
+  @override
+  String get quote12 =>
+      '\"Life is really simple, but we insist on making it complicated.\" — Confucius';
+
+  @override
+  String get quote13 =>
+      '\"Minimalism is not a lack of something. It\'s simply the perfect amount of something.\" — Nicholas Burroughs';
+
+  @override
+  String get quote14 =>
+      '\"Your home should tell the story of who you are, and be a collection of what you love.\" — Nate Berkus';
+
+  @override
+  String get quote15 =>
+      '\"Getting rid of everything that doesn\'t matter allows you to remember who you are.\" — Unknown';
+
+  @override
   String get goodEvening => 'Good Evening';
 
   @override

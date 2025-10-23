@@ -128,6 +128,96 @@ abstract class AppLocalizations {
   /// **'Insights'**
   String get insights;
 
+  /// No description provided for @quote1.
+  ///
+  /// In en, this message translates to:
+  /// **'\"The space in which we live should be for the person we are becoming now, not for the person we were in the past.\" — Marie Kondo'**
+  String get quote1;
+
+  /// No description provided for @quote2.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Outer order contributes to inner calm.\" — Gretchen Rubin'**
+  String get quote2;
+
+  /// No description provided for @quote3.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Have nothing in your house that you do not know to be useful, or believe to be beautiful.\" — William Morris'**
+  String get quote3;
+
+  /// No description provided for @quote4.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Clutter is not just physical stuff. It\'s old ideas, toxic relationships, and bad habits.\" — Eleanor Brownn'**
+  String get quote4;
+
+  /// No description provided for @quote5.
+  ///
+  /// In en, this message translates to:
+  /// **'\"The objective of cleaning is not just to clean, but to feel happiness living within that environment.\" — Marie Kondo'**
+  String get quote5;
+
+  /// No description provided for @quote6.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Simplicity is the ultimate sophistication.\" — Leonardo da Vinci'**
+  String get quote6;
+
+  /// No description provided for @quote7.
+  ///
+  /// In en, this message translates to:
+  /// **'\"When your room is clean and uncluttered, you have no choice but to examine your inner state.\" — Marie Kondo'**
+  String get quote7;
+
+  /// No description provided for @quote8.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Clear clutter. Make space for you.\" — Magdalena VandenBerg'**
+  String get quote8;
+
+  /// No description provided for @quote9.
+  ///
+  /// In en, this message translates to:
+  /// **'\"The first step in crafting the life you want is to get rid of everything you don\'t.\" — Joshua Becker'**
+  String get quote9;
+
+  /// No description provided for @quote10.
+  ///
+  /// In en, this message translates to:
+  /// **'\"A clean house is a sign of a wasted life.\" — Unknown'**
+  String get quote10;
+
+  /// No description provided for @quote11.
+  ///
+  /// In en, this message translates to:
+  /// **'\"The more you have, the more you are occupied. The less you have, the more free you are.\" — Mother Teresa'**
+  String get quote11;
+
+  /// No description provided for @quote12.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Life is really simple, but we insist on making it complicated.\" — Confucius'**
+  String get quote12;
+
+  /// No description provided for @quote13.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Minimalism is not a lack of something. It\'s simply the perfect amount of something.\" — Nicholas Burroughs'**
+  String get quote13;
+
+  /// No description provided for @quote14.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Your home should tell the story of who you are, and be a collection of what you love.\" — Nate Berkus'**
+  String get quote14;
+
+  /// No description provided for @quote15.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Getting rid of everything that doesn\'t matter allows you to remember who you are.\" — Unknown'**
+  String get quote15;
+
   /// No description provided for @goodEvening.
   ///
   /// In en, this message translates to:
