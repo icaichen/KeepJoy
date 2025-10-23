@@ -109,10 +109,61 @@ class _HomeScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Greeting card
             Card(
               child: Container(
                 height: 150,
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Start Declutter section
+            Text(
+              'Start Declutter',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Card(
+                    child: InkWell(
+                      onTap: () {},
+                      child: Container(
+                        height: 120,
+                        alignment: Alignment.center,
+                        child: Text('Quick Declutter'),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Card(
+                    child: InkWell(
+                      onTap: () {},
+                      child: Container(
+                        height: 120,
+                        alignment: Alignment.center,
+                        child: Text('Joy Declutter'),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: InkWell(
+                onTap: () {},
+                child: Container(
+                  height: 120,
+                  alignment: Alignment.center,
+                  child: Text('Deep Cleaning'),
+                ),
               ),
             ),
           ],
