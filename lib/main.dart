@@ -106,7 +106,7 @@ class _HomeScreen extends StatelessWidget {
         title: Text(l10n.home),
         centerTitle: false,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,56 +115,149 @@ class _HomeScreen extends StatelessWidget {
             Card(
               child: Container(
                 height: 150,
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black87,
+                      ),
+                      alignment: Alignment.center,
+                      child: Transform.rotate(
+                        angle: 3.14159, // 180 degrees to flip it
+                        child: Icon(
+                          Icons.format_quote,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
             // Start Declutter section
-            Text(
-              'Start Declutter',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 12),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Card(
-                    child: InkWell(
-                      onTap: () {},
-                      child: Container(
-                        height: 120,
-                        alignment: Alignment.center,
-                        child: Text('Quick Declutter'),
+                Text(
+                  'Start Declutter',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Card(
+                        child: InkWell(
+                          onTap: () {},
+                          child: Container(
+                            height: 120,
+                            alignment: Alignment.center,
+                            child: Text('Joy Declutter'),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Card(
-                    child: InkWell(
-                      onTap: () {},
-                      child: Container(
-                        height: 120,
-                        alignment: Alignment.center,
-                        child: Text('Joy Declutter'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Card(
+                        child: InkWell(
+                          onTap: () {},
+                          child: Container(
+                            height: 120,
+                            alignment: Alignment.center,
+                            child: Text('Deep Cleaning'),
+                          ),
+                        ),
                       ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Card(
+                  child: InkWell(
+                    onTap: () {},
+                    child: Container(
+                      height: 60,
+                      alignment: Alignment.center,
+                      child: Text('Quick Declutter'),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Card(
-              child: InkWell(
-                onTap: () {},
-                child: Container(
-                  height: 120,
-                  alignment: Alignment.center,
-                  child: Text('Deep Cleaning'),
+            const SizedBox(height: 24),
+            // Monthly Achievement section
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Monthly Achievement',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Card(
+                        child: Container(
+                          height: 120,
+                          alignment: Alignment.center,
+                          child: Text('Streak'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Card(
+                        child: Container(
+                          height: 120,
+                          alignment: Alignment.center,
+                          child: Text('Item Decluttered'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Card(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    width: double.infinity,
+                    child: Text('Room Cleaned'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Card(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    width: double.infinity,
+                    child: Text('Memory Created'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Card(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    width: double.infinity,
+                    child: Text('Items Resell'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
