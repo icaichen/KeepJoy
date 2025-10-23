@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../utils/localization.dart';
+import '../../l10n/app_localizations.dart';
 
 class QuickDeclutterItem {
   QuickDeclutterItem({
@@ -20,18 +20,30 @@ class QuickDeclutterItem {
 }
 
 enum QuickDeclutterCategory {
-  clothes('Clothes', '衣物'),
-  books('Books', '书籍'),
-  papers('Papers', '文件'),
-  miscellaneous('Miscellaneous', '杂项'),
-  sentimental('Sentimental', '情感纪念品'),
-  beauty('Beauty', '美妆用品');
+  clothes,
+  books,
+  papers,
+  miscellaneous,
+  sentimental,
+  beauty;
 
-  const QuickDeclutterCategory(this.en, this.zh);
-  final String en;
-  final String zh;
-
-  String localized(BuildContext context) => localizedText(context, en, zh);
+  String localized(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (this) {
+      case QuickDeclutterCategory.clothes:
+        return l10n.categoryClothes;
+      case QuickDeclutterCategory.books:
+        return l10n.categoryBooks;
+      case QuickDeclutterCategory.papers:
+        return l10n.categoryPapers;
+      case QuickDeclutterCategory.miscellaneous:
+        return l10n.categoryMiscellaneous;
+      case QuickDeclutterCategory.sentimental:
+        return l10n.categorySentimental;
+      case QuickDeclutterCategory.beauty:
+        return l10n.categoryBeauty;
+    }
+  }
 }
 
 class QuickDeclutterFlowPage extends StatefulWidget {
@@ -58,14 +70,16 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(localizedText(context, 'Quick Declutter', '快速整理')),
+        title: Text(l10n.quickDeclutterTitle),
         actions: [
           TextButton(
             onPressed: _items.isEmpty ? null : _finish,
             child: Text(
-              localizedText(context, 'Finish', '完成'),
+              l10n.finish,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
@@ -82,14 +96,14 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
           ElevatedButton.icon(
             onPressed: _captureItem,
             icon: const Icon(Icons.camera_alt_outlined),
-            label: Text(localizedText(context, 'Capture item', '拍摄物品')),
+            label: Text(l10n.captureItem),
           ),
           const SizedBox(height: 12),
           FilledButton(
             onPressed: _photoPath != null && !_isProcessing
                 ? _addCurrentItem
                 : null,
-            child: Text(localizedText(context, 'Add this item', '添加此物品')),
+            child: Text(l10n.addThisItem),
           ),
         ],
       ),
@@ -97,6 +111,8 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   }
 
   Widget _buildSummary(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -104,7 +120,7 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              localizedText(context, 'Items added', '已添加的物品'),
+              l10n.itemsAdded,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -133,6 +149,8 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   }
 
   Widget _buildCaptureCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -140,21 +158,11 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              localizedText(
-                context,
-                'Step 1 · Capture your item',
-                '步骤一 · 拍摄物品',
-              ),
+              l10n.step1CaptureItem,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Text(
-              localizedText(
-                context,
-                'Take a photo so we can identify and organize it for you.',
-                '拍摄物品照片，我们会协助识别与归类。',
-              ),
-            ),
+            Text(l10n.step1Description),
           ],
         ),
       ),
@@ -162,18 +170,15 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   }
 
   Widget _buildPreviewForm(BuildContext context) {
-    final displayQuote = localizedText(
-      context,
-      'Step 2 · Review details',
-      '步骤二 · 查看详情',
-    );
+    final l10n = AppLocalizations.of(context)!;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(displayQuote, style: Theme.of(context).textTheme.titleMedium),
+            Text(l10n.step2ReviewDetails, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
             if (_photoPath != null)
               ClipRRect(
@@ -188,23 +193,26 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
             TextField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: localizedText(context, 'Item Name', '物品名称'),
+                labelText: l10n.itemName,
               ),
             ),
             const SizedBox(height: 16),
-            DropdownMenu<QuickDeclutterCategory>(
-              initialSelection: _selectedCategory,
-              onSelected: (value) => setState(() {
+            DropdownButtonFormField<QuickDeclutterCategory>(
+              initialValue: _selectedCategory,
+              onChanged: (value) => setState(() {
                 if (value != null) {
                   _selectedCategory = value;
                 }
               }),
-              label: Text(localizedText(context, 'Category', '分类')),
-              dropdownMenuEntries: QuickDeclutterCategory.values
+              decoration: InputDecoration(
+                labelText: l10n.category,
+                border: const OutlineInputBorder(),
+              ),
+              items: QuickDeclutterCategory.values
                   .map(
-                    (category) => DropdownMenuEntry(
+                    (category) => DropdownMenuItem(
                       value: category,
-                      label: category.localized(context),
+                      child: Text(category.localized(context)),
                     ),
                   )
                   .toList(),
@@ -219,7 +227,7 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                   const SizedBox(width: 8),
-                  Text(localizedText(context, 'Identifying item…', '正在识别物品…')),
+                  Text(l10n.identifyingItem),
                 ],
               ),
             ],
@@ -255,11 +263,10 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _isProcessing = false);
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            localizedText(context, 'Could not access camera.', '无法打开相机。'),
-          ),
+          content: Text(l10n.couldNotAccessCamera),
         ),
       );
     }
@@ -327,8 +334,9 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   void _addCurrentItem() {
     final path = _photoPath;
     if (path == null) return;
+    final l10n = AppLocalizations.of(context)!;
     final name = _nameController.text.trim().isEmpty
-        ? localizedText(context, 'Unnamed item', '未命名物品')
+        ? l10n.unnamedItem
         : _nameController.text.trim();
     setState(() {
       _items.add(
@@ -343,7 +351,7 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
       _selectedCategory = QuickDeclutterCategory.miscellaneous;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(localizedText(context, 'Item added.', '物品已添加。'))),
+      SnackBar(content: Text(l10n.itemAdded)),
     );
   }
 

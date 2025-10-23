@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'features/quick_declutter/quick_declutter_flow.dart';
-import 'utils/localization.dart';
+import 'features/joy_declutter/joy_declutter_flow.dart';
+import 'l10n/app_localizations.dart';
 
 void main() {
   runApp(const KeepJoyApp());
@@ -26,6 +28,7 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
       _DashboardScreen(
         onQuickSweepTap: _openQuickSweepSelection,
         onQuickDeclutterTap: _openQuickDeclutterFlow,
+        onJoyDeclutterTap: _openJoyDeclutterFlow,
         activeQuickSweep: _activeQuickSweep,
         onResumeQuickSweep: _openQuickSweepTimer,
       ),
@@ -39,6 +42,16 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
       title: 'KeepJoy',
       theme: _theme,
       navigatorKey: _navKey,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('zh'), // Chinese
+      ],
       home: Scaffold(
         body: IndexedStack(index: _index, children: pages),
         bottomNavigationBar: NavigationBar(
@@ -116,18 +129,31 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
     final navigator = _navKey.currentState;
     if (navigator == null) return;
     final ctx = navigator.context;
-    final useChinese = isChineseLocale(ctx);
+    final l10n = AppLocalizations.of(ctx)!;
     final messenger = ScaffoldMessenger.of(ctx);
     final items = await navigator.push<List<QuickDeclutterItem>>(
       MaterialPageRoute(builder: (_) => const QuickDeclutterFlowPage()),
     );
     if (!navigator.mounted) return;
     if (items != null && items.isNotEmpty) {
-      final message = useChinese
-          ? '已通过快速整理添加${items.length}件物品。'
-          : 'Added ${items.length} item(s) via Quick Declutter.';
+      final message = l10n.addedItemsViaQuickDeclutter(items.length);
       messenger.showSnackBar(SnackBar(content: Text(message)));
     }
+  }
+
+  void _openJoyDeclutterFlow() async {
+    final navigator = _navKey.currentState;
+    if (navigator == null) return;
+    final ctx = navigator.context;
+    final l10n = AppLocalizations.of(ctx)!;
+    final messenger = ScaffoldMessenger.of(ctx);
+    await navigator.push(
+      MaterialPageRoute(builder: (_) => const JoyDeclutterFlowPage()),
+    );
+    if (!navigator.mounted) return;
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.joyDeclutterComplete)),
+    );
   }
 }
 
@@ -200,12 +226,14 @@ class _DashboardScreen extends StatelessWidget {
   const _DashboardScreen({
     required this.onQuickSweepTap,
     required this.onQuickDeclutterTap,
+    required this.onJoyDeclutterTap,
     this.activeQuickSweep,
     this.onResumeQuickSweep,
   });
 
   final VoidCallback onQuickSweepTap;
   final VoidCallback onQuickDeclutterTap;
+  final VoidCallback onJoyDeclutterTap;
   final _QuickSweepSession? activeQuickSweep;
   final VoidCallback? onResumeQuickSweep;
 
@@ -236,6 +264,7 @@ class _DashboardScreen extends StatelessWidget {
               _CoreModulesRow(
                 onQuickSweepTap: onQuickSweepTap,
                 onQuickDeclutterTap: onQuickDeclutterTap,
+                onJoyDeclutterTap: onJoyDeclutterTap,
               ),
               const SizedBox(height: 20),
               const _MemoriesHeader(),
@@ -399,9 +428,11 @@ class _CoreModulesRow extends StatelessWidget {
   const _CoreModulesRow({
     required this.onQuickSweepTap,
     required this.onQuickDeclutterTap,
+    required this.onJoyDeclutterTap,
   });
   final VoidCallback onQuickSweepTap;
   final VoidCallback onQuickDeclutterTap;
+  final VoidCallback onJoyDeclutterTap;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -429,7 +460,7 @@ class _CoreModulesRow extends StatelessWidget {
             color: const Color(0xFFFFF4C8),
             icon: Icons.inventory_2_outlined,
             title: 'Joy\nDeclutter',
-            onTap: () {},
+            onTap: onJoyDeclutterTap,
           ),
         ),
       ],

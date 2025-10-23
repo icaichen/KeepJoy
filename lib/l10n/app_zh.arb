@@ -1,0 +1,93 @@
+{
+  "@@locale": "zh",
+
+  "appTitle": "KeepJoy",
+
+  "home": "首页",
+  "items": "物品",
+  "memories": "回忆",
+  "insights": "洞察",
+
+  "goodEvening": "晚上好",
+  "coreModules": "核心模块",
+  "joyfulMemories": "美好回忆",
+  "viewAll": "查看全部",
+
+  "quickDeclutter": "快速\n整理",
+  "quickSweep": "快速\n清扫",
+  "joyDeclutter": "喜悦\n整理",
+
+  "quickDeclutterTitle": "快速整理",
+  "finish": "完成",
+  "captureItem": "拍摄物品",
+  "addThisItem": "添加此物品",
+
+  "itemsAdded": "已添加的物品",
+  "step1CaptureItem": "步骤一 · 拍摄物品",
+  "step1Description": "拍摄物品照片，我们会协助识别与归类。",
+  "step2ReviewDetails": "步骤二 · 查看详情",
+
+  "itemName": "物品名称",
+  "category": "分类",
+  "identifyingItem": "正在识别物品…",
+  "unnamedItem": "未命名物品",
+  "itemAdded": "物品已添加。",
+
+  "addedItemsViaQuickDeclutter": "已通过快速整理添加{count}件物品。",
+
+  "couldNotAccessCamera": "无法打开相机。",
+
+  "categoryClothes": "衣物",
+  "categoryBooks": "书籍",
+  "categoryPapers": "文件",
+  "categoryMiscellaneous": "杂项",
+  "categorySentimental": "情感纪念品",
+  "categoryBeauty": "美妆用品",
+
+  "activeQuickSweep": "进行中的快速清扫",
+  "resume": "继续",
+  "pickAnArea": "选择区域",
+  "livingRoom": "客厅",
+  "bedroom": "卧室",
+  "kitchen": "厨房",
+  "homeOffice": "书房",
+  "garage": "车库",
+  "customArea": "自定义区域…",
+  "nameYourArea": "命名您的区域",
+  "cancel": "取消",
+  "save": "保存",
+
+  "quickSweepTimer": "快速清扫",
+  "minimize": "最小化",
+  "complete": "完成",
+
+  "thisMonthProgress": "本月进度",
+  "itemsLetGo": "已释放物品：{count}",
+  "sessions": "整理次数：{count}",
+  "spaceFreed": "释放空间：{amount} 平方米",
+
+  "secondHandTracker": "二手物品追踪",
+  "viewDetails": "查看详情",
+
+  "joyDeclutterTitle": "喜悦整理",
+  "joyDeclutterCaptureTitle": "拍摄物品",
+  "nextStep": "下一步",
+  "doesItSparkJoy": "这件物品能带给你喜悦吗？",
+  "joyQuestionDescription": "把物品拿在手中，问问自己：它能为我的生活带来喜悦吗？",
+  "keepItem": "是的，保留",
+  "letGoItem": "不，放手",
+  "itemKept": "已保留物品！喜悦整理完成。",
+  "selectLetGoRoute": "您希望如何处理这件物品？",
+  "routeResell": "转售",
+  "routeResellDescription": "卖给会珍惜它的人",
+  "routeDonation": "捐赠",
+  "routeDonationDescription": "送给有需要的人",
+  "routeDiscard": "丢弃",
+  "routeDiscardDescription": "负责任地处理",
+  "routeRecycle": "回收",
+  "routeRecycleDescription": "让材料获得新生",
+  "joyDeclutterComplete": "喜悦整理完成！",
+  "itemLetGo": "您已选择放手这件物品。",
+
+  "comingSoon": "{title} — 即将推出"
+}

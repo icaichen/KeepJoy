@@ -1,0 +1,132 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "KeepJoy",
+  "@appTitle": {
+    "description": "The application title"
+  },
+
+  "home": "Home",
+  "items": "Items",
+  "memories": "Memories",
+  "insights": "Insights",
+
+  "goodEvening": "Good Evening",
+  "coreModules": "Core Modules",
+  "joyfulMemories": "Joyful Memories",
+  "viewAll": "View All",
+
+  "quickDeclutter": "Quick\nDeclutter",
+  "quickSweep": "Quick\nSweep",
+  "joyDeclutter": "Joy\nDeclutter",
+
+  "quickDeclutterTitle": "Quick Declutter",
+  "finish": "Finish",
+  "captureItem": "Capture item",
+  "addThisItem": "Add this item",
+
+  "itemsAdded": "Items added",
+  "step1CaptureItem": "Step 1 · Capture your item",
+  "step1Description": "Take a photo so we can identify and organize it for you.",
+  "step2ReviewDetails": "Step 2 · Review details",
+
+  "itemName": "Item Name",
+  "category": "Category",
+  "identifyingItem": "Identifying item…",
+  "unnamedItem": "Unnamed item",
+  "itemAdded": "Item added.",
+
+  "addedItemsViaQuickDeclutter": "Added {count} item(s) via Quick Declutter.",
+  "@addedItemsViaQuickDeclutter": {
+    "description": "Message shown when items are added via Quick Declutter",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "couldNotAccessCamera": "Could not access camera.",
+
+  "categoryClothes": "Clothes",
+  "categoryBooks": "Books",
+  "categoryPapers": "Papers",
+  "categoryMiscellaneous": "Miscellaneous",
+  "categorySentimental": "Sentimental",
+  "categoryBeauty": "Beauty",
+
+  "activeQuickSweep": "Active Quick Sweep",
+  "resume": "Resume",
+  "pickAnArea": "Pick an area",
+  "livingRoom": "Living Room",
+  "bedroom": "Bedroom",
+  "kitchen": "Kitchen",
+  "homeOffice": "Home Office",
+  "garage": "Garage",
+  "customArea": "Custom area…",
+  "nameYourArea": "Name your area",
+  "cancel": "Cancel",
+  "save": "Save",
+
+  "quickSweepTimer": "Quick Sweep",
+  "minimize": "Minimize",
+  "complete": "Complete",
+
+  "thisMonthProgress": "This Month's Progress",
+  "itemsLetGo": "Items let go: {count}",
+  "@itemsLetGo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessions": "Sessions: {count}",
+  "@sessions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "spaceFreed": "Space freed: {amount} m²",
+  "@spaceFreed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "secondHandTracker": "Second-hand Tracker",
+  "viewDetails": "View Details",
+
+  "joyDeclutterTitle": "Joy Declutter",
+  "joyDeclutterCaptureTitle": "Capture Item",
+  "nextStep": "Next Step",
+  "doesItSparkJoy": "Does this item spark joy?",
+  "joyQuestionDescription": "Hold the item in your hands and ask yourself: Does this bring joy to my life?",
+  "keepItem": "Yes, Keep It",
+  "letGoItem": "No, Let It Go",
+  "itemKept": "Item kept! This completes your Joy Declutter session.",
+  "selectLetGoRoute": "How would you like to let go of this item?",
+  "routeResell": "Resell",
+  "routeResellDescription": "Sell to someone who will appreciate it",
+  "routeDonation": "Donation",
+  "routeDonationDescription": "Give to those in need",
+  "routeDiscard": "Discard",
+  "routeDiscardDescription": "Dispose of responsibly",
+  "routeRecycle": "Recycle",
+  "routeRecycleDescription": "Give materials new life",
+  "joyDeclutterComplete": "Joy Declutter session complete!",
+  "itemLetGo": "You've chosen to let go of this item.",
+
+  "comingSoon": "{title} — coming next",
+  "@comingSoon": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}
