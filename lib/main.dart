@@ -49,7 +49,7 @@ class _MainNavigatorState extends State<MainNavigator> {
     final l10n = AppLocalizations.of(context)!;
 
     final pages = [
-      _PlaceholderScreen(title: l10n.home),
+      _HomeScreen(),
       _PlaceholderScreen(title: l10n.items),
       _PlaceholderScreen(title: l10n.memories),
       _PlaceholderScreen(title: l10n.insights),
@@ -89,6 +89,34 @@ class _MainNavigatorState extends State<MainNavigator> {
             label: l10n.insights,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HomeScreen extends StatelessWidget {
+  const _HomeScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.home),
+        centerTitle: false,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Card(
+              child: Container(
+                height: 150,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
