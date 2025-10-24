@@ -186,5 +186,21 @@
         "type": "String"
       }
     }
-  }
+  },
+
+  "clickToStartTimer": "Click to Start Timer",
+  "stop": "Stop",
+
+  "inProgress": "In Progress",
+  "continueSession": "Continue Session",
+  "started": "Started {when}",
+  "@started": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+
+  "deepCleaningSessionCompleted": "Deep Cleaning session completed"
 }

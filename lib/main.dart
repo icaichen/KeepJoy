@@ -203,7 +203,72 @@ class _HomeScreen extends StatelessWidget {
                 SizedBox(height: screenHeight * 0.015),
                 Card(
                   child: Container(
-                    height: screenHeight * 0.12, // 12% of screen height
+                    padding: EdgeInsets.all(screenWidth * 0.04),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            // House icon on the left
+                            Container(
+                              width: screenWidth * 0.12,
+                              height: screenWidth * 0.12,
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.home,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: screenWidth * 0.03),
+                            // Area and started info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Kitchen Deep Cleaning'),
+                                  Text(l10n.started('5 mins ago')),
+                                ],
+                              ),
+                            ),
+                            // In Progress badge
+                            Text(l10n.inProgress),
+                          ],
+                        ),
+                        SizedBox(height: screenHeight * 0.02),
+                        // Continue Session and Stop buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Card(
+                                child: InkWell(
+                                  onTap: () {},
+                                  child: Container(
+                                    padding: EdgeInsets.all(screenWidth * 0.03),
+                                    alignment: Alignment.center,
+                                    child: Text(l10n.continueSession),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: screenWidth * 0.02),
+                            Expanded(
+                              child: Card(
+                                child: InkWell(
+                                  onTap: () {},
+                                  child: Container(
+                                    padding: EdgeInsets.all(screenWidth * 0.03),
+                                    alignment: Alignment.center,
+                                    child: Text(l10n.stop),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

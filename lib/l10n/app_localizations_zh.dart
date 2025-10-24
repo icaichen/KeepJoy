@@ -358,4 +358,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String itemMarkedAs(String option) {
     return '物品已标记为$option';
   }
+
+  @override
+  String get clickToStartTimer => '点击开始计时';
+
+  @override
+  String get stop => '停止';
+
+  @override
+  String get inProgress => '进行中';
+
+  @override
+  String get continueSession => '继续进程';
+
+  @override
+  String started(String when) {
+    return '开始于$when';
+  }
 }

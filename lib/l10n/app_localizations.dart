@@ -775,6 +775,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Item marked as {option}'**
   String itemMarkedAs(String option);
+
+  /// No description provided for @clickToStartTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Click to Start Timer'**
+  String get clickToStartTimer;
+
+  /// No description provided for @stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
+
+  /// No description provided for @inProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get inProgress;
+
+  /// No description provided for @continueSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Session'**
+  String get continueSession;
+
+  /// No description provided for @started.
+  ///
+  /// In en, this message translates to:
+  /// **'Started {when}'**
+  String started(String when);
 }
 
 class _AppLocalizationsDelegate

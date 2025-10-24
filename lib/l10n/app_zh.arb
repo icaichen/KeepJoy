@@ -140,5 +140,12 @@
   "nextStep": "下一步",
   "itemSaved": "物品已成功保存！",
   "timeToLetGo": "是时候放手了",
-  "itemMarkedAs": "物品已标记为{option}"
+  "itemMarkedAs": "物品已标记为{option}",
+
+  "clickToStartTimer": "点击开始计时",
+  "stop": "停止",
+
+  "inProgress": "进行中",
+  "continueSession": "继续进程",
+  "started": "开始于{when}"
 }

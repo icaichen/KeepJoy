@@ -376,4 +376,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String itemMarkedAs(String option) {
     return 'Item marked as $option';
   }
+
+  @override
+  String get clickToStartTimer => 'Click to Start Timer';
+
+  @override
+  String get stop => 'Stop';
+
+  @override
+  String get inProgress => 'In Progress';
+
+  @override
+  String get continueSession => 'Continue Session';
+
+  @override
+  String started(String when) {
+    return 'Started $when';
+  }
 }

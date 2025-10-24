@@ -67,7 +67,13 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const _TimerPage(),
+                    ),
+                  );
+                },
                 child: Text(l10n.continueButton),
               ),
             ),
@@ -85,6 +91,76 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: Colors.grey),
+      ),
+    );
+  }
+}
+
+// Timer page
+class _TimerPage extends StatelessWidget {
+  const _TimerPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.deepCleaningTitle),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(screenWidth * 0.04),
+        child: Column(
+          children: [
+            // Section with "Click to Start Timer" and timer subsection
+            Card(
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                child: Column(
+                  children: [
+                    Text(l10n.clickToStartTimer),
+                    SizedBox(height: screenHeight * 0.02),
+                    // Timer subsection (placeholder)
+                    Container(
+                      width: double.infinity,
+                      height: screenHeight * 0.2,
+                      color: Colors.grey[300],
+                      child: Center(child: Text('Timer')),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+            // Next steps section
+            Card(
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        child: Text(l10n.minimize),
+                      ),
+                    ),
+                    SizedBox(width: screenWidth * 0.02),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        child: Text(l10n.stop),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
