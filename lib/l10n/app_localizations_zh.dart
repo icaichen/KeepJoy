@@ -182,6 +182,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryBeauty => '美妆用品';
 
   @override
+  String get joyDeclutterTitle => '喜悦整理';
+
+  @override
+  String get doesItSparkJoy => '这件物品能带给你喜悦吗？';
+
+  @override
+  String get yes => '是的';
+
+  @override
+  String get no => '不能';
+
+  @override
+  String get next => '下一步';
+
+  @override
+  String get pleaseEnterItemName => '请输入物品名称';
+
+  @override
+  String get howToLetGo => '你想怎样处理它？';
+
+  @override
+  String get routeDiscard => '丢弃';
+
+  @override
+  String get routeDonation => '捐赠';
+
+  @override
+  String get routeRecycle => '回收';
+
+  @override
+  String get routeResell => '转售';
+
+  @override
   String get activeQuickSweep => '进行中的快速清扫';
 
   @override
@@ -251,16 +284,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewDetails => '查看详情';
 
   @override
-  String get joyDeclutterTitle => '喜悦整理';
-
-  @override
   String get joyDeclutterCaptureTitle => '拍摄物品';
 
   @override
   String get nextStep => '下一步';
-
-  @override
-  String get doesItSparkJoy => '这件物品能带给你喜悦吗？';
 
   @override
   String get joyQuestionDescription => '把物品拿在手中，问问自己：它能为我的生活带来喜悦吗？';
@@ -278,25 +305,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectLetGoRoute => '您希望如何处理这件物品？';
 
   @override
-  String get routeResell => '转售';
-
-  @override
   String get routeResellDescription => '卖给会珍惜它的人';
-
-  @override
-  String get routeDonation => '捐赠';
 
   @override
   String get routeDonationDescription => '送给有需要的人';
 
   @override
-  String get routeDiscard => '丢弃';
-
-  @override
   String get routeDiscardDescription => '负责任地处理';
-
-  @override
-  String get routeRecycle => '回收';
 
   @override
   String get routeRecycleDescription => '让材料获得新生';
@@ -310,5 +325,37 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String comingSoon(String title) {
     return '$title — 即将推出';
+  }
+
+  @override
+  String get captureItemToStart => '拍摄物品开始整理';
+
+  @override
+  String get takePicture => '拍摄物品';
+
+  @override
+  String get itemsCaptured => '已拍摄物品';
+
+  @override
+  String get nextItem => '下一个物品';
+
+  @override
+  String get finishDeclutter => '完成整理';
+
+  @override
+  String get deepCleaningTitle => '深度清理';
+
+  @override
+  String get continueButton => '继续';
+
+  @override
+  String get itemSaved => '物品已成功保存！';
+
+  @override
+  String get timeToLetGo => '是时候放手了';
+
+  @override
+  String itemMarkedAs(String option) {
+    return '物品已标记为$option';
   }
 }

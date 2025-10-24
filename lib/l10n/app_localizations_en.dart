@@ -198,6 +198,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryBeauty => 'Beauty';
 
   @override
+  String get joyDeclutterTitle => 'Joy Declutter';
+
+  @override
+  String get doesItSparkJoy => 'Does this item spark joy?';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get pleaseEnterItemName => 'Please enter an item name';
+
+  @override
+  String get howToLetGo => 'How would you like to let it go?';
+
+  @override
+  String get routeDiscard => 'Discard';
+
+  @override
+  String get routeDonation => 'Donation';
+
+  @override
+  String get routeRecycle => 'Recycle';
+
+  @override
+  String get routeResell => 'Resell';
+
+  @override
   String get activeQuickSweep => 'Active Quick Sweep';
 
   @override
@@ -267,16 +300,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewDetails => 'View Details';
 
   @override
-  String get joyDeclutterTitle => 'Joy Declutter';
-
-  @override
   String get joyDeclutterCaptureTitle => 'Capture Item';
 
   @override
   String get nextStep => 'Next Step';
-
-  @override
-  String get doesItSparkJoy => 'Does this item spark joy?';
 
   @override
   String get joyQuestionDescription =>
@@ -296,25 +323,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectLetGoRoute => 'How would you like to let go of this item?';
 
   @override
-  String get routeResell => 'Resell';
-
-  @override
   String get routeResellDescription => 'Sell to someone who will appreciate it';
-
-  @override
-  String get routeDonation => 'Donation';
 
   @override
   String get routeDonationDescription => 'Give to those in need';
 
   @override
-  String get routeDiscard => 'Discard';
-
-  @override
   String get routeDiscardDescription => 'Dispose of responsibly';
-
-  @override
-  String get routeRecycle => 'Recycle';
 
   @override
   String get routeRecycleDescription => 'Give materials new life';
@@ -328,5 +343,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String comingSoon(String title) {
     return '$title — coming next';
+  }
+
+  @override
+  String get captureItemToStart => 'Capture an item to start decluttering';
+
+  @override
+  String get takePicture => 'Take the picture';
+
+  @override
+  String get itemsCaptured => 'Items captured';
+
+  @override
+  String get nextItem => 'Next item';
+
+  @override
+  String get finishDeclutter => 'Finish declutter';
+
+  @override
+  String get deepCleaningTitle => 'Deep Cleaning';
+
+  @override
+  String get continueButton => 'Continue';
+
+  @override
+  String get itemSaved => 'Item saved successfully!';
+
+  @override
+  String get timeToLetGo => 'Time to Let Go';
+
+  @override
+  String itemMarkedAs(String option) {
+    return 'Item marked as $option';
   }
 }

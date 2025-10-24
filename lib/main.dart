@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'features/deep_cleaning/deep_cleaning_flow.dart';
+import 'features/joy_declutter/joy_declutter_flow.dart';
+import 'features/quick_declutter/quick_declutter_flow.dart';
 import 'l10n/app_localizations.dart';
 
 void main() {
@@ -222,7 +225,13 @@ class _HomeScreen extends StatelessWidget {
                     Expanded(
                       child: Card(
                         child: InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const JoyDeclutterFlowPage(),
+                              ),
+                            );
+                          },
                           child: Container(
                             height: screenHeight * 0.15, // 15% of screen height
                             alignment: Alignment.center,
@@ -235,7 +244,13 @@ class _HomeScreen extends StatelessWidget {
                     Expanded(
                       child: Card(
                         child: InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const DeepCleaningFlowPage(),
+                              ),
+                            );
+                          },
                           child: Container(
                             height: screenHeight * 0.15,
                             alignment: Alignment.center,
@@ -249,7 +264,13 @@ class _HomeScreen extends StatelessWidget {
                 SizedBox(height: screenHeight * 0.015),
                 Card(
                   child: InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const QuickDeclutterFlowPage(),
+                        ),
+                      );
+                    },
                     child: Container(
                       height: screenHeight * 0.075, // 7.5% of screen height (half of above)
                       alignment: Alignment.center,

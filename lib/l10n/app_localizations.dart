@@ -440,6 +440,72 @@ abstract class AppLocalizations {
   /// **'Beauty'**
   String get categoryBeauty;
 
+  /// No description provided for @joyDeclutterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Joy Declutter'**
+  String get joyDeclutterTitle;
+
+  /// No description provided for @doesItSparkJoy.
+  ///
+  /// In en, this message translates to:
+  /// **'Does this item spark joy?'**
+  String get doesItSparkJoy;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @pleaseEnterItemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an item name'**
+  String get pleaseEnterItemName;
+
+  /// No description provided for @howToLetGo.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you like to let it go?'**
+  String get howToLetGo;
+
+  /// No description provided for @routeDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get routeDiscard;
+
+  /// No description provided for @routeDonation.
+  ///
+  /// In en, this message translates to:
+  /// **'Donation'**
+  String get routeDonation;
+
+  /// No description provided for @routeRecycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recycle'**
+  String get routeRecycle;
+
+  /// No description provided for @routeResell.
+  ///
+  /// In en, this message translates to:
+  /// **'Resell'**
+  String get routeResell;
+
   /// No description provided for @activeQuickSweep.
   ///
   /// In en, this message translates to:
@@ -566,12 +632,6 @@ abstract class AppLocalizations {
   /// **'View Details'**
   String get viewDetails;
 
-  /// No description provided for @joyDeclutterTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Joy Declutter'**
-  String get joyDeclutterTitle;
-
   /// No description provided for @joyDeclutterCaptureTitle.
   ///
   /// In en, this message translates to:
@@ -583,12 +643,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next Step'**
   String get nextStep;
-
-  /// No description provided for @doesItSparkJoy.
-  ///
-  /// In en, this message translates to:
-  /// **'Does this item spark joy?'**
-  String get doesItSparkJoy;
 
   /// No description provided for @joyQuestionDescription.
   ///
@@ -620,23 +674,11 @@ abstract class AppLocalizations {
   /// **'How would you like to let go of this item?'**
   String get selectLetGoRoute;
 
-  /// No description provided for @routeResell.
-  ///
-  /// In en, this message translates to:
-  /// **'Resell'**
-  String get routeResell;
-
   /// No description provided for @routeResellDescription.
   ///
   /// In en, this message translates to:
   /// **'Sell to someone who will appreciate it'**
   String get routeResellDescription;
-
-  /// No description provided for @routeDonation.
-  ///
-  /// In en, this message translates to:
-  /// **'Donation'**
-  String get routeDonation;
 
   /// No description provided for @routeDonationDescription.
   ///
@@ -644,23 +686,11 @@ abstract class AppLocalizations {
   /// **'Give to those in need'**
   String get routeDonationDescription;
 
-  /// No description provided for @routeDiscard.
-  ///
-  /// In en, this message translates to:
-  /// **'Discard'**
-  String get routeDiscard;
-
   /// No description provided for @routeDiscardDescription.
   ///
   /// In en, this message translates to:
   /// **'Dispose of responsibly'**
   String get routeDiscardDescription;
-
-  /// No description provided for @routeRecycle.
-  ///
-  /// In en, this message translates to:
-  /// **'Recycle'**
-  String get routeRecycle;
 
   /// No description provided for @routeRecycleDescription.
   ///
@@ -685,6 +715,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{title} — coming next'**
   String comingSoon(String title);
+
+  /// No description provided for @captureItemToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture an item to start decluttering'**
+  String get captureItemToStart;
+
+  /// No description provided for @takePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the picture'**
+  String get takePicture;
+
+  /// No description provided for @itemsCaptured.
+  ///
+  /// In en, this message translates to:
+  /// **'Items captured'**
+  String get itemsCaptured;
+
+  /// No description provided for @nextItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Next item'**
+  String get nextItem;
+
+  /// No description provided for @finishDeclutter.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish declutter'**
+  String get finishDeclutter;
+
+  /// No description provided for @deepCleaningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Cleaning'**
+  String get deepCleaningTitle;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
+
+  /// No description provided for @itemSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Item saved successfully!'**
+  String get itemSaved;
+
+  /// No description provided for @timeToLetGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to Let Go'**
+  String get timeToLetGo;
+
+  /// No description provided for @itemMarkedAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Item marked as {option}'**
+  String itemMarkedAs(String option);
 }
 
 class _AppLocalizationsDelegate

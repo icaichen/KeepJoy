@@ -80,6 +80,18 @@
   "categorySentimental": "Sentimental",
   "categoryBeauty": "Beauty",
 
+  "joyDeclutterTitle": "Joy Declutter",
+  "doesItSparkJoy": "Does this item spark joy?",
+  "yes": "Yes",
+  "no": "No",
+  "next": "Next",
+  "pleaseEnterItemName": "Please enter an item name",
+  "howToLetGo": "How would you like to let it go?",
+  "routeDiscard": "Discard",
+  "routeDonation": "Donation",
+  "routeRecycle": "Recycle",
+  "routeResell": "Resell",
+
   "activeQuickSweep": "Active Quick Sweep",
   "resume": "Resume",
   "pickAnArea": "Pick an area",
@@ -150,6 +162,27 @@
   "@comingSoon": {
     "placeholders": {
       "title": {
+        "type": "String"
+      }
+    }
+  },
+
+  "captureItemToStart": "Capture an item to start decluttering",
+  "takePicture": "Take the picture",
+  "itemsCaptured": "Items captured",
+  "nextItem": "Next item",
+  "finishDeclutter": "Finish declutter",
+
+  "deepCleaningTitle": "Deep Cleaning",
+  "continueButton": "Continue",
+
+  "nextStep": "Next Step",
+  "itemSaved": "Item saved successfully!",
+  "timeToLetGo": "Time to Let Go",
+  "itemMarkedAs": "Item marked as {option}",
+  "@itemMarkedAs": {
+    "placeholders": {
+      "option": {
         "type": "String"
       }
     }
