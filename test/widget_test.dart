@@ -12,8 +12,8 @@ void main() {
   testWidgets('KeepJoy renders dashboard', (WidgetTester tester) async {
     await tester.pumpWidget(const KeepJoyApp());
     await tester.pumpAndSettle();
-    expect(find.text('KeepJoy'), findsOneWidget);
-    expect(find.text('Good Evening'), findsOneWidget);
-    expect(find.text('Core Modules'), findsOneWidget);
+    expect(find.text('Home'), findsWidgets);
+    expect(find.textContaining('Quick Declutter'), findsWidgets);
+    expect(find.textContaining('Joy Declutter'), findsWidgets);
   });
 }

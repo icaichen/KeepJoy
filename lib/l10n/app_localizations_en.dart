@@ -24,6 +24,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get insights => 'Insights';
 
   @override
+  String get profile => 'Profile';
+
+  @override
   String get quote1 =>
       '\"The space in which we live should be for the person we are becoming now, not for the person we were in the past.\" — Marie Kondo';
 
@@ -276,7 +279,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get complete => 'Complete';
 
   @override
-  String get thisMonthProgress => 'This Month\'s Progress';
+  String get recentActivities => 'Recent Activities';
+
+  @override
+  String get thisMonthProgress => 'Recent Activities';
+
+  @override
+  String get streak => 'Streak';
+
+  @override
+  String get itemDecluttered => 'Item Decluttered';
+
+  @override
+  String get roomCleaned => 'Room Cleaned';
+
+  @override
+  String get memoryCreated => 'Memory Created';
+
+  @override
+  String get itemsResell => 'Items Resell';
+
+  @override
+  String get itemsDashboardComingSoon => 'Items dashboard coming soon';
+
+  @override
+  String get memoriesDashboardComingSoon => 'Memories dashboard coming soon';
+
+  @override
+  String get insightsDashboardComingSoon => 'Insights dashboard coming soon';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get startDeclutter => 'Start Declutter';
+
+  @override
+  String get justNow => 'just now';
+
+  @override
+  String minsAgo(int count) {
+    return '$count mins ago';
+  }
+
+  @override
+  String hoursAgo(int count) {
+    return '$count hours ago';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return '$count days ago';
+  }
 
   @override
   String itemsLetGo(int count) {
@@ -341,9 +395,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get itemLetGo => 'You\'ve chosen to let go of this item.';
 
   @override
-  String comingSoon(String title) {
-    return '$title — coming next';
-  }
+  String get comingSoon => 'Coming soon';
 
   @override
   String get captureItemToStart => 'Capture an item to start decluttering';
@@ -393,4 +445,271 @@ class AppLocalizationsEn extends AppLocalizations {
   String started(String when) {
     return 'Started $when';
   }
+
+  @override
+  String get deepCleaningSessionCompleted => 'Deep Cleaning session completed';
+
+  @override
+  String get memoriesTitle => 'Memories';
+
+  @override
+  String get memoriesEmptyTitle => 'No memories yet';
+
+  @override
+  String get memoriesEmptySubtitle =>
+      'Your decluttering journey will create beautiful memories here';
+
+  @override
+  String get memoriesEmptyAction => 'Start decluttering to create memories';
+
+  @override
+  String get memoryDetailTitle => 'Memory Details';
+
+  @override
+  String memoryCreatedOn(String date) {
+    return 'Created on $date';
+  }
+
+  @override
+  String get memoryTypeDecluttering => 'Decluttering';
+
+  @override
+  String get memoryTypeCleaning => 'Cleaning';
+
+  @override
+  String get memoryTypeCustom => 'Custom';
+
+  @override
+  String get memoryAddNote => 'Add a note';
+
+  @override
+  String get memoryEditNote => 'Edit note';
+
+  @override
+  String get memorySaveNote => 'Save note';
+
+  @override
+  String get memoryDeleteMemory => 'Delete memory';
+
+  @override
+  String get memoryDeleteConfirm =>
+      'Are you sure you want to delete this memory?';
+
+  @override
+  String get memoryDeleted => 'Memory deleted';
+
+  @override
+  String get memoryNoteSaved => 'Note saved';
+
+  @override
+  String get memoryShare => 'Share memory';
+
+  @override
+  String get memoryViewPhoto => 'View photo';
+
+  @override
+  String get memoryNoPhoto => 'No photo available';
+
+  @override
+  String memoryFromItem(String itemName) {
+    return 'From: $itemName';
+  }
+
+  @override
+  String memoryCategory(String category) {
+    return 'Category: $category';
+  }
+
+  @override
+  String get memoryRecent => 'Recent';
+
+  @override
+  String get memoryThisWeek => 'This Week';
+
+  @override
+  String get memoryThisMonth => 'This Month';
+
+  @override
+  String get memoryOlder => 'Older';
+
+  @override
+  String get memoryAll => 'All';
+
+  @override
+  String get memoryFilterByType => 'Filter by type';
+
+  @override
+  String get memorySortByDate => 'Sort by date';
+
+  @override
+  String get memorySortByType => 'Sort by type';
+
+  @override
+  String get memoryCreateFromItem => 'Create memory from item';
+
+  @override
+  String get memoryCreateCustom => 'Create custom memory';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get languageSettings => 'Language Settings';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get chinese => '中文 (Chinese)';
+
+  @override
+  String get statistics => 'Statistics';
+
+  @override
+  String get totalItemsDecluttered => 'Total Items Decluttered';
+
+  @override
+  String get sessionsCompleted => 'Sessions Completed';
+
+  @override
+  String get memoriesCreated => 'Memories Created';
+
+  @override
+  String get currentStreak => 'Current Streak';
+
+  @override
+  String days(int count) {
+    return '$count days';
+  }
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get darkMode => 'Dark Mode';
+
+  @override
+  String get lightMode => 'Light Mode';
+
+  @override
+  String get systemDefault => 'System Default';
+
+  @override
+  String get support => 'Support & Information';
+
+  @override
+  String get helpAndSupport => 'Help & Support';
+
+  @override
+  String get aboutApp => 'About KeepJoy';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get termsOfService => 'Terms of Service';
+
+  @override
+  String get rateApp => 'Rate the App';
+
+  @override
+  String get shareApp => 'Share with Friends';
+
+  @override
+  String get data => 'Data Management';
+
+  @override
+  String get exportData => 'Export Data';
+
+  @override
+  String get clearAllData => 'Clear All Data';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get takeBeforePhoto => 'Take Before Photo';
+
+  @override
+  String get skipPhoto => 'Skip';
+
+  @override
+  String get takeAfterPhoto => 'Take After Photo';
+
+  @override
+  String get beforePhoto => 'Before Photo';
+
+  @override
+  String get afterPhoto => 'After Photo';
+
+  @override
+  String get captureBeforeState => 'Capture the current state of your area';
+
+  @override
+  String get captureAfterState => 'Capture the result of your cleaning';
+
+  @override
+  String get howManyItems => 'How many items did you declutter?';
+
+  @override
+  String get focusIndex => 'Focus Index';
+
+  @override
+  String get focusIndexDescription =>
+      'How focused were you during the cleaning?';
+
+  @override
+  String get moodIndex => 'Mood Index';
+
+  @override
+  String get moodIndexDescription => 'How do you feel after the cleaning?';
+
+  @override
+  String get summary => 'Summary';
+
+  @override
+  String get messinessBefore => 'Messiness Before';
+
+  @override
+  String get messinessAfter => 'Messiness After';
+
+  @override
+  String get timeSpent => 'Time Spent';
+
+  @override
+  String get itemsDecluttered => 'Items Decluttered';
+
+  @override
+  String get beforeAndAfter => 'Before & After';
+
+  @override
+  String get aiAnalysis => 'AI Analysis';
+
+  @override
+  String get improvement => 'Improvement';
+
+  @override
+  String get finishCleaning => 'Finish Cleaning';
+
+  @override
+  String get finishCleaningConfirm =>
+      'Are you ready to finish this cleaning session?';
+
+  @override
+  String get enterItemsCount => 'Enter number of items';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get noPhotoTaken => 'No photo taken';
+
+  @override
+  String get messiness => 'Messiness';
 }

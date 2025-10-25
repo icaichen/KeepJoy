@@ -24,6 +24,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get insights => '洞察';
 
   @override
+  String get profile => '个人资料';
+
+  @override
   String get quote1 => '\"我们居住的空间应该是为现在的自己，而不是过去的自己。\" — 近藤麻理惠';
 
   @override
@@ -260,7 +263,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String get complete => '完成';
 
   @override
-  String get thisMonthProgress => '本月进度';
+  String get recentActivities => '最近活动';
+
+  @override
+  String get thisMonthProgress => '最近活动';
+
+  @override
+  String get streak => '连续天数';
+
+  @override
+  String get itemDecluttered => '已整理物品';
+
+  @override
+  String get roomCleaned => '已清洁房间';
+
+  @override
+  String get memoryCreated => '已创建回忆';
+
+  @override
+  String get itemsResell => '待转售物品';
+
+  @override
+  String get itemsDashboardComingSoon => '物品仪表板即将推出';
+
+  @override
+  String get memoriesDashboardComingSoon => '回忆仪表板即将推出';
+
+  @override
+  String get insightsDashboardComingSoon => '洞察仪表板即将推出';
+
+  @override
+  String get ok => '好的';
+
+  @override
+  String get startDeclutter => '开始整理';
+
+  @override
+  String get justNow => '刚刚';
+
+  @override
+  String minsAgo(int count) {
+    return '$count分钟前';
+  }
+
+  @override
+  String hoursAgo(int count) {
+    return '$count小时前';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return '$count天前';
+  }
 
   @override
   String itemsLetGo(int count) {
@@ -323,9 +377,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get itemLetGo => '您已选择放手这件物品。';
 
   @override
-  String comingSoon(String title) {
-    return '$title — 即将推出';
-  }
+  String get comingSoon => '即将推出';
 
   @override
   String get captureItemToStart => '拍摄物品开始整理';
@@ -375,4 +427,267 @@ class AppLocalizationsZh extends AppLocalizations {
   String started(String when) {
     return '开始于$when';
   }
+
+  @override
+  String get deepCleaningSessionCompleted => '深度清理进程已完成';
+
+  @override
+  String get memoriesTitle => '回忆';
+
+  @override
+  String get memoriesEmptyTitle => '还没有回忆';
+
+  @override
+  String get memoriesEmptySubtitle => '您的整理之旅将在这里创造美好的回忆';
+
+  @override
+  String get memoriesEmptyAction => '开始整理以创造回忆';
+
+  @override
+  String get memoryDetailTitle => '回忆详情';
+
+  @override
+  String memoryCreatedOn(String date) {
+    return '创建于 $date';
+  }
+
+  @override
+  String get memoryTypeDecluttering => '整理';
+
+  @override
+  String get memoryTypeCleaning => '清洁';
+
+  @override
+  String get memoryTypeCustom => '自定义';
+
+  @override
+  String get memoryAddNote => '添加备注';
+
+  @override
+  String get memoryEditNote => '编辑备注';
+
+  @override
+  String get memorySaveNote => '保存备注';
+
+  @override
+  String get memoryDeleteMemory => '删除回忆';
+
+  @override
+  String get memoryDeleteConfirm => '您确定要删除这个回忆吗？';
+
+  @override
+  String get memoryDeleted => '回忆已删除';
+
+  @override
+  String get memoryNoteSaved => '备注已保存';
+
+  @override
+  String get memoryShare => '分享回忆';
+
+  @override
+  String get memoryViewPhoto => '查看照片';
+
+  @override
+  String get memoryNoPhoto => '暂无照片';
+
+  @override
+  String memoryFromItem(String itemName) {
+    return '来自：$itemName';
+  }
+
+  @override
+  String memoryCategory(String category) {
+    return '分类：$category';
+  }
+
+  @override
+  String get memoryRecent => '最近';
+
+  @override
+  String get memoryThisWeek => '本周';
+
+  @override
+  String get memoryThisMonth => '本月';
+
+  @override
+  String get memoryOlder => '更早';
+
+  @override
+  String get memoryAll => '全部';
+
+  @override
+  String get memoryFilterByType => '按类型筛选';
+
+  @override
+  String get memorySortByDate => '按日期排序';
+
+  @override
+  String get memorySortByType => '按类型排序';
+
+  @override
+  String get memoryCreateFromItem => '从物品创建回忆';
+
+  @override
+  String get memoryCreateCustom => '创建自定义回忆';
+
+  @override
+  String get language => '语言';
+
+  @override
+  String get languageSettings => '语言设置';
+
+  @override
+  String get english => 'English (英语)';
+
+  @override
+  String get chinese => '中文';
+
+  @override
+  String get statistics => '统计数据';
+
+  @override
+  String get totalItemsDecluttered => '已整理物品总数';
+
+  @override
+  String get sessionsCompleted => '已完成会话';
+
+  @override
+  String get memoriesCreated => '已创建回忆';
+
+  @override
+  String get currentStreak => '当前连续天数';
+
+  @override
+  String days(int count) {
+    return '$count 天';
+  }
+
+  @override
+  String get settings => '设置';
+
+  @override
+  String get notifications => '通知';
+
+  @override
+  String get theme => '主题';
+
+  @override
+  String get darkMode => '深色模式';
+
+  @override
+  String get lightMode => '浅色模式';
+
+  @override
+  String get systemDefault => '跟随系统';
+
+  @override
+  String get support => '支持与信息';
+
+  @override
+  String get helpAndSupport => '帮助与支持';
+
+  @override
+  String get aboutApp => '关于 KeepJoy';
+
+  @override
+  String get privacyPolicy => '隐私政策';
+
+  @override
+  String get termsOfService => '服务条款';
+
+  @override
+  String get rateApp => '给应用评分';
+
+  @override
+  String get shareApp => '分享给朋友';
+
+  @override
+  String get data => '数据管理';
+
+  @override
+  String get exportData => '导出数据';
+
+  @override
+  String get clearAllData => '清除所有数据';
+
+  @override
+  String get version => '版本';
+
+  @override
+  String get takeBeforePhoto => '拍摄清理前照片';
+
+  @override
+  String get skipPhoto => '跳过';
+
+  @override
+  String get takeAfterPhoto => '拍摄清理后照片';
+
+  @override
+  String get beforePhoto => '清理前';
+
+  @override
+  String get afterPhoto => '清理后';
+
+  @override
+  String get captureBeforeState => '拍摄区域当前状态';
+
+  @override
+  String get captureAfterState => '拍摄清理后的成果';
+
+  @override
+  String get howManyItems => '您整理了多少件物品？';
+
+  @override
+  String get focusIndex => '专注度';
+
+  @override
+  String get focusIndexDescription => '清理过程中您的专注程度如何？';
+
+  @override
+  String get moodIndex => '心情指数';
+
+  @override
+  String get moodIndexDescription => '清理后您的心情如何？';
+
+  @override
+  String get summary => '总结';
+
+  @override
+  String get messinessBefore => '清理前凌乱度';
+
+  @override
+  String get messinessAfter => '清理后凌乱度';
+
+  @override
+  String get timeSpent => '用时';
+
+  @override
+  String get itemsDecluttered => '已整理物品';
+
+  @override
+  String get beforeAndAfter => '前后对比';
+
+  @override
+  String get aiAnalysis => 'AI 分析';
+
+  @override
+  String get improvement => '改善程度';
+
+  @override
+  String get finishCleaning => '结束清理';
+
+  @override
+  String get finishCleaningConfirm => '您确定要结束这次清理吗？';
+
+  @override
+  String get enterItemsCount => '输入物品数量';
+
+  @override
+  String get done => '完成';
+
+  @override
+  String get noPhotoTaken => '未拍摄照片';
+
+  @override
+  String get messiness => '凌乱度';
 }

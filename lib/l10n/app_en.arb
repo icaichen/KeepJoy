@@ -10,6 +10,7 @@
   "items": "Items",
   "memories": "Memories",
   "insights": "Insights",
+  "profile": "Profile",
 
   "quote1": "\"The space in which we live should be for the person we are becoming now, not for the person we were in the past.\" — Marie Kondo",
   "quote2": "\"Outer order contributes to inner calm.\" — Gretchen Rubin",
@@ -109,7 +110,43 @@
   "minimize": "Minimize",
   "complete": "Complete",
 
-  "thisMonthProgress": "This Month's Progress",
+  "recentActivities": "Recent Activities",
+  "thisMonthProgress": "Recent Activities",
+  "streak": "Streak",
+  "itemDecluttered": "Item Decluttered",
+  "roomCleaned": "Room Cleaned",
+  "memoryCreated": "Memory Created",
+  "itemsResell": "Items Resell",
+  "itemsDashboardComingSoon": "Items dashboard coming soon",
+  "memoriesDashboardComingSoon": "Memories dashboard coming soon",
+  "insightsDashboardComingSoon": "Insights dashboard coming soon",
+  "ok": "OK",
+  "startDeclutter": "Start Declutter",
+  "justNow": "just now",
+  "minsAgo": "{count} mins ago",
+  "@minsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{count} hours ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{count} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "itemsLetGo": "Items let go: {count}",
   "@itemsLetGo": {
     "placeholders": {
@@ -158,14 +195,7 @@
   "joyDeclutterComplete": "Joy Declutter session complete!",
   "itemLetGo": "You've chosen to let go of this item.",
 
-  "comingSoon": "{title} — coming next",
-  "@comingSoon": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
+  "comingSoon": "Coming soon",
 
   "captureItemToStart": "Capture an item to start decluttering",
   "takePicture": "Take the picture",
@@ -202,5 +232,124 @@
     }
   },
 
-  "deepCleaningSessionCompleted": "Deep Cleaning session completed"
+  "deepCleaningSessionCompleted": "Deep Cleaning session completed",
+
+  "memoriesTitle": "Memories",
+  "memoriesEmptyTitle": "No memories yet",
+  "memoriesEmptySubtitle": "Your decluttering journey will create beautiful memories here",
+  "memoriesEmptyAction": "Start decluttering to create memories",
+  "memoryDetailTitle": "Memory Details",
+  "memoryCreatedOn": "Created on {date}",
+  "@memoryCreatedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "memoryTypeDecluttering": "Decluttering",
+  "memoryTypeCleaning": "Cleaning",
+  "memoryTypeCustom": "Custom",
+  "memoryAddNote": "Add a note",
+  "memoryEditNote": "Edit note",
+  "memorySaveNote": "Save note",
+  "memoryDeleteMemory": "Delete memory",
+  "memoryDeleteConfirm": "Are you sure you want to delete this memory?",
+  "memoryDeleted": "Memory deleted",
+  "memoryNoteSaved": "Note saved",
+  "memoryShare": "Share memory",
+  "memoryViewPhoto": "View photo",
+  "memoryNoPhoto": "No photo available",
+  "memoryFromItem": "From: {itemName}",
+  "@memoryFromItem": {
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+  "memoryCategory": "Category: {category}",
+  "@memoryCategory": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "memoryRecent": "Recent",
+  "memoryThisWeek": "This Week",
+  "memoryThisMonth": "This Month",
+  "memoryOlder": "Older",
+  "memoryAll": "All",
+  "memoryFilterByType": "Filter by type",
+  "memorySortByDate": "Sort by date",
+  "memorySortByType": "Sort by type",
+  "memoryCreateFromItem": "Create memory from item",
+  "memoryCreateCustom": "Create custom memory",
+
+  "language": "Language",
+  "languageSettings": "Language Settings",
+  "english": "English",
+  "chinese": "中文 (Chinese)",
+
+  "statistics": "Statistics",
+  "totalItemsDecluttered": "Total Items Decluttered",
+  "sessionsCompleted": "Sessions Completed",
+  "memoriesCreated": "Memories Created",
+  "currentStreak": "Current Streak",
+  "days": "{count} days",
+  "@days": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "settings": "Settings",
+  "notifications": "Notifications",
+  "theme": "Theme",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode",
+  "systemDefault": "System Default",
+
+  "support": "Support & Information",
+  "helpAndSupport": "Help & Support",
+  "aboutApp": "About KeepJoy",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service",
+  "rateApp": "Rate the App",
+  "shareApp": "Share with Friends",
+
+  "data": "Data Management",
+  "exportData": "Export Data",
+  "clearAllData": "Clear All Data",
+  "version": "Version",
+
+  "takeBeforePhoto": "Take Before Photo",
+  "skipPhoto": "Skip",
+  "takeAfterPhoto": "Take After Photo",
+  "beforePhoto": "Before Photo",
+  "afterPhoto": "After Photo",
+  "captureBeforeState": "Capture the current state of your area",
+  "captureAfterState": "Capture the result of your cleaning",
+  "howManyItems": "How many items did you declutter?",
+  "focusIndex": "Focus Index",
+  "focusIndexDescription": "How focused were you during the cleaning?",
+  "moodIndex": "Mood Index",
+  "moodIndexDescription": "How do you feel after the cleaning?",
+  "summary": "Summary",
+  "messinessBefore": "Messiness Before",
+  "messinessAfter": "Messiness After",
+  "timeSpent": "Time Spent",
+  "itemsDecluttered": "Items Decluttered",
+  "beforeAndAfter": "Before & After",
+  "aiAnalysis": "AI Analysis",
+  "improvement": "Improvement",
+  "finishCleaning": "Finish Cleaning",
+  "finishCleaningConfirm": "Are you ready to finish this cleaning session?",
+  "enterItemsCount": "Enter number of items",
+  "done": "Done",
+  "noPhotoTaken": "No photo taken",
+  "messiness": "Messiness"
 }

@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../models/declutter_item.dart';
 
 class QuickDeclutterFlowPage extends StatefulWidget {
-  const QuickDeclutterFlowPage({super.key});
+  const QuickDeclutterFlowPage({super.key, required this.onItemCreated});
+
+  final void Function(DeclutterItem item) onItemCreated;
 
   @override
   State<QuickDeclutterFlowPage> createState() => _QuickDeclutterFlowPageState();
@@ -17,66 +20,106 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   bool _isProcessing = false;
   int _itemsCaptured = 0;
 
-  void _takePicture() {
-    // Temporary: Navigate to review page to see the layout
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const _PhotoReviewPage(photoPath: ''),
-      ),
-    );
+  Future<void> _takePicture() async {
+    setState(() => _isProcessing = true);
+
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+
+      if (photo != null && mounted) {
+        final result = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => _QuickItemReviewPage(
+              photoPath: photo.path,
+              onItemCreated: widget.onItemCreated,
+            ),
+          ),
+        );
+        if (result == true && mounted) {
+          setState(() => _itemsCaptured += 1);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.couldNotAccessCamera),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.quickDeclutterTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.quickDeclutterTitle), centerTitle: false),
       body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Items captured section
             Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    Text(l10n.itemsCaptured),
-                    Text('$_itemsCaptured'),
-                  ],
+              child: ListTile(
+                leading: const Icon(Icons.inbox_outlined),
+                title: Text(l10n.itemsCaptured),
+                trailing: Text(
+                  '$_itemsCaptured',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
             ),
-            SizedBox(height: screenHeight * 0.02),
-            // Main section
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.camera_alt,
-                      size: 80,
-                    ),
-                    SizedBox(height: 20),
-                    Text(l10n.captureItemToStart),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _isProcessing ? null : _takePicture,
-                      child: _isProcessing
-                          ? const CircularProgressIndicator()
-                          : Text(l10n.takePicture),
-                    ),
-                  ],
+            const SizedBox(height: 20),
+            Expanded(
+              child: Card(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.camera_alt, size: 80),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.captureItemToStart,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(height: 1.4),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: _isProcessing ? null : _takePicture,
+                        icon: _isProcessing
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.photo_camera),
+                        label: Text(l10n.takePicture),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              isChinese
+                  ? '使用「快速整理」拍照記錄待處理物品。'
+                  : 'Use Quick Declutter to capture items that still need decisions.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),
@@ -85,97 +128,160 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   }
 }
 
-// Photo review page
-class _PhotoReviewPage extends StatelessWidget {
-  final String photoPath;
+class _QuickItemReviewPage extends StatefulWidget {
+  const _QuickItemReviewPage({
+    required this.photoPath,
+    required this.onItemCreated,
+  });
 
-  const _PhotoReviewPage({required this.photoPath});
+  final String photoPath;
+  final void Function(DeclutterItem item) onItemCreated;
+
+  @override
+  State<_QuickItemReviewPage> createState() => _QuickItemReviewPageState();
+}
+
+class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
+  final TextEditingController _nameController = TextEditingController();
+  DeclutterCategory _selectedCategory = DeclutterCategory.miscellaneous;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _retake() {
+    Navigator.of(context).pop(false);
+  }
+
+  Future<void> _saveAndReturn({required bool finish}) async {
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
+    final name = _nameController.text.trim().isEmpty
+        ? (isChinese ? '未命名物品' : 'Unnamed item')
+        : _nameController.text.trim();
+
+    final item = DeclutterItem(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      name: name,
+      category: _selectedCategory,
+      createdAt: DateTime.now(),
+      status: DeclutterStatus.pending,
+      photoPath: widget.photoPath,
+    );
+
+    widget.onItemCreated(item);
+
+    if (!finish) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isChinese ? '已加入待整理清單' : 'Added to To Declutter list'),
+        ),
+      );
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } else {
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        Navigator.of(context).pop();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.quickDeclutterTitle),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            // Main section with photo and item details
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    // Photo area
-                    Container(
-                      width: double.infinity,
-                      height: screenHeight * 0.3,
+      appBar: AppBar(title: Text(l10n.quickDeclutterTitle), centerTitle: false),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Card(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: widget.photoPath.isEmpty
+                  ? Container(
+                      height: size.height * 0.3,
+                      alignment: Alignment.center,
                       color: Colors.grey[300],
-                      child: photoPath.isEmpty
-                          ? Center(child: Text('Photo placeholder'))
-                          : Image.file(
-                              File(photoPath),
-                              width: double.infinity,
-                              height: screenHeight * 0.3,
-                              fit: BoxFit.cover,
-                            ),
+                      child: const Icon(Icons.photo, size: 48),
+                    )
+                  : Image.file(
+                      File(widget.photoPath),
+                      height: size.height * 0.3,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
                     ),
-                    SizedBox(height: screenHeight * 0.02),
-                    // Item details area
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l10n.itemName),
-                        SizedBox(height: 8),
-                        Text(l10n.category),
-                      ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.itemName,
+                      hintText: l10n.itemName,
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: 20),
+                  DropdownMenu<DeclutterCategory>(
+                    initialSelection: _selectedCategory,
+                    label: Text(l10n.category),
+                    dropdownMenuEntries: DeclutterCategory.values
+                        .map(
+                          (category) => DropdownMenuEntry(
+                            value: category,
+                            label: category.label(context),
+                          ),
+                        )
+                        .toList(),
+                    onSelected: (value) {
+                      if (value != null) {
+                        setState(() => _selectedCategory = value);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _retake,
+                  child: Text(l10n.retakePhoto),
                 ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            // Retake and Next item section
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        child: Text(l10n.retakePhoto),
-                      ),
-                    ),
-                    SizedBox(width: screenWidth * 0.02),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        child: Text(l10n.nextItem),
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => _saveAndReturn(finish: false),
+                  child: Text(l10n.nextItem),
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _saveAndReturn(finish: true),
+              child: Text(l10n.finishDeclutter),
             ),
-            SizedBox(height: screenHeight * 0.02),
-            // Finish declutter
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {},
-                child: Text(l10n.finishDeclutter),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

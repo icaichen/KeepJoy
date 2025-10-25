@@ -128,6 +128,12 @@ abstract class AppLocalizations {
   /// **'Insights'**
   String get insights;
 
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
   /// No description provided for @quote1.
   ///
   /// In en, this message translates to:
@@ -596,11 +602,101 @@ abstract class AppLocalizations {
   /// **'Complete'**
   String get complete;
 
+  /// No description provided for @recentActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activities'**
+  String get recentActivities;
+
   /// No description provided for @thisMonthProgress.
   ///
   /// In en, this message translates to:
-  /// **'This Month\'s Progress'**
+  /// **'Recent Activities'**
   String get thisMonthProgress;
+
+  /// No description provided for @streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get streak;
+
+  /// No description provided for @itemDecluttered.
+  ///
+  /// In en, this message translates to:
+  /// **'Item Decluttered'**
+  String get itemDecluttered;
+
+  /// No description provided for @roomCleaned.
+  ///
+  /// In en, this message translates to:
+  /// **'Room Cleaned'**
+  String get roomCleaned;
+
+  /// No description provided for @memoryCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Created'**
+  String get memoryCreated;
+
+  /// No description provided for @itemsResell.
+  ///
+  /// In en, this message translates to:
+  /// **'Items Resell'**
+  String get itemsResell;
+
+  /// No description provided for @itemsDashboardComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Items dashboard coming soon'**
+  String get itemsDashboardComingSoon;
+
+  /// No description provided for @memoriesDashboardComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Memories dashboard coming soon'**
+  String get memoriesDashboardComingSoon;
+
+  /// No description provided for @insightsDashboardComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights dashboard coming soon'**
+  String get insightsDashboardComingSoon;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @startDeclutter.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Declutter'**
+  String get startDeclutter;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get justNow;
+
+  /// No description provided for @minsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} mins ago'**
+  String minsAgo(int count);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hours ago'**
+  String hoursAgo(int count);
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String daysAgo(int count);
 
   /// No description provided for @itemsLetGo.
   ///
@@ -713,8 +809,8 @@ abstract class AppLocalizations {
   /// No description provided for @comingSoon.
   ///
   /// In en, this message translates to:
-  /// **'{title} — coming next'**
-  String comingSoon(String title);
+  /// **'Coming soon'**
+  String get comingSoon;
 
   /// No description provided for @captureItemToStart.
   ///
@@ -805,6 +901,516 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Started {when}'**
   String started(String when);
+
+  /// No description provided for @deepCleaningSessionCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Cleaning session completed'**
+  String get deepCleaningSessionCompleted;
+
+  /// No description provided for @memoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Memories'**
+  String get memoriesTitle;
+
+  /// No description provided for @memoriesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No memories yet'**
+  String get memoriesEmptyTitle;
+
+  /// No description provided for @memoriesEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your decluttering journey will create beautiful memories here'**
+  String get memoriesEmptySubtitle;
+
+  /// No description provided for @memoriesEmptyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start decluttering to create memories'**
+  String get memoriesEmptyAction;
+
+  /// No description provided for @memoryDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Details'**
+  String get memoryDetailTitle;
+
+  /// No description provided for @memoryCreatedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Created on {date}'**
+  String memoryCreatedOn(String date);
+
+  /// No description provided for @memoryTypeDecluttering.
+  ///
+  /// In en, this message translates to:
+  /// **'Decluttering'**
+  String get memoryTypeDecluttering;
+
+  /// No description provided for @memoryTypeCleaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning'**
+  String get memoryTypeCleaning;
+
+  /// No description provided for @memoryTypeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get memoryTypeCustom;
+
+  /// No description provided for @memoryAddNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note'**
+  String get memoryAddNote;
+
+  /// No description provided for @memoryEditNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit note'**
+  String get memoryEditNote;
+
+  /// No description provided for @memorySaveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Save note'**
+  String get memorySaveNote;
+
+  /// No description provided for @memoryDeleteMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete memory'**
+  String get memoryDeleteMemory;
+
+  /// No description provided for @memoryDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this memory?'**
+  String get memoryDeleteConfirm;
+
+  /// No description provided for @memoryDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory deleted'**
+  String get memoryDeleted;
+
+  /// No description provided for @memoryNoteSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Note saved'**
+  String get memoryNoteSaved;
+
+  /// No description provided for @memoryShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share memory'**
+  String get memoryShare;
+
+  /// No description provided for @memoryViewPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'View photo'**
+  String get memoryViewPhoto;
+
+  /// No description provided for @memoryNoPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'No photo available'**
+  String get memoryNoPhoto;
+
+  /// No description provided for @memoryFromItem.
+  ///
+  /// In en, this message translates to:
+  /// **'From: {itemName}'**
+  String memoryFromItem(String itemName);
+
+  /// No description provided for @memoryCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category: {category}'**
+  String memoryCategory(String category);
+
+  /// No description provided for @memoryRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get memoryRecent;
+
+  /// No description provided for @memoryThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get memoryThisWeek;
+
+  /// No description provided for @memoryThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get memoryThisMonth;
+
+  /// No description provided for @memoryOlder.
+  ///
+  /// In en, this message translates to:
+  /// **'Older'**
+  String get memoryOlder;
+
+  /// No description provided for @memoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get memoryAll;
+
+  /// No description provided for @memoryFilterByType.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by type'**
+  String get memoryFilterByType;
+
+  /// No description provided for @memorySortByDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by date'**
+  String get memorySortByDate;
+
+  /// No description provided for @memorySortByType.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by type'**
+  String get memorySortByType;
+
+  /// No description provided for @memoryCreateFromItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Create memory from item'**
+  String get memoryCreateFromItem;
+
+  /// No description provided for @memoryCreateCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Create custom memory'**
+  String get memoryCreateCustom;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Language Settings'**
+  String get languageSettings;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @chinese.
+  ///
+  /// In en, this message translates to:
+  /// **'中文 (Chinese)'**
+  String get chinese;
+
+  /// No description provided for @statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statistics;
+
+  /// No description provided for @totalItemsDecluttered.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Items Decluttered'**
+  String get totalItemsDecluttered;
+
+  /// No description provided for @sessionsCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions Completed'**
+  String get sessionsCompleted;
+
+  /// No description provided for @memoriesCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Memories Created'**
+  String get memoriesCreated;
+
+  /// No description provided for @currentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Streak'**
+  String get currentStreak;
+
+  /// No description provided for @days.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days'**
+  String days(int count);
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @lightMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Mode'**
+  String get lightMode;
+
+  /// No description provided for @systemDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get systemDefault;
+
+  /// No description provided for @support.
+  ///
+  /// In en, this message translates to:
+  /// **'Support & Information'**
+  String get support;
+
+  /// No description provided for @helpAndSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get helpAndSupport;
+
+  /// No description provided for @aboutApp.
+  ///
+  /// In en, this message translates to:
+  /// **'About KeepJoy'**
+  String get aboutApp;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get termsOfService;
+
+  /// No description provided for @rateApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate the App'**
+  String get rateApp;
+
+  /// No description provided for @shareApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Share with Friends'**
+  String get shareApp;
+
+  /// No description provided for @data.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Management'**
+  String get data;
+
+  /// No description provided for @exportData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Data'**
+  String get exportData;
+
+  /// No description provided for @clearAllData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Data'**
+  String get clearAllData;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// No description provided for @takeBeforePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Before Photo'**
+  String get takeBeforePhoto;
+
+  /// No description provided for @skipPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skipPhoto;
+
+  /// No description provided for @takeAfterPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take After Photo'**
+  String get takeAfterPhoto;
+
+  /// No description provided for @beforePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Before Photo'**
+  String get beforePhoto;
+
+  /// No description provided for @afterPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'After Photo'**
+  String get afterPhoto;
+
+  /// No description provided for @captureBeforeState.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture the current state of your area'**
+  String get captureBeforeState;
+
+  /// No description provided for @captureAfterState.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture the result of your cleaning'**
+  String get captureAfterState;
+
+  /// No description provided for @howManyItems.
+  ///
+  /// In en, this message translates to:
+  /// **'How many items did you declutter?'**
+  String get howManyItems;
+
+  /// No description provided for @focusIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Index'**
+  String get focusIndex;
+
+  /// No description provided for @focusIndexDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'How focused were you during the cleaning?'**
+  String get focusIndexDescription;
+
+  /// No description provided for @moodIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Index'**
+  String get moodIndex;
+
+  /// No description provided for @moodIndexDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'How do you feel after the cleaning?'**
+  String get moodIndexDescription;
+
+  /// No description provided for @summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get summary;
+
+  /// No description provided for @messinessBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Messiness Before'**
+  String get messinessBefore;
+
+  /// No description provided for @messinessAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Messiness After'**
+  String get messinessAfter;
+
+  /// No description provided for @timeSpent.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Spent'**
+  String get timeSpent;
+
+  /// No description provided for @itemsDecluttered.
+  ///
+  /// In en, this message translates to:
+  /// **'Items Decluttered'**
+  String get itemsDecluttered;
+
+  /// No description provided for @beforeAndAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Before & After'**
+  String get beforeAndAfter;
+
+  /// No description provided for @aiAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Analysis'**
+  String get aiAnalysis;
+
+  /// No description provided for @improvement.
+  ///
+  /// In en, this message translates to:
+  /// **'Improvement'**
+  String get improvement;
+
+  /// No description provided for @finishCleaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Cleaning'**
+  String get finishCleaning;
+
+  /// No description provided for @finishCleaningConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you ready to finish this cleaning session?'**
+  String get finishCleaningConfirm;
+
+  /// No description provided for @enterItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter number of items'**
+  String get enterItemsCount;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @noPhotoTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'No photo taken'**
+  String get noPhotoTaken;
+
+  /// No description provided for @messiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Messiness'**
+  String get messiness;
 }
 
 class _AppLocalizationsDelegate

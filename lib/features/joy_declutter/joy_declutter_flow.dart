@@ -1,26 +1,60 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../models/declutter_item.dart';
 
 class JoyDeclutterFlowPage extends StatefulWidget {
-  const JoyDeclutterFlowPage({super.key});
+  final Function(DeclutterItem) onItemCompleted;
+
+  const JoyDeclutterFlowPage({super.key, required this.onItemCompleted});
 
   @override
   State<JoyDeclutterFlowPage> createState() => _JoyDeclutterFlowPageState();
 }
 
 class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
-  final bool _isProcessing = false;
+  bool _isProcessing = false;
+  final ImagePicker _picker = ImagePicker();
 
-  void _takePicture() {
-    // Temporary: Navigate to review page to see the layout
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const _PhotoReviewPage(photoPath: ''),
-      ),
-    );
+  Future<void> _takePicture() async {
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+
+      if (photo != null && mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => _PhotoReviewPage(
+              photoPath: photo.path,
+              onItemCompleted: widget.onItemCompleted,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.couldNotAccessCamera),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
   }
 
   @override
@@ -70,10 +104,49 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
 }
 
 // Photo review page
-class _PhotoReviewPage extends StatelessWidget {
+class _PhotoReviewPage extends StatefulWidget {
   final String photoPath;
+  final Function(DeclutterItem) onItemCompleted;
 
-  const _PhotoReviewPage({required this.photoPath});
+  const _PhotoReviewPage({
+    required this.photoPath,
+    required this.onItemCompleted,
+  });
+
+  @override
+  State<_PhotoReviewPage> createState() => _PhotoReviewPageState();
+}
+
+class _PhotoReviewPageState extends State<_PhotoReviewPage> {
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _retakePicture() async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+
+      if (photo != null && mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => _PhotoReviewPage(
+              photoPath: photo.path,
+              onItemCompleted: widget.onItemCompleted,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.couldNotAccessCamera),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,10 +174,10 @@ class _PhotoReviewPage extends StatelessWidget {
                       width: double.infinity,
                       height: screenHeight * 0.3,
                       color: Colors.grey[300],
-                      child: photoPath.isEmpty
+                      child: widget.photoPath.isEmpty
                           ? Center(child: Text('Photo placeholder'))
                           : Image.file(
-                              File(photoPath),
+                              File(widget.photoPath),
                               width: double.infinity,
                               height: screenHeight * 0.3,
                               fit: BoxFit.cover,
@@ -134,7 +207,7 @@ class _PhotoReviewPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: _retakePicture,
                         child: Text(l10n.retakePhoto),
                       ),
                     ),
@@ -144,7 +217,10 @@ class _PhotoReviewPage extends StatelessWidget {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const _JoyQuestionPage(photoPath: ''),
+                              builder: (_) => _JoyQuestionPage(
+                                photoPath: widget.photoPath,
+                                onItemCompleted: widget.onItemCompleted,
+                              ),
                             ),
                           );
                         },
@@ -166,8 +242,12 @@ class _PhotoReviewPage extends StatelessWidget {
 // Joy question page
 class _JoyQuestionPage extends StatelessWidget {
   final String photoPath;
+  final Function(DeclutterItem) onItemCompleted;
 
-  const _JoyQuestionPage({required this.photoPath});
+  const _JoyQuestionPage({
+    required this.photoPath,
+    required this.onItemCompleted,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -225,6 +305,20 @@ class _JoyQuestionPage extends StatelessWidget {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
+                              // Create item with "keep" status
+                              final item = DeclutterItem(
+                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                                name: 'Item',
+                                category: DeclutterCategory.miscellaneous,
+                                createdAt: DateTime.now(),
+                                status: DeclutterStatus.keep,
+                                photoPath: photoPath,
+                              );
+
+                              // Add item to app state
+                              onItemCompleted(item);
+
+                              // Show success dialog
                               showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
@@ -233,8 +327,10 @@ class _JoyQuestionPage extends StatelessWidget {
                                     TextButton(
                                       onPressed: () {
                                         Navigator.of(context).pop();
+                                        // Pop back to home (through PhotoReview and JoyDeclutterFlow)
+                                        Navigator.of(context).popUntil((route) => route.isFirst);
                                       },
-                                      child: Text('OK'),
+                                      child: Text(l10n.ok),
                                     ),
                                   ],
                                 ),
@@ -262,6 +358,20 @@ class _JoyQuestionPage extends StatelessWidget {
                                           width: double.infinity,
                                           child: ElevatedButton(
                                             onPressed: () {
+                                              // Create item with "discard" status
+                                              final item = DeclutterItem(
+                                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                                                name: 'Item',
+                                                category: DeclutterCategory.miscellaneous,
+                                                createdAt: DateTime.now(),
+                                                status: DeclutterStatus.discard,
+                                                photoPath: photoPath,
+                                              );
+
+                                              // Add item to app state
+                                              onItemCompleted(item);
+
+                                              // Close both dialogs and navigate home
                                               Navigator.of(context).pop();
                                               showDialog(
                                                 context: context,
@@ -271,8 +381,9 @@ class _JoyQuestionPage extends StatelessWidget {
                                                     TextButton(
                                                       onPressed: () {
                                                         Navigator.of(context).pop();
+                                                        Navigator.of(context).popUntil((route) => route.isFirst);
                                                       },
-                                                      child: Text('OK'),
+                                                      child: Text(l10n.ok),
                                                     ),
                                                   ],
                                                 ),
@@ -286,6 +397,20 @@ class _JoyQuestionPage extends StatelessWidget {
                                           width: double.infinity,
                                           child: ElevatedButton(
                                             onPressed: () {
+                                              // Create item with "donate" status
+                                              final item = DeclutterItem(
+                                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                                                name: 'Item',
+                                                category: DeclutterCategory.miscellaneous,
+                                                createdAt: DateTime.now(),
+                                                status: DeclutterStatus.donate,
+                                                photoPath: photoPath,
+                                              );
+
+                                              // Add item to app state
+                                              onItemCompleted(item);
+
+                                              // Close both dialogs and navigate home
                                               Navigator.of(context).pop();
                                               showDialog(
                                                 context: context,
@@ -295,8 +420,9 @@ class _JoyQuestionPage extends StatelessWidget {
                                                     TextButton(
                                                       onPressed: () {
                                                         Navigator.of(context).pop();
+                                                        Navigator.of(context).popUntil((route) => route.isFirst);
                                                       },
-                                                      child: Text('OK'),
+                                                      child: Text(l10n.ok),
                                                     ),
                                                   ],
                                                 ),
@@ -310,6 +436,20 @@ class _JoyQuestionPage extends StatelessWidget {
                                           width: double.infinity,
                                           child: ElevatedButton(
                                             onPressed: () {
+                                              // Create item with "recycle" status
+                                              final item = DeclutterItem(
+                                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                                                name: 'Item',
+                                                category: DeclutterCategory.miscellaneous,
+                                                createdAt: DateTime.now(),
+                                                status: DeclutterStatus.recycle,
+                                                photoPath: photoPath,
+                                              );
+
+                                              // Add item to app state
+                                              onItemCompleted(item);
+
+                                              // Close both dialogs and navigate home
                                               Navigator.of(context).pop();
                                               showDialog(
                                                 context: context,
@@ -319,8 +459,9 @@ class _JoyQuestionPage extends StatelessWidget {
                                                     TextButton(
                                                       onPressed: () {
                                                         Navigator.of(context).pop();
+                                                        Navigator.of(context).popUntil((route) => route.isFirst);
                                                       },
-                                                      child: Text('OK'),
+                                                      child: Text(l10n.ok),
                                                     ),
                                                   ],
                                                 ),
@@ -334,6 +475,20 @@ class _JoyQuestionPage extends StatelessWidget {
                                           width: double.infinity,
                                           child: ElevatedButton(
                                             onPressed: () {
+                                              // Create item with "resell" status
+                                              final item = DeclutterItem(
+                                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                                                name: 'Item',
+                                                category: DeclutterCategory.miscellaneous,
+                                                createdAt: DateTime.now(),
+                                                status: DeclutterStatus.resell,
+                                                photoPath: photoPath,
+                                              );
+
+                                              // Add item to app state
+                                              onItemCompleted(item);
+
+                                              // Close both dialogs and navigate home
                                               Navigator.of(context).pop();
                                               showDialog(
                                                 context: context,
@@ -343,8 +498,9 @@ class _JoyQuestionPage extends StatelessWidget {
                                                     TextButton(
                                                       onPressed: () {
                                                         Navigator.of(context).pop();
+                                                        Navigator.of(context).popUntil((route) => route.isFirst);
                                                       },
-                                                      child: Text('OK'),
+                                                      child: Text(l10n.ok),
                                                     ),
                                                   ],
                                                 ),
