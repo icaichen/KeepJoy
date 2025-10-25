@@ -1,5 +1,26 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+
+/// Sentiment/meaning associated with a memory
+enum MemorySentiment {
+  childhoodMemory('Childhood Memory', '童年回忆'),
+  grownTogether('Grown Together', '伴随成长'),
+  missionCompleted('Mission Completed', '完成使命');
+
+  const MemorySentiment(this.english, this.chinese);
+  final String english;
+  final String chinese;
+
+  String label(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode.toLowerCase().startsWith('zh')) {
+      return chinese;
+    }
+    return english;
+  }
+}
+
 /// Represents a memory created from decluttering activities
 class Memory {
   final String id;
@@ -11,6 +32,7 @@ class Memory {
   final String? itemName;
   final String? category;
   final String? notes;
+  final MemorySentiment? sentiment;
 
   const Memory({
     required this.id,
@@ -22,6 +44,7 @@ class Memory {
     this.itemName,
     this.category,
     this.notes,
+    this.sentiment,
   });
 
   /// Create a memory from a decluttered item
@@ -33,6 +56,7 @@ class Memory {
     String? photoPath,
     String? notes,
     String? description,
+    MemorySentiment? sentiment,
   }) {
     return Memory(
       id: id,
@@ -44,6 +68,7 @@ class Memory {
       itemName: itemName,
       category: category,
       notes: notes,
+      sentiment: sentiment,
     );
   }
 
@@ -70,6 +95,7 @@ class Memory {
     String? description,
     String? photoPath,
     required DateTime createdAt,
+    MemorySentiment? sentiment,
   }) {
     return Memory(
       id: id,
@@ -78,6 +104,7 @@ class Memory {
       photoPath: photoPath,
       createdAt: createdAt,
       type: MemoryType.custom,
+      sentiment: sentiment,
     );
   }
 
@@ -91,6 +118,7 @@ class Memory {
     String? itemName,
     String? category,
     String? notes,
+    MemorySentiment? sentiment,
   }) {
     return Memory(
       id: id ?? this.id,
@@ -102,6 +130,7 @@ class Memory {
       itemName: itemName ?? this.itemName,
       category: category ?? this.category,
       notes: notes ?? this.notes,
+      sentiment: sentiment ?? this.sentiment,
     );
   }
 

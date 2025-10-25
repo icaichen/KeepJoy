@@ -294,7 +294,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roomCleaned => 'Room Cleaned';
 
   @override
-  String get memoryCreated => 'Memory Created';
+  String get memoryCreated => 'Memory created successfully';
 
   @override
   String get itemsResell => 'Items Resell';
@@ -798,4 +798,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get itemStatusUpdated => 'Item status updated';
+
+  @override
+  String get createMemory => 'Create Memory';
+
+  @override
+  String get createMemoryTitle => 'Create a Memory';
+
+  @override
+  String get whatDidThisItemBring => 'What did this item bring you?';
+
+  @override
+  String get sentimentChildhoodMemory => 'Childhood Memory';
+
+  @override
+  String get sentimentGrownTogether => 'Grown Together';
+
+  @override
+  String get sentimentMissionCompleted => 'Mission Completed';
+
+  @override
+  String get memoryDescription => 'Memory Description';
+
+  @override
+  String get describeYourMemory => 'Describe your memory with this item...';
+
+  @override
+  String get createMemoryPrompt =>
+      'Would you like to create a memory for this item?';
+
+  @override
+  String get createMemoryQuestion => 'Create a memory?';
+
+  @override
+  String get skipMemory => 'Skip';
 }

@@ -278,7 +278,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get roomCleaned => '已清洁房间';
 
   @override
-  String get memoryCreated => '已创建回忆';
+  String get memoryCreated => '回忆创建成功';
 
   @override
   String get itemsResell => '待转售物品';
@@ -776,4 +776,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get itemStatusUpdated => '物品状态已更新';
+
+  @override
+  String get createMemory => '创建回忆';
+
+  @override
+  String get createMemoryTitle => '创建回忆';
+
+  @override
+  String get whatDidThisItemBring => '这件物品给你带来了什么？';
+
+  @override
+  String get sentimentChildhoodMemory => '童年回忆';
+
+  @override
+  String get sentimentGrownTogether => '伴随成长';
+
+  @override
+  String get sentimentMissionCompleted => '完成使命';
+
+  @override
+  String get memoryDescription => '回忆描述';
+
+  @override
+  String get describeYourMemory => '描述你与这件物品的回忆...';
+
+  @override
+  String get createMemoryPrompt => '要为这件物品创建回忆吗？';
+
+  @override
+  String get createMemoryQuestion => '创建回忆？';
+
+  @override
+  String get skipMemory => '跳过';
 }

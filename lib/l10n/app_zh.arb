@@ -285,5 +285,18 @@
   "itemDeleted": "物品已删除",
   "deleteItem": "删除物品",
   "deleteItemConfirm": "确定要删除此物品吗？",
-  "itemStatusUpdated": "物品状态已更新"
+  "itemStatusUpdated": "物品状态已更新",
+
+  "createMemory": "创建回忆",
+  "createMemoryTitle": "创建回忆",
+  "whatDidThisItemBring": "这件物品给你带来了什么？",
+  "sentimentChildhoodMemory": "童年回忆",
+  "sentimentGrownTogether": "伴随成长",
+  "sentimentMissionCompleted": "完成使命",
+  "memoryDescription": "回忆描述",
+  "describeYourMemory": "描述你与这件物品的回忆...",
+  "createMemoryPrompt": "要为这件物品创建回忆吗？",
+  "createMemoryQuestion": "创建回忆？",
+  "skipMemory": "跳过",
+  "memoryCreated": "回忆创建成功"
 }

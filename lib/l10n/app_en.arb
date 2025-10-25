@@ -387,5 +387,18 @@
   "itemDeleted": "Item deleted",
   "deleteItem": "Delete Item",
   "deleteItemConfirm": "Are you sure you want to delete this item?",
-  "itemStatusUpdated": "Item status updated"
+  "itemStatusUpdated": "Item status updated",
+
+  "createMemory": "Create Memory",
+  "createMemoryTitle": "Create a Memory",
+  "whatDidThisItemBring": "What did this item bring you?",
+  "sentimentChildhoodMemory": "Childhood Memory",
+  "sentimentGrownTogether": "Grown Together",
+  "sentimentMissionCompleted": "Mission Completed",
+  "memoryDescription": "Memory Description",
+  "describeYourMemory": "Describe your memory with this item...",
+  "createMemoryPrompt": "Would you like to create a memory for this item?",
+  "createMemoryQuestion": "Create a memory?",
+  "skipMemory": "Skip",
+  "memoryCreated": "Memory created successfully"
 }

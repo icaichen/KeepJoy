@@ -166,17 +166,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         _resellItems.insert(0, resellItem);
       }
 
-      // Create a memory from the decluttered item
-      final memory = Memory.fromDeclutteredItem(
-        id: 'memory_${item.id}',
-        itemName: item.name,
-        category: item.category.name,
-        createdAt: item.createdAt,
-        photoPath: item.photoPath,
-        notes: item.notes,
-        description: 'A meaningful moment of letting go',
-      );
-      _memories.insert(0, memory);
+      // Note: Memory creation is now manual via Create Memory button or prompt after Joy Declutter
     });
   }
 
@@ -208,6 +198,7 @@ class _MainNavigatorState extends State<MainNavigator> {
       MaterialPageRoute(
         builder: (_) => JoyDeclutterFlowPage(
           onItemCompleted: _addDeclutteredItem,
+          onMemoryCreated: _onMemoryCreated,
         ),
       ),
     );
@@ -225,6 +216,12 @@ class _MainNavigatorState extends State<MainNavigator> {
       if (index != -1) {
         _memories[index] = memory;
       }
+    });
+  }
+
+  void _onMemoryCreated(Memory memory) {
+    setState(() {
+      _memories.insert(0, memory);
     });
   }
 
@@ -255,6 +252,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         memories: List.unmodifiable(_memories),
         onMemoryDeleted: _onMemoryDeleted,
         onMemoryUpdated: _onMemoryUpdated,
+        onMemoryCreated: _onMemoryCreated,
       ),
       _PlaceholderScreen(title: l10n.insights),
     ];

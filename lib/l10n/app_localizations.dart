@@ -635,7 +635,7 @@ abstract class AppLocalizations {
   /// No description provided for @memoryCreated.
   ///
   /// In en, this message translates to:
-  /// **'Memory Created'**
+  /// **'Memory created successfully'**
   String get memoryCreated;
 
   /// No description provided for @itemsResell.
@@ -1579,6 +1579,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Item status updated'**
   String get itemStatusUpdated;
+
+  /// No description provided for @createMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Memory'**
+  String get createMemory;
+
+  /// No description provided for @createMemoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Memory'**
+  String get createMemoryTitle;
+
+  /// No description provided for @whatDidThisItemBring.
+  ///
+  /// In en, this message translates to:
+  /// **'What did this item bring you?'**
+  String get whatDidThisItemBring;
+
+  /// No description provided for @sentimentChildhoodMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Childhood Memory'**
+  String get sentimentChildhoodMemory;
+
+  /// No description provided for @sentimentGrownTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'Grown Together'**
+  String get sentimentGrownTogether;
+
+  /// No description provided for @sentimentMissionCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mission Completed'**
+  String get sentimentMissionCompleted;
+
+  /// No description provided for @memoryDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Description'**
+  String get memoryDescription;
+
+  /// No description provided for @describeYourMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe your memory with this item...'**
+  String get describeYourMemory;
+
+  /// No description provided for @createMemoryPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Would you like to create a memory for this item?'**
+  String get createMemoryPrompt;
+
+  /// No description provided for @createMemoryQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a memory?'**
+  String get createMemoryQuestion;
+
+  /// No description provided for @skipMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skipMemory;
 }
 
 class _AppLocalizationsDelegate
