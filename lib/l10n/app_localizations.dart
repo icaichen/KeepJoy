@@ -1411,6 +1411,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Messiness'**
   String get messiness;
+
+  /// No description provided for @resellTracker.
+  ///
+  /// In en, this message translates to:
+  /// **'Resell Tracker'**
+  String get resellTracker;
+
+  /// No description provided for @toSell.
+  ///
+  /// In en, this message translates to:
+  /// **'To Sell'**
+  String get toSell;
+
+  /// No description provided for @listing.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing'**
+  String get listing;
+
+  /// No description provided for @sold.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold'**
+  String get sold;
+
+  /// No description provided for @platform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get platform;
+
+  /// No description provided for @sellingPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling Price'**
+  String get sellingPrice;
+
+  /// No description provided for @soldPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold Price'**
+  String get soldPrice;
+
+  /// No description provided for @soldDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold Date'**
+  String get soldDate;
+
+  /// No description provided for @markAsListing.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Listing'**
+  String get markAsListing;
+
+  /// No description provided for @markAsSold.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Sold'**
+  String get markAsSold;
+
+  /// No description provided for @changeStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Status'**
+  String get changeStatus;
+
+  /// No description provided for @enterSellingPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter selling price (optional)'**
+  String get enterSellingPrice;
+
+  /// No description provided for @enterSoldPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter sold price'**
+  String get enterSoldPrice;
+
+  /// No description provided for @soldPriceRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold price is required'**
+  String get soldPriceRequired;
+
+  /// No description provided for @platformXianyu.
+  ///
+  /// In en, this message translates to:
+  /// **'Xianyu'**
+  String get platformXianyu;
+
+  /// No description provided for @platformZhuanzhuan.
+  ///
+  /// In en, this message translates to:
+  /// **'Zhuanzhuan'**
+  String get platformZhuanzhuan;
+
+  /// No description provided for @platformEbay.
+  ///
+  /// In en, this message translates to:
+  /// **'eBay'**
+  String get platformEbay;
+
+  /// No description provided for @platformFacebookMarketplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook Marketplace'**
+  String get platformFacebookMarketplace;
+
+  /// No description provided for @platformCraigslist.
+  ///
+  /// In en, this message translates to:
+  /// **'Craigslist'**
+  String get platformCraigslist;
+
+  /// No description provided for @platformOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get platformOther;
+
+  /// No description provided for @noItemsToSell.
+  ///
+  /// In en, this message translates to:
+  /// **'No items to sell yet'**
+  String get noItemsToSell;
+
+  /// No description provided for @noItemsListing.
+  ///
+  /// In en, this message translates to:
+  /// **'No items currently listed'**
+  String get noItemsListing;
+
+  /// No description provided for @noItemsSold.
+  ///
+  /// In en, this message translates to:
+  /// **'No items sold yet'**
+  String get noItemsSold;
+
+  /// No description provided for @addedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Added on {date}'**
+  String addedOn(String date);
+
+  /// No description provided for @itemDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Item deleted'**
+  String get itemDeleted;
+
+  /// No description provided for @deleteItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Item'**
+  String get deleteItem;
+
+  /// No description provided for @deleteItemConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this item?'**
+  String get deleteItemConfirm;
+
+  /// No description provided for @itemStatusUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Item status updated'**
+  String get itemStatusUpdated;
 }
 
 class _AppLocalizationsDelegate

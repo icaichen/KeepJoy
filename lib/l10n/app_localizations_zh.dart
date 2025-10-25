@@ -690,4 +690,90 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get messiness => '凌乱度';
+
+  @override
+  String get resellTracker => '转售追踪';
+
+  @override
+  String get toSell => '待售';
+
+  @override
+  String get listing => '在售';
+
+  @override
+  String get sold => '售出';
+
+  @override
+  String get platform => '平台';
+
+  @override
+  String get sellingPrice => '售价';
+
+  @override
+  String get soldPrice => '成交价';
+
+  @override
+  String get soldDate => '售出日期';
+
+  @override
+  String get markAsListing => '标记为在售';
+
+  @override
+  String get markAsSold => '标记为售出';
+
+  @override
+  String get changeStatus => '更改状态';
+
+  @override
+  String get enterSellingPrice => '输入售价（可选）';
+
+  @override
+  String get enterSoldPrice => '输入成交价';
+
+  @override
+  String get soldPriceRequired => '成交价为必填项';
+
+  @override
+  String get platformXianyu => '闲鱼';
+
+  @override
+  String get platformZhuanzhuan => '转转';
+
+  @override
+  String get platformEbay => 'eBay';
+
+  @override
+  String get platformFacebookMarketplace => 'Facebook Marketplace';
+
+  @override
+  String get platformCraigslist => 'Craigslist';
+
+  @override
+  String get platformOther => '其他';
+
+  @override
+  String get noItemsToSell => '暂无待售物品';
+
+  @override
+  String get noItemsListing => '暂无在售物品';
+
+  @override
+  String get noItemsSold => '暂无售出物品';
+
+  @override
+  String addedOn(String date) {
+    return '添加于 $date';
+  }
+
+  @override
+  String get itemDeleted => '物品已删除';
+
+  @override
+  String get deleteItem => '删除物品';
+
+  @override
+  String get deleteItemConfirm => '确定要删除此物品吗？';
+
+  @override
+  String get itemStatusUpdated => '物品状态已更新';
 }

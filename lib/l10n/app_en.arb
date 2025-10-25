@@ -351,5 +351,41 @@
   "enterItemsCount": "Enter number of items",
   "done": "Done",
   "noPhotoTaken": "No photo taken",
-  "messiness": "Messiness"
+  "messiness": "Messiness",
+
+  "resellTracker": "Resell Tracker",
+  "toSell": "To Sell",
+  "listing": "Listing",
+  "sold": "Sold",
+  "platform": "Platform",
+  "sellingPrice": "Selling Price",
+  "soldPrice": "Sold Price",
+  "soldDate": "Sold Date",
+  "markAsListing": "Mark as Listing",
+  "markAsSold": "Mark as Sold",
+  "changeStatus": "Change Status",
+  "enterSellingPrice": "Enter selling price (optional)",
+  "enterSoldPrice": "Enter sold price",
+  "soldPriceRequired": "Sold price is required",
+  "platformXianyu": "Xianyu",
+  "platformZhuanzhuan": "Zhuanzhuan",
+  "platformEbay": "eBay",
+  "platformFacebookMarketplace": "Facebook Marketplace",
+  "platformCraigslist": "Craigslist",
+  "platformOther": "Other",
+  "noItemsToSell": "No items to sell yet",
+  "noItemsListing": "No items currently listed",
+  "noItemsSold": "No items sold yet",
+  "addedOn": "Added on {date}",
+  "@addedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "itemDeleted": "Item deleted",
+  "deleteItem": "Delete Item",
+  "deleteItemConfirm": "Are you sure you want to delete this item?",
+  "itemStatusUpdated": "Item status updated"
 }

@@ -712,4 +712,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messiness => 'Messiness';
+
+  @override
+  String get resellTracker => 'Resell Tracker';
+
+  @override
+  String get toSell => 'To Sell';
+
+  @override
+  String get listing => 'Listing';
+
+  @override
+  String get sold => 'Sold';
+
+  @override
+  String get platform => 'Platform';
+
+  @override
+  String get sellingPrice => 'Selling Price';
+
+  @override
+  String get soldPrice => 'Sold Price';
+
+  @override
+  String get soldDate => 'Sold Date';
+
+  @override
+  String get markAsListing => 'Mark as Listing';
+
+  @override
+  String get markAsSold => 'Mark as Sold';
+
+  @override
+  String get changeStatus => 'Change Status';
+
+  @override
+  String get enterSellingPrice => 'Enter selling price (optional)';
+
+  @override
+  String get enterSoldPrice => 'Enter sold price';
+
+  @override
+  String get soldPriceRequired => 'Sold price is required';
+
+  @override
+  String get platformXianyu => 'Xianyu';
+
+  @override
+  String get platformZhuanzhuan => 'Zhuanzhuan';
+
+  @override
+  String get platformEbay => 'eBay';
+
+  @override
+  String get platformFacebookMarketplace => 'Facebook Marketplace';
+
+  @override
+  String get platformCraigslist => 'Craigslist';
+
+  @override
+  String get platformOther => 'Other';
+
+  @override
+  String get noItemsToSell => 'No items to sell yet';
+
+  @override
+  String get noItemsListing => 'No items currently listed';
+
+  @override
+  String get noItemsSold => 'No items sold yet';
+
+  @override
+  String addedOn(String date) {
+    return 'Added on $date';
+  }
+
+  @override
+  String get itemDeleted => 'Item deleted';
+
+  @override
+  String get deleteItem => 'Delete Item';
+
+  @override
+  String get deleteItemConfirm => 'Are you sure you want to delete this item?';
+
+  @override
+  String get itemStatusUpdated => 'Item status updated';
 }

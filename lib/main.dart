@@ -8,9 +8,11 @@ import 'features/joy_declutter/joy_declutter_flow.dart';
 import 'features/quick_declutter/quick_declutter_flow.dart';
 import 'features/memories/memories_page.dart';
 import 'features/profile/profile_page.dart';
+import 'features/resell/resell_tracker_page.dart';
 import 'l10n/app_localizations.dart';
 import 'models/declutter_item.dart';
 import 'models/memory.dart';
+import 'models/resell_item.dart';
 
 // Model for active deep cleaning session
 class DeepCleaningSession {
@@ -125,6 +127,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<DeclutterItem> _pendingItems = [];
   final List<DeclutterItem> _declutteredItems = [];
   final List<Memory> _memories = [];
+  final List<ResellItem> _resellItems = [];
 
   void _startSession(String area) {
     setState(() {
@@ -152,6 +155,17 @@ class _MainNavigatorState extends State<MainNavigator> {
       _declutteredItems.insert(0, item);
       _pendingItems.removeWhere((pending) => pending.id == item.id);
 
+      // If item is marked for resell, create a ResellItem
+      if (item.status == DeclutterStatus.resell) {
+        final resellItem = ResellItem(
+          id: 'resell_${DateTime.now().millisecondsSinceEpoch}',
+          declutterItemId: item.id,
+          status: ResellStatus.toSell,
+          createdAt: DateTime.now(),
+        );
+        _resellItems.insert(0, resellItem);
+      }
+
       // Create a memory from the decluttered item
       final memory = Memory.fromDeclutteredItem(
         id: 'memory_${item.id}',
@@ -163,6 +177,21 @@ class _MainNavigatorState extends State<MainNavigator> {
         description: 'A meaningful moment of letting go',
       );
       _memories.insert(0, memory);
+    });
+  }
+
+  void _updateResellItem(ResellItem item) {
+    setState(() {
+      final index = _resellItems.indexWhere((r) => r.id == item.id);
+      if (index != -1) {
+        _resellItems[index] = item;
+      }
+    });
+  }
+
+  void _deleteResellItem(ResellItem item) {
+    setState(() {
+      _resellItems.removeWhere((r) => r.id == item.id);
     });
   }
 
@@ -216,6 +245,12 @@ class _MainNavigatorState extends State<MainNavigator> {
         pendingItems: List.unmodifiable(_pendingItems),
         declutteredItems: List.unmodifiable(_declutteredItems),
       ),
+      ResellTrackerPage(
+        resellItems: List.unmodifiable(_resellItems),
+        declutteredItems: List.unmodifiable(_declutteredItems),
+        onUpdateResellItem: _updateResellItem,
+        onDeleteResellItem: _deleteResellItem,
+      ),
       MemoriesPage(
         memories: List.unmodifiable(_memories),
         onMemoryDeleted: _onMemoryDeleted,
@@ -246,6 +281,11 @@ class _MainNavigatorState extends State<MainNavigator> {
             icon: const Icon(Icons.grid_view_outlined),
             activeIcon: const Icon(Icons.grid_view),
             label: l10n.items,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.attach_money_outlined),
+            activeIcon: const Icon(Icons.attach_money),
+            label: l10n.resellTracker,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.bookmark_border),
