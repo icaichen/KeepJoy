@@ -687,6 +687,16 @@ class _HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    SizedBox(width: screenWidth * 0.03),
+                    Expanded(
+                      child: Card(
+                        child: Container(
+                          height: screenHeight * 0.15,
+                          alignment: Alignment.center,
+                          child: Text(l10n.newValueCreated),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: screenHeight * 0.015),

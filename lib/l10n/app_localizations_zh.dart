@@ -275,6 +275,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get itemDecluttered => '已整理物品';
 
   @override
+  String get newValueCreated => '新生价值';
+
+  @override
   String get roomCleaned => '已清洁房间';
 
   @override
@@ -809,4 +812,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get skipMemory => '跳过';
+
+  @override
+  String get aiIdentifying => 'AI识别中...';
+
+  @override
+  String get aiSuggested => 'AI建议';
+
+  @override
+  String get getDetailedInfo => '获取详细信息';
+
+  @override
+  String get aiIdentificationFailed => 'AI识别失败';
+
+  @override
+  String get tryAgain => '重试';
 }

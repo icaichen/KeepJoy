@@ -626,6 +626,12 @@ abstract class AppLocalizations {
   /// **'Item Decluttered'**
   String get itemDecluttered;
 
+  /// No description provided for @newValueCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'New Value Created'**
+  String get newValueCreated;
+
   /// No description provided for @roomCleaned.
   ///
   /// In en, this message translates to:
@@ -1645,6 +1651,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skip'**
   String get skipMemory;
+
+  /// No description provided for @aiIdentifying.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Identifying...'**
+  String get aiIdentifying;
+
+  /// No description provided for @aiSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'AI suggested'**
+  String get aiSuggested;
+
+  /// No description provided for @getDetailedInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Get detailed info'**
+  String get getDetailedInfo;
+
+  /// No description provided for @aiIdentificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'AI identification failed'**
+  String get aiIdentificationFailed;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
 }
 
 class _AppLocalizationsDelegate

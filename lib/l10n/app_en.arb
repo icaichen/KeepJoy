@@ -114,6 +114,7 @@
   "thisMonthProgress": "Recent Activities",
   "streak": "Streak",
   "itemDecluttered": "Item Decluttered",
+  "newValueCreated": "New Value Created",
   "roomCleaned": "Room Cleaned",
   "memoryCreated": "Memory Created",
   "itemsResell": "Items Resell",
@@ -400,5 +401,11 @@
   "createMemoryPrompt": "Would you like to create a memory for this item?",
   "createMemoryQuestion": "Create a memory?",
   "skipMemory": "Skip",
-  "memoryCreated": "Memory created successfully"
+  "memoryCreated": "Memory created successfully",
+
+  "aiIdentifying": "AI Identifying...",
+  "aiSuggested": "AI suggested",
+  "getDetailedInfo": "Get detailed info",
+  "aiIdentificationFailed": "AI identification failed",
+  "tryAgain": "Try again"
 }

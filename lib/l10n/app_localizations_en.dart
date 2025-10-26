@@ -291,6 +291,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get itemDecluttered => 'Item Decluttered';
 
   @override
+  String get newValueCreated => 'New Value Created';
+
+  @override
   String get roomCleaned => 'Room Cleaned';
 
   @override
@@ -832,4 +835,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get skipMemory => 'Skip';
+
+  @override
+  String get aiIdentifying => 'AI Identifying...';
+
+  @override
+  String get aiSuggested => 'AI suggested';
+
+  @override
+  String get getDetailedInfo => 'Get detailed info';
+
+  @override
+  String get aiIdentificationFailed => 'AI identification failed';
+
+  @override
+  String get tryAgain => 'Try again';
 }

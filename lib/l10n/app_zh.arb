@@ -103,6 +103,7 @@
   "thisMonthProgress": "最近活动",
   "streak": "连续天数",
   "itemDecluttered": "已整理物品",
+  "newValueCreated": "新生价值",
   "roomCleaned": "已清洁房间",
   "memoryCreated": "已创建回忆",
   "itemsResell": "待转售物品",
@@ -298,5 +299,11 @@
   "createMemoryPrompt": "要为这件物品创建回忆吗？",
   "createMemoryQuestion": "创建回忆？",
   "skipMemory": "跳过",
-  "memoryCreated": "回忆创建成功"
+  "memoryCreated": "回忆创建成功",
+
+  "aiIdentifying": "AI识别中...",
+  "aiSuggested": "AI建议",
+  "getDetailedInfo": "获取详细信息",
+  "aiIdentificationFailed": "AI识别失败",
+  "tryAgain": "重试"
 }

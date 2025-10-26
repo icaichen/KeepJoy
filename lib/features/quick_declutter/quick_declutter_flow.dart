@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/declutter_item.dart';
+import '../../services/ai_identification_service.dart';
 
 class QuickDeclutterFlowPage extends StatefulWidget {
   const QuickDeclutterFlowPage({super.key, required this.onItemCreated});
@@ -144,11 +145,87 @@ class _QuickItemReviewPage extends StatefulWidget {
 class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
   final TextEditingController _nameController = TextEditingController();
   DeclutterCategory _selectedCategory = DeclutterCategory.miscellaneous;
+  final AIIdentificationService _aiService = AIIdentificationService();
+
+  bool _isIdentifying = false;
+  bool _isAISuggested = false;
+  AIIdentificationResult? _aiResult;
+
+  @override
+  void initState() {
+    super.initState();
+    _identifyItem();
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  Future<void> _identifyItem() async {
+    setState(() => _isIdentifying = true);
+
+    try {
+      final locale = Localizations.localeOf(context).languageCode;
+      print('🎯 Quick Declutter: Starting AI identification, locale: $locale');
+
+      final result = await _aiService.identifyBasic(widget.photoPath, locale);
+
+      print('🎯 Quick Declutter: AI result received: ${result != null ? "name=${result.itemName}, category=${result.suggestedCategory}" : "null"}');
+
+      if (result != null && mounted) {
+        setState(() {
+          _aiResult = result;
+          _nameController.text = result.itemName;
+          _selectedCategory = result.suggestedCategory;
+          _isAISuggested = true;
+        });
+        print('🎯 Quick Declutter: UI updated with AI result');
+      }
+    } catch (e) {
+      print('❌ Quick Declutter: AI identification error: $e');
+      // Silently fail - user can still enter manually
+    } finally {
+      if (mounted) {
+        setState(() => _isIdentifying = false);
+      }
+    }
+  }
+
+  Future<void> _getDetailedInfo() async {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
+
+    setState(() => _isIdentifying = true);
+
+    try {
+      final result = await _aiService.identifyDetailed(widget.photoPath, locale);
+      if (result != null && mounted) {
+        setState(() {
+          _aiResult = result;
+          _nameController.text = result.itemName;
+          _selectedCategory = result.suggestedCategory;
+          _isAISuggested = true;
+        });
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.aiIdentificationFailed)),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.aiIdentificationFailed)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isIdentifying = false);
+      }
+    }
   }
 
   void _retake() {
@@ -231,7 +308,28 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                     decoration: InputDecoration(
                       labelText: l10n.itemName,
                       hintText: l10n.itemName,
+                      suffixIcon: _isIdentifying
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            )
+                          : _isAISuggested
+                              ? Tooltip(
+                                  message: l10n.aiSuggested,
+                                  child: const Icon(Icons.auto_awesome, size: 20),
+                                )
+                              : null,
                     ),
+                    onChanged: (_) {
+                      // User edited, no longer AI suggested
+                      if (_isAISuggested) {
+                        setState(() => _isAISuggested = false);
+                      }
+                    },
                   ),
                   const SizedBox(height: 20),
                   DropdownMenu<DeclutterCategory>(
@@ -251,6 +349,14 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                       }
                     },
                   ),
+                  if (_aiResult?.method == 'on-device') ...[
+                    const SizedBox(height: 16),
+                    TextButton.icon(
+                      onPressed: _isIdentifying ? null : _getDetailedInfo,
+                      icon: const Icon(Icons.search, size: 18),
+                      label: Text(l10n.getDetailedInfo),
+                    ),
+                  ],
                 ],
               ),
             ),
