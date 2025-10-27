@@ -251,6 +251,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joyDeclutterTitle => 'Joy Declutter';
 
   @override
+  String get joyDeclutterSubtitle => 'Start guided session';
+
+  @override
+  String get quickDeclutterSubtitle => '15-min timer session';
+
+  @override
+  String get deepCleaningSubtitle => 'Photo-based cleaning';
+
+  @override
   String get doesItSparkJoy => 'Does this item spark joy?';
 
   @override

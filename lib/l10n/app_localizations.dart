@@ -542,6 +542,24 @@ abstract class AppLocalizations {
   /// **'Joy Declutter'**
   String get joyDeclutterTitle;
 
+  /// No description provided for @joyDeclutterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start guided session'**
+  String get joyDeclutterSubtitle;
+
+  /// No description provided for @quickDeclutterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'15-min timer session'**
+  String get quickDeclutterSubtitle;
+
+  /// No description provided for @deepCleaningSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo-based cleaning'**
+  String get deepCleaningSubtitle;
+
   /// No description provided for @doesItSparkJoy.
   ///
   /// In en, this message translates to:

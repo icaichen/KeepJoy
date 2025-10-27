@@ -25,10 +25,10 @@ class DeepCleaningSession {
   String? afterPhotoPath;
   int? elapsedSeconds;
   int? itemsCount;
-  int? focusIndex;  // 1-10
-  int? moodIndex;   // 1-10
-  double? beforeMessinessIndex;  // AI analysis
-  double? afterMessinessIndex;   // AI analysis
+  int? focusIndex; // 1-10
+  int? moodIndex; // 1-10
+  double? beforeMessinessIndex; // AI analysis
+  double? afterMessinessIndex; // AI analysis
 
   DeepCleaningSession({
     required this.area,
@@ -132,15 +132,18 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<Memory> _memories = [];
   final List<ResellItem> _resellItems = [];
   final List<PlannedSession> _plannedSessions = [];
-  final Set<String> _activityDates = {}; // Track dates when user was active (format: yyyy-MM-dd)
+  final Set<String> _activityDates =
+      {}; // Track dates when user was active (format: yyyy-MM-dd)
 
   // Calculate streak (consecutive days of activity)
   int _calculateStreak() {
     if (_activityDates.isEmpty) return 0;
 
-    final sortedDates = _activityDates.toList()..sort((a, b) => b.compareTo(a)); // Sort descending
+    final sortedDates = _activityDates.toList()
+      ..sort((a, b) => b.compareTo(a)); // Sort descending
     final today = DateTime.now();
-    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
     int streak = 0;
     DateTime checkDate = today;
@@ -153,7 +156,8 @@ class _MainNavigatorState extends State<MainNavigator> {
 
     // Count backwards from most recent activity
     while (true) {
-      final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
+      final checkDateStr =
+          '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
       if (_activityDates.contains(checkDateStr)) {
         streak++;
         checkDate = checkDate.subtract(const Duration(days: 1));
@@ -172,7 +176,7 @@ class _MainNavigatorState extends State<MainNavigator> {
 
     return _declutteredItems.where((item) {
       return item.createdAt.isAfter(monthStart) &&
-             item.createdAt.isBefore(now.add(const Duration(days: 1)));
+          item.createdAt.isBefore(now.add(const Duration(days: 1)));
     }).length;
   }
 
@@ -182,18 +186,21 @@ class _MainNavigatorState extends State<MainNavigator> {
     final monthStart = DateTime(now.year, now.month, 1);
 
     return _resellItems
-        .where((item) =>
-            item.status == ResellStatus.sold &&
-            item.soldDate != null &&
-            item.soldDate!.isAfter(monthStart) &&
-            item.soldDate!.isBefore(now.add(const Duration(days: 1))))
+        .where(
+          (item) =>
+              item.status == ResellStatus.sold &&
+              item.soldDate != null &&
+              item.soldDate!.isAfter(monthStart) &&
+              item.soldDate!.isBefore(now.add(const Duration(days: 1))),
+        )
         .fold(0.0, (sum, item) => sum + (item.soldPrice ?? 0.0));
   }
 
   // Record activity for today
   void _recordActivity() {
     final today = DateTime.now();
-    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
     setState(() {
       _activityDates.add(todayStr);
@@ -514,8 +521,18 @@ class _HomeScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -604,9 +621,9 @@ class _HomeScreen extends StatelessWidget {
           children: [
             Text(
               _getGreeting(l10n),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             Text(
               l10n.readyToSparkJoy,
@@ -662,20 +679,22 @@ class _HomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           l10n.welcomeBack,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                          ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           _getDailyTagline(l10n),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            height: 1.5,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                height: 1.5,
+                              ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -698,16 +717,18 @@ class _HomeScreen extends StatelessWidget {
                           children: [
                             Text(
                               l10n.thisMonthProgress,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                             ),
                             Text(
                               _formatDate(DateTime.now()),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.8),
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                  ),
                             ),
                           ],
                         ),
@@ -747,7 +768,10 @@ class _HomeScreen extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
                     child: Row(
                       children: [
                         Container(
@@ -770,17 +794,21 @@ class _HomeScreen extends StatelessWidget {
                             children: [
                               Text(
                                 l10n.streakAchievement,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 l10n.daysStreak(streak),
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                    ),
                               ),
                             ],
                           ),
@@ -799,132 +827,136 @@ class _HomeScreen extends StatelessWidget {
             SizedBox(height: screenHeight * 0.03),
 
             // Continue Your Session section (only show if active session exists)
-              if (activeSession != null)
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+            if (activeSession != null)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       'Continue Your Session',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  SizedBox(height: screenHeight * 0.015),
-                  Card(
-                    child: Container(
-                      padding: EdgeInsets.all(screenWidth * 0.04),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              // House icon on the left
-                              Container(
-                                width: screenWidth * 0.12,
-                                height: screenWidth * 0.12,
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  shape: BoxShape.circle,
+                    SizedBox(height: screenHeight * 0.015),
+                    Card(
+                      child: Container(
+                        padding: EdgeInsets.all(screenWidth * 0.04),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                // House icon on the left
+                                Container(
+                                  width: screenWidth * 0.12,
+                                  height: screenWidth * 0.12,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(Icons.home, color: Colors.white),
                                 ),
-                                child: Icon(Icons.home, color: Colors.white),
-                              ),
-                              SizedBox(width: screenWidth * 0.03),
-                              // Area and started info
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${activeSession!.area} Deep Cleaning',
-                                    ),
-                                    Text(
-                                      l10n.started(
-                                        _getTimeAgo(
-                                          context,
-                                          activeSession!.startTime,
-                                        ),
+                                SizedBox(width: screenWidth * 0.03),
+                                // Area and started info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${activeSession!.area} Deep Cleaning',
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // In Progress badge
-                              Text(l10n.inProgress),
-                            ],
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          // Continue Session and Stop buttons
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Card(
-                                  child: InkWell(
-                                    onTap: () {
-                                      // Navigate back to timer
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => DeepCleaningTimerPage(
-                                            area: activeSession!.area,
-                                            beforePhotoPath: activeSession!.beforePhotoPath,
-                                            onStopSession: onStopSession,
+                                      Text(
+                                        l10n.started(
+                                          _getTimeAgo(
+                                            context,
+                                            activeSession!.startTime,
                                           ),
                                         ),
-                                      );
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.all(
-                                        screenWidth * 0.03,
                                       ),
-                                      alignment: Alignment.center,
-                                      child: Text(l10n.continueSession),
+                                    ],
+                                  ),
+                                ),
+                                // In Progress badge
+                                Text(l10n.inProgress),
+                              ],
+                            ),
+                            SizedBox(height: screenHeight * 0.02),
+                            // Continue Session and Stop buttons
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Card(
+                                    child: InkWell(
+                                      onTap: () {
+                                        // Navigate back to timer
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                DeepCleaningTimerPage(
+                                                  area: activeSession!.area,
+                                                  beforePhotoPath:
+                                                      activeSession!
+                                                          .beforePhotoPath,
+                                                  onStopSession: onStopSession,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.all(
+                                          screenWidth * 0.03,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(l10n.continueSession),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: screenWidth * 0.02),
-                              Expanded(
-                                child: Card(
-                                  child: InkWell(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          content: Text(
-                                            l10n.deepCleaningSessionCompleted,
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                                onStopSession();
-                                              },
-                                              child: Text(l10n.ok),
+                                SizedBox(width: screenWidth * 0.02),
+                                Expanded(
+                                  child: Card(
+                                    child: InkWell(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            content: Text(
+                                              l10n.deepCleaningSessionCompleted,
                                             ),
-                                          ],
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  onStopSession();
+                                                },
+                                                child: Text(l10n.ok),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.all(
+                                          screenWidth * 0.03,
                                         ),
-                                      );
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.all(
-                                        screenWidth * 0.03,
+                                        alignment: Alignment.center,
+                                        child: Text(l10n.stop),
                                       ),
-                                      alignment: Alignment.center,
-                                      child: Text(l10n.stop),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                ],
+                    SizedBox(height: screenHeight * 0.03),
+                  ],
+                ),
               ),
-            ),
 
             // Declutter Calendar Widget (Planned Sessions)
             Padding(
@@ -979,7 +1011,10 @@ class _HomeScreen extends StatelessWidget {
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
                           title: Text(
                             l10n.startPlanningDeclutter,
                             style: Theme.of(context).textTheme.bodyLarge,
@@ -1011,10 +1046,17 @@ class _HomeScreen extends StatelessWidget {
                               color: Color(0xFFE9E3FF),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.access_time, color: Color(0xFF6B5CE7)),
+                            child: const Icon(
+                              Icons.access_time,
+                              color: Color(0xFF6B5CE7),
+                            ),
                           ),
-                          title: Text(_getNextSessionTitle(plannedSessions.first)),
-                          subtitle: Text('${plannedSessions.first.title} • ${plannedSessions.first.scheduledTime}'),
+                          title: Text(
+                            _getNextSessionTitle(plannedSessions.first),
+                          ),
+                          subtitle: Text(
+                            '${plannedSessions.first.title} • ${plannedSessions.first.scheduledTime}',
+                          ),
                           trailing: const Icon(Icons.chevron_right),
                         ),
                       ),
@@ -1028,41 +1070,36 @@ class _HomeScreen extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.startDeclutter,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: screenHeight * 0.015),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: screenHeight * 0.18,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF64B5F6), Color(0xFF42A5F5)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.startDeclutter,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.015),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Card(
+                          elevation: 2,
+                          color: const Color(0xFF64B5F6),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
                           child: InkWell(
                             onTap: onOpenJoyDeclutter,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(12),
                             child: Padding(
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    width: 48,
-                                    height: 48,
+                                    width: 44,
+                                    height: 44,
                                     decoration: BoxDecoration(
                                       color: Colors.white.withValues(alpha: 0.3),
                                       shape: BoxShape.circle,
@@ -1073,21 +1110,13 @@ class _HomeScreen extends StatelessWidget {
                                       size: 24,
                                     ),
                                   ),
-                                  const Spacer(),
+                                  const SizedBox(height: 12),
                                   Text(
                                     l10n.joyDeclutterTitle,
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Start guided session',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
-                                      fontSize: 13,
                                     ),
                                   ),
                                 ],
@@ -1096,116 +1125,37 @@ class _HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(width: screenWidth * 0.03),
-                    Expanded(
-                      child: Container(
-                        height: screenHeight * 0.18,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF66BB6A), Color(0xFF43A047)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                      SizedBox(width: screenWidth * 0.03),
+                      Expanded(
+                        child: Card(
+                          elevation: 2,
+                          color: const Color(0xFFEC407A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
                           child: InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => DeepCleaningFlowPage(
-                                    onStartSession: onStartSession,
-                                    onStopSession: onStopSession,
-                                  ),
-                                ),
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(20),
+                            onTap: onOpenQuickDeclutter,
+                            borderRadius: BorderRadius.circular(12),
                             child: Padding(
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    width: 48,
-                                    height: 48,
+                                    width: 44,
+                                    height: 44,
                                     decoration: BoxDecoration(
                                       color: Colors.white.withValues(alpha: 0.3),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
-                                      Icons.spa_rounded,
+                                      Icons.bolt_rounded,
                                       color: Colors.white,
                                       size: 24,
                                     ),
                                   ),
-                                  const Spacer(),
-                                  Text(
-                                    l10n.deepCleaningTitle,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Get decision support',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: screenHeight * 0.015),
-                Container(
-                  height: screenHeight * 0.08,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFEC407A), Color(0xFFD81B60)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: onOpenQuickDeclutter,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.bolt_rounded,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+                                  const SizedBox(height: 12),
                                   Text(
                                     l10n.quickDeclutterTitle,
                                     style: const TextStyle(
@@ -1214,19 +1164,67 @@ class _HomeScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  Text(
-                                    '15-min timer session',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
-                                      fontSize: 12,
-                                    ),
-                                  ),
                                 ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.015),
+                  Card(
+                    elevation: 2,
+                    color: const Color(0xFF66BB6A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => DeepCleaningFlowPage(
+                              onStartSession: onStartSession,
+                              onStopSession: onStopSession,
+                            ),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.spa_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                l10n.deepCleaningTitle,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                             Icon(
                               Icons.arrow_forward_rounded,
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: Colors.white.withValues(alpha: 0.9),
                               size: 20,
                             ),
                           ],
@@ -1234,9 +1232,8 @@ class _HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             ),
             SizedBox(height: screenHeight * 0.03),
 
@@ -1263,13 +1260,17 @@ class _HomeScreen extends StatelessWidget {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primaryContainer,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
                             child: Icon(
                               Icons.format_quote,
-                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimaryContainer,
                               size: 22,
                             ),
                           ),
@@ -1277,11 +1278,12 @@ class _HomeScreen extends StatelessWidget {
                           Expanded(
                             child: Text(
                               _formatQuote(quoteOfDay),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontSize: 16,
-                                fontStyle: FontStyle.italic,
-                                height: 1.6,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    fontSize: 16,
+                                    fontStyle: FontStyle.italic,
+                                    height: 1.6,
+                                  ),
                             ),
                           ),
                         ],
@@ -1319,9 +1321,9 @@ class _HomeScreen extends StatelessWidget {
                             ),
                             content: Text(
                               _getTodaysTipFull(l10n),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                height: 1.6,
-                              ),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(height: 1.6),
                             ),
                             actions: [
                               TextButton(
@@ -1334,7 +1336,10 @@ class _HomeScreen extends StatelessWidget {
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         child: Row(
                           children: [
                             Container(
@@ -1370,7 +1375,10 @@ class _HomeScreen extends StatelessWidget {
                   // Joy Check Card - One line
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       child: Row(
                         children: [
                           Container(
@@ -1801,10 +1809,7 @@ class _PlaceholderScreen extends StatelessWidget {
 }
 
 class _WhiteProgressCard extends StatelessWidget {
-  const _WhiteProgressCard({
-    required this.label,
-    required this.value,
-  });
+  const _WhiteProgressCard({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -1839,9 +1844,7 @@ class _WhiteProgressCard extends StatelessWidget {
 
 /// Compact calendar widget for dashboard (showing current week/month)
 class _CompactCalendarWidget extends StatelessWidget {
-  const _CompactCalendarWidget({
-    required this.onAddSession,
-  });
+  const _CompactCalendarWidget({required this.onAddSession});
 
   final VoidCallback onAddSession;
 
@@ -1861,13 +1864,9 @@ class _CompactCalendarWidget extends StatelessWidget {
       DateTime(now.year, now.month, 14),
     };
 
-    final quickSessions = <DateTime>{
-      DateTime(now.year, now.month, 7),
-    };
+    final quickSessions = <DateTime>{DateTime(now.year, now.month, 7)};
 
-    final scheduledSessions = <DateTime>{
-      DateTime(now.year, now.month, 16),
-    };
+    final scheduledSessions = <DateTime>{DateTime(now.year, now.month, 16)};
 
     return Column(
       children: [
@@ -1879,10 +1878,10 @@ class _CompactCalendarWidget extends StatelessWidget {
                 child: Text(
                   day,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             );
@@ -1936,10 +1935,15 @@ class _CompactCalendarWidget extends StatelessWidget {
                       child: Center(
                         child: Text(
                           '$dayNumber',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                fontWeight: isToday
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
                                 fontSize: 12,
-                                color: backgroundColor != null ? Colors.black87 : null,
+                                color: backgroundColor != null
+                                    ? Colors.black87
+                                    : null,
                               ),
                         ),
                       ),
@@ -1962,10 +1966,7 @@ class _CompactCalendarWidget extends StatelessWidget {
               label: 'Completed sessions',
             ),
             const SizedBox(width: 16),
-            _LegendItem(
-              color: const Color(0xFFA3C9F5),
-              label: 'Quick sweep',
-            ),
+            _LegendItem(color: const Color(0xFFA3C9F5), label: 'Quick sweep'),
             const SizedBox(width: 16),
             _LegendItem(
               color: const Color(0xFFB8A9F5),
@@ -1980,10 +1981,7 @@ class _CompactCalendarWidget extends StatelessWidget {
 
 /// Legend item for calendar
 class _LegendItem extends StatelessWidget {
-  const _LegendItem({
-    required this.color,
-    required this.label,
-  });
+  const _LegendItem({required this.color, required this.label});
 
   final Color color;
   final String label;
@@ -1996,21 +1994,14 @@ class _LegendItem extends StatelessWidget {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 11,
-              ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
         ),
       ],
     );
   }
 }
-
-

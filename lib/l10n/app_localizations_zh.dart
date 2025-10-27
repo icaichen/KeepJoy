@@ -235,6 +235,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get joyDeclutterTitle => '喜悦整理';
 
   @override
+  String get joyDeclutterSubtitle => '开始引导流程';
+
+  @override
+  String get quickDeclutterSubtitle => '15分钟计时';
+
+  @override
+  String get deepCleaningSubtitle => '拍照整理空间';
+
+  @override
   String get doesItSparkJoy => '这件物品能带给你喜悦吗？';
 
   @override

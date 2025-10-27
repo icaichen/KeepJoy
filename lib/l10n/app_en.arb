@@ -106,6 +106,9 @@
   "categoryBeauty": "Beauty",
 
   "joyDeclutterTitle": "Joy Declutter",
+  "joyDeclutterSubtitle": "Start guided session",
+  "quickDeclutterSubtitle": "15-min timer session",
+  "deepCleaningSubtitle": "Photo-based cleaning",
   "doesItSparkJoy": "Does this item spark joy?",
   "yes": "Yes",
   "no": "No",
