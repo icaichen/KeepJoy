@@ -59,27 +59,40 @@ class AIIdentificationService {
     return _identifyWithMLKit(imagePath, locale);
   }
 
-  /// ML Kit identification (Android)
+  /// ML Kit identification (iOS & Android)
   Future<AIIdentificationResult?> _identifyWithMLKit(String imagePath, String locale) async {
     try {
+      print('🔍 ML Kit: Starting identification for $imagePath');
+
       if (_imageLabeler == null) {
+        print('🔍 ML Kit: Initializing image labeler...');
         await initialize();
       }
 
+      print('🔍 ML Kit: Creating input image from file path');
       final inputImage = InputImage.fromFilePath(imagePath);
+
+      print('🔍 ML Kit: Processing image with ML Kit...');
       final labels = await _imageLabeler!.processImage(inputImage);
+      print('🔍 ML Kit: Got ${labels.length} labels');
 
       if (labels.isEmpty) {
+        print('🔍 ML Kit: No labels returned');
         return null;
       }
 
       final topLabel = labels.first;
+      print('🔍 ML Kit: Top label - text: "${topLabel.label}", confidence: ${topLabel.confidence}');
 
       // Translate if Chinese locale
       final isZh = locale.toLowerCase().startsWith('zh');
+      print('🔍 ML Kit: Locale: $locale, isZh: $isZh');
+
       final translatedName = isZh ? _translateToChinese(topLabel.label) : _cleanLabelName(topLabel.label);
+      print('🔍 ML Kit: Translated name: "$translatedName"');
 
       final category = _mapLabelToCategory(topLabel.label);
+      print('🔍 ML Kit: Mapped category: $category');
 
       final alternatives = labels
           .skip(1)
@@ -87,6 +100,7 @@ class AIIdentificationService {
           .map((l) => isZh ? _translateToChinese(l.label) : _cleanLabelName(l.label))
           .toList();
 
+      print('🔍 ML Kit: Returning result - name: "$translatedName", category: $category, confidence: ${topLabel.confidence * 100}%');
       return AIIdentificationResult(
         itemName: translatedName,
         suggestedCategory: category,
@@ -95,7 +109,7 @@ class AIIdentificationService {
         alternativeNames: alternatives,
       );
     } catch (e) {
-      print('ML Kit identification failed: $e');
+      print('❌ ML Kit identification failed: $e');
       return null;
     }
   }

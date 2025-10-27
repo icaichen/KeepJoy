@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/memory.dart';
 
-/// Memory detail page with photo viewer and editing capabilities
+/// Memory detail page with photo viewer
 class MemoryDetailPage extends StatefulWidget {
   const MemoryDetailPage({
     super.key,
@@ -24,26 +24,16 @@ class MemoryDetailPage extends StatefulWidget {
 
 class _MemoryDetailPageState extends State<MemoryDetailPage> {
   late Memory _currentMemory;
-  bool _isEditingNote = false;
-  late TextEditingController _noteController;
 
   @override
   void initState() {
     super.initState();
     _currentMemory = widget.memory;
-    _noteController = TextEditingController(text: _currentMemory.notes ?? '');
-  }
-
-  @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
 
     return Scaffold(
       appBar: AppBar(
@@ -60,9 +50,6 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
             icon: const Icon(Icons.more_vert),
             onSelected: (value) {
               switch (value) {
-                case 'edit':
-                  _toggleEditNote();
-                  break;
                 case 'delete':
                   _showDeleteDialog();
                   break;
@@ -72,16 +59,6 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
               }
             },
             itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    const Icon(Icons.edit),
-                    const SizedBox(width: 8),
-                    Text(_isEditingNote ? l10n.memorySaveNote : l10n.memoryEditNote),
-                  ],
-                ),
-              ),
               PopupMenuItem(
                 value: 'share',
                 child: Row(
@@ -115,61 +92,35 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
           children: [
             // Photo section
             _buildPhotoSection(),
-            
+
             // Content section
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
+                  // Title (item name)
+                  if (_currentMemory.itemName != null)
+                    Text(
+                      _currentMemory.itemName!,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+
+                  // Date only
                   Text(
-                    _currentMemory.title,
+                    l10n.memoryCreatedOn(_formatDate(_currentMemory.createdAt)),
                     style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  
-                  // Type and date
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _currentMemory.type.icon,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _currentMemory.type.displayName,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        l10n.memoryCreatedOn(_formatDate(_currentMemory.createdAt)),
-                        style: const TextStyle(
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Description
                   if (_currentMemory.description != null) ...[
                     Text(
@@ -179,28 +130,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
                         height: 1.5,
                       ),
                     ),
-                    const SizedBox(height: 16),
                   ],
-                  
-                  // Item details (if from decluttering)
-                  if (_currentMemory.itemName != null) ...[
-                    _buildDetailRow(
-                      icon: Icons.inventory_2_outlined,
-                      label: l10n.memoryFromItem(_currentMemory.itemName!),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  
-                  if (_currentMemory.category != null) ...[
-                    _buildDetailRow(
-                      icon: Icons.category_outlined,
-                      label: l10n.memoryCategory(_currentMemory.category!),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  
-                  // Notes section
-                  _buildNotesSection(),
                 ],
               ),
             ),
@@ -211,7 +141,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
   }
 
   Widget _buildPhotoSection() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 300,
       child: _currentMemory.hasPhoto
@@ -234,9 +164,9 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
                     style: const TextStyle(fontSize: 64),
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'No photo available',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                     ),
                   ),
@@ -244,149 +174,6 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
               ),
             ),
     );
-  }
-
-  Widget _buildDetailRow({
-    required IconData icon,
-    required String label,
-  }) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 20,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNotesSection() {
-    final l10n = AppLocalizations.of(context)!;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(
-              Icons.note_outlined,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Notes',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const Spacer(),
-            if (!_isEditingNote && (_currentMemory.notes == null || _currentMemory.notes!.isEmpty))
-              TextButton(
-                onPressed: _toggleEditNote,
-                child: Text(l10n.memoryAddNote),
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        
-        if (_isEditingNote) ...[
-          TextField(
-            controller: _noteController,
-            decoration: const InputDecoration(
-              hintText: 'Add a note about this memory...',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-              ),
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              ElevatedButton(
-                onPressed: _saveNote,
-                child: Text(l10n.memorySaveNote),
-              ),
-              const SizedBox(width: 12),
-              TextButton(
-                onPressed: _cancelEditNote,
-                child: const Text('Cancel'),
-              ),
-            ],
-          ),
-        ] else if (_currentMemory.notes != null && _currentMemory.notes!.isNotEmpty) ...[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              _currentMemory.notes!,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ] else ...[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Text(
-              'No notes added yet',
-              style: TextStyle(
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  void _toggleEditNote() {
-    setState(() {
-      _isEditingNote = !_isEditingNote;
-    });
-  }
-
-  void _saveNote() {
-    final updatedMemory = _currentMemory.copyWith(notes: _noteController.text);
-    setState(() {
-      _currentMemory = updatedMemory;
-      _isEditingNote = false;
-    });
-    
-    widget.onMemoryUpdated?.call(updatedMemory);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.memoryNoteSaved),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-
-  void _cancelEditNote() {
-    _noteController.text = _currentMemory.notes ?? '';
-    setState(() {
-      _isEditingNote = false;
-    });
   }
 
   void _showDeleteDialog() {
@@ -410,7 +197,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
               Navigator.of(context).pop();
               widget.onMemoryDeleted?.call(_currentMemory);
               Navigator.of(context).pop();
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(l10n.memoryDeleted),
@@ -442,7 +229,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
       MaterialPageRoute(
         builder: (context) => PhotoViewerPage(
           photoPath: _currentMemory.photoPath!,
-          memoryTitle: _currentMemory.title,
+          memoryTitle: _currentMemory.itemName ?? _currentMemory.title,
         ),
       ),
     );

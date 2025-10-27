@@ -150,11 +150,15 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
   bool _isIdentifying = false;
   bool _isAISuggested = false;
   AIIdentificationResult? _aiResult;
+  bool _hasInitialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    _identifyItem();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      _identifyItem();
+    }
   }
 
   @override

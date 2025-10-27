@@ -128,8 +128,76 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<DeclutterItem> _declutteredItems = [];
   final List<Memory> _memories = [];
   final List<ResellItem> _resellItems = [];
+  final Set<String> _activityDates = {}; // Track dates when user was active (format: yyyy-MM-dd)
+
+  // Calculate streak (consecutive days of activity)
+  int _calculateStreak() {
+    if (_activityDates.isEmpty) return 0;
+
+    final sortedDates = _activityDates.toList()..sort((a, b) => b.compareTo(a)); // Sort descending
+    final today = DateTime.now();
+    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+    int streak = 0;
+    DateTime checkDate = today;
+
+    // Start from today or most recent activity
+    if (!sortedDates.contains(todayStr)) {
+      // If no activity today, start from yesterday
+      checkDate = today.subtract(const Duration(days: 1));
+    }
+
+    // Count backwards from most recent activity
+    while (true) {
+      final checkDateStr = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
+      if (_activityDates.contains(checkDateStr)) {
+        streak++;
+        checkDate = checkDate.subtract(const Duration(days: 1));
+      } else {
+        break;
+      }
+    }
+
+    return streak;
+  }
+
+  // Calculate items decluttered this month
+  int _calculateDeclutteredThisMonth() {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+
+    return _declutteredItems.where((item) {
+      return item.createdAt.isAfter(monthStart) &&
+             item.createdAt.isBefore(now.add(const Duration(days: 1)));
+    }).length;
+  }
+
+  // Calculate total value of sold items this month
+  double _calculateNewValueThisMonth() {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+
+    return _resellItems
+        .where((item) =>
+            item.status == ResellStatus.sold &&
+            item.soldDate != null &&
+            item.soldDate!.isAfter(monthStart) &&
+            item.soldDate!.isBefore(now.add(const Duration(days: 1))))
+        .fold(0.0, (sum, item) => sum + (item.soldPrice ?? 0.0));
+  }
+
+  // Record activity for today
+  void _recordActivity() {
+    final today = DateTime.now();
+    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+    setState(() {
+      _activityDates.add(todayStr);
+    });
+  }
 
   void _startSession(String area) {
+    _recordActivity(); // Record activity for Deep Cleaning
     setState(() {
       _activeSession = DeepCleaningSession(
         area: area,
@@ -145,12 +213,14 @@ class _MainNavigatorState extends State<MainNavigator> {
   }
 
   void _addPendingItem(DeclutterItem item) {
+    _recordActivity(); // Record activity for Quick Declutter
     setState(() {
       _pendingItems.insert(0, item);
     });
   }
 
   void _addDeclutteredItem(DeclutterItem item) {
+    _recordActivity(); // Record activity for Joy Declutter
     setState(() {
       _declutteredItems.insert(0, item);
       _pendingItems.removeWhere((pending) => pending.id == item.id);
@@ -237,6 +307,9 @@ class _MainNavigatorState extends State<MainNavigator> {
         onOpenQuickDeclutter: () => _openQuickDeclutter(context),
         onOpenJoyDeclutter: () => _openJoyDeclutter(context),
         onLocaleChange: widget.onLocaleChange,
+        streak: _calculateStreak(),
+        declutteredCount: _calculateDeclutteredThisMonth(),
+        newValue: _calculateNewValueThisMonth(),
       ),
       ItemsScreen(
         pendingItems: List.unmodifiable(_pendingItems),
@@ -308,6 +381,9 @@ class _HomeScreen extends StatelessWidget {
   final VoidCallback onOpenQuickDeclutter;
   final VoidCallback onOpenJoyDeclutter;
   final void Function(Locale) onLocaleChange;
+  final int streak;
+  final int declutteredCount;
+  final double newValue;
 
   const _HomeScreen({
     required this.activeSession,
@@ -316,6 +392,9 @@ class _HomeScreen extends StatelessWidget {
     required this.onOpenQuickDeclutter,
     required this.onOpenJoyDeclutter,
     required this.onLocaleChange,
+    required this.streak,
+    required this.declutteredCount,
+    required this.newValue,
   });
 
   String _getQuoteOfDay(AppLocalizations l10n) {
@@ -672,8 +751,25 @@ class _HomeScreen extends StatelessWidget {
                       child: Card(
                         child: Container(
                           height: screenHeight * 0.15,
-                          alignment: Alignment.center,
-                          child: Text(l10n.streak),
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$streak',
+                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.streak,
+                                style: Theme.of(context).textTheme.bodySmall,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -682,8 +778,25 @@ class _HomeScreen extends StatelessWidget {
                       child: Card(
                         child: Container(
                           height: screenHeight * 0.15,
-                          alignment: Alignment.center,
-                          child: Text(l10n.itemDecluttered),
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$declutteredCount',
+                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.itemDecluttered,
+                                style: Theme.of(context).textTheme.bodySmall,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -692,8 +805,25 @@ class _HomeScreen extends StatelessWidget {
                       child: Card(
                         child: Container(
                           height: screenHeight * 0.15,
-                          alignment: Alignment.center,
-                          child: Text(l10n.newValueCreated),
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '¥${newValue.toStringAsFixed(0)}',
+                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.newValueCreated,
+                                style: Theme.of(context).textTheme.bodySmall,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

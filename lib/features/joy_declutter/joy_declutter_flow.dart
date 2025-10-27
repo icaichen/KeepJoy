@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/declutter_item.dart';
 import '../../models/memory.dart';
+import '../../services/ai_identification_service.dart';
 import '../memories/create_memory_page.dart';
 
 class JoyDeclutterFlowPage extends StatefulWidget {
@@ -129,6 +130,58 @@ class _PhotoReviewPage extends StatefulWidget {
 
 class _PhotoReviewPageState extends State<_PhotoReviewPage> {
   final ImagePicker _picker = ImagePicker();
+  final TextEditingController _nameController = TextEditingController();
+  final AIIdentificationService _aiService = AIIdentificationService();
+
+  DeclutterCategory _selectedCategory = DeclutterCategory.miscellaneous;
+  bool _isIdentifying = false;
+  bool _isAISuggested = false;
+  String? _itemName;
+  bool _hasInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      _identifyItem();
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _identifyItem() async {
+    setState(() => _isIdentifying = true);
+
+    try {
+      final locale = Localizations.localeOf(context).languageCode;
+      print('🎯 Joy Declutter: Starting AI identification, locale: $locale');
+
+      final result = await _aiService.identifyBasic(widget.photoPath, locale);
+
+      print('🎯 Joy Declutter: AI result received: ${result != null ? "name=${result.itemName}, category=${result.suggestedCategory}" : "null"}');
+
+      if (result != null && mounted) {
+        setState(() {
+          _itemName = result.itemName;
+          _nameController.text = result.itemName;
+          _selectedCategory = result.suggestedCategory;
+          _isAISuggested = true;
+        });
+        print('🎯 Joy Declutter: UI updated with AI result');
+      }
+    } catch (e) {
+      print('❌ Joy Declutter: AI identification error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isIdentifying = false);
+      }
+    }
+  }
 
   Future<void> _retakePicture() async {
     try {
@@ -199,9 +252,52 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.itemName),
-                        SizedBox(height: 8),
-                        Text(l10n.category),
+                        TextField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: l10n.itemName,
+                            hintText: l10n.itemName,
+                            suffixIcon: _isIdentifying
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Padding(
+                                      padding: EdgeInsets.all(12.0),
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  )
+                                : _isAISuggested
+                                    ? Tooltip(
+                                        message: l10n.aiSuggested,
+                                        child: const Icon(Icons.auto_awesome, size: 20),
+                                      )
+                                    : null,
+                          ),
+                          onChanged: (_) {
+                            // User edited, no longer AI suggested
+                            if (_isAISuggested) {
+                              setState(() => _isAISuggested = false);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownMenu<DeclutterCategory>(
+                          initialSelection: _selectedCategory,
+                          label: Text(l10n.category),
+                          dropdownMenuEntries: DeclutterCategory.values
+                              .map(
+                                (category) => DropdownMenuEntry(
+                                  value: category,
+                                  label: category.label(context),
+                                ),
+                              )
+                              .toList(),
+                          onSelected: (value) {
+                            if (value != null) {
+                              setState(() => _selectedCategory = value);
+                            }
+                          },
+                        ),
                       ],
                     ),
                   ],
@@ -230,6 +326,10 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                             MaterialPageRoute(
                               builder: (_) => _JoyQuestionPage(
                                 photoPath: widget.photoPath,
+                                itemName: _nameController.text.trim().isEmpty
+                                    ? 'Item'
+                                    : _nameController.text.trim(),
+                                category: _selectedCategory,
                                 onItemCompleted: widget.onItemCompleted,
                                 onMemoryCreated: widget.onMemoryCreated,
                               ),
@@ -254,11 +354,15 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
 // Joy question page
 class _JoyQuestionPage extends StatefulWidget {
   final String photoPath;
+  final String itemName;
+  final DeclutterCategory category;
   final Function(DeclutterItem) onItemCompleted;
   final Function(Memory) onMemoryCreated;
 
   const _JoyQuestionPage({
     required this.photoPath,
+    required this.itemName,
+    required this.category,
     required this.onItemCompleted,
     required this.onMemoryCreated,
   });
@@ -370,8 +474,8 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                               // Create item with "keep" status
                               final item = DeclutterItem(
                                 id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                name: 'Item',
-                                category: DeclutterCategory.miscellaneous,
+                                name: widget.itemName,
+                                category: widget.category,
                                 createdAt: DateTime.now(),
                                 status: DeclutterStatus.keep,
                                 photoPath: widget.photoPath,
@@ -423,8 +527,8 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                                               // Create item with "discard" status
                                               final item = DeclutterItem(
                                                 id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                                name: 'Item',
-                                                category: DeclutterCategory.miscellaneous,
+                                                name: widget.itemName,
+                                                category: widget.category,
                                                 createdAt: DateTime.now(),
                                                 status: DeclutterStatus.discard,
                                                 photoPath: widget.photoPath,
@@ -450,8 +554,8 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                                               // Create item with "donate" status
                                               final item = DeclutterItem(
                                                 id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                                name: 'Item',
-                                                category: DeclutterCategory.miscellaneous,
+                                                name: widget.itemName,
+                                                category: widget.category,
                                                 createdAt: DateTime.now(),
                                                 status: DeclutterStatus.donate,
                                                 photoPath: widget.photoPath,
@@ -477,8 +581,8 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                                               // Create item with "recycle" status
                                               final item = DeclutterItem(
                                                 id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                                name: 'Item',
-                                                category: DeclutterCategory.miscellaneous,
+                                                name: widget.itemName,
+                                                category: widget.category,
                                                 createdAt: DateTime.now(),
                                                 status: DeclutterStatus.recycle,
                                                 photoPath: widget.photoPath,
@@ -504,8 +608,8 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                                               // Create item with "resell" status
                                               final item = DeclutterItem(
                                                 id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                                name: 'Item',
-                                                category: DeclutterCategory.miscellaneous,
+                                                name: widget.itemName,
+                                                category: widget.category,
                                                 createdAt: DateTime.now(),
                                                 status: DeclutterStatus.resell,
                                                 photoPath: widget.photoPath,
