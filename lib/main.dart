@@ -549,6 +549,45 @@ class _HomeScreen extends StatelessWidget {
     }
   }
 
+  String _getJoyCheckMessage(AppLocalizations l10n) {
+    final messages = [
+      l10n.joyCheckMessage1,
+      l10n.joyCheckMessage2,
+      l10n.joyCheckMessage3,
+      l10n.joyCheckMessage4,
+      l10n.joyCheckMessage5,
+      l10n.joyCheckMessage6,
+    ];
+    final now = DateTime.now();
+    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
+    return messages[dayOfYear % messages.length];
+  }
+
+  String _getTodaysTip(AppLocalizations l10n) {
+    final tips = [
+      l10n.todaysTip1,
+      l10n.todaysTip2,
+      l10n.todaysTip3,
+      l10n.todaysTip4,
+      l10n.todaysTip5,
+      l10n.todaysTip6,
+    ];
+    final now = DateTime.now();
+    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
+    return tips[dayOfYear % tips.length];
+  }
+
+  String _getTodaysTipPreview(AppLocalizations l10n) {
+    final tip = _getTodaysTip(l10n);
+    // Return first 40 characters as preview
+    if (tip.length <= 40) return tip;
+    return '${tip.substring(0, 40)}...';
+  }
+
+  String _getTodaysTipFull(AppLocalizations l10n) {
+    return _getTodaysTip(l10n);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -708,12 +747,12 @@ class _HomeScreen extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     child: Row(
                       children: [
                         Container(
-                          width: 56,
-                          height: 56,
+                          width: 48,
+                          height: 48,
                           decoration: const BoxDecoration(
                             color: Color(0xFFFDB022), // Gold color
                             shape: BoxShape.circle,
@@ -721,7 +760,7 @@ class _HomeScreen extends StatelessWidget {
                           child: const Icon(
                             Icons.emoji_events,
                             color: Colors.white,
-                            size: 32,
+                            size: 28,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -736,7 +775,7 @@ class _HomeScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Text(
                                 l10n.daysStreak(streak),
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -759,102 +798,6 @@ class _HomeScreen extends StatelessWidget {
             ),
             SizedBox(height: screenHeight * 0.03),
 
-            // Declutter Calendar Widget (Planned Sessions)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.declutterCalendar,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ActivityCalendarPage(
-                                declutteredItems: declutteredItems,
-                                memories: memories,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Text(l10n.viewFull),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: screenHeight * 0.015),
-
-                  // Show next planned session or empty state
-                  if (plannedSessions.isEmpty)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            Text(
-                              l10n.startPlanningDeclutter,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () async {
-                                  final session = await showDialog<PlannedSession>(
-                                    context: context,
-                                    builder: (_) => const AddSessionDialog(),
-                                  );
-                                  if (session != null) {
-                                    onAddPlannedSession(session);
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(l10n.sessionCreated)),
-                                      );
-                                    }
-                                  }
-                                },
-                                icon: const Icon(Icons.add),
-                                label: Text(l10n.addNew),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    // Show next upcoming session
-                    Card(
-                      child: ListTile(
-                        leading: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE9E3FF),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.access_time, color: Color(0xFF6B5CE7)),
-                        ),
-                        title: Text(_getNextSessionTitle(plannedSessions.first)),
-                        subtitle: Text('${plannedSessions.first.title} • ${plannedSessions.first.scheduledTime}'),
-                        trailing: TextButton(
-                          onPressed: () {
-                            // TODO: Implement reschedule
-                          },
-                          child: const Text('Reschedule'),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.03),
             // Continue Your Session section (only show if active session exists)
               if (activeSession != null)
                 Padding(
@@ -982,6 +925,105 @@ class _HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
+
+            // Declutter Calendar Widget (Planned Sessions)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.declutterCalendar,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () async {
+                          final session = await showDialog<PlannedSession>(
+                            context: context,
+                            builder: (_) => const AddSessionDialog(),
+                          );
+                          if (session != null) {
+                            onAddPlannedSession(session);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(l10n.sessionCreated)),
+                              );
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.add, size: 18),
+                        label: Text(l10n.addNew),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.015),
+
+                  // Show next planned session or empty state - both are clickable to show calendar
+                  if (plannedSessions.isEmpty)
+                    Card(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ActivityCalendarPage(
+                                declutteredItems: declutteredItems,
+                                memories: memories,
+                              ),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          title: Text(
+                            l10n.startPlanningDeclutter,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                        ),
+                      ),
+                    )
+                  else
+                    // Show next upcoming session - clickable to show calendar
+                    Card(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ActivityCalendarPage(
+                                declutteredItems: declutteredItems,
+                                memories: memories,
+                              ),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: ListTile(
+                          leading: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE9E3FF),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.access_time, color: Color(0xFF6B5CE7)),
+                          ),
+                          title: Text(_getNextSessionTitle(plannedSessions.first)),
+                          subtitle: Text('${plannedSessions.first.title} • ${plannedSessions.first.scheduledTime}'),
+                          trailing: const Icon(Icons.chevron_right),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.03),
+
             // Start Declutter section
             Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
@@ -998,35 +1040,127 @@ class _HomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Card(
-                        child: InkWell(
-                          onTap: onOpenJoyDeclutter,
-                          child: Container(
-                            height: screenHeight * 0.15, // 15% of screen height
-                            alignment: Alignment.center,
-                            child: Text(l10n.joyDeclutterTitle),
+                      child: Container(
+                        height: screenHeight * 0.18,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF64B5F6), Color(0xFF42A5F5)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: onOpenJoyDeclutter,
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.3),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.auto_awesome_rounded,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    l10n.joyDeclutterTitle,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Start guided session',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                     SizedBox(width: screenWidth * 0.03),
                     Expanded(
-                      child: Card(
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => DeepCleaningFlowPage(
-                                  onStartSession: onStartSession,
-                                  onStopSession: onStopSession,
+                      child: Container(
+                        height: screenHeight * 0.18,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF66BB6A), Color(0xFF43A047)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => DeepCleaningFlowPage(
+                                    onStartSession: onStartSession,
+                                    onStopSession: onStopSession,
+                                  ),
                                 ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.3),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.spa_rounded,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    l10n.deepCleaningTitle,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Get decision support',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                          child: Container(
-                            height: screenHeight * 0.15,
-                            alignment: Alignment.center,
-                            child: Text(l10n.deepCleaningTitle),
+                            ),
                           ),
                         ),
                       ),
@@ -1034,15 +1168,70 @@ class _HomeScreen extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: screenHeight * 0.015),
-                Card(
-                  child: InkWell(
-                    onTap: onOpenQuickDeclutter,
-                    child: Container(
-                      height:
-                          screenHeight *
-                          0.075, // 7.5% of screen height (half of above)
-                      alignment: Alignment.center,
-                      child: Text(l10n.quickDeclutterTitle),
+                Container(
+                  height: screenHeight * 0.08,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFEC407A), Color(0xFFD81B60)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onOpenQuickDeclutter,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.bolt_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.quickDeclutterTitle,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    '15-min timer session',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -1099,143 +1288,122 @@ class _HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  SizedBox(height: screenHeight * 0.015),
+
+                  // Today's Tip Card (Preview only - clickable) - One line
+                  Card(
+                    child: InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE3F2FD),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.tips_and_updates,
+                                    color: Color(0xFF2196F3),
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(l10n.todaysTip),
+                              ],
+                            ),
+                            content: Text(
+                              _getTodaysTipFull(l10n),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                height: 1.6,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE3F2FD),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.tips_and_updates,
+                                color: Color(0xFF2196F3),
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                '${l10n.todaysTip}: ${_getTodaysTipPreview(l10n)}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.015),
+
+                  // Joy Check Card - One line
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF4E6),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFFF9800),
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              '${l10n.joyCheck}: ${_getJoyCheckMessage(l10n)}',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
             SizedBox(height: screenHeight * 0.03),
-            // Recent Activities section
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-              child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.recentActivities,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: screenHeight * 0.015),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Card(
-                        child: Container(
-                          height: screenHeight * 0.15,
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$streak',
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.streak,
-                                style: Theme.of(context).textTheme.bodySmall,
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: screenWidth * 0.03),
-                    Expanded(
-                      child: Card(
-                        child: Container(
-                          height: screenHeight * 0.15,
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$declutteredCount',
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.itemDecluttered,
-                                style: Theme.of(context).textTheme.bodySmall,
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: screenWidth * 0.03),
-                    Expanded(
-                      child: Card(
-                        child: Container(
-                          height: screenHeight * 0.15,
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '¥${newValue.toStringAsFixed(0)}',
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.newValueCreated,
-                                style: Theme.of(context).textTheme.bodySmall,
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: screenHeight * 0.015),
-                Card(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.04,
-                      vertical: screenHeight * 0.015,
-                    ),
-                    width: double.infinity,
-                    child: Text(l10n.roomCleaned),
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.015),
-                Card(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.04,
-                      vertical: screenHeight * 0.015,
-                    ),
-                    width: double.infinity,
-                    child: Text(l10n.memoryCreated),
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.015),
-                Card(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.04,
-                      vertical: screenHeight * 0.015,
-                    ),
-                    width: double.infinity,
-                    child: Text(l10n.itemsResell),
-                  ),
-                ),
-              ],
-            ),
-            ),
           ],
         ),
       ),
@@ -1650,7 +1818,7 @@ class _WhiteProgressCard extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            fontSize: 36,
+            fontSize: 28,
           ),
         ),
         const SizedBox(height: 4),
@@ -1658,7 +1826,7 @@ class _WhiteProgressCard extends StatelessWidget {
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Colors.white.withValues(alpha: 0.9),
-            fontSize: 12,
+            fontSize: 11,
           ),
           textAlign: TextAlign.center,
           maxLines: 2,
