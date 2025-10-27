@@ -897,4 +897,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tryAgain => 'Try again';
+
+  @override
+  String get activityCalendar => 'Activity Calendar';
+
+  @override
+  String get declutterCalendar => 'Declutter Calendar';
+
+  @override
+  String get viewFull => 'View Full';
+
+  @override
+  String get addNew => 'Add New';
+
+  @override
+  String get startPlanningDeclutter => 'Start planning your declutter';
+
+  @override
+  String get noPlannedSessions => 'No planned declutter sessions';
+
+  @override
+  String get planNewSession => 'Plan New Session';
+
+  @override
+  String get area => 'Area';
+
+  @override
+  String get areaHint => 'e.g., Kitchen, Bedroom, Closet';
+
+  @override
+  String get pleaseEnterArea => 'Please enter an area';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get optional => 'optional';
+
+  @override
+  String get notesHint => 'Add any notes or reminders...';
+
+  @override
+  String get sessionCreated => 'Session created successfully';
+
+  @override
+  String itemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+      zero: 'No items',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noActivityThisDay => 'No activity on this day';
 }

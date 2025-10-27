@@ -324,5 +324,32 @@
   "aiSuggested": "AI建议",
   "getDetailedInfo": "获取详细信息",
   "aiIdentificationFailed": "AI识别失败",
-  "tryAgain": "重试"
+  "tryAgain": "重试",
+
+  "activityCalendar": "活动日历",
+  "declutterCalendar": "整理日历",
+  "viewFull": "查看全部",
+  "addNew": "添加新计划",
+  "startPlanningDeclutter": "开始规划你的整理计划",
+  "noPlannedSessions": "暂无计划的整理任务",
+  "planNewSession": "计划新任务",
+  "area": "区域",
+  "areaHint": "例如：厨房、卧室、衣柜",
+  "pleaseEnterArea": "请输入区域",
+  "date": "日期",
+  "time": "时间",
+  "notes": "备注",
+  "optional": "可选",
+  "notesHint": "添加备注或提醒...",
+  "save": "保存",
+  "sessionCreated": "任务创建成功",
+  "itemsCount": "{count, plural, =0{没有物品} =1{1件物品} other{{count}件物品}}",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noActivityThisDay": "这天没有活动"
 }

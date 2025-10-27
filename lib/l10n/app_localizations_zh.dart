@@ -874,4 +874,67 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tryAgain => '重试';
+
+  @override
+  String get activityCalendar => '活动日历';
+
+  @override
+  String get declutterCalendar => '整理日历';
+
+  @override
+  String get viewFull => '查看全部';
+
+  @override
+  String get addNew => '添加新计划';
+
+  @override
+  String get startPlanningDeclutter => '开始规划你的整理计划';
+
+  @override
+  String get noPlannedSessions => '暂无计划的整理任务';
+
+  @override
+  String get planNewSession => '计划新任务';
+
+  @override
+  String get area => '区域';
+
+  @override
+  String get areaHint => '例如：厨房、卧室、衣柜';
+
+  @override
+  String get pleaseEnterArea => '请输入区域';
+
+  @override
+  String get date => '日期';
+
+  @override
+  String get time => '时间';
+
+  @override
+  String get notes => '备注';
+
+  @override
+  String get optional => '可选';
+
+  @override
+  String get notesHint => '添加备注或提醒...';
+
+  @override
+  String get sessionCreated => '任务创建成功';
+
+  @override
+  String itemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件物品',
+      one: '1件物品',
+      zero: '没有物品',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noActivityThisDay => '这天没有活动';
 }

@@ -6,6 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'features/deep_cleaning/deep_cleaning_flow.dart';
 import 'features/joy_declutter/joy_declutter_flow.dart';
 import 'features/quick_declutter/quick_declutter_flow.dart';
+import 'features/calendar/activity_calendar_page.dart';
+import 'features/calendar/add_session_dialog.dart';
 import 'features/memories/memories_page.dart';
 import 'features/profile/profile_page.dart';
 import 'features/resell/resell_tracker_page.dart';
@@ -13,6 +15,7 @@ import 'l10n/app_localizations.dart';
 import 'models/declutter_item.dart';
 import 'models/memory.dart';
 import 'models/resell_item.dart';
+import 'models/planned_session.dart';
 
 // Model for active deep cleaning session
 class DeepCleaningSession {
@@ -128,6 +131,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<DeclutterItem> _declutteredItems = [];
   final List<Memory> _memories = [];
   final List<ResellItem> _resellItems = [];
+  final List<PlannedSession> _plannedSessions = [];
   final Set<String> _activityDates = {}; // Track dates when user was active (format: yyyy-MM-dd)
 
   // Calculate streak (consecutive days of activity)
@@ -295,6 +299,12 @@ class _MainNavigatorState extends State<MainNavigator> {
     });
   }
 
+  void _addPlannedSession(PlannedSession session) {
+    setState(() {
+      _plannedSessions.add(session);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -310,6 +320,10 @@ class _MainNavigatorState extends State<MainNavigator> {
         streak: _calculateStreak(),
         declutteredCount: _calculateDeclutteredThisMonth(),
         newValue: _calculateNewValueThisMonth(),
+        declutteredItems: _declutteredItems,
+        memories: _memories,
+        plannedSessions: _plannedSessions,
+        onAddPlannedSession: _addPlannedSession,
       ),
       ItemsScreen(
         pendingItems: List.unmodifiable(_pendingItems),
@@ -384,6 +398,10 @@ class _HomeScreen extends StatelessWidget {
   final int streak;
   final int declutteredCount;
   final double newValue;
+  final List<DeclutterItem> declutteredItems;
+  final List<Memory> memories;
+  final List<PlannedSession> plannedSessions;
+  final void Function(PlannedSession) onAddPlannedSession;
 
   const _HomeScreen({
     required this.activeSession,
@@ -395,6 +413,10 @@ class _HomeScreen extends StatelessWidget {
     required this.streak,
     required this.declutteredCount,
     required this.newValue,
+    required this.declutteredItems,
+    required this.memories,
+    required this.plannedSessions,
+    required this.onAddPlannedSession,
   });
 
   String _getQuoteOfDay(AppLocalizations l10n) {
@@ -504,6 +526,27 @@ class _HomeScreen extends StatelessWidget {
       return quote.substring(0, quote.length - ' — Unknown'.length);
     }
     return quote;
+  }
+
+  String _getNextSessionTitle(PlannedSession session) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sessionDate = DateTime(
+      session.scheduledDate.year,
+      session.scheduledDate.month,
+      session.scheduledDate.day,
+    );
+    final difference = sessionDate.difference(today).inDays;
+
+    if (difference == 0) {
+      return "Today's Session";
+    } else if (difference == 1) {
+      return "Tomorrow's Session";
+    } else if (difference < 7) {
+      return "Upcoming Session";
+    } else {
+      return "Scheduled Session";
+    }
   }
 
   @override
@@ -711,6 +754,103 @@ class _HomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                ],
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.03),
+
+            // Declutter Calendar Widget (Planned Sessions)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.declutterCalendar,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ActivityCalendarPage(
+                                declutteredItems: declutteredItems,
+                                memories: memories,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text(l10n.viewFull),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.015),
+
+                  // Show next planned session or empty state
+                  if (plannedSessions.isEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            Text(
+                              l10n.startPlanningDeclutter,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  final session = await showDialog<PlannedSession>(
+                                    context: context,
+                                    builder: (_) => const AddSessionDialog(),
+                                  );
+                                  if (session != null) {
+                                    onAddPlannedSession(session);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text(l10n.sessionCreated)),
+                                      );
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.add),
+                                label: Text(l10n.addNew),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    // Show next upcoming session
+                    Card(
+                      child: ListTile(
+                        leading: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFE9E3FF),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.access_time, color: Color(0xFF6B5CE7)),
+                        ),
+                        title: Text(_getNextSessionTitle(plannedSessions.first)),
+                        subtitle: Text('${plannedSessions.first.title} • ${plannedSessions.first.scheduledTime}'),
+                        trailing: TextButton(
+                          onPressed: () {
+                            // TODO: Implement reschedule
+                          },
+                          child: const Text('Reschedule'),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -1528,3 +1668,181 @@ class _WhiteProgressCard extends StatelessWidget {
     );
   }
 }
+
+/// Compact calendar widget for dashboard (showing current week/month)
+class _CompactCalendarWidget extends StatelessWidget {
+  const _CompactCalendarWidget({
+    required this.onAddSession,
+  });
+
+  final VoidCallback onAddSession;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+    final firstWeekday = firstDayOfMonth.weekday % 7;
+    final daysInMonth = lastDayOfMonth.day;
+    final todayDate = DateTime(now.year, now.month, now.day);
+
+    // TODO: Replace with actual planned sessions from database
+    final plannedSessions = <DateTime>{
+      DateTime(now.year, now.month, 5),
+      DateTime(now.year, now.month, 12),
+      DateTime(now.year, now.month, 14),
+    };
+
+    final quickSessions = <DateTime>{
+      DateTime(now.year, now.month, 7),
+    };
+
+    final scheduledSessions = <DateTime>{
+      DateTime(now.year, now.month, 16),
+    };
+
+    return Column(
+      children: [
+        // Weekday headers
+        Row(
+          children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) {
+            return Expanded(
+              child: Center(
+                child: Text(
+                  day,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+
+        // Calendar days - compact view
+        ...List.generate((daysInMonth + firstWeekday) ~/ 7 + 1, (weekIndex) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
+              children: List.generate(7, (dayIndex) {
+                final dayNumber = weekIndex * 7 + dayIndex - firstWeekday + 1;
+
+                if (dayNumber < 1 || dayNumber > daysInMonth) {
+                  return const Expanded(child: SizedBox(height: 32));
+                }
+
+                final date = DateTime(now.year, now.month, dayNumber);
+                final isToday = date == todayDate;
+                final hasPlannedSession = plannedSessions.contains(date);
+                final hasQuickSession = quickSessions.contains(date);
+                final hasScheduledSession = scheduledSessions.contains(date);
+
+                Color? backgroundColor;
+                if (hasScheduledSession) {
+                  backgroundColor = const Color(0xFFB8A9F5); // Purple
+                } else if (hasQuickSession) {
+                  backgroundColor = const Color(0xFFA3C9F5); // Blue
+                } else if (hasPlannedSession) {
+                  backgroundColor = const Color(0xFFB5E5C4); // Green
+                }
+
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: onAddSession,
+                    child: Container(
+                      height: 32,
+                      margin: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: backgroundColor,
+                        border: isToday
+                            ? Border.all(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 2,
+                              )
+                            : null,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$dayNumber',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
+                                fontSize: 12,
+                                color: backgroundColor != null ? Colors.black87 : null,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          );
+        }),
+
+        const SizedBox(height: 16),
+
+        // Legend
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _LegendItem(
+              color: const Color(0xFFB5E5C4),
+              label: 'Completed sessions',
+            ),
+            const SizedBox(width: 16),
+            _LegendItem(
+              color: const Color(0xFFA3C9F5),
+              label: 'Quick sweep',
+            ),
+            const SizedBox(width: 16),
+            _LegendItem(
+              color: const Color(0xFFB8A9F5),
+              label: 'Scheduled session',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Legend item for calendar
+class _LegendItem extends StatelessWidget {
+  const _LegendItem({
+    required this.color,
+    required this.label,
+  });
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: 11,
+              ),
+        ),
+      ],
+    );
+  }
+}
+
+

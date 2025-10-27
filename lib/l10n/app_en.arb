@@ -433,5 +433,32 @@
   "aiSuggested": "AI suggested",
   "getDetailedInfo": "Get detailed info",
   "aiIdentificationFailed": "AI identification failed",
-  "tryAgain": "Try again"
+  "tryAgain": "Try again",
+
+  "activityCalendar": "Activity Calendar",
+  "declutterCalendar": "Declutter Calendar",
+  "viewFull": "View Full",
+  "addNew": "Add New",
+  "startPlanningDeclutter": "Start planning your declutter",
+  "noPlannedSessions": "No planned declutter sessions",
+  "planNewSession": "Plan New Session",
+  "area": "Area",
+  "areaHint": "e.g., Kitchen, Bedroom, Closet",
+  "pleaseEnterArea": "Please enter an area",
+  "date": "Date",
+  "time": "Time",
+  "notes": "Notes",
+  "optional": "optional",
+  "notesHint": "Add any notes or reminders...",
+  "save": "Save",
+  "sessionCreated": "Session created successfully",
+  "itemsCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noActivityThisDay": "No activity on this day"
 }

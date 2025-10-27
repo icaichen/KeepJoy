@@ -1771,6 +1771,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get tryAgain;
+
+  /// No description provided for @activityCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Calendar'**
+  String get activityCalendar;
+
+  /// No description provided for @declutterCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Declutter Calendar'**
+  String get declutterCalendar;
+
+  /// No description provided for @viewFull.
+  ///
+  /// In en, this message translates to:
+  /// **'View Full'**
+  String get viewFull;
+
+  /// No description provided for @addNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New'**
+  String get addNew;
+
+  /// No description provided for @startPlanningDeclutter.
+  ///
+  /// In en, this message translates to:
+  /// **'Start planning your declutter'**
+  String get startPlanningDeclutter;
+
+  /// No description provided for @noPlannedSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No planned declutter sessions'**
+  String get noPlannedSessions;
+
+  /// No description provided for @planNewSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan New Session'**
+  String get planNewSession;
+
+  /// No description provided for @area.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get area;
+
+  /// No description provided for @areaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Kitchen, Bedroom, Closet'**
+  String get areaHint;
+
+  /// No description provided for @pleaseEnterArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an area'**
+  String get pleaseEnterArea;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'optional'**
+  String get optional;
+
+  /// No description provided for @notesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add any notes or reminders...'**
+  String get notesHint;
+
+  /// No description provided for @sessionCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Session created successfully'**
+  String get sessionCreated;
+
+  /// No description provided for @itemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No items} =1{1 item} other{{count} items}}'**
+  String itemsCount(int count);
+
+  /// No description provided for @noActivityThisDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity on this day'**
+  String get noActivityThisDay;
 }
 
 class _AppLocalizationsDelegate
