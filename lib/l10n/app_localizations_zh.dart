@@ -1000,4 +1000,73 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get todaysTip6 =>
       '🎯 快速整理扫描：最快的整理方式！点击「快速整理」逐个扫描物品。我们的AI会立即识别每件物品。只需决定：保留还是放手？非常适合需要快速清理的快速整理场景！';
+
+  @override
+  String get welcomeTagline => '整理你的空间，点燃生活的快乐';
+
+  @override
+  String get getStarted => '开始使用';
+
+  @override
+  String get alreadyHaveAccount => '已有账号？登录';
+
+  @override
+  String get signIn => '登录';
+
+  @override
+  String get signUp => '注册';
+
+  @override
+  String get email => '邮箱';
+
+  @override
+  String get password => '密码';
+
+  @override
+  String get confirmPassword => '确认密码';
+
+  @override
+  String get name => '姓名';
+
+  @override
+  String get forgotPassword => '忘记密码？';
+
+  @override
+  String get dontHaveAccount => '还没有账号？注册';
+
+  @override
+  String get orContinueWith => '或使用以下方式继续';
+
+  @override
+  String get google => 'Google';
+
+  @override
+  String get apple => 'Apple';
+
+  @override
+  String get emailRequired => '请输入邮箱';
+
+  @override
+  String get passwordRequired => '请输入密码';
+
+  @override
+  String get nameRequired => '请输入姓名';
+
+  @override
+  String get invalidEmail => '邮箱格式不正确';
+
+  @override
+  String get passwordTooShort => '密码至少需要6个字符';
+
+  @override
+  String get passwordsDoNotMatch => '密码不匹配';
+
+  @override
+  String get signInSuccess => '登录成功';
+
+  @override
+  String get signUpSuccess => '注册成功';
+
+  @override
+  String get welcomeToKeepJoy => '欢迎来到KeepJoy';
 }

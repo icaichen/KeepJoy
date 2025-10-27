@@ -98,6 +98,8 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        fontFamily: 'SF Pro',
+        fontFamilyFallback: const ['Source Han Sans CN', 'Noto Sans SC', 'PingFang SC'],
       ),
       locale: _locale,
       localizationsDelegates: const [
@@ -665,8 +667,8 @@ class _HomeScreen extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF6B5CE7), // Deeper purple
-                    Color(0xFF5B4FC5), // Rich purple-blue
+                    Color(0xFF6B5CE7), // Purple
+                    Color(0xFF5ECFB8), // Mint green
                   ],
                 ),
               ),
@@ -847,23 +849,42 @@ class _HomeScreen extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       child: Container(
-                        padding: EdgeInsets.all(screenWidth * 0.04),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFFE3F2FD), // Light blue
+                              Color(0xFFB2EBF2), // Light cyan
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.all(20),
                         child: Column(
                           children: [
                             Row(
                               children: [
                                 // House icon on the left
                                 Container(
-                                  width: screenWidth * 0.12,
-                                  height: screenWidth * 0.12,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue,
+                                  width: 56,
+                                  height: 56,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF42A5F5),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Icon(Icons.home, color: Colors.white),
+                                  child: const Icon(
+                                    Icons.home,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
                                 ),
-                                SizedBox(width: screenWidth * 0.03),
+                                const SizedBox(width: 16),
                                 // Area and started info
                                 Expanded(
                                   child: Column(
@@ -872,7 +893,13 @@ class _HomeScreen extends StatelessWidget {
                                     children: [
                                       Text(
                                         '${activeSession!.area} Deep Cleaning',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
                                       ),
+                                      const SizedBox(height: 4),
                                       Text(
                                         l10n.started(
                                           _getTimeAgo(
@@ -880,20 +907,51 @@ class _HomeScreen extends StatelessWidget {
                                             activeSession!.startTime,
                                           ),
                                         ),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey.shade700,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
                                 // In Progress badge
-                                Text(l10n.inProgress),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2196F3).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    l10n.inProgress,
+                                    style: const TextStyle(
+                                      color: Color(0xFF2196F3),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                            SizedBox(height: screenHeight * 0.02),
+                            const SizedBox(height: 20),
                             // Continue Session and Stop buttons
                             Row(
                               children: [
                                 Expanded(
-                                  child: Card(
+                                  child: Container(
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF42A5F5),
+                                          Color(0xFF29B6F6),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                     child: InkWell(
                                       onTap: () {
                                         // Navigate back to timer
@@ -910,45 +968,61 @@ class _HomeScreen extends StatelessWidget {
                                           ),
                                         );
                                       },
-                                      child: Container(
-                                        padding: EdgeInsets.all(
-                                          screenWidth * 0.03,
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Center(
+                                        child: Text(
+                                          l10n.continueSession,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        alignment: Alignment.center,
-                                        child: Text(l10n.continueSession),
                                       ),
                                     ),
                                   ),
                                 ),
-                                SizedBox(width: screenWidth * 0.02),
-                                Expanded(
-                                  child: Card(
-                                    child: InkWell(
-                                      onTap: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => AlertDialog(
-                                            content: Text(
-                                              l10n.deepCleaningSessionCompleted,
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                  onStopSession();
-                                                },
-                                                child: Text(l10n.ok),
-                                              ),
-                                            ],
+                                const SizedBox(width: 12),
+                                Container(
+                                  height: 50,
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          content: Text(
+                                            l10n.deepCleaningSessionCompleted,
                                           ),
-                                        );
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.all(
-                                          screenWidth * 0.03,
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                                onStopSession();
+                                              },
+                                              child: Text(l10n.ok),
+                                            ),
+                                          ],
                                         ),
-                                        alignment: Alignment.center,
-                                        child: Text(l10n.stop),
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Center(
+                                      child: Text(
+                                        l10n.stop,
+                                        style: TextStyle(
+                                          color: Colors.grey.shade800,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -1090,45 +1164,54 @@ class _HomeScreen extends StatelessWidget {
                       Expanded(
                         child: Card(
                           elevation: 2,
-                          color: const Color(0xFF64B5F6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: InkWell(
-                            onTap: onOpenJoyDeclutter,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.3,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFF64B5F6), Color(0xFF42A5F5)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                            ),
+                            child: InkWell(
+                              onTap: onOpenJoyDeclutter,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        shape: BoxShape.circle,
                                       ),
-                                      shape: BoxShape.circle,
+                                      child: const Icon(
+                                        Icons.auto_awesome_rounded,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
                                     ),
-                                    child: const Icon(
-                                      Icons.auto_awesome_rounded,
-                                      color: Colors.white,
-                                      size: 24,
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      l10n.joyDeclutterTitle,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    l10n.joyDeclutterTitle,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -1138,45 +1221,54 @@ class _HomeScreen extends StatelessWidget {
                       Expanded(
                         child: Card(
                           elevation: 2,
-                          color: const Color(0xFFEC407A),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: InkWell(
-                            onTap: onOpenQuickDeclutter,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.3,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFFEC407A), Color(0xFFD81B60)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                            ),
+                            child: InkWell(
+                              onTap: onOpenQuickDeclutter,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        shape: BoxShape.circle,
                                       ),
-                                      shape: BoxShape.circle,
+                                      child: const Icon(
+                                        Icons.bolt_rounded,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
                                     ),
-                                    child: const Icon(
-                                      Icons.bolt_rounded,
-                                      color: Colors.white,
-                                      size: 24,
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      l10n.quickDeclutterTitle,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    l10n.quickDeclutterTitle,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -1187,59 +1279,68 @@ class _HomeScreen extends StatelessWidget {
                   SizedBox(height: screenHeight * 0.015),
                   Card(
                     elevation: 2,
-                    color: const Color(0xFF66BB6A),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => DeepCleaningFlowPage(
-                              onStartSession: onStartSession,
-                              onStopSession: onStopSession,
-                            ),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF66BB6A), Color(0xFF43A047)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.spa_rounded,
-                                color: Colors.white,
-                                size: 24,
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => DeepCleaningFlowPage(
+                                onStartSession: onStartSession,
+                                onStopSession: onStopSession,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                l10n.deepCleaningTitle,
-                                style: const TextStyle(
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.spa_rounded,
                                   color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                  size: 24,
                                 ),
                               ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward_rounded,
-                              color: Colors.white.withValues(alpha: 0.9),
-                              size: 20,
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  l10n.deepCleaningTitle,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white.withValues(alpha: 0.9),
+                                size: 20,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1471,30 +1572,27 @@ class _ItemsScreenState extends State<ItemsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SegmentedButton<ItemsSegment>(
-              segments: [
-                ButtonSegment(
-                  value: ItemsSegment.toDeclutter,
-                  label: Text(isChinese ? '待整理' : 'To Declutter'),
-                ),
-                ButtonSegment(
-                  value: ItemsSegment.decluttered,
-                  label: Text(isChinese ? '已整理' : 'Decluttered'),
-                ),
-              ],
-              selected: <ItemsSegment>{_segment},
-              onSelectionChanged: (selection) {
-                setState(() {
-                  _segment = selection.first;
-                });
-              },
+            Center(
+              child: SegmentedButton<ItemsSegment>(
+                segments: [
+                  ButtonSegment(
+                    value: ItemsSegment.toDeclutter,
+                    label: Text(isChinese ? '待整理' : 'To Declutter'),
+                  ),
+                  ButtonSegment(
+                    value: ItemsSegment.decluttered,
+                    label: Text(isChinese ? '已整理' : 'Decluttered'),
+                  ),
+                ],
+                selected: <ItemsSegment>{_segment},
+                onSelectionChanged: (selection) {
+                  setState(() {
+                    _segment = selection.first;
+                  });
+                },
+              ),
             ),
-            const SizedBox(height: 16),
-            _ItemsSummaryRow(
-              pendingCount: pending.length,
-              completedCount: completed.length,
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 250),
@@ -1517,91 +1615,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
                           return _ItemCard(item: item, isPending: isPending);
                         },
                       ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ItemsSummaryRow extends StatelessWidget {
-  const _ItemsSummaryRow({
-    required this.pendingCount,
-    required this.completedCount,
-  });
-
-  final int pendingCount;
-  final int completedCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
-    return Row(
-      children: [
-        Expanded(
-          child: _SummaryCard(
-            title: isChinese ? '待整理' : 'To Declutter',
-            count: pendingCount,
-            color: Theme.of(context).colorScheme.primary,
-            icon: Icons.hourglass_empty,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _SummaryCard(
-            title: isChinese ? '已整理' : 'Decluttered',
-            count: completedCount,
-            color: Colors.teal,
-            icon: Icons.check_circle_outline,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.title,
-    required this.count,
-    required this.color,
-    required this.icon,
-  });
-
-  final String title;
-  final int count;
-  final Color color;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: color.withValues(alpha: 0.15),
-              child: Icon(icon, color: color),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.bodySmall),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$count',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
               ),
             ),
           ],

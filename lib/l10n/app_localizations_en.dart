@@ -1029,4 +1029,73 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get todaysTip6 =>
       '🎯 Quick Declutter Scan: Fastest way to declutter! Tap \'Quick Declutter\' and scan items one by one. Our AI identifies each item instantly. Simply decide: Keep or Let Go? Perfect for rapid decluttering sessions when you need to clear out fast!';
+
+  @override
+  String get welcomeTagline => 'Transform your space, spark joy in your life';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account? Sign In';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get signUp => 'Sign Up';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get dontHaveAccount => 'Don\'t have an account? Sign Up';
+
+  @override
+  String get orContinueWith => 'Or continue with';
+
+  @override
+  String get google => 'Google';
+
+  @override
+  String get apple => 'Apple';
+
+  @override
+  String get emailRequired => 'Email is required';
+
+  @override
+  String get passwordRequired => 'Password is required';
+
+  @override
+  String get nameRequired => 'Name is required';
+
+  @override
+  String get invalidEmail => 'Invalid email address';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 6 characters';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get signInSuccess => 'Signed in successfully';
+
+  @override
+  String get signUpSuccess => 'Account created successfully';
+
+  @override
+  String get welcomeToKeepJoy => 'Welcome to KeepJoy';
 }
