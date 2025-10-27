@@ -18,6 +18,44 @@ class AppLocalizationsZh extends AppLocalizations {
   String get readyToSparkJoy => '准备好开启怦然心动之旅了吗？';
 
   @override
+  String get dailyInspiration => '每日灵感';
+
+  @override
+  String get welcomeBack => '欢迎回到你的怦然心动之旅';
+
+  @override
+  String get tagline1 => '用正念继续整理你的空间';
+
+  @override
+  String get tagline2 => '一次一件物品，改变空间';
+
+  @override
+  String get tagline3 => '通过有意识的生活创造清晰';
+
+  @override
+  String get tagline4 => '每件物品都有故事，用心对待';
+
+  @override
+  String get tagline5 => '通过用心整理建立快乐';
+
+  @override
+  String get thisMonthProgress => '最近活动';
+
+  @override
+  String get areasCleared => '清理区域';
+
+  @override
+  String get streakAchievement => '连续成就';
+
+  @override
+  String daysStreak(int count) {
+    return '连续 $count 天！';
+  }
+
+  @override
+  String get keepGoing => '继续加油！';
+
+  @override
   String get appTitle => 'KeepJoy';
 
   @override
@@ -273,9 +311,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get recentActivities => '最近活动';
-
-  @override
-  String get thisMonthProgress => '最近活动';
 
   @override
   String get streak => '连续天数';

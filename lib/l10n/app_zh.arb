@@ -5,6 +5,19 @@
   "goodAfternoon": "下午好",
   "readyToSparkJoy": "准备好开启怦然心动之旅了吗？",
 
+  "dailyInspiration": "每日灵感",
+  "welcomeBack": "欢迎回到你的怦然心动之旅",
+  "tagline1": "用正念继续整理你的空间",
+  "tagline2": "一次一件物品，改变空间",
+  "tagline3": "通过有意识的生活创造清晰",
+  "tagline4": "每件物品都有故事，用心对待",
+  "tagline5": "通过用心整理建立快乐",
+  "thisMonthProgress": "本月进展",
+  "areasCleared": "清理区域",
+  "streakAchievement": "连续成就",
+  "daysStreak": "连续 {count} 天！",
+  "keepGoing": "继续加油！",
+
   "appTitle": "KeepJoy",
 
   "home": "首页",

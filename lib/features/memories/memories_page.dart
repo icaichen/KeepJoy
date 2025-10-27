@@ -31,17 +31,8 @@ class _MemoriesPageState extends State<MemoriesPage> {
     final memories = widget.memories;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          l10n.memoriesTitle,
-          style: const TextStyle(
-            fontSize: 34,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: Text(l10n.memoriesTitle),
         centerTitle: false,
       ),
       body: memories.isEmpty
@@ -149,8 +140,7 @@ class _EmptyMemoriesState extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               l10n.memoriesEmptyTitle,
-              style: const TextStyle(
-                fontSize: 24,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -158,9 +148,7 @@ class _EmptyMemoriesState extends StatelessWidget {
             Text(
               l10n.memoriesEmptySubtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
             ElevatedButton(

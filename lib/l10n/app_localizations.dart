@@ -116,6 +116,78 @@ abstract class AppLocalizations {
   /// **'Ready to spark joy today?'**
   String get readyToSparkJoy;
 
+  /// No description provided for @dailyInspiration.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Inspiration'**
+  String get dailyInspiration;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back to your joy journey'**
+  String get welcomeBack;
+
+  /// No description provided for @tagline1.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue organizing your space with mindfulness'**
+  String get tagline1;
+
+  /// No description provided for @tagline2.
+  ///
+  /// In en, this message translates to:
+  /// **'Transforming spaces, one item at a time'**
+  String get tagline2;
+
+  /// No description provided for @tagline3.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating clarity through intentional living'**
+  String get tagline3;
+
+  /// No description provided for @tagline4.
+  ///
+  /// In en, this message translates to:
+  /// **'Every item has a story, honor it with purpose'**
+  String get tagline4;
+
+  /// No description provided for @tagline5.
+  ///
+  /// In en, this message translates to:
+  /// **'Building joy through mindful decluttering'**
+  String get tagline5;
+
+  /// No description provided for @thisMonthProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activities'**
+  String get thisMonthProgress;
+
+  /// No description provided for @areasCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Areas Cleared'**
+  String get areasCleared;
+
+  /// No description provided for @streakAchievement.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Achievement'**
+  String get streakAchievement;
+
+  /// No description provided for @daysStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} day streak!'**
+  String daysStreak(int count);
+
+  /// No description provided for @keepGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going!'**
+  String get keepGoing;
+
   /// The application title
   ///
   /// In en, this message translates to:
@@ -625,12 +697,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recent Activities'**
   String get recentActivities;
-
-  /// No description provided for @thisMonthProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Recent Activities'**
-  String get thisMonthProgress;
 
   /// No description provided for @streak.
   ///

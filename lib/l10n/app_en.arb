@@ -5,6 +5,26 @@
   "goodAfternoon": "Good Afternoon",
   "readyToSparkJoy": "Ready to spark joy today?",
 
+  "dailyInspiration": "Daily Inspiration",
+  "welcomeBack": "Welcome back to your joy journey",
+  "tagline1": "Continue organizing your space with mindfulness",
+  "tagline2": "Transforming spaces, one item at a time",
+  "tagline3": "Creating clarity through intentional living",
+  "tagline4": "Every item has a story, honor it with purpose",
+  "tagline5": "Building joy through mindful decluttering",
+  "thisMonthProgress": "This Month's Progress",
+  "areasCleared": "Areas Cleared",
+  "streakAchievement": "Streak Achievement",
+  "daysStreak": "{count} day streak!",
+  "@daysStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "keepGoing": "Keep going!",
+
   "appTitle": "KeepJoy",
   "@appTitle": {
     "description": "The application title"

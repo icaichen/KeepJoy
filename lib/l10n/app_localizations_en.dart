@@ -18,6 +18,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readyToSparkJoy => 'Ready to spark joy today?';
 
   @override
+  String get dailyInspiration => 'Daily Inspiration';
+
+  @override
+  String get welcomeBack => 'Welcome back to your joy journey';
+
+  @override
+  String get tagline1 => 'Continue organizing your space with mindfulness';
+
+  @override
+  String get tagline2 => 'Transforming spaces, one item at a time';
+
+  @override
+  String get tagline3 => 'Creating clarity through intentional living';
+
+  @override
+  String get tagline4 => 'Every item has a story, honor it with purpose';
+
+  @override
+  String get tagline5 => 'Building joy through mindful decluttering';
+
+  @override
+  String get thisMonthProgress => 'Recent Activities';
+
+  @override
+  String get areasCleared => 'Areas Cleared';
+
+  @override
+  String get streakAchievement => 'Streak Achievement';
+
+  @override
+  String daysStreak(int count) {
+    return '$count day streak!';
+  }
+
+  @override
+  String get keepGoing => 'Keep going!';
+
+  @override
   String get appTitle => 'KeepJoy';
 
   @override
@@ -289,9 +327,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recentActivities => 'Recent Activities';
-
-  @override
-  String get thisMonthProgress => 'Recent Activities';
 
   @override
   String get streak => 'Streak';
