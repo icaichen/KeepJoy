@@ -616,6 +616,7 @@ class _HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 80,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -623,11 +624,15 @@ class _HomeScreen extends StatelessWidget {
               _getGreeting(l10n),
               style: Theme.of(
                 context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+              ),
             ),
+            const SizedBox(height: 2),
             Text(
               l10n.readyToSparkJoy,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
