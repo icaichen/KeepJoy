@@ -737,7 +737,7 @@ abstract class AppLocalizations {
   /// No description provided for @newValueCreated.
   ///
   /// In en, this message translates to:
-  /// **'New Value Created'**
+  /// **'Value Added'**
   String get newValueCreated;
 
   /// No description provided for @roomCleaned.

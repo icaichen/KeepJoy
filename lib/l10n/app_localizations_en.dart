@@ -347,7 +347,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get itemDecluttered => 'Item Decluttered';
 
   @override
-  String get newValueCreated => 'New Value Created';
+  String get newValueCreated => 'Value Added';
 
   @override
   String get roomCleaned => 'Room Cleaned';
