@@ -128,6 +128,12 @@ abstract class AppLocalizations {
   /// **'Welcome back to your joy journey'**
   String get welcomeBack;
 
+  /// No description provided for @continueYourJoyJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue your joy journey'**
+  String get continueYourJoyJourney;
+
   /// No description provided for @tagline1.
   ///
   /// In en, this message translates to:

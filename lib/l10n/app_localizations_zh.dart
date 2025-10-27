@@ -24,6 +24,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get welcomeBack => '欢迎回到你的怦然心动之旅';
 
   @override
+  String get continueYourJoyJourney => '继续你的怦然心动之旅';
+
+  @override
   String get tagline1 => '用正念继续整理你的空间';
 
   @override

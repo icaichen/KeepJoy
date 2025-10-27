@@ -24,6 +24,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeBack => 'Welcome back to your joy journey';
 
   @override
+  String get continueYourJoyJourney => 'Continue your joy journey';
+
+  @override
   String get tagline1 => 'Continue organizing your space with mindfulness';
 
   @override

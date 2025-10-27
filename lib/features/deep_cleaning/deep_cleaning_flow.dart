@@ -134,6 +134,27 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
 
   Widget _buildCircle(double screenWidth, String label) {
     final diameter = screenWidth * 0.22;
+
+    // Map areas to icons
+    IconData getIconForArea(String area) {
+      final areaLower = area.toLowerCase();
+      if (areaLower.contains('living') || area == '客厅') {
+        return Icons.weekend_outlined; // Sofa icon
+      } else if (areaLower.contains('bedroom') || area == '卧室') {
+        return Icons.bed_outlined;
+      } else if (areaLower.contains('wardrobe') || area == '衣柜') {
+        return Icons.checkroom_outlined;
+      } else if (areaLower.contains('bookshelf') || area == '书柜') {
+        return Icons.book_outlined;
+      } else if (areaLower.contains('kitchen') || area == '厨房') {
+        return Icons.kitchen_outlined;
+      } else if (areaLower.contains('desk') || area == '书桌') {
+        return Icons.desk_outlined;
+      } else {
+        return Icons.home_outlined; // Default icon
+      }
+    }
+
     return InkWell(
       onTap: () {
         _areaController.text = label;
@@ -146,12 +167,24 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
           shape: BoxShape.circle,
           border: Border.all(color: Colors.grey.shade400, width: 1.5),
         ),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              getIconForArea(label),
+              size: 28,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
