@@ -1,6 +1,10 @@
 {
   "@@locale": "zh",
 
+  "goodMorning": "早上好",
+  "goodAfternoon": "下午好",
+  "readyToSparkJoy": "准备好开启怦然心动之旅了吗？",
+
   "appTitle": "KeepJoy",
 
   "home": "首页",
@@ -287,6 +291,8 @@
   "deleteItem": "删除物品",
   "deleteItemConfirm": "确定要删除此物品吗？",
   "itemStatusUpdated": "物品状态已更新",
+
+  "monthlyEarnings": "本月收入",
 
   "createMemory": "创建回忆",
   "createMemoryTitle": "创建回忆",

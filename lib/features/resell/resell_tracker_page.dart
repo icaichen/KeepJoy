@@ -140,6 +140,19 @@ class _ResellTrackerPageState extends State<ResellTrackerPage> {
     );
   }
 
+  double _calculateMonthlyEarnings() {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+
+    return widget.resellItems
+        .where((item) =>
+            item.status == ResellStatus.sold &&
+            item.soldDate != null &&
+            item.soldDate!.isAfter(monthStart) &&
+            item.soldDate!.isBefore(now.add(const Duration(days: 1))))
+        .fold(0.0, (sum, item) => sum + (item.soldPrice ?? 0.0));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -182,25 +195,15 @@ class _ResellTrackerPageState extends State<ResellTrackerPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SegmentedButton<ResellSegment>(
-              segments: [
-                ButtonSegment(
-                  value: ResellSegment.toSell,
-                  label: Text(l10n.toSell),
-                ),
-                ButtonSegment(
-                  value: ResellSegment.listing,
-                  label: Text(l10n.listing),
-                ),
-                ButtonSegment(
-                  value: ResellSegment.sold,
-                  label: Text(l10n.sold),
-                ),
-              ],
-              selected: <ResellSegment>{_segment},
-              onSelectionChanged: (selection) {
+            _ResellProgressCard(
+              monthlyEarnings: _calculateMonthlyEarnings(),
+              toSellCount: toSellItems.length,
+              listingCount: listingItems.length,
+              soldCount: soldItems.length,
+              currencySymbol: _getCurrencySymbol(context),
+              onSegmentTap: (segment) {
                 setState(() {
-                  _segment = selection.first;
+                  _segment = segment;
                 });
               },
             ),
@@ -316,7 +319,7 @@ class _ResellItemCard extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -611,6 +614,144 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
           ],
           const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+}
+
+class _ResellProgressCard extends StatelessWidget {
+  const _ResellProgressCard({
+    required this.monthlyEarnings,
+    required this.toSellCount,
+    required this.listingCount,
+    required this.soldCount,
+    required this.currencySymbol,
+    required this.onSegmentTap,
+  });
+
+  final double monthlyEarnings;
+  final int toSellCount;
+  final int listingCount;
+  final int soldCount;
+  final String currencySymbol;
+  final Function(ResellSegment) onSegmentTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Monthly earnings header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.monthlyEarnings,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  '$currencySymbol${monthlyEarnings.toStringAsFixed(2)}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Clickable status sections
+            Row(
+              children: [
+                Expanded(
+                  child: _StatusSection(
+                    label: l10n.toSell,
+                    count: toSellCount,
+                    color: Colors.orange,
+                    onTap: () => onSegmentTap(ResellSegment.toSell),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatusSection(
+                    label: l10n.listing,
+                    count: listingCount,
+                    color: Colors.blue,
+                    onTap: () => onSegmentTap(ResellSegment.listing),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatusSection(
+                    label: l10n.sold,
+                    count: soldCount,
+                    color: Colors.green,
+                    onTap: () => onSegmentTap(ResellSegment.sold),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusSection extends StatelessWidget {
+  const _StatusSection({
+    required this.label,
+    required this.count,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final int count;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Text(
+              '$count',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -98,6 +98,24 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good Morning'**
+  String get goodMorning;
+
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good Afternoon'**
+  String get goodAfternoon;
+
+  /// No description provided for @readyToSparkJoy.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to spark joy today?'**
+  String get readyToSparkJoy;
+
   /// The application title
   ///
   /// In en, this message translates to:
@@ -1585,6 +1603,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Item status updated'**
   String get itemStatusUpdated;
+
+  /// No description provided for @monthlyEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month\'s Earnings'**
+  String get monthlyEarnings;
 
   /// No description provided for @createMemory.
   ///

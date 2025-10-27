@@ -9,6 +9,15 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get goodMorning => '早上好';
+
+  @override
+  String get goodAfternoon => '下午好';
+
+  @override
+  String get readyToSparkJoy => '准备好开启怦然心动之旅了吗？';
+
+  @override
   String get appTitle => 'KeepJoy';
 
   @override
@@ -779,6 +788,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get itemStatusUpdated => '物品状态已更新';
+
+  @override
+  String get monthlyEarnings => '本月收入';
 
   @override
   String get createMemory => '创建回忆';

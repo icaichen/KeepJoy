@@ -456,6 +456,17 @@ class _HomeScreen extends StatelessWidget {
     }
   }
 
+  String _getGreeting(AppLocalizations l10n) {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return l10n.goodMorning;
+    } else if (hour < 18) {
+      return l10n.goodAfternoon;
+    } else {
+      return l10n.goodEvening;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -467,7 +478,23 @@ class _HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.home),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _getGreeting(l10n),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              l10n.readyToSparkJoy,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
         centerTitle: false,
         actions: [
           IconButton(
@@ -1061,87 +1088,88 @@ class _ItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final status = isPending ? DeclutterStatus.pending : item.status;
-    final statusColor = _statusColor(status, theme);
     final statusLabel = status.label(context);
     final categoryLabel = item.category.label(context);
+
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildThumbnail(context),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.name,
-                          style: theme.textTheme.titleMedium,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          // TODO: Navigate to item detail page if needed
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              _buildThumbnail(context),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      style: theme.textTheme.titleMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      categoryLabel,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Status-specific info
+                    if (isPending) ...[
+                      Text(
+                        _timeAgo(context, item.createdAt),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      Chip(
-                        label: Text(statusLabel),
-                        backgroundColor: statusColor.withValues(alpha: 0.15),
-                        labelStyle: theme.textTheme.bodySmall?.copyWith(
-                          color: statusColor,
-                          fontWeight: FontWeight.w600,
+                    ] else ...[
+                      Text(
+                        statusLabel,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
+                      if (item.notes != null && item.notes!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          item.notes!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    categoryLabel,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color == null
-                          ? null
-                          : theme.textTheme.bodySmall!.color!.withValues(
-                              alpha: 0.7,
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _timeAgo(context, item.createdAt),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color == null
-                          ? null
-                          : theme.textTheme.bodySmall!.color!.withValues(
-                              alpha: 0.6,
-                            ),
-                    ),
-                  ),
-                  if (!isPending &&
-                      item.notes != null &&
-                      item.notes!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        item.notes!,
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              Icon(
+                Icons.chevron_right,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildThumbnail(BuildContext context) {
-    const double size = 60;
+    const double size = 80;
     if (item.photoPath != null && item.photoPath!.isNotEmpty) {
       final file = File(item.photoPath!);
       if (file.existsSync()) {
         return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           child: Image.file(file, width: size, height: size, fit: BoxFit.cover),
         );
       }
@@ -1151,30 +1179,13 @@ class _ItemCard extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(
-        Icons.photo,
+        Icons.image,
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
-  }
-
-  Color _statusColor(DeclutterStatus status, ThemeData theme) {
-    switch (status) {
-      case DeclutterStatus.pending:
-        return theme.colorScheme.primary;
-      case DeclutterStatus.keep:
-        return Colors.teal;
-      case DeclutterStatus.discard:
-        return Colors.redAccent;
-      case DeclutterStatus.donate:
-        return Colors.orangeAccent;
-      case DeclutterStatus.recycle:
-        return Colors.blueAccent;
-      case DeclutterStatus.resell:
-        return Colors.purpleAccent;
-    }
   }
 
   String _timeAgo(BuildContext context, DateTime time) {

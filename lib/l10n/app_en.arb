@@ -1,6 +1,10 @@
 {
   "@@locale": "en",
 
+  "goodMorning": "Good Morning",
+  "goodAfternoon": "Good Afternoon",
+  "readyToSparkJoy": "Ready to spark joy today?",
+
   "appTitle": "KeepJoy",
   "@appTitle": {
     "description": "The application title"
@@ -389,6 +393,8 @@
   "deleteItem": "Delete Item",
   "deleteItemConfirm": "Are you sure you want to delete this item?",
   "itemStatusUpdated": "Item status updated",
+
+  "monthlyEarnings": "This Month's Earnings",
 
   "createMemory": "Create Memory",
   "createMemoryTitle": "Create a Memory",

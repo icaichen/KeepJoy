@@ -9,6 +9,15 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get goodMorning => 'Good Morning';
+
+  @override
+  String get goodAfternoon => 'Good Afternoon';
+
+  @override
+  String get readyToSparkJoy => 'Ready to spark joy today?';
+
+  @override
   String get appTitle => 'KeepJoy';
 
   @override
@@ -801,6 +810,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get itemStatusUpdated => 'Item status updated';
+
+  @override
+  String get monthlyEarnings => 'This Month\'s Earnings';
 
   @override
   String get createMemory => 'Create Memory';
