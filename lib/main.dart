@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import 'features/deep_cleaning/deep_cleaning_flow.dart';
@@ -14,6 +15,7 @@ import 'features/profile/profile_page.dart';
 import 'features/resell/resell_tracker_page.dart';
 import 'features/insights/insights_screen.dart';
 import 'l10n/app_localizations.dart';
+import 'package:keepjoy_app/models/activity_entry.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/memory.dart';
@@ -189,6 +191,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<ResellItem> _resellItems = [];
   final List<PlannedSession> _plannedSessions = [];
   final List<DeepCleaningSession> _completedSessions = [];
+  final List<ActivityEntry> _activityHistory = [];
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
 
@@ -258,18 +261,33 @@ class _MainNavigatorState extends State<MainNavigator> {
   }
 
   // Record activity for today
-  void _recordActivity() {
-    final today = DateTime.now();
-    final todayStr =
-        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+  void _recordActivity(
+    ActivityType type, {
+    String? description,
+    int? itemCount,
+  }) {
+    final now = DateTime.now();
+    final dateStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
     setState(() {
-      _activityDates.add(todayStr);
+      _activityDates.add(dateStr);
+      _activityHistory.insert(
+        0,
+        ActivityEntry(
+          type: type,
+          timestamp: now,
+          description: description,
+          itemCount: itemCount,
+        ),
+      );
+      if (_activityHistory.length > 20) {
+        _activityHistory.removeRange(20, _activityHistory.length);
+      }
     });
   }
 
   void _startSession(String area) {
-    _recordActivity(); // Record activity for Deep Cleaning
     setState(() {
       _activeSession = DeepCleaningSession(
         id: const Uuid().v4(),
@@ -281,24 +299,40 @@ class _MainNavigatorState extends State<MainNavigator> {
   }
 
   void _stopSession() {
+    final session = _activeSession;
+    if (session != null) {
+      _recordActivity(
+        ActivityType.deepCleaning,
+        description: session.area,
+        itemCount: session.itemsCount,
+      );
+    }
     setState(() {
-      if (_activeSession != null) {
+      if (session != null) {
         // Save the completed session
-        _completedSessions.insert(0, _activeSession!);
+        _completedSessions.insert(0, session);
       }
       _activeSession = null;
     });
   }
 
   void _addPendingItem(DeclutterItem item) {
-    _recordActivity(); // Record activity for Quick Declutter
+    _recordActivity(
+      ActivityType.quickDeclutter,
+      description: item.name,
+      itemCount: 1,
+    ); // Record activity for Quick Declutter
     setState(() {
       _pendingItems.insert(0, item);
     });
   }
 
   void _addDeclutteredItem(DeclutterItem item) {
-    _recordActivity(); // Record activity for Joy Declutter
+    _recordActivity(
+      ActivityType.joyDeclutter,
+      description: item.name,
+      itemCount: 1,
+    ); // Record activity for Joy Declutter
     setState(() {
       _declutteredItems.insert(0, item);
       _pendingItems.removeWhere((pending) => pending.id == item.id);
@@ -399,6 +433,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         memories: _memories,
         plannedSessions: _plannedSessions,
         onAddPlannedSession: _addPlannedSession,
+        activityHistory: List.unmodifiable(_activityHistory),
       ),
       ItemsScreen(
         pendingItems: List.unmodifiable(_pendingItems),
@@ -482,6 +517,7 @@ class _HomeScreen extends StatelessWidget {
   final List<Memory> memories;
   final List<PlannedSession> plannedSessions;
   final void Function(PlannedSession) onAddPlannedSession;
+  final List<ActivityEntry> activityHistory;
 
   const _HomeScreen({
     required this.activeSession,
@@ -497,6 +533,7 @@ class _HomeScreen extends StatelessWidget {
     required this.memories,
     required this.plannedSessions,
     required this.onAddPlannedSession,
+    required this.activityHistory,
   });
 
   String _getQuoteOfDay(AppLocalizations l10n) {
@@ -616,6 +653,181 @@ class _HomeScreen extends StatelessWidget {
       'Dec',
     ];
     return '${shortMonths[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  IconData _iconForActivity(ActivityType type) {
+    switch (type) {
+      case ActivityType.deepCleaning:
+        return Icons.cleaning_services_rounded;
+      case ActivityType.joyDeclutter:
+        return Icons.favorite_border_rounded;
+      case ActivityType.quickDeclutter:
+        return Icons.flash_on_rounded;
+    }
+  }
+
+  String _activityTitle(ActivityEntry entry, AppLocalizations l10n) {
+    switch (entry.type) {
+      case ActivityType.deepCleaning:
+        return l10n.deepCleaning;
+      case ActivityType.joyDeclutter:
+        return l10n.joyDeclutterTitle;
+      case ActivityType.quickDeclutter:
+        return l10n.quickDeclutterTitle;
+    }
+  }
+
+  String? _activitySubtitle(
+    ActivityEntry entry,
+    AppLocalizations l10n,
+    bool isChinese,
+  ) {
+    final parts = <String>[];
+    final description = entry.description?.trim();
+    if (description != null && description.isNotEmpty) {
+      parts.add(description);
+    }
+    if (entry.itemCount != null) {
+      parts.add(l10n.itemsCount(entry.itemCount!));
+    }
+    if (parts.isEmpty) {
+      return null;
+    }
+    return parts.join(isChinese ? ' · ' : ' • ');
+  }
+
+  String _formatActivityTime(DateTime timestamp, bool isChinese) {
+    final localeCode = isChinese ? 'zh_CN' : 'en_US';
+    final pattern = isChinese ? 'M月d日 HH:mm' : 'MMM d, h:mm a';
+    return DateFormat(pattern, localeCode).format(timestamp);
+  }
+
+  void _showActivityHistory(BuildContext context, AppLocalizations l10n) {
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
+    final activities = activityHistory.take(5).toList();
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        final sheetTheme = Theme.of(sheetContext);
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.recentActivities,
+                  style: sheetTheme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (activities.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      isChinese
+                          ? '近期还没有活动记录，继续加油！'
+                          : 'No recent activity yet—keep going!',
+                      style: sheetTheme.textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF6B7280),
+                        height: 1.4,
+                      ),
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: activities.length,
+                    separatorBuilder: (_, __) => const Divider(
+                      height: 24,
+                      color: Color(0xFFE5E7EB),
+                    ),
+                    itemBuilder: (_, index) {
+                      final entry = activities[index];
+                      final subtitle =
+                          _activitySubtitle(entry, l10n, isChinese);
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF2F4F8),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              _iconForActivity(entry.type),
+                              color: const Color(0xFF4B5563),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _activityTitle(entry, l10n),
+                                  style: sheetTheme.textTheme.bodyLarge
+                                      ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF111827),
+                                  ),
+                                ),
+                                if (subtitle != null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    subtitle,
+                                    style: sheetTheme.textTheme.bodyMedium
+                                        ?.copyWith(
+                                      color: const Color(0xFF4B5563),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            _formatActivityTime(entry.timestamp, isChinese),
+                            style: sheetTheme.textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF6B7280),
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   String _formatQuote(String quote) {
@@ -892,62 +1104,68 @@ class _HomeScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Streak Achievement
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFFDB022), // Gold color
-                            shape: BoxShape.circle,
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _showActivityHistory(context, l10n),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFDB022), // Gold color
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.emoji_events,
+                              color: Colors.white,
+                              size: 22,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.emoji_events,
-                            color: Colors.white,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.streakAchievement,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.streakAchievement,
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium
+                                          ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  l10n.daysStreak(streak),
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium
+                                          ?.copyWith(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.9,
                                     ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                l10n.daysStreak(streak),
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.9,
-                                      ),
-                                    ),
-                              ),
-                            ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Icon(
-                          Icons.chevron_right,
-                          color: Colors.white.withValues(alpha: 0.6),
-                          size: 28,
-                        ),
-                      ],
+                          Icon(
+                            Icons.chevron_right,
+                            color: Colors.white.withValues(alpha: 0.6),
+                            size: 28,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -1178,9 +1396,10 @@ class _HomeScreen extends StatelessWidget {
                     children: [
                       Text(
                         l10n.declutterCalendar,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF111827),
+                            ),
                       ),
                       TextButton.icon(
                         onPressed: () async {
@@ -1329,9 +1548,10 @@ class _HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     l10n.startDeclutter,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF111827),
+                        ),
                   ),
                   const SizedBox(height: 12),
                   Row(
