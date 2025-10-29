@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../models/declutter_item.dart';
+import 'package:keepjoy_app/models/declutter_item.dart';
 import '../../services/ai_identification_service.dart';
 
 class QuickDeclutterFlowPage extends StatefulWidget {

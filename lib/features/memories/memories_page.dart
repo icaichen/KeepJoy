@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../models/memory.dart';
+import 'package:keepjoy_app/models/memory.dart';
 import 'create_memory_page.dart';
 import 'memory_detail_page.dart';
 

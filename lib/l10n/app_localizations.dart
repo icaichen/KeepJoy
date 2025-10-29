@@ -2131,6 +2131,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Welcome to KeepJoy'**
   String get welcomeToKeepJoy;
+
+  /// No description provided for @quickTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Tip'**
+  String get quickTip;
+
+  /// No description provided for @whatBroughtYouJoy.
+  ///
+  /// In en, this message translates to:
+  /// **'What brought you joy today?'**
+  String get whatBroughtYouJoy;
+
+  /// No description provided for @shareYourJoy.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Your Joy'**
+  String get shareYourJoy;
 }
 
 class _AppLocalizationsDelegate

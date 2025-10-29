@@ -1098,4 +1098,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get welcomeToKeepJoy => 'Welcome to KeepJoy';
+
+  @override
+  String get quickTip => 'Quick Tip';
+
+  @override
+  String get whatBroughtYouJoy => 'What brought you joy today?';
+
+  @override
+  String get shareYourJoy => 'Share Your Joy';
 }

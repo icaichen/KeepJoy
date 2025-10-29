@@ -1069,4 +1069,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get welcomeToKeepJoy => '欢迎来到KeepJoy';
+
+  @override
+  String get quickTip => '快速提示';
+
+  @override
+  String get whatBroughtYouJoy => '今天什么让你快乐？';
+
+  @override
+  String get shareYourJoy => '分享你的快乐';
 }

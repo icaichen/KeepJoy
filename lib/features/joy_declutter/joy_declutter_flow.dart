@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../models/declutter_item.dart';
-import '../../models/memory.dart';
+import 'package:keepjoy_app/models/declutter_item.dart';
+import 'package:keepjoy_app/models/memory.dart';
 import '../../services/ai_identification_service.dart';
 import '../memories/create_memory_page.dart';
 

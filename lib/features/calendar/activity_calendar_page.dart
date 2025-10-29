@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../models/declutter_item.dart';
-import '../../models/memory.dart';
+import 'package:keepjoy_app/models/declutter_item.dart';
+import 'package:keepjoy_app/models/memory.dart';
 
 /// Full-screen calendar page showing decluttering activity
 class ActivityCalendarPage extends StatefulWidget {

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:http/http.dart' as http;
 
-import '../models/declutter_item.dart';
+import 'package:keepjoy_app/models/declutter_item.dart';
 
 /// Result from AI identification
 class AIIdentificationResult {

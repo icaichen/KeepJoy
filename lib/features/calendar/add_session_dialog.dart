@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../models/planned_session.dart';
+import 'package:keepjoy_app/models/planned_session.dart';
 
 /// Dialog for adding a new planned decluttering session
 class AddSessionDialog extends StatefulWidget {

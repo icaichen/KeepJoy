@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../models/memory.dart';
+import 'package:keepjoy_app/models/memory.dart';
 
 /// Memory detail page with photo viewer
 class MemoryDetailPage extends StatefulWidget {

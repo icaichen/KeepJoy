@@ -396,5 +396,9 @@
   "passwordsDoNotMatch": "密码不匹配",
   "signInSuccess": "登录成功",
   "signUpSuccess": "注册成功",
-  "welcomeToKeepJoy": "欢迎来到KeepJoy"
+  "welcomeToKeepJoy": "欢迎来到KeepJoy",
+  
+  "quickTip": "快速提示",
+  "whatBroughtYouJoy": "今天什么让你快乐？",
+  "shareYourJoy": "分享你的快乐"
 }

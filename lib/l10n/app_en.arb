@@ -505,5 +505,9 @@
   "passwordsDoNotMatch": "Passwords do not match",
   "signInSuccess": "Signed in successfully",
   "signUpSuccess": "Account created successfully",
-  "welcomeToKeepJoy": "Welcome to KeepJoy"
+  "welcomeToKeepJoy": "Welcome to KeepJoy",
+  
+  "quickTip": "Quick Tip",
+  "whatBroughtYouJoy": "What brought you joy today?",
+  "shareYourJoy": "Share Your Joy"
 }

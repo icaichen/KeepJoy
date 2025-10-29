@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../models/declutter_item.dart';
-import '../../models/memory.dart';
+import 'package:keepjoy_app/models/declutter_item.dart';
+import 'package:keepjoy_app/models/memory.dart';
 
 class CreateMemoryPage extends StatefulWidget {
   const CreateMemoryPage({
