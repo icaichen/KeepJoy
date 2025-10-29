@@ -1959,6 +1959,7 @@ class ItemsScreen extends StatefulWidget {
 
 class _ItemsScreenState extends State<ItemsScreen> {
   ItemsSegment _segment = ItemsSegment.toDeclutter;
+  bool _showPendingReviews = true; // Whether to show the pending reviews section
 
   @override
   Widget build(BuildContext context) {
@@ -1969,6 +1970,14 @@ class _ItemsScreenState extends State<ItemsScreen> {
 
     final pending = widget.pendingItems;
     final completed = widget.declutteredItems;
+
+    // Filter items that need review: let go (not kept/pending) and no purchase review
+    final itemsNeedingReview = completed
+        .where((item) =>
+            item.status != DeclutterStatus.keep &&
+            item.status != DeclutterStatus.pending &&
+            item.purchaseReview == null)
+        .toList();
 
     final currentItems = _segment == ItemsSegment.toDeclutter
         ? pending
@@ -1981,6 +1990,20 @@ class _ItemsScreenState extends State<ItemsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Pending review section
+            if (itemsNeedingReview.isNotEmpty) ...[
+              _PendingReviewSection(
+                items: itemsNeedingReview,
+                isExpanded: _showPendingReviews,
+                onToggle: () {
+                  setState(() {
+                    _showPendingReviews = !_showPendingReviews;
+                  });
+                },
+                isChinese: isChinese,
+              ),
+              const SizedBox(height: 20),
+            ],
             Center(
               child: SegmentedButton<ItemsSegment>(
                 segments: [
@@ -2155,6 +2178,182 @@ class _ItemCard extends StatelessWidget {
     } else {
       return l10n.daysAgo(duration.inDays);
     }
+  }
+}
+
+// Pending Review Section Widget
+class _PendingReviewSection extends StatelessWidget {
+  const _PendingReviewSection({
+    required this.items,
+    required this.isExpanded,
+    required this.onToggle,
+    required this.isChinese,
+  });
+
+  final List<DeclutterItem> items;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+  final bool isChinese;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 2,
+      color: const Color(0xFFFFF9E6), // Light yellow attention color
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onToggle,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD93D),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.rate_review_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isChinese ? '待复盘物品' : 'Items to Review',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          isChinese ? '${items.length} 件物品' : '${items.length} items',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: Colors.black54,
+                  ),
+                ],
+              ),
+              if (isExpanded) ...[
+                const SizedBox(height: 16),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+                ...items.take(5).map((item) => _PendingReviewItemTile(
+                      item: item,
+                      isChinese: isChinese,
+                    )),
+                if (items.length > 5) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    isChinese ? '+ ${items.length - 5} 件更多' : '+ ${items.length - 5} more',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Individual item tile in pending review section
+class _PendingReviewItemTile extends StatelessWidget {
+  const _PendingReviewItemTile({
+    required this.item,
+    required this.isChinese,
+  });
+
+  final DeclutterItem item;
+  final bool isChinese;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  item.category.label(context),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Quick review buttons
+          Wrap(
+            spacing: 6,
+            children: PurchaseReview.values.map((review) {
+              return InkWell(
+                onTap: () {
+                  // TODO: Update item with review
+                  // For now just show a snackbar
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${item.name}: ${review.label(context)}',
+                      ),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: Text(
+                    review.emoji,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -42,6 +42,38 @@ enum DeclutterStatus {
   }
 }
 
+enum PurchaseReview {
+  worthIt('Worth it', '值得购买'),
+  wouldBuyAgain('Would buy again', '会再入手'),
+  neutral('Neutral', '无感'),
+  wasteMoney('Waste of money', '浪费金钱');
+
+  const PurchaseReview(this.english, this.chinese);
+  final String english;
+  final String chinese;
+
+  String label(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode.toLowerCase().startsWith('zh')) {
+      return chinese;
+    }
+    return english;
+  }
+
+  String get emoji {
+    switch (this) {
+      case PurchaseReview.worthIt:
+        return '⭐';
+      case PurchaseReview.wouldBuyAgain:
+        return '🔄';
+      case PurchaseReview.neutral:
+        return '😐';
+      case PurchaseReview.wasteMoney:
+        return '💸';
+    }
+  }
+}
+
 class DeclutterItem {
   DeclutterItem({
     required this.id,
@@ -55,6 +87,8 @@ class DeclutterItem {
     this.notes,
     this.joyLevel,
     this.joyNotes,
+    this.purchaseReview,
+    this.reviewedAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
   final String id;
@@ -68,6 +102,8 @@ class DeclutterItem {
   final String? notes;
   final int? joyLevel; // Joy Index: 1-10 (怦然心动指数)
   final String? joyNotes; // Why it sparks joy (为什么带来快乐)
+  final PurchaseReview? purchaseReview; // Purchase review (消费复盘)
+  final DateTime? reviewedAt; // When the purchase was reviewed
 
   // Convert to JSON for Supabase
   Map<String, dynamic> toJson() {
@@ -83,6 +119,8 @@ class DeclutterItem {
       'notes': notes,
       'joy_level': joyLevel,
       'joy_notes': joyNotes,
+      'purchase_review': purchaseReview?.name,
+      'reviewed_at': reviewedAt?.toIso8601String(),
     };
   }
 
@@ -106,6 +144,14 @@ class DeclutterItem {
       notes: json['notes'] as String?,
       joyLevel: json['joy_level'] as int?,
       joyNotes: json['joy_notes'] as String?,
+      purchaseReview: json['purchase_review'] != null
+          ? PurchaseReview.values.firstWhere(
+              (e) => e.name == json['purchase_review'],
+            )
+          : null,
+      reviewedAt: json['reviewed_at'] != null
+          ? DateTime.parse(json['reviewed_at'] as String)
+          : null,
     );
   }
 
@@ -121,6 +167,8 @@ class DeclutterItem {
     String? notes,
     int? joyLevel,
     String? joyNotes,
+    PurchaseReview? purchaseReview,
+    DateTime? reviewedAt,
   }) {
     return DeclutterItem(
       id: id ?? this.id,
@@ -134,6 +182,8 @@ class DeclutterItem {
       notes: notes ?? this.notes,
       joyLevel: joyLevel ?? this.joyLevel,
       joyNotes: joyNotes ?? this.joyNotes,
+      purchaseReview: purchaseReview ?? this.purchaseReview,
+      reviewedAt: reviewedAt ?? this.reviewedAt,
     );
   }
 }

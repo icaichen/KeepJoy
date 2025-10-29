@@ -7,6 +7,70 @@ import 'package:image_picker/image_picker.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/messiness_analysis_service.dart';
 
+const Color _deepCleaningBackgroundColor = Color(0xFFF5F5F7);
+const Color _deepCleaningPrimaryColor = Color(0xFF111827);
+const Color _deepCleaningCardShadow = Color(0x11000000);
+const int _deepCleaningTotalSteps = 5;
+
+Widget _buildDeepCleaningTopBar(
+  BuildContext context, {
+  required int currentStep,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => Navigator.of(context).maybePop(),
+            splashRadius: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.close_rounded),
+            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+            splashRadius: 20,
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          _deepCleaningTotalSteps,
+          (index) => Container(
+            width: 24,
+            height: 3,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: index <= currentStep ? _deepCleaningPrimaryColor : const Color(0xFFE0E5EB),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 24),
+    ],
+  );
+}
+
+BoxDecoration _deepCleaningCardDecoration({Color? color}) {
+  return BoxDecoration(
+    color: color ?? Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: const [
+      BoxShadow(
+        color: _deepCleaningCardShadow,
+        blurRadius: 16,
+        offset: Offset(0, 8),
+      ),
+    ],
+  );
+}
+
 class DeepCleaningFlowPage extends StatefulWidget {
   final Function(String area) onStartSession;
   final VoidCallback onStopSession;
@@ -63,7 +127,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
     final selectedArea = _areaController.text.trim();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: _deepCleaningBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -73,49 +137,14 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    splashRadius: 20,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    splashRadius: 20,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  4,
-                  (index) => Container(
-                    width: 24,
-                    height: 3,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: index == 0
-                          ? const Color(0xFF111827)
-                          : const Color(0xFFE0E5EB),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+              _buildDeepCleaningTopBar(context, currentStep: 0),
               Text(
                 isChinese
                     ? '今天你想专注哪些区域？'
                     : 'Which areas do you want to focus on today?',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
+                  color: _deepCleaningPrimaryColor,
                 ),
               ),
               const SizedBox(height: 32),
@@ -165,7 +194,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: _deepCleaningPrimaryColor,
                               width: 1.5,
                             ),
                           ),
@@ -180,7 +209,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                 width: double.infinity,
                 child: FilledButton(
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF111827),
+                    backgroundColor: _deepCleaningPrimaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -266,11 +295,9 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
             height: diameter,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected ? const Color(0xFF111827) : Colors.white,
+              color: isSelected ? _deepCleaningPrimaryColor : Colors.white,
               border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF111827)
-                    : const Color(0xFFE1E7EF),
+                color: isSelected ? _deepCleaningPrimaryColor : const Color(0xFFE1E7EF),
                 width: 1.5,
               ),
               boxShadow: [
@@ -299,9 +326,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isSelected
-                  ? const Color(0xFF111827)
-                  : const Color(0xFF6B7280),
+              color: isSelected ? _deepCleaningPrimaryColor : const Color(0xFF6B7280),
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -391,104 +416,151 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.beforePhoto), centerTitle: false),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            SizedBox(height: screenHeight * 0.02),
-            // Area name
-            Text(
-              widget.area,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+      backgroundColor: _deepCleaningBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.06,
+            vertical: screenHeight * 0.025,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDeepCleaningTopBar(context, currentStep: 1),
+              Text(
+                l10n.beforePhoto,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: _deepCleaningPrimaryColor,
+                ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.01),
-            Text(
-              l10n.captureBeforeState,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              const SizedBox(height: 6),
+              Text(
+                widget.area,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _deepCleaningPrimaryColor,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: screenHeight * 0.04),
-            // Photo preview or placeholder
-            Expanded(
-              child: Center(
-                child: _photoPath != null
-                    ? Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.file(
-                              File(_photoPath!),
-                              fit: BoxFit.contain,
-                            ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.captureBeforeState,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.03),
+              Expanded(
+                child: Container(
+                  decoration: _deepCleaningCardDecoration(),
+                  padding: const EdgeInsets.all(20),
+                  child: Center(
+                    child: _photoPath != null
+                        ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.file(
+                                  File(_photoPath!),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: 12,
+                                right: 12,
+                                child: IconButton.filledTonal(
+                                  onPressed: _takePicture,
+                                  icon: const Icon(Icons.refresh),
+                                  tooltip: l10n.retakePhoto,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 96,
+                                height: 96,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.camera_alt_outlined,
+                                  size: 44,
+                                  color: theme.colorScheme.primary.withOpacity(0.6),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.noPhotoTaken,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: _deepCleaningPrimaryColor,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.captureBeforeState,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: IconButton.filled(
-                              onPressed: _takePicture,
-                              icon: const Icon(Icons.refresh),
-                              tooltip: l10n.retakePhoto,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.camera_alt_outlined,
-                            size: 100,
-                            color: theme.colorScheme.primary.withOpacity(0.3),
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          Text(
-                            l10n.noPhotoTaken,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+                  ),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.03),
+              if (_photoPath == null) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: FilledButton.icon(
+                    onPressed: _isProcessing ? null : _takePicture,
+                    icon: const Icon(Icons.camera_alt),
+                    label: Text(l10n.takeBeforePhoto),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _deepCleaningPrimaryColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.02),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton(
+                    onPressed: _continue,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _deepCleaningPrimaryColor,
+                      side: BorderSide(
+                        color: _deepCleaningPrimaryColor.withOpacity(0.4),
                       ),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            // Action buttons
-            if (_photoPath == null) ...[
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: FilledButton.icon(
-                  onPressed: _isProcessing ? null : _takePicture,
-                  icon: const Icon(Icons.camera_alt),
-                  label: Text(l10n.takeBeforePhoto),
+                    ),
+                    child: Text(l10n.skipPhoto),
+                  ),
                 ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: OutlinedButton(
-                  onPressed: _continue,
-                  child: Text(l10n.skipPhoto),
+              ] else ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: FilledButton(
+                    onPressed: _continue,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _deepCleaningPrimaryColor,
+                    ),
+                    child: Text(l10n.continueButton),
+                  ),
                 ),
-              ),
-            ] else ...[
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: FilledButton(
-                  onPressed: _continue,
-                  child: Text(l10n.continueButton),
-                ),
-              ),
+              ],
+              SizedBox(height: screenHeight * 0.01),
             ],
-            SizedBox(height: screenHeight * 0.02),
-          ],
+          ),
         ),
       ),
     );
@@ -589,216 +661,203 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.deepCleaningTitle), centerTitle: false),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            SizedBox(height: screenHeight * 0.02),
-            // Area name
-            Text(
-              widget.area,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+      backgroundColor: _deepCleaningBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.06,
+            vertical: screenHeight * 0.025,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDeepCleaningTopBar(context, currentStep: 2),
+              Text(
+                l10n.deepCleaningTitle,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: _deepCleaningPrimaryColor,
+                ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.04),
-            // Timer section
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Circular timer display
-                    SizedBox(
-                      width: screenWidth * 0.6,
-                      height: screenWidth * 0.6,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Animated pulse ring when running
-                          if (_isRunning)
-                            AnimatedBuilder(
-                              animation: _pulseController,
-                              builder: (context, child) {
-                                return Container(
-                                  width:
-                                      screenWidth * 0.6 +
-                                      (_pulseController.value * 20),
-                                  height:
-                                      screenWidth * 0.6 +
-                                      (_pulseController.value * 20),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: theme.colorScheme.primary
-                                          .withOpacity(
-                                            0.3 -
-                                                (_pulseController.value * 0.3),
-                                          ),
-                                      width: 2,
+              const SizedBox(height: 6),
+              Text(
+                widget.area,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _deepCleaningPrimaryColor,
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.03),
+              Expanded(
+                child: Container(
+                  decoration: _deepCleaningCardDecoration(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: screenWidth * 0.6,
+                        height: screenWidth * 0.6,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (_isRunning)
+                              AnimatedBuilder(
+                                animation: _pulseController,
+                                builder: (context, child) {
+                                  final expansion = _pulseController.value * 20;
+                                  return Container(
+                                    width: screenWidth * 0.6 + expansion,
+                                    height: screenWidth * 0.6 + expansion,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: theme.colorScheme.primary.withOpacity(0.2),
+                                        width: 2,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                          // Main circle
-                          Container(
-                            width: screenWidth * 0.6,
-                            height: screenWidth * 0.6,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: theme.colorScheme.primaryContainer,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.primary.withOpacity(
-                                    0.3,
-                                  ),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
+                                  );
+                                },
+                              ),
+                            Container(
+                              width: screenWidth * 0.58,
+                              height: screenWidth * 0.58,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.primary.withOpacity(0.08),
+                                border: Border.all(
+                                  color: theme.colorScheme.primary.withOpacity(0.28),
+                                  width: 2,
                                 ),
-                              ],
-                            ),
-                            child: Center(
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
                                     _formatTime(_elapsedSeconds),
-                                    style: theme.textTheme.displayLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: theme
-                                              .colorScheme
-                                              .onPrimaryContainer,
-                                          fontSize: screenWidth * 0.12,
-                                        ),
+                                    style: theme.textTheme.displaySmall?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: theme.colorScheme.primary,
+                                    ),
                                   ),
-                                  SizedBox(height: 8),
+                                  const SizedBox(height: 10),
                                   Text(
                                     _isRunning
-                                        ? (Localizations.localeOf(
-                                                    context,
-                                                  ).languageCode ==
-                                                  'zh'
-                                              ? '进行中...'
-                                              : 'In Progress...')
+                                        ? (Localizations.localeOf(context).languageCode == 'zh'
+                                            ? '专注整理中'
+                                            : 'Cleaning in progress')
                                         : (_elapsedSeconds > 0
-                                              ? (Localizations.localeOf(
-                                                          context,
-                                                        ).languageCode ==
-                                                        'zh'
-                                                    ? '已暂停'
-                                                    : 'Paused')
-                                              : (Localizations.localeOf(
-                                                          context,
-                                                        ).languageCode ==
-                                                        'zh'
-                                                    ? '准备开始'
-                                                    : 'Ready to Start')),
+                                            ? (Localizations.localeOf(context).languageCode == 'zh'
+                                                ? '已暂停'
+                                                : 'Paused')
+                                            : (Localizations.localeOf(context).languageCode == 'zh'
+                                                ? '准备开始'
+                                                : 'Ready to start')),
                                     style: theme.textTheme.bodyLarge?.copyWith(
-                                      color: theme
-                                          .colorScheme
-                                          .onPrimaryContainer
-                                          .withOpacity(0.8),
+                                      color: theme.colorScheme.onSurfaceVariant,
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.06),
-                    // Control button
-                    SizedBox(
-                      width: screenWidth * 0.5,
-                      height: 56,
-                      child: _isRunning
-                          ? FilledButton.icon(
-                              onPressed: _pauseTimer,
-                              icon: const Icon(Icons.pause),
-                              label: Text(
-                                Localizations.localeOf(context).languageCode ==
-                                        'zh'
-                                    ? '暂停'
-                                    : 'Pause',
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                            )
-                          : FilledButton.icon(
-                              onPressed: _startTimer,
-                              icon: Icon(
-                                _elapsedSeconds > 0
-                                    ? Icons.play_arrow
-                                    : Icons.play_arrow,
-                              ),
-                              label: Text(
-                                _elapsedSeconds > 0
-                                    ? (Localizations.localeOf(
-                                                context,
-                                              ).languageCode ==
-                                              'zh'
-                                          ? '继续'
-                                          : 'Resume')
-                                    : (Localizations.localeOf(
-                                                context,
-                                              ).languageCode ==
-                                              'zh'
-                                          ? '开始'
-                                          : 'Start'),
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                    child: Text(l10n.minimize),
-                  ),
-                ),
-                SizedBox(width: screenWidth * 0.02),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(l10n.finishCleaning),
-                          content: Text(l10n.finishCleaningConfirm),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text(l10n.cancel),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _finishCleaning();
-                              },
-                              child: Text(l10n.finish),
-                            ),
                           ],
                         ),
-                      );
-                    },
-                    child: Text(l10n.finish),
+                      ),
+                      SizedBox(height: screenHeight * 0.04),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: _isRunning
+                            ? FilledButton.icon(
+                                onPressed: _pauseTimer,
+                                icon: const Icon(Icons.pause),
+                                label: Text(Localizations.localeOf(context).languageCode == 'zh'
+                                    ? '暂停'
+                                    : 'Pause'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: _deepCleaningPrimaryColor,
+                                  textStyle: const TextStyle(fontSize: 18),
+                                ),
+                              )
+                            : FilledButton.icon(
+                                onPressed: _startTimer,
+                                icon: const Icon(Icons.play_arrow_rounded),
+                                label: Text(
+                                  _elapsedSeconds > 0
+                                      ? (Localizations.localeOf(context).languageCode == 'zh'
+                                          ? '继续'
+                                          : 'Resume')
+                                      : (Localizations.localeOf(context).languageCode == 'zh'
+                                          ? '开始'
+                                          : 'Start'),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: _deepCleaningPrimaryColor,
+                                  textStyle: const TextStyle(fontSize: 18),
+                                ),
+                              ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.02),
-          ],
+              ),
+              SizedBox(height: screenHeight * 0.03),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _deepCleaningPrimaryColor,
+                        side: BorderSide(
+                          color: _deepCleaningPrimaryColor.withOpacity(0.4),
+                        ),
+                      ),
+                      child: Text(l10n.minimize),
+                    ),
+                  ),
+                  SizedBox(width: screenWidth * 0.03),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(l10n.finishCleaning),
+                            content: Text(l10n.finishCleaningConfirm),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(l10n.cancel),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _finishCleaning();
+                                },
+                                child: Text(l10n.finish),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _deepCleaningPrimaryColor,
+                      ),
+                      child: Text(l10n.finish),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: screenHeight * 0.01),
+            ],
+          ),
         ),
       ),
     );
@@ -885,101 +944,151 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.afterPhoto), centerTitle: false),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            SizedBox(height: screenHeight * 0.02),
-            Text(
-              widget.area,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+      backgroundColor: _deepCleaningBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.06,
+            vertical: screenHeight * 0.025,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDeepCleaningTopBar(context, currentStep: 3),
+              Text(
+                l10n.afterPhoto,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: _deepCleaningPrimaryColor,
+                ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.01),
-            Text(
-              l10n.captureAfterState,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              const SizedBox(height: 6),
+              Text(
+                widget.area,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _deepCleaningPrimaryColor,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: screenHeight * 0.04),
-            Expanded(
-              child: Center(
-                child: _photoPath != null
-                    ? Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.file(
-                              File(_photoPath!),
-                              fit: BoxFit.contain,
-                            ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.captureAfterState,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.03),
+              Expanded(
+                child: Container(
+                  decoration: _deepCleaningCardDecoration(),
+                  padding: const EdgeInsets.all(20),
+                  child: Center(
+                    child: _photoPath != null
+                        ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.file(
+                                  File(_photoPath!),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: 12,
+                                right: 12,
+                                child: IconButton.filledTonal(
+                                  onPressed: _takePicture,
+                                  icon: const Icon(Icons.refresh),
+                                  tooltip: l10n.retakePhoto,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 96,
+                                height: 96,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.camera_alt_outlined,
+                                  size: 44,
+                                  color: theme.colorScheme.primary.withOpacity(0.6),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.noPhotoTaken,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: _deepCleaningPrimaryColor,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.captureAfterState,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: IconButton.filled(
-                              onPressed: _takePicture,
-                              icon: const Icon(Icons.refresh),
-                              tooltip: l10n.retakePhoto,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.camera_alt_outlined,
-                            size: 100,
-                            color: theme.colorScheme.primary.withOpacity(0.3),
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          Text(
-                            l10n.noPhotoTaken,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+                  ),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.03),
+              if (_photoPath == null) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: FilledButton.icon(
+                    onPressed: _isProcessing ? null : _takePicture,
+                    icon: const Icon(Icons.camera_alt),
+                    label: Text(l10n.takeAfterPhoto),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _deepCleaningPrimaryColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.02),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton(
+                    onPressed: _continue,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _deepCleaningPrimaryColor,
+                      side: BorderSide(
+                        color: _deepCleaningPrimaryColor.withOpacity(0.4),
                       ),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            if (_photoPath == null) ...[
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: FilledButton.icon(
-                  onPressed: _isProcessing ? null : _takePicture,
-                  icon: const Icon(Icons.camera_alt),
-                  label: Text(l10n.takeAfterPhoto),
+                    ),
+                    child: Text(l10n.skipPhoto),
+                  ),
                 ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: OutlinedButton(
-                  onPressed: _continue,
-                  child: Text(l10n.skipPhoto),
+              ] else ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: FilledButton(
+                    onPressed: _continue,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _deepCleaningPrimaryColor,
+                    ),
+                    child: Text(l10n.continueButton),
+                  ),
                 ),
-              ),
-            ] else ...[
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: FilledButton(
-                  onPressed: _continue,
-                  child: Text(l10n.continueButton),
-                ),
-              ),
+              ],
+              SizedBox(height: screenHeight * 0.01),
             ],
-            SizedBox(height: screenHeight * 0.02),
-          ],
+          ),
         ),
       ),
     );
@@ -1048,129 +1157,163 @@ class _UserInputPageState extends State<UserInputPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.area), centerTitle: false),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: screenHeight * 0.02),
-            // Items count
-            Text(
-              l10n.howManyItems,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            TextField(
-              controller: _itemsController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                hintText: l10n.enterItemsCount,
-                suffixIcon: const Icon(Icons.inventory_2_outlined),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.04),
-            // Focus Index
-            Text(
-              l10n.focusIndex,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              l10n.focusIndexDescription,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.01),
-            Row(
-              children: [
-                Expanded(
-                  child: Slider(
-                    value: _focusIndex,
-                    min: 1,
-                    max: 10,
-                    divisions: 9,
-                    label: _focusIndex.round().toString(),
-                    onChanged: (value) {
-                      setState(() {
-                        _focusIndex = value;
-                      });
-                    },
-                  ),
+      backgroundColor: _deepCleaningBackgroundColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.06,
+            vertical: screenHeight * 0.025,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDeepCleaningTopBar(context, currentStep: 4),
+              Text(
+                widget.area,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: _deepCleaningPrimaryColor,
                 ),
-                SizedBox(
-                  width: 50,
-                  child: Text(
-                    _focusIndex.round().toString(),
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+              ),
+              SizedBox(height: screenHeight * 0.02),
+              Container(
+                decoration: _deepCleaningCardDecoration(),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.howManyItems,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: _deepCleaningPrimaryColor,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.04),
-            // Mood Index
-            Text(
-              l10n.moodIndex,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              l10n.moodIndexDescription,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.01),
-            Row(
-              children: [
-                Expanded(
-                  child: Slider(
-                    value: _moodIndex,
-                    min: 1,
-                    max: 10,
-                    divisions: 9,
-                    label: _moodIndex.round().toString(),
-                    onChanged: (value) {
-                      setState(() {
-                        _moodIndex = value;
-                      });
-                    },
-                  ),
-                ),
-                SizedBox(
-                  width: 50,
-                  child: Text(
-                    _moodIndex.round().toString(),
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _itemsController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: l10n.enterItemsCount,
+                        prefixIcon: const Icon(Icons.inventory_2_outlined),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: Color(0xFFE1E7EF)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: _deepCleaningPrimaryColor.withOpacity(0.6),
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
+                    SizedBox(height: screenHeight * 0.035),
+                    Text(
+                      l10n.focusIndex,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: _deepCleaningPrimaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.focusIndexDescription,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.015),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Slider(
+                            value: _focusIndex,
+                            min: 1,
+                            max: 10,
+                            divisions: 9,
+                            label: _focusIndex.round().toString(),
+                            onChanged: (value) {
+                              setState(() => _focusIndex = value);
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          width: 52,
+                          child: Text(
+                            _focusIndex.round().toString(),
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight * 0.035),
+                    Text(
+                      l10n.moodIndex,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: _deepCleaningPrimaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.moodIndexDescription,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.015),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Slider(
+                            value: _moodIndex,
+                            min: 1,
+                            max: 10,
+                            divisions: 9,
+                            label: _moodIndex.round().toString(),
+                            onChanged: (value) {
+                              setState(() => _moodIndex = value);
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          width: 52,
+                          child: Text(
+                            _moodIndex.round().toString(),
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.06),
-            // Continue button
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: FilledButton(
-                onPressed: _continue,
-                child: Text(l10n.continueButton),
               ),
-            ),
-          ],
+              SizedBox(height: screenHeight * 0.04),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: FilledButton(
+                  onPressed: _continue,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _deepCleaningPrimaryColor,
+                  ),
+                  child: Text(l10n.continueButton),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

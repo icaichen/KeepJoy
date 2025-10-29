@@ -348,6 +348,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         ],
                       ),
                     ),
+                  const SizedBox(height: 20),
+                  // Monthly Report Card - 本月整理报告
+                  _buildMonthlyReportCard(context, isChinese, areaCounts),
                   const SizedBox(height: 24),
                   // Other cards
                   Column(
@@ -446,6 +449,258 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMonthlyReportCard(
+    BuildContext context,
+    bool isChinese,
+    Map<String, int> areaCounts,
+  ) {
+    // Calculate cleaning frequency by type
+    final joyDeclutterCount = widget.declutteredItems.length;
+    final deepCleaningCount = widget.deepCleaningSessions.length;
+    final quickTidyCount = 0; // TODO: Add when we have quick tidy feature
+
+    // Calculate category counts
+    final categoryCounts = <String, int>{};
+    for (final item in widget.declutteredItems) {
+      if (item.category != null) {
+        final categoryName = item.category.toString().split('.').last;
+        categoryCounts[categoryName] = (categoryCounts[categoryName] ?? 0) + 1;
+      }
+    }
+
+    // Get max count for heatmap
+    final maxAreaCount = areaCounts.isEmpty ? 1 : areaCounts.values.reduce((a, b) => a > b ? a : b);
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          Text(
+            isChinese ? '本月整理报告' : 'Monthly Report',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 1. 整理频次 - Cleaning Frequency
+          _buildReportSection(
+            context,
+            title: isChinese ? '整理频次' : 'Cleaning Frequency',
+            subtitle: isChinese ? '回顾整理频次、类别与区域' : 'Review frequency, categories & areas',
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildFrequencyItem(
+                  context,
+                  icon: Icons.bolt_rounded,
+                  color: const Color(0xFF5ECFB8),
+                  count: deepCleaningCount,
+                  label: isChinese ? '极速大扫除' : 'Deep Clean',
+                ),
+                _buildFrequencyItem(
+                  context,
+                  icon: Icons.pan_tool_rounded,
+                  color: const Color(0xFFFF9AA2),
+                  count: joyDeclutterCount,
+                  label: isChinese ? '心动整理' : 'Joy Declutter',
+                ),
+                _buildFrequencyItem(
+                  context,
+                  icon: Icons.description_rounded,
+                  color: const Color(0xFF89CFF0),
+                  count: quickTidyCount,
+                  label: isChinese ? '心动小帮手' : 'Quick Tidy',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // 2. 整理类别 - Categories
+          _buildReportSection(
+            context,
+            title: isChinese ? '整理类别' : 'Categories',
+            child: categoryCounts.isEmpty
+                ? Text(
+                    isChinese ? '本月还没有分类整理记录，先挑一件物品开始吧。' : 'No categorized items yet. Start with one item.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.black54,
+                    ),
+                  )
+                : Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: categoryCounts.entries.map((entry) {
+                      return Chip(
+                        label: Text('${entry.key} (${entry.value})'),
+                        backgroundColor: const Color(0xFFF5F5F5),
+                      );
+                    }).toList(),
+                  ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // 3. 整理区域 - Areas with heatmap
+          _buildReportSection(
+            context,
+            title: isChinese ? '整理区域' : 'Cleaning Areas',
+            child: areaCounts.isEmpty
+                ? Text(
+                    isChinese ? '还没有记录整理区域。' : 'No areas recorded yet.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.black54,
+                    ),
+                  )
+                : Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: areaCounts.entries.map((entry) {
+                      final intensity = entry.value / maxAreaCount;
+                      final color = Color.lerp(
+                        const Color(0xFFE0E0E0),
+                        const Color(0xFF5ECFB8),
+                        intensity,
+                      )!;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${entry.key} (${entry.value})',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: intensity > 0.5 ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // 4. 整理前后对比 - Before/After Comparison
+          _buildReportSection(
+            context,
+            title: isChinese ? '整理前后对比' : 'Before & After',
+            child: widget.deepCleaningSessions.isEmpty
+                ? Text(
+                    isChinese ? '这个月还没有拍下整理前后的对比，下次记得记录成果。' : 'No before/after photos yet. Remember to record your progress next time.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.black54,
+                    ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: widget.deepCleaningSessions.take(3).map((session) {
+                      final improvement = session.beforeMessinessIndex != null && session.afterMessinessIndex != null
+                          ? ((session.beforeMessinessIndex! - session.afterMessinessIndex!) / session.beforeMessinessIndex! * 100).toStringAsFixed(0)
+                          : null;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          '${session.area}: ${improvement != null ? (isChinese ? "改善 $improvement%" : "$improvement% improvement") : (isChinese ? "完成整理" : "Completed")}',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.black87,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportSection(
+    BuildContext context, {
+    required String title,
+    String? subtitle,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.black54,
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        child,
+      ],
+    );
+  }
+
+  Widget _buildFrequencyItem(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required int count,
+    required String label,
+  }) {
+    return Column(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(icon, color: color, size: 28),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          count.toString(),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+          ),
+        ),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Colors.black54,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
@@ -549,6 +804,21 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   Widget _buildLetGoDetailsCard(BuildContext context, bool isChinese) {
     final theme = Theme.of(context);
+
+    // Calculate counts for each disposal method
+    final resellCount = widget.declutteredItems.where((item) => item.status == DeclutterStatus.resell).length;
+    final recycleCount = widget.declutteredItems.where((item) => item.status == DeclutterStatus.recycle).length;
+    final donateCount = widget.declutteredItems.where((item) => item.status == DeclutterStatus.donate).length;
+    final discardCount = widget.declutteredItems.where((item) => item.status == DeclutterStatus.discard).length;
+
+    final total = resellCount + recycleCount + donateCount + discardCount;
+
+    // Define colors for each category
+    const resellColor = Color(0xFFFFD93D); // Yellow
+    const recycleColor = Color(0xFF5ECFB8); // Teal
+    const donateColor = Color(0xFFFF9AA2); // Pink
+    const discardColor = Color(0xFF9E9E9E); // Gray
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -575,47 +845,233 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isChinese ? '了解不同去向的放手占比。' : 'See how items found their next home.',
+            isChinese ? '了解不同去向的放手占比' : 'See how items found their next home',
             style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 24),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 28),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF2EDF7),
-              borderRadius: BorderRadius.circular(20),
+          // Pie chart
+          Center(
+            child: SizedBox(
+              width: 200,
+              height: 200,
+              child: total > 0
+                  ? CustomPaint(
+                      painter: _DonutChartPainter(
+                        resellCount: resellCount,
+                        recycleCount: recycleCount,
+                        donateCount: donateCount,
+                        discardCount: discardCount,
+                        total: total,
+                        resellColor: resellColor,
+                        recycleColor: recycleColor,
+                        donateColor: donateColor,
+                        discardColor: discardColor,
+                      ),
+                    )
+                  : CustomPaint(
+                      painter: _EmptyDonutChartPainter(),
+                    ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.pie_chart_outline_rounded,
-                    color: Colors.black54,
-                    size: 36,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  isChinese ? '数据即将呈现' : 'Data coming soon',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.black45,
-                  ),
-                ),
-              ],
-            ),
+          ),
+          const SizedBox(height: 24),
+          // Legend
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildLegendItem(
+                color: resellColor,
+                label: isChinese ? '出售' : 'Sell',
+                count: resellCount,
+                theme: theme,
+              ),
+              _buildLegendItem(
+                color: recycleColor,
+                label: isChinese ? '回收' : 'Recycle',
+                count: recycleCount,
+                theme: theme,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildLegendItem(
+                color: donateColor,
+                label: isChinese ? '捐赠' : 'Donate',
+                count: donateCount,
+                theme: theme,
+              ),
+              _buildLegendItem(
+                color: discardColor,
+                label: isChinese ? '🗑️' : 'Discard',
+                count: discardCount,
+                theme: theme,
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+
+  Widget _buildLegendItem({
+    required Color color,
+    required String label,
+    required int count,
+    required ThemeData theme,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '$count 件',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: Colors.black54,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Custom painter for donut chart
+class _DonutChartPainter extends CustomPainter {
+  final int resellCount;
+  final int recycleCount;
+  final int donateCount;
+  final int discardCount;
+  final int total;
+  final Color resellColor;
+  final Color recycleColor;
+  final Color donateColor;
+  final Color discardColor;
+
+  _DonutChartPainter({
+    required this.resellCount,
+    required this.recycleCount,
+    required this.donateCount,
+    required this.discardCount,
+    required this.total,
+    required this.resellColor,
+    required this.recycleColor,
+    required this.donateColor,
+    required this.discardColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final innerRadius = radius * 0.6;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = radius - innerRadius;
+
+    double startAngle = -90 * (3.14159 / 180); // Start from top
+
+    // Draw resell segment
+    if (resellCount > 0) {
+      final sweepAngle = (resellCount / total) * 2 * 3.14159;
+      paint.color = resellColor;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
+        startAngle,
+        sweepAngle,
+        false,
+        paint,
+      );
+      startAngle += sweepAngle;
+    }
+
+    // Draw recycle segment
+    if (recycleCount > 0) {
+      final sweepAngle = (recycleCount / total) * 2 * 3.14159;
+      paint.color = recycleColor;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
+        startAngle,
+        sweepAngle,
+        false,
+        paint,
+      );
+      startAngle += sweepAngle;
+    }
+
+    // Draw donate segment
+    if (donateCount > 0) {
+      final sweepAngle = (donateCount / total) * 2 * 3.14159;
+      paint.color = donateColor;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
+        startAngle,
+        sweepAngle,
+        false,
+        paint,
+      );
+      startAngle += sweepAngle;
+    }
+
+    // Draw discard segment
+    if (discardCount > 0) {
+      final sweepAngle = (discardCount / total) * 2 * 3.14159;
+      paint.color = discardColor;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
+        startAngle,
+        sweepAngle,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+// Empty donut chart painter (all gray)
+class _EmptyDonutChartPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final innerRadius = radius * 0.6;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = radius - innerRadius
+      ..color = const Color(0xFFE0E0E0);
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
+      0,
+      2 * 3.14159,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _MetricCardData {
