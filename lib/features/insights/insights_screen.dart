@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -149,29 +151,35 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final gradientHeight = 200.0; // Fixed gradient height
 
     // Calculate scroll progress based on how much the gradient has scrolled away
-    final maxScroll = gradientHeight - 60; // When gradient title reaches header
+    final maxScroll = gradientHeight; // When gradient title reaches header
     final scrollProgress = (_scrollOffset / maxScroll).clamp(0.0, 1.0);
 
-    // Interpolate colors based on scroll
+    // Header expands from thin to full height
+    final headerHeight = 20.0 + (40.0 * scrollProgress); // 20px → 60px
+
+    // Semi-transparent blurred background
     final headerBgColor = Color.lerp(
       Colors.transparent,
-      Colors.white,
+      Colors.white.withValues(alpha: 0.8),
       scrollProgress,
     )!;
 
-    // Header title fades IN and moves to center as gradient scrolls away
+    // Header title slides up from bottom of header and moves to center
     final headerTitleOpacity = scrollProgress;
     final headerTitleColor = Colors.black87;
 
-    // Icon opacity (fades out)
-    final iconOpacity = 1.0 - scrollProgress;
+    // Title slides up from bottom (starts at bottom of header, ends at center)
+    final titleVerticalOffset = 20.0 * (1.0 - scrollProgress); // Slides up from +20 to 0
 
-    // Title alignment in header (moves to center)
+    // Title alignment (starts left, moves to center)
     final titleAlignment = Alignment.lerp(
       Alignment.centerLeft,
       Alignment.center,
       scrollProgress,
     )!;
+
+    // Icon opacity (fades out as we scroll)
+    final iconOpacity = 1.0 - scrollProgress;
 
     return Scaffold(
       body: Container(
@@ -193,60 +201,72 @@ class _InsightsScreenState extends State<InsightsScreen> {
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            // Sticky header (transparent at first, becomes white)
+            // Sticky header (thin at first, expands on scroll)
             SliverAppBar(
               pinned: true,
-              toolbarHeight: 60,
-              backgroundColor: headerBgColor,
-              elevation: scrollProgress > 0.8 ? 0.5 : 0,
-              shadowColor: Colors.black.withValues(alpha: 0.1),
-              flexibleSpace: SafeArea(
-                child: Container(
-                  height: 60,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Stack(
-                    children: [
-                      // Header title (fades IN and moves to center)
-                      if (headerTitleOpacity > 0.01)
-                        Align(
-                          alignment: titleAlignment,
-                          child: Opacity(
-                            opacity: headerTitleOpacity,
-                            child: Text(
-                              isChinese ? '洞察' : 'Insight',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: headerTitleColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      // Profile icon (fades out)
-                      if (iconOpacity > 0.01)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          bottom: 0,
-                          child: Opacity(
-                            opacity: iconOpacity,
-                            child: Center(
-                              child: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                  size: 20,
+              toolbarHeight: headerHeight,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              flexibleSpace: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 10.0 * scrollProgress,
+                    sigmaY: 10.0 * scrollProgress,
+                  ),
+                  child: Container(
+                    color: headerBgColor,
+                    child: SafeArea(
+                      child: Container(
+                        height: headerHeight,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Stack(
+                          children: [
+                            // Header title (slides up from bottom and fades in)
+                            if (headerTitleOpacity > 0.01)
+                              Positioned(
+                                left: titleAlignment == Alignment.center ? 0 : 0,
+                                right: titleAlignment == Alignment.center ? 0 : null,
+                                top: (headerHeight / 2) - 12 + titleVerticalOffset,
+                                child: Opacity(
+                                  opacity: headerTitleOpacity,
+                                  child: Text(
+                                    isChinese ? '洞察' : 'Insight',
+                                    textAlign: titleAlignment == Alignment.center
+                                        ? TextAlign.center
+                                        : TextAlign.left,
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: headerTitleColor,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
+                            // Profile icon (only visible initially)
+                            if (iconOpacity > 0.01)
+                              Positioned(
+                                right: 0,
+                                top: (headerHeight / 2) - 18,
+                                child: Opacity(
+                                  opacity: iconOpacity,
+                                  child: Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.3),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                    ],
+                      ),
+                    ),
                   ),
                 ),
               ),
