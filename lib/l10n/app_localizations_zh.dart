@@ -134,13 +134,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewAll => '查看全部';
 
   @override
-  String get quickDeclutter => '快速\n整理';
+  String get quickDeclutter => '心动小帮手';
 
   @override
   String get quickSweep => '快速\n清扫';
 
   @override
-  String get joyDeclutter => '喜悦\n整理';
+  String get joyDeclutter => '心动整理';
 
   @override
   String get quickDeclutterTitle => '快速整理';
@@ -382,7 +382,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String sessions(int count) {
-    return '整理次数：$count';
+    return '$count 次';
   }
 
   @override
@@ -1078,4 +1078,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get shareYourJoy => '分享你的快乐';
+
+  @override
+  String get monthlyReport => '本月整理报告';
+
+  @override
+  String get declutterRhythmOverview => '整理节奏与成果一览';
+
+  @override
+  String get deepCleaning => '极速大扫除';
+
+  @override
+  String get cleaningAreas => '整理区域';
+
+  @override
+  String get beforeAfterComparison => '前后对比';
+
+  @override
+  String get noSessionsThisMonth => '本月暂无整理记录';
+
+  @override
+  String get tapAreaToViewReport => '点击区域查看详细报告';
+
+  @override
+  String times(Object count) {
+    return '×$count';
+  }
 }

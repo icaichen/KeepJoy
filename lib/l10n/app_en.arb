@@ -506,8 +506,20 @@
   "signInSuccess": "Signed in successfully",
   "signUpSuccess": "Account created successfully",
   "welcomeToKeepJoy": "Welcome to KeepJoy",
-  
+
   "quickTip": "Quick Tip",
   "whatBroughtYouJoy": "What brought you joy today?",
-  "shareYourJoy": "Share Your Joy"
+  "shareYourJoy": "Share Your Joy",
+
+  "monthlyReport": "Monthly Report",
+  "declutterRhythmOverview": "Declutter Rhythm & Achievements",
+  "deepCleaning": "Deep Cleaning",
+  "joyDeclutter": "Joy Declutter",
+  "quickDeclutter": "Quick Declutter",
+  "cleaningAreas": "Cleaning Areas",
+  "beforeAfterComparison": "Before/After Comparison",
+  "noSessionsThisMonth": "No sessions this month",
+  "tapAreaToViewReport": "Tap area to view report",
+  "sessions": "{count} sessions",
+  "times": "×{count}"
 }

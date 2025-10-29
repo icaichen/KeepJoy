@@ -118,13 +118,6 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                   color: const Color(0xFF111827),
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                isChinese ? '最多选择 3 个' : 'Pick up to 3.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B7280),
-                ),
-              ),
               const SizedBox(height: 32),
               Expanded(
                 child: SingleChildScrollView(
@@ -133,7 +126,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                       Wrap(
                         alignment: WrapAlignment.center,
                         spacing: screenWidth * 0.08,
-                        runSpacing: screenHeight * 0.03,
+                        runSpacing: screenHeight * 0.05,
                         children: areas
                             .map(
                               (label) => _buildCircle(
@@ -259,57 +252,62 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
       }
     }
 
-    return InkWell(
-      onTap: () {
-        _areaController.text = label;
-      },
-      borderRadius: BorderRadius.circular(diameter / 2),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: diameter,
-        height: diameter,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isSelected ? const Color(0xFF111827) : Colors.white,
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF111827)
-                : const Color(0xFFE1E7EF),
-            width: 1.5,
-          ),
-          boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: () {
+            _areaController.text = label;
+          },
+          borderRadius: BorderRadius.circular(diameter / 2),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: diameter,
+            height: diameter,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSelected ? const Color(0xFF111827) : Colors.white,
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF111827)
+                    : const Color(0xFFE1E7EF),
+                width: 1.5,
               ),
-          ],
-        ),
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
+              boxShadow: [
+                if (isSelected)
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Icon(
               getIconForArea(label),
               size: 26,
               color: isSelected ? Colors.white : const Color(0xFF1F2937),
             ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : const Color(0xFF6B7280),
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: diameter,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: isSelected
+                  ? const Color(0xFF111827)
+                  : const Color(0xFF6B7280),
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

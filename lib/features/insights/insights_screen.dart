@@ -1,25 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../l10n/app_localizations.dart';
+import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
-import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
+import 'package:keepjoy_app/models/resell_item.dart';
 
-// Metric Card Data Model
-class MetricCardData {
-  final String value;
-  final String label;
-  final IconData icon;
-  final Color color;
-
-  const MetricCardData({
-    required this.value,
-    required this.label,
-    required this.icon,
-    required this.color,
-  });
-}
-
-// Insights Screen with month/year selection and reports
 class InsightsScreen extends StatefulWidget {
   final List<DeclutterItem> declutteredItems;
   final List<ResellItem> resellItems;
@@ -39,180 +23,42 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-  late int _selectedYear;
-  late int _selectedMonth;
+  static const _headerPurple = Color(0xFF6B4E71);
+  static const _metricAccent = Color(0xFF95E3C6);
+  static const _chipColors = <Color>[
+    Color(0xFF52C7B8),
+    Color(0xFF9E7DB6),
+    Color(0xFFF0AD57),
+    Color(0xFFB0B5FF),
+    Color(0xFFD18BBF),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
+  List<DeepCleaningSession> get _recentSessions {
     final now = DateTime.now();
-    _selectedYear = now.year;
-    _selectedMonth = now.month;
+    final monthStart = DateTime(now.year, now.month, 1);
+    final nextMonthStart = DateTime(now.year, now.month + 1, 1);
+    return widget.deepCleaningSessions
+        .where(
+          (session) =>
+              !session.startTime.isBefore(monthStart) &&
+              session.startTime.isBefore(nextMonthStart),
+        )
+        .toList();
   }
 
-  String _getMonthName(int month, bool isChinese) {
-    if (isChinese) {
-      return '$month月';
+  Map<String, int> get _areaCounts {
+    final counts = <String, int>{};
+    for (final session in _recentSessions) {
+      counts.update(session.area, (value) => value + 1, ifAbsent: () => 1);
     }
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
+    return counts;
   }
 
-  void _showMonthYearPicker(BuildContext context) {
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
+  int get _deepCleaningCount => _recentSessions.length;
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        int tempYear = _selectedYear;
-        int tempMonth = _selectedMonth;
+  int get _joyDeclutterCount => widget.resellItems.length;
 
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(isChinese ? '选择时间段' : 'Select Period'),
-              content: SizedBox(
-                width: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.chevron_left),
-                          onPressed: () {
-                            setDialogState(() {
-                              tempYear--;
-                            });
-                          },
-                        ),
-                        Text(
-                          '$tempYear',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.chevron_right),
-                          onPressed: () {
-                            setDialogState(() {
-                              tempYear++;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 2,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                      itemCount: 12,
-                      itemBuilder: (context, index) {
-                        final month = index + 1;
-                        final isSelected = month == tempMonth;
-                        return InkWell(
-                          onTap: () {
-                            setDialogState(() {
-                              tempMonth = month;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(
-                                      context,
-                                    ).colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Text(
-                                _getMonthName(month, isChinese),
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Theme.of(context).colorScheme.onPrimary
-                                      : Theme.of(context).colorScheme.onSurface,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(isChinese ? '取消' : 'Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedYear = tempYear;
-                      _selectedMonth = tempMonth;
-                    });
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(isChinese ? '确认' : 'Confirm'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  List<DeclutterItem> _getFilteredItems() {
-    return widget.declutteredItems.where((item) {
-      return item.createdAt.year == _selectedYear &&
-          item.createdAt.month == _selectedMonth;
-    }).toList();
-  }
-
-  List<ResellItem> _getFilteredResellItems() {
-    return widget.resellItems.where((item) {
-      return item.createdAt.year == _selectedYear &&
-          item.createdAt.month == _selectedMonth;
-    }).toList();
-  }
-
-  List<DeepCleaningSession> _getFilteredSessions() {
-    return widget.deepCleaningSessions.where((session) {
-      return session.startTime.year == _selectedYear &&
-          session.startTime.month == _selectedMonth;
-    }).toList();
-  }
+  int get _quickDeclutterCount => widget.declutteredItems.length;
 
   @override
   Widget build(BuildContext context) {
@@ -221,332 +67,357 @@ class _InsightsScreenState extends State<InsightsScreen> {
       context,
     ).languageCode.toLowerCase().startsWith('zh');
 
-    final filteredItems = _getFilteredItems();
-    final filteredSessions = _getFilteredSessions();
-    final filteredResellItems = _getFilteredResellItems();
-
-    // Calculate metrics
-    final totalItems = filteredItems.length;
-    final recycleCount = filteredItems
-        .where((item) => item.status == DeclutterStatus.recycle)
-        .length;
-    final donateCount = filteredItems
-        .where((item) => item.status == DeclutterStatus.donate)
-        .length;
-    final soldCount = filteredResellItems
-        .where((item) => item.status == ResellStatus.sold)
-        .length;
-    final carbonSaved =
-        (recycleCount * 2.5) + (donateCount * 5.0) + (soldCount * 7.5);
-    final spaceFreed = filteredItems.length * 0.1;
-    final totalRevenue = filteredResellItems
-        .where((item) => item.status == ResellStatus.sold)
-        .fold<double>(0.0, (sum, item) => sum + (item.soldPrice ?? 0));
-    final avgItemsPerSession = filteredSessions.isNotEmpty
-        ? (filteredItems.length / filteredSessions.length)
-        : 0.0;
-    final avgMood =
-        filteredSessions.isNotEmpty &&
-            filteredSessions.where((s) => s.moodIndex != null).isNotEmpty
-        ? filteredSessions
-                  .where((s) => s.moodIndex != null)
-                  .fold<double>(
-                    0.0,
-                    (sum, s) => sum + (s.moodIndex ?? 0).toDouble(),
-                  ) /
-              filteredSessions.where((s) => s.moodIndex != null).length
-        : 0.0;
-    final avgFocus =
-        filteredSessions.isNotEmpty &&
-            filteredSessions.where((s) => s.focusIndex != null).isNotEmpty
-        ? filteredSessions
-                  .where((s) => s.focusIndex != null)
-                  .fold<double>(
-                    0.0,
-                    (sum, s) => sum + (s.focusIndex ?? 0).toDouble(),
-                  ) /
-              filteredSessions.where((s) => s.focusIndex != null).length
-        : 0.0;
-
-    final metricsCards = <MetricCardData>[
-      MetricCardData(
-        value: totalItems.toString(),
-        label: isChinese ? '物品已整理' : 'Items Decluttered',
-        icon: Icons.inventory_2,
-        color: const Color(0xFF6B5CE7),
-      ),
-      MetricCardData(
-        value: '${widget.streak}',
-        label: isChinese ? '连续天数' : 'Day Streak',
-        icon: Icons.local_fire_department,
-        color: const Color(0xFFFF6B35),
-      ),
-      MetricCardData(
-        value: '¥${totalRevenue.toStringAsFixed(0)}',
-        label: isChinese ? '创造价值' : 'Value Created',
-        icon: Icons.monetization_on,
-        color: const Color(0xFFFFD700),
-      ),
-      MetricCardData(
-        value: '${carbonSaved.toStringAsFixed(1)}kg',
-        label: isChinese ? 'CO₂ 减排' : 'CO₂ Reduced',
-        icon: Icons.eco,
-        color: const Color(0xFF4CAF50),
-      ),
-      MetricCardData(
-        value: '${spaceFreed.toStringAsFixed(1)}m²',
-        label: isChinese ? '空间释放' : 'Space Freed',
-        icon: Icons.space_dashboard,
-        color: const Color(0xFF2196F3),
-      ),
-      MetricCardData(
-        value: avgItemsPerSession.toStringAsFixed(1),
-        label: isChinese ? '效率指数' : 'Efficiency',
-        icon: Icons.bolt,
-        color: const Color(0xFFFF9800),
-      ),
-      if (avgMood > 0)
-        MetricCardData(
-          value: '${avgMood.toStringAsFixed(1)}/10',
-          label: isChinese ? '幸福指数' : 'Happiness',
-          icon: Icons.sentiment_very_satisfied,
-          color: const Color(0xFFE91E63),
-        ),
-      if (avgFocus > 0)
-        MetricCardData(
-          value: '${avgFocus.toStringAsFixed(1)}/10',
-          label: isChinese ? '专注力' : 'Focus',
-          icon: Icons.center_focus_strong,
-          color: const Color(0xFF9C27B0),
-        ),
-    ];
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.insights),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
-      body: SingleChildScrollView(
+      backgroundColor: const Color(0xFFF4F1F7),
+      body: SafeArea(
         child: Column(
           children: [
-            // Month/Year Selector Header
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF6B5CE7), Color(0xFF5ECFB8)],
+            _buildHeader(context, l10n, isChinese),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildMonthlyReportCard(theme, l10n, isChinese),
+                    const SizedBox(height: 24),
+                    _buildLetGoDetailsCard(theme, l10n, isChinese),
+                    const SizedBox(height: 32),
+                  ],
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isChinese ? '报告时间段' : 'Report Period',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  InkWell(
-                    onTap: () => _showMonthYearPicker(context),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.calendar_today,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                '${_getMonthName(_selectedMonth, isChinese)} $_selectedYear',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Icon(
-                            Icons.arrow_drop_down,
-                            color: Colors.white.withValues(alpha: 0.8),
-                            size: 24,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
-
-            // Monthly Achievement Section
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.emoji_events,
-                    size: 24,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    isChinese ? '月度成就' : 'Monthly Achievement',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 160,
-              child: ScrollableMetricsCarousel(metrics: metricsCards),
-            ),
-            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
-}
 
-// Scrollable Metrics Carousel with center zoom effect
-class ScrollableMetricsCarousel extends StatefulWidget {
-  final List<MetricCardData> metrics;
-
-  const ScrollableMetricsCarousel({super.key, required this.metrics});
-
-  @override
-  State<ScrollableMetricsCarousel> createState() =>
-      _ScrollableMetricsCarouselState();
-}
-
-class _ScrollableMetricsCarouselState extends State<ScrollableMetricsCarousel> {
-  late PageController _pageController;
-  double _currentPage = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(viewportFraction: 0.7);
-    _pageController.addListener(() {
-      setState(() {
-        _currentPage = _pageController.page ?? 0;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PageView.builder(
-      controller: _pageController,
-      itemCount: widget.metrics.length,
-      itemBuilder: (context, index) {
-        final metric = widget.metrics[index];
-        // Calculate scale based on distance from center
-        final diff = (index - _currentPage).abs();
-        final scale = (1 - (diff * 0.3)).clamp(0.7, 1.0);
-        final opacity = (1 - (diff * 0.5)).clamp(0.3, 1.0);
-
-        return Transform.scale(
-          scale: scale,
-          child: Opacity(
-            opacity: opacity,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    metric.color.withValues(alpha: 0.15),
-                    metric.color.withValues(alpha: 0.05),
-                  ],
+  Widget _buildHeader(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isChinese,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                isChinese ? '洞察' : l10n.insights,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _headerPurple,
                 ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: metric.color.withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: metric.color.withValues(alpha: 0.1),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(metric.icon, size: 36, color: metric.color),
-                    const SizedBox(height: 12),
-                    Text(
-                      metric.value,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: metric.color,
-                          ),
-                    ),
-                    const SizedBox(height: 6),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        metric.label,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                      ),
-                    ),
-                  ],
+              const Spacer(),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFDDD0E6),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.person, color: _headerPurple),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              4,
+              (index) => Container(
+                width: 26,
+                height: 3,
+                margin: const EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                  color: index == 0 ? _headerPurple : const Color(0xFFD9D0E0),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
+
+  Widget _buildMonthlyReportCard(
+    ThemeData theme,
+    AppLocalizations l10n,
+    bool isChinese,
+  ) {
+    final metrics = <_MetricData>[
+      _MetricData(
+        icon: Icons.flash_on_rounded,
+        label: isChinese ? '极速大扫除' : l10n.quickDeclutter,
+        value: _quickDeclutterCount.toString(),
+      ),
+      _MetricData(
+        icon: Icons.cleaning_services,
+        label: isChinese ? '心动整理' : l10n.deepCleaning,
+        value: _deepCleaningCount.toString(),
+      ),
+      _MetricData(
+        icon: Icons.note_add_rounded,
+        label: isChinese ? '心动小帮手' : l10n.joyDeclutter,
+        value: _joyDeclutterCount.toString(),
+      ),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isChinese ? '本月整理报告' : l10n.monthlyReport,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: _headerPurple,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            isChinese ? '整理节奏与成果一览' : l10n.declutterRhythmOverview,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: const Color(0xFF8B8E98),
+            ),
+          ),
+          const SizedBox(height: 28),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: metrics
+                .map((metric) => _buildMetricPill(metric, theme))
+                .toList(),
+          ),
+          const SizedBox(height: 24),
+          const Divider(color: Color(0xFFE7DFEE), thickness: 1),
+          const SizedBox(height: 16),
+          Text(
+            isChinese ? '整理类别' : 'Organized Areas',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: _headerPurple,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (_areaCounts.isEmpty)
+            Text(
+              isChinese
+                  ? '本月还没有分类整理记录，先挑一件物品开始吧。'
+                  : 'No categorized sessions yet this month. Start with one area!',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF8B8E98),
+              ),
+            )
+          else
+            Builder(
+              builder: (_) {
+                final entries = _areaCounts.entries.toList();
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    for (var i = 0; i < entries.length; i++)
+                      _buildAreaChip(
+                        theme,
+                        entries[i].key,
+                        entries[i].value,
+                        _chipColors[i % _chipColors.length],
+                      ),
+                  ],
+                );
+              },
+            ),
+          const SizedBox(height: 20),
+          const Divider(color: Color(0xFFE7DFEE), thickness: 1),
+          const SizedBox(height: 16),
+          Text(
+            isChinese ? '整理前后对比' : l10n.beforeAfterComparison,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: _headerPurple,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _recentSessions.isEmpty
+                ? (isChinese
+                      ? '这个月还没有拍下整理前后的对比，下次记得记录成果。'
+                      : 'No before/after snapshots yet this month. Remember to capture your results!')
+                : (isChinese
+                      ? '本月已记录${_recentSessions.length}次整理前后对比。'
+                      : 'Recorded ${_recentSessions.length} before/after comparisons this month.'),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: const Color(0xFF8B8E98),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricPill(_MetricData metric, ThemeData theme) {
+    return Column(
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: _metricAccent.withValues(alpha: 0.25),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            metric.icon,
+            color: _metricAccent.withValues(alpha: 0.9),
+            size: 30,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          metric.value,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: _headerPurple,
+          ),
+        ),
+        const SizedBox(height: 6),
+        SizedBox(
+          width: 90,
+          child: Text(
+            metric.label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: const Color(0xFF7A7D85),
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAreaChip(ThemeData theme, String area, int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      decoration: BoxDecoration(
+        color: count == 0 ? color.withValues(alpha: 0.2) : color,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        '$area ×$count',
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: count == 0 ? color.withValues(alpha: 0.9) : Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLetGoDetailsCard(
+    ThemeData theme,
+    AppLocalizations l10n,
+    bool isChinese,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isChinese ? '放手详情' : 'Letting Go Details',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: _headerPurple,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isChinese ? '了解不同去向的放手占比' : 'See how items found their next home.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: const Color(0xFF8B8E98),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 26),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF2EDF7),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.pie_chart_outline_rounded,
+                    color: _headerPurple,
+                    size: 36,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese ? '数据即将呈现' : 'Data coming soon',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF8B8E98),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricData {
+  const _MetricData({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
 }

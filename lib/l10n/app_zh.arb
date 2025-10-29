@@ -397,8 +397,20 @@
   "signInSuccess": "登录成功",
   "signUpSuccess": "注册成功",
   "welcomeToKeepJoy": "欢迎来到KeepJoy",
-  
+
   "quickTip": "快速提示",
   "whatBroughtYouJoy": "今天什么让你快乐？",
-  "shareYourJoy": "分享你的快乐"
+  "shareYourJoy": "分享你的快乐",
+
+  "monthlyReport": "本月整理报告",
+  "declutterRhythmOverview": "整理节奏与成果一览",
+  "deepCleaning": "极速大扫除",
+  "joyDeclutter": "心动整理",
+  "quickDeclutter": "心动小帮手",
+  "cleaningAreas": "整理区域",
+  "beforeAfterComparison": "前后对比",
+  "noSessionsThisMonth": "本月暂无整理记录",
+  "tapAreaToViewReport": "点击区域查看详细报告",
+  "sessions": "{count} 次",
+  "times": "×{count}"
 }

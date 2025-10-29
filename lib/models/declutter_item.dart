@@ -51,6 +51,8 @@ class DeclutterItem {
     required this.status,
     this.photoPath,
     this.notes,
+    this.joyLevel,
+    this.joyNotes,
   });
 
   final String id;
@@ -60,4 +62,6 @@ class DeclutterItem {
   final DeclutterStatus status;
   final String? photoPath;
   final String? notes;
+  final int? joyLevel; // Joy Index: 1-10 (怦然心动指数)
+  final String? joyNotes; // Why it sparks joy (为什么带来快乐)
 }

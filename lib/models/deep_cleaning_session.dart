@@ -1,4 +1,5 @@
 class DeepCleaningSession {
+  final String id;
   final String area;
   final DateTime startTime;
   final String? beforePhotoPath;
@@ -11,6 +12,7 @@ class DeepCleaningSession {
   double? afterMessinessIndex; // AI analysis
 
   DeepCleaningSession({
+    required this.id,
     required this.area,
     required this.startTime,
     this.beforePhotoPath,
@@ -24,6 +26,7 @@ class DeepCleaningSession {
   });
 
   DeepCleaningSession copyWith({
+    String? id,
     String? area,
     DateTime? startTime,
     String? beforePhotoPath,
@@ -36,6 +39,7 @@ class DeepCleaningSession {
     double? afterMessinessIndex,
   }) {
     return DeepCleaningSession(
+      id: id ?? this.id,
       area: area ?? this.area,
       startTime: startTime ?? this.startTime,
       beforePhotoPath: beforePhotoPath ?? this.beforePhotoPath,

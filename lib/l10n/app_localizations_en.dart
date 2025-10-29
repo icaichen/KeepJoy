@@ -149,13 +149,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewAll => 'View All';
 
   @override
-  String get quickDeclutter => 'Quick\nDeclutter';
+  String get quickDeclutter => 'Quick Declutter';
 
   @override
   String get quickSweep => 'Quick\nSweep';
 
   @override
-  String get joyDeclutter => 'Joy\nDeclutter';
+  String get joyDeclutter => 'Joy Declutter';
 
   @override
   String get quickDeclutterTitle => 'Quick Declutter';
@@ -398,7 +398,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessions(int count) {
-    return 'Sessions: $count';
+    return '$count sessions';
   }
 
   @override
@@ -1107,4 +1107,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareYourJoy => 'Share Your Joy';
+
+  @override
+  String get monthlyReport => 'Monthly Report';
+
+  @override
+  String get declutterRhythmOverview => 'Declutter Rhythm & Achievements';
+
+  @override
+  String get deepCleaning => 'Deep Cleaning';
+
+  @override
+  String get cleaningAreas => 'Cleaning Areas';
+
+  @override
+  String get beforeAfterComparison => 'Before/After Comparison';
+
+  @override
+  String get noSessionsThisMonth => 'No sessions this month';
+
+  @override
+  String get tapAreaToViewReport => 'Tap area to view report';
+
+  @override
+  String times(Object count) {
+    return '×$count';
+  }
 }

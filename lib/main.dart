@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:uuid/uuid.dart';
 
 import 'features/deep_cleaning/deep_cleaning_flow.dart';
 import 'features/joy_declutter/joy_declutter_flow.dart';
@@ -187,6 +188,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<Memory> _memories = [];
   final List<ResellItem> _resellItems = [];
   final List<PlannedSession> _plannedSessions = [];
+  final List<DeepCleaningSession> _completedSessions = [];
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
 
@@ -266,6 +268,7 @@ class _MainNavigatorState extends State<MainNavigator> {
     _recordActivity(); // Record activity for Deep Cleaning
     setState(() {
       _activeSession = DeepCleaningSession(
+        id: const Uuid().v4(),
         area: area,
         startTime: DateTime.now(),
       );
@@ -274,6 +277,10 @@ class _MainNavigatorState extends State<MainNavigator> {
 
   void _stopSession() {
     setState(() {
+      if (_activeSession != null) {
+        // Save the completed session
+        _completedSessions.insert(0, _activeSession!);
+      }
       _activeSession = null;
     });
   }
@@ -406,7 +413,7 @@ class _MainNavigatorState extends State<MainNavigator> {
       InsightsScreen(
         declutteredItems: List.unmodifiable(_declutteredItems),
         resellItems: List.unmodifiable(_resellItems),
-        deepCleaningSessions: _activeSession != null ? [_activeSession!] : [],
+        deepCleaningSessions: List.unmodifiable(_completedSessions),
         streak: _calculateStreak(),
       ),
     ];

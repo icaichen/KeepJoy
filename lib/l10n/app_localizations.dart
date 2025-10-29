@@ -347,7 +347,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickDeclutter.
   ///
   /// In en, this message translates to:
-  /// **'Quick\nDeclutter'**
+  /// **'Quick Declutter'**
   String get quickDeclutter;
 
   /// No description provided for @quickSweep.
@@ -359,7 +359,7 @@ abstract class AppLocalizations {
   /// No description provided for @joyDeclutter.
   ///
   /// In en, this message translates to:
-  /// **'Joy\nDeclutter'**
+  /// **'Joy Declutter'**
   String get joyDeclutter;
 
   /// No description provided for @quickDeclutterTitle.
@@ -821,7 +821,7 @@ abstract class AppLocalizations {
   /// No description provided for @sessions.
   ///
   /// In en, this message translates to:
-  /// **'Sessions: {count}'**
+  /// **'{count} sessions'**
   String sessions(int count);
 
   /// No description provided for @spaceFreed.
@@ -2149,6 +2149,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share Your Joy'**
   String get shareYourJoy;
+
+  /// No description provided for @monthlyReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Report'**
+  String get monthlyReport;
+
+  /// No description provided for @declutterRhythmOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Declutter Rhythm & Achievements'**
+  String get declutterRhythmOverview;
+
+  /// No description provided for @deepCleaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Cleaning'**
+  String get deepCleaning;
+
+  /// No description provided for @cleaningAreas.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning Areas'**
+  String get cleaningAreas;
+
+  /// No description provided for @beforeAfterComparison.
+  ///
+  /// In en, this message translates to:
+  /// **'Before/After Comparison'**
+  String get beforeAfterComparison;
+
+  /// No description provided for @noSessionsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions this month'**
+  String get noSessionsThisMonth;
+
+  /// No description provided for @tapAreaToViewReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap area to view report'**
+  String get tapAreaToViewReport;
+
+  /// No description provided for @times.
+  ///
+  /// In en, this message translates to:
+  /// **'×{count}'**
+  String times(Object count);
 }
 
 class _AppLocalizationsDelegate
