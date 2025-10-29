@@ -404,13 +404,34 @@ class _InsightsScreenState extends State<InsightsScreen> {
               ),
             ),
 
-            // Scrollable Metrics Cards
+            // Monthly Achievement Section
             const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.emoji_events,
+                    size: 24,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isChinese ? '月度成就' : 'Monthly Achievement',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             SizedBox(
-              height: 220,
+              height: 160,
               child: ScrollableMetricsCarousel(metrics: metricsCards),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -436,7 +457,7 @@ class _ScrollableMetricsCarouselState extends State<ScrollableMetricsCarousel> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.8);
+    _pageController = PageController(viewportFraction: 0.7);
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page ?? 0;
@@ -467,7 +488,7 @@ class _ScrollableMetricsCarouselState extends State<ScrollableMetricsCarousel> {
           child: Opacity(
             opacity: opacity,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -477,7 +498,7 @@ class _ScrollableMetricsCarouselState extends State<ScrollableMetricsCarousel> {
                     metric.color.withValues(alpha: 0.05),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: metric.color.withValues(alpha: 0.3),
                   width: 1.5,
@@ -485,8 +506,8 @@ class _ScrollableMetricsCarouselState extends State<ScrollableMetricsCarousel> {
                 boxShadow: [
                   BoxShadow(
                     color: metric.color.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -494,22 +515,22 @@ class _ScrollableMetricsCarouselState extends State<ScrollableMetricsCarousel> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(metric.icon, size: 48, color: metric.color),
-                    const SizedBox(height: 16),
+                    Icon(metric.icon, size: 36, color: metric.color),
+                    const SizedBox(height: 12),
                     Text(
                       metric.value,
-                      style: Theme.of(context).textTheme.headlineLarge
+                      style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: metric.color,
                           ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
                         metric.label,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(
                             context,
                           ).colorScheme.onSurface.withValues(alpha: 0.7),

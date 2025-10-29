@@ -60,79 +60,183 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
             'Desk',
           ];
 
+    final selectedArea = _areaController.text.trim();
+
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.deepCleaningTitle)),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            Spacer(),
-            // Section with 6 circles and input
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: screenWidth * 0.04,
-                      runSpacing: screenHeight * 0.02,
-                      children: areas
-                          .map((label) => _buildCircle(screenWidth, label))
-                          .toList(),
+      backgroundColor: const Color(0xFFF5F5F7),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.06,
+            vertical: screenHeight * 0.025,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    splashRadius: 20,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    splashRadius: 20,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  4,
+                  (index) => Container(
+                    width: 24,
+                    height: 3,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: index == 0
+                          ? const Color(0xFF111827)
+                          : const Color(0xFFE0E5EB),
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    SizedBox(height: screenHeight * 0.02),
-                    // Input area under all 6 circles
-                    TextField(
-                      controller: _areaController,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        hintText: isChinese
-                            ? '输入整理区域'
-                            : 'Please enter the area to declutter',
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            // Continue button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final area = _areaController.text.trim();
-                  if (area.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Please enter an area name')),
-                    );
-                    return;
-                  }
-
-                  // Navigate to Before Photo page
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => BeforePhotoPage(
-                        area: area,
-                        onStartSession: widget.onStartSession,
-                        onStopSession: widget.onStopSession,
-                      ),
-                    ),
-                  );
-                },
-                child: Text(l10n.continueButton),
+              const SizedBox(height: 24),
+              Text(
+                isChinese
+                    ? '今天你想专注哪些区域？'
+                    : 'Which areas do you want to focus on today?',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
+                ),
               ),
-            ),
-            Spacer(),
-          ],
+              const SizedBox(height: 6),
+              Text(
+                isChinese ? '最多选择 3 个' : 'Pick up to 3.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: screenWidth * 0.08,
+                        runSpacing: screenHeight * 0.03,
+                        children: areas
+                            .map(
+                              (label) => _buildCircle(
+                                screenWidth,
+                                label,
+                                isSelected:
+                                    label.toLowerCase() ==
+                                    selectedArea.toLowerCase(),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 28),
+                      TextField(
+                        controller: _areaController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: isChinese ? '输入整理区域' : 'Custom area name',
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE1E7EF),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE1E7EF),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF111827),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    final area = _areaController.text.trim();
+                    if (area.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isChinese ? '请输入区域名称' : 'Please enter an area name',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => BeforePhotoPage(
+                          area: area,
+                          onStartSession: widget.onStartSession,
+                          onStopSession: widget.onStopSession,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    l10n.continueButton,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCircle(double screenWidth, String label) {
+  Widget _buildCircle(
+    double screenWidth,
+    String label, {
+    required bool isSelected,
+  }) {
     final diameter = screenWidth * 0.22;
 
     // Map areas to icons
@@ -160,27 +264,46 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
         _areaController.text = label;
       },
       borderRadius: BorderRadius.circular(diameter / 2),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         width: diameter,
         height: diameter,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.grey.shade400, width: 1.5),
+          color: isSelected ? const Color(0xFF111827) : Colors.white,
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF111827)
+                : const Color(0xFFE1E7EF),
+            width: 1.5,
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+          ],
         ),
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(14),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               getIconForArea(label),
-              size: 28,
-              color: Theme.of(context).colorScheme.primary,
+              size: 26,
+              color: isSelected ? Colors.white : const Color(0xFF1F2937),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? Colors.white : const Color(0xFF6B7280),
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
