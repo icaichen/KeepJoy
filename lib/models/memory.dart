@@ -24,10 +24,12 @@ enum MemorySentiment {
 /// Represents a memory created from decluttering activities
 class Memory {
   final String id;
+  final String userId; // Foreign key to auth.users
   final String title;
   final String? description;
   final String? photoPath;
   final DateTime createdAt;
+  final DateTime? updatedAt;
   final MemoryType type;
   final String? itemName;
   final String? category;
@@ -36,10 +38,12 @@ class Memory {
 
   const Memory({
     required this.id,
+    required this.userId,
     required this.title,
     this.description,
     this.photoPath,
     required this.createdAt,
+    this.updatedAt,
     required this.type,
     this.itemName,
     this.category,
@@ -50,6 +54,7 @@ class Memory {
   /// Create a memory from a decluttered item
   factory Memory.fromDeclutteredItem({
     required String id,
+    String userId = 'local_user',
     required String itemName,
     required String category,
     required DateTime createdAt,
@@ -60,6 +65,7 @@ class Memory {
   }) {
     return Memory(
       id: id,
+      userId: userId,
       title: 'Letting go of $itemName',
       description: description ?? 'A meaningful moment of decluttering',
       photoPath: photoPath,
@@ -75,12 +81,14 @@ class Memory {
   /// Create a memory from a cleaning session
   factory Memory.fromCleaningSession({
     required String id,
+    required String userId,
     required String area,
     required DateTime createdAt,
     String? description,
   }) {
     return Memory(
       id: id,
+      userId: userId,
       title: 'Cleaned $area',
       description: description ?? 'A productive cleaning session',
       createdAt: createdAt,
@@ -91,6 +99,7 @@ class Memory {
   /// Create a custom memory
   factory Memory.custom({
     required String id,
+    required String userId,
     required String title,
     String? description,
     String? photoPath,
@@ -99,6 +108,7 @@ class Memory {
   }) {
     return Memory(
       id: id,
+      userId: userId,
       title: title,
       description: description,
       photoPath: photoPath,
@@ -108,12 +118,56 @@ class Memory {
     );
   }
 
+  // Convert to JSON for Supabase
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'description': description,
+      'photo_path': photoPath,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+      'type': type.name,
+      'item_name': itemName,
+      'category': category,
+      'notes': notes,
+      'sentiment': sentiment?.name,
+    };
+  }
+
+  // Create from JSON from Supabase
+  factory Memory.fromJson(Map<String, dynamic> json) {
+    return Memory(
+      id: json['id'] as String,
+      userId: json['user_id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String?,
+      photoPath: json['photo_path'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+      type: MemoryType.values.firstWhere((e) => e.name == json['type']),
+      itemName: json['item_name'] as String?,
+      category: json['category'] as String?,
+      notes: json['notes'] as String?,
+      sentiment: json['sentiment'] != null
+          ? MemorySentiment.values.firstWhere(
+              (e) => e.name == json['sentiment'],
+            )
+          : null,
+    );
+  }
+
   Memory copyWith({
     String? id,
+    String? userId,
     String? title,
     String? description,
     String? photoPath,
     DateTime? createdAt,
+    DateTime? updatedAt,
     MemoryType? type,
     String? itemName,
     String? category,
@@ -122,10 +176,12 @@ class Memory {
   }) {
     return Memory(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       title: title ?? this.title,
       description: description ?? this.description,
       photoPath: photoPath ?? this.photoPath,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       type: type ?? this.type,
       itemName: itemName ?? this.itemName,
       category: category ?? this.category,
@@ -135,7 +191,10 @@ class Memory {
   }
 
   /// Check if the memory has a valid photo
-  bool get hasPhoto => photoPath != null && photoPath!.isNotEmpty && File(photoPath!).existsSync();
+  bool get hasPhoto =>
+      photoPath != null &&
+      photoPath!.isNotEmpty &&
+      File(photoPath!).existsSync();
 
   /// Get the photo file if it exists
   File? get photoFile {
@@ -161,11 +220,7 @@ class Memory {
 }
 
 /// Types of memories that can be created
-enum MemoryType {
-  decluttering,
-  cleaning,
-  custom,
-}
+enum MemoryType { decluttering, cleaning, custom }
 
 extension MemoryTypeExtension on MemoryType {
   String get displayName {

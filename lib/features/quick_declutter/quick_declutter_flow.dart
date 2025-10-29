@@ -246,6 +246,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
 
     final item = DeclutterItem(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
+      userId: 'temp-user-id', // TODO: Replace with actual userId from AuthService
       name: name,
       category: _selectedCategory,
       createdAt: DateTime.now(),

@@ -51,9 +51,11 @@ enum ResellPlatform {
 class ResellItem {
   ResellItem({
     required this.id,
+    required this.userId,
     required this.declutterItemId,
     required this.status,
     required this.createdAt,
+    this.updatedAt,
     this.platform,
     this.sellingPrice,
     this.soldPrice,
@@ -61,6 +63,7 @@ class ResellItem {
   });
 
   final String id;
+  final String userId; // Foreign key to auth.users
   final String declutterItemId; // Reference to DeclutterItem
   final ResellStatus status;
   final ResellPlatform? platform; // Set when status = listing
@@ -68,9 +71,53 @@ class ResellItem {
   final double? soldPrice; // Required when status = sold
   final DateTime? soldDate; // Auto-set when status = sold
   final DateTime createdAt;
+  final DateTime? updatedAt;
+
+  // Convert to JSON for Supabase
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'declutter_item_id': declutterItemId,
+      'status': status.name,
+      'platform': platform?.name,
+      'selling_price': sellingPrice,
+      'sold_price': soldPrice,
+      'sold_date': soldDate?.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
+  // Create from JSON from Supabase
+  factory ResellItem.fromJson(Map<String, dynamic> json) {
+    return ResellItem(
+      id: json['id'] as String,
+      userId: json['user_id'] as String,
+      declutterItemId: json['declutter_item_id'] as String,
+      status: ResellStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+      ),
+      platform: json['platform'] != null
+          ? ResellPlatform.values.firstWhere(
+              (e) => e.name == json['platform'],
+            )
+          : null,
+      sellingPrice: json['selling_price'] as double?,
+      soldPrice: json['sold_price'] as double?,
+      soldDate: json['sold_date'] != null
+          ? DateTime.parse(json['sold_date'] as String)
+          : null,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+    );
+  }
 
   ResellItem copyWith({
     String? id,
+    String? userId,
     String? declutterItemId,
     ResellStatus? status,
     ResellPlatform? platform,
@@ -78,9 +125,11 @@ class ResellItem {
     double? soldPrice,
     DateTime? soldDate,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return ResellItem(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       declutterItemId: declutterItemId ?? this.declutterItemId,
       status: status ?? this.status,
       platform: platform ?? this.platform,
@@ -88,6 +137,7 @@ class ResellItem {
       soldPrice: soldPrice ?? this.soldPrice,
       soldDate: soldDate ?? this.soldDate,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

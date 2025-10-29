@@ -66,10 +66,12 @@ class _AddSessionDialogState extends State<AddSessionDialog> {
     if (_formKey.currentState!.validate()) {
       final session = PlannedSession(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: 'temp-user-id', // TODO: Replace with actual userId from AuthService
         title: '${_areaController.text} declutter',
         area: _areaController.text,
         scheduledDate: _selectedDate,
         scheduledTime: _formatTime(_selectedTime),
+        createdAt: DateTime.now(),
         notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
 

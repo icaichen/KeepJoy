@@ -9,6 +9,46 @@ import 'package:keepjoy_app/models/memory.dart';
 import '../../services/ai_identification_service.dart';
 import '../memories/create_memory_page.dart';
 
+const LinearGradient _joyMintPurpleGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [Color(0xFF6B5CE7), Color(0xFF5ECFB8)],
+);
+
+Widget _buildJoyProgressIndicator(int activeIndex, {int totalSteps = 3}) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: List.generate(totalSteps, (index) {
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: index == activeIndex ? 28 : 20,
+        height: 4,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: index == activeIndex
+              ? Colors.black.withValues(alpha: 0.75)
+              : Colors.white.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(4),
+        ),
+      );
+    }),
+  );
+}
+
+Widget _buildJoySurface({
+  required Widget child,
+  EdgeInsetsGeometry margin = EdgeInsets.zero,
+  EdgeInsetsGeometry padding = const EdgeInsets.all(24),
+}) {
+  return Card(
+    margin: margin,
+    elevation: 0,
+    color: Colors.white.withValues(alpha: 0.95),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+    child: Padding(padding: padding, child: child),
+  );
+}
+
 class JoyDeclutterFlowPage extends StatefulWidget {
   final Function(DeclutterItem) onItemCompleted;
   final Function(Memory) onMemoryCreated;
@@ -28,9 +68,7 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _takePicture() async {
-    setState(() {
-      _isProcessing = true;
-    });
+    setState(() => _isProcessing = true);
 
     try {
       final XFile? photo = await _picker.pickImage(
@@ -59,9 +97,7 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        setState(() => _isProcessing = false);
       }
     }
   }
@@ -69,50 +105,132 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(l10n.joyDeclutterTitle),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        foregroundColor: Colors.white,
+        title: Text(
+          l10n.joyDeclutterTitle,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            SizedBox(height: screenHeight * 0.02),
-            // Main section (no items captured section)
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.camera_alt,
-                      size: 80,
+      body: Container(
+        decoration: const BoxDecoration(gradient: _joyMintPurpleGradient),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                _buildJoyProgressIndicator(0),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: _buildJoySurface(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.joyDeclutterCaptureTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.captureItemToStart,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF4B5563),
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color(
+                                    0xFF6B5CE7,
+                                  ).withValues(alpha: 0.85),
+                                  const Color(
+                                    0xFF5ECFB8,
+                                  ).withValues(alpha: 0.85),
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.06),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 12),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.camera_alt_rounded,
+                                size: 72,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: _isProcessing ? null : _takePicture,
+                            icon: _isProcessing
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.photo_camera_rounded),
+                            label: Text(l10n.takePicture),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 20),
-                    Text(l10n.captureItemToStart),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _isProcessing ? null : _takePicture,
-                      child: _isProcessing
-                          ? const CircularProgressIndicator()
-                          : Text(l10n.takePicture),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese
+                      ? '拍攝物品，我們會陪你完成怦然心動檢查。'
+                      : 'Capture one item at a time—we will guide your joy check.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-// Photo review page
 class _PhotoReviewPage extends StatefulWidget {
   final String photoPath;
   final Function(DeclutterItem) onItemCompleted;
@@ -159,11 +277,7 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
 
     try {
       final locale = Localizations.localeOf(context).languageCode;
-      print('🎯 Joy Declutter: Starting AI identification, locale: $locale');
-
       final result = await _aiService.identifyBasic(widget.photoPath, locale);
-
-      print('🎯 Joy Declutter: AI result received: ${result != null ? "name=${result.itemName}, category=${result.suggestedCategory}" : "null"}');
 
       if (result != null && mounted) {
         setState(() {
@@ -172,10 +286,9 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
           _selectedCategory = result.suggestedCategory;
           _isAISuggested = true;
         });
-        print('🎯 Joy Declutter: UI updated with AI result');
       }
-    } catch (e) {
-      print('❌ Joy Declutter: AI identification error: $e');
+    } catch (_) {
+      // Allow manual entry when AI fails.
     } finally {
       if (mounted) {
         setState(() => _isIdentifying = false);
@@ -215,143 +328,197 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(l10n.joyDeclutterTitle),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        foregroundColor: Colors.white,
+        title: Text(
+          l10n.joyDeclutterCaptureTitle,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            // Main section with photo and item details
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    // Photo area
-                    Container(
-                      width: double.infinity,
-                      height: screenHeight * 0.3,
-                      color: Colors.grey[300],
-                      child: widget.photoPath.isEmpty
-                          ? Center(child: Text('Photo placeholder'))
-                          : Image.file(
-                              File(widget.photoPath),
-                              width: double.infinity,
-                              height: screenHeight * 0.3,
-                              fit: BoxFit.cover,
-                            ),
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-                    // Item details area
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          controller: _nameController,
-                          decoration: InputDecoration(
-                            labelText: l10n.itemName,
-                            hintText: l10n.itemName,
-                            suffixIcon: _isIdentifying
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                  )
-                                : _isAISuggested
-                                    ? Tooltip(
-                                        message: l10n.aiSuggested,
-                                        child: const Icon(Icons.auto_awesome, size: 20),
+      body: Container(
+        decoration: const BoxDecoration(gradient: _joyMintPurpleGradient),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                _buildJoyProgressIndicator(1),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      _buildJoySurface(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: AspectRatio(
+                                aspectRatio: 4 / 3,
+                                child: widget.photoPath.isEmpty
+                                    ? Container(
+                                        color: Colors.grey.shade200,
+                                        child: const Icon(
+                                          Icons.photo_camera_outlined,
+                                          size: 80,
+                                          color: Colors.black45,
+                                        ),
                                       )
-                                    : null,
-                          ),
-                          onChanged: (_) {
-                            // User edited, no longer AI suggested
-                            if (_isAISuggested) {
-                              setState(() => _isAISuggested = false);
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownMenu<DeclutterCategory>(
-                          initialSelection: _selectedCategory,
-                          label: Text(l10n.category),
-                          dropdownMenuEntries: DeclutterCategory.values
-                              .map(
-                                (category) => DropdownMenuEntry(
-                                  value: category,
-                                  label: category.label(context),
-                                ),
-                              )
-                              .toList(),
-                          onSelected: (value) {
-                            if (value != null) {
-                              setState(() => _selectedCategory = value);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            // Retake and Next Step section
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _retakePicture,
-                        child: Text(l10n.retakePhoto),
-                      ),
-                    ),
-                    SizedBox(width: screenWidth * 0.02),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => _JoyQuestionPage(
-                                photoPath: widget.photoPath,
-                                itemName: _nameController.text.trim().isEmpty
-                                    ? 'Item'
-                                    : _nameController.text.trim(),
-                                category: _selectedCategory,
-                                onItemCompleted: widget.onItemCompleted,
-                                onMemoryCreated: widget.onMemoryCreated,
+                                    : Image.file(
+                                        File(widget.photoPath),
+                                        fit: BoxFit.cover,
+                                      ),
                               ),
                             ),
-                          );
-                        },
-                        child: Text(l10n.nextStep),
+                            const SizedBox(height: 20),
+                            TextField(
+                              controller: _nameController,
+                              textCapitalization: TextCapitalization.sentences,
+                              decoration: InputDecoration(
+                                labelText: l10n.itemName,
+                                hintText: _itemName ?? l10n.itemName,
+                                suffixIcon: _isIdentifying
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: Padding(
+                                          padding: EdgeInsets.all(12),
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      )
+                                    : _isAISuggested
+                                    ? Tooltip(
+                                        message: l10n.aiSuggested,
+                                        child: const Icon(
+                                          Icons.auto_awesome,
+                                          size: 20,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              onChanged: (_) {
+                                if (_isAISuggested) {
+                                  setState(() => _isAISuggested = false);
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownMenu<DeclutterCategory>(
+                              initialSelection: _selectedCategory,
+                              label: Text(l10n.category),
+                              dropdownMenuEntries: DeclutterCategory.values
+                                  .map(
+                                    (category) => DropdownMenuEntry(
+                                      value: category,
+                                      label: category.label(context),
+                                    ),
+                                  )
+                                  .toList(),
+                              onSelected: (value) {
+                                if (value != null) {
+                                  setState(() => _selectedCategory = value);
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      _buildJoySurface(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 20,
+                          horizontal: 20,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.doesItSparkJoy,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF111827),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.joyQuestionDescription,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: const Color(0xFF4B5563),
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _retakePicture,
+                              child: Text(l10n.retakePhoto),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => _JoyQuestionPage(
+                                      photoPath: widget.photoPath,
+                                      itemName:
+                                          _nameController.text.trim().isEmpty
+                                          ? (_itemName ?? l10n.itemName)
+                                          : _nameController.text.trim(),
+                                      category: _selectedCategory,
+                                      onItemCompleted: widget.onItemCompleted,
+                                      onMemoryCreated: widget.onMemoryCreated,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text(l10n.nextStep),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _isAISuggested
+                            ? l10n.aiSuggested
+                            : l10n.captureItemToStart,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-            // No finish declutter button
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-// Joy question page
 class _JoyQuestionPage extends StatefulWidget {
   final String photoPath;
   final String itemName;
@@ -409,242 +576,294 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
       }
     }
 
-    // Navigate back to home
     if (mounted) {
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 
+  Future<void> _handleKeep() async {
+    final l10n = AppLocalizations.of(context)!;
+    final item = DeclutterItem(
+      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      name: widget.itemName,
+      category: widget.category,
+      createdAt: DateTime.now(),
+      status: DeclutterStatus.keep,
+      photoPath: widget.photoPath,
+    );
+
+    widget.onItemCompleted(item);
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.itemSaved)));
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _handleLetGo() async {
+    final l10n = AppLocalizations.of(context)!;
+    final status = await showModalBottomSheet<DeclutterStatus>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.timeToLetGo,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.joyQuestionDescription,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    height: 1.4,
+                    color: Colors.black.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _LetGoOption(
+                  icon: Icons.delete_outline,
+                  label: l10n.routeDiscard,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                ),
+                _LetGoOption(
+                  icon: Icons.volunteer_activism_outlined,
+                  label: l10n.routeDonation,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                ),
+                _LetGoOption(
+                  icon: Icons.recycling_outlined,
+                  label: l10n.routeRecycle,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                ),
+                _LetGoOption(
+                  icon: Icons.attach_money_outlined,
+                  label: l10n.routeResell,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: Text(l10n.cancel),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (status == null || !mounted) {
+      return;
+    }
+
+    final item = DeclutterItem(
+      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      name: widget.itemName,
+      category: widget.category,
+      createdAt: DateTime.now(),
+      status: status,
+      photoPath: widget.photoPath,
+    );
+
+    widget.onItemCompleted(item);
+
+    await _showMemoryPrompt(item);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(l10n.joyDeclutterTitle),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            // Photo section
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    // Photo area
-                    Container(
-                      width: double.infinity,
-                      height: screenHeight * 0.3,
-                      color: Colors.grey[300],
-                      child: widget.photoPath.isEmpty
-                          ? Center(child: Text('Photo placeholder'))
-                          : Image.file(
-                              File(widget.photoPath),
-                              width: double.infinity,
-                              height: screenHeight * 0.3,
-                              fit: BoxFit.cover,
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            // Question section
-            Card(
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: Column(
-                  children: [
-                    // Question area
-                    Text(l10n.doesItSparkJoy),
-                    SizedBox(height: screenHeight * 0.02),
-                    // Two options
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Create item with "keep" status
-                              final item = DeclutterItem(
-                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                name: widget.itemName,
-                                category: widget.category,
-                                createdAt: DateTime.now(),
-                                status: DeclutterStatus.keep,
-                                photoPath: widget.photoPath,
-                              );
-
-                              // Add item to app state
-                              widget.onItemCompleted(item);
-
-                              // Show success dialog
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  content: Text(AppLocalizations.of(context)!.itemSaved),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                        // Pop back to home (through PhotoReview and JoyDeclutterFlow)
-                                        Navigator.of(context).popUntil((route) => route.isFirst);
-                                      },
-                                      child: Text(l10n.ok),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                            child: Text(l10n.yes),
-                          ),
-                        ),
-                        SizedBox(width: screenWidth * 0.02),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  final l10n = AppLocalizations.of(context)!;
-                                  return AlertDialog(
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(l10n.timeToLetGo),
-                                        SizedBox(height: screenHeight * 0.02),
-                                        // 4 options with consistent width
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: () async {
-                                              // Create item with "discard" status
-                                              final item = DeclutterItem(
-                                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                                name: widget.itemName,
-                                                category: widget.category,
-                                                createdAt: DateTime.now(),
-                                                status: DeclutterStatus.discard,
-                                                photoPath: widget.photoPath,
-                                              );
-
-                                              // Add item to app state
-                                              widget.onItemCompleted(item);
-
-                                              // Close the let-go dialog
-                                              Navigator.of(context).pop();
-
-                                              // Show memory prompt
-                                              await _showMemoryPrompt(item);
-                                            },
-                                            child: Text(l10n.routeDiscard),
-                                          ),
-                                        ),
-                                        SizedBox(height: 8),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: () async {
-                                              // Create item with "donate" status
-                                              final item = DeclutterItem(
-                                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                                name: widget.itemName,
-                                                category: widget.category,
-                                                createdAt: DateTime.now(),
-                                                status: DeclutterStatus.donate,
-                                                photoPath: widget.photoPath,
-                                              );
-
-                                              // Add item to app state
-                                              widget.onItemCompleted(item);
-
-                                              // Close the let-go dialog
-                                              Navigator.of(context).pop();
-
-                                              // Show memory prompt
-                                              await _showMemoryPrompt(item);
-                                            },
-                                            child: Text(l10n.routeDonation),
-                                          ),
-                                        ),
-                                        SizedBox(height: 8),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: () async {
-                                              // Create item with "recycle" status
-                                              final item = DeclutterItem(
-                                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                                name: widget.itemName,
-                                                category: widget.category,
-                                                createdAt: DateTime.now(),
-                                                status: DeclutterStatus.recycle,
-                                                photoPath: widget.photoPath,
-                                              );
-
-                                              // Add item to app state
-                                              widget.onItemCompleted(item);
-
-                                              // Close the let-go dialog
-                                              Navigator.of(context).pop();
-
-                                              // Show memory prompt
-                                              await _showMemoryPrompt(item);
-                                            },
-                                            child: Text(l10n.routeRecycle),
-                                          ),
-                                        ),
-                                        SizedBox(height: 8),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: () async {
-                                              // Create item with "resell" status
-                                              final item = DeclutterItem(
-                                                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                                                name: widget.itemName,
-                                                category: widget.category,
-                                                createdAt: DateTime.now(),
-                                                status: DeclutterStatus.resell,
-                                                photoPath: widget.photoPath,
-                                              );
-
-                                              // Add item to app state
-                                              widget.onItemCompleted(item);
-
-                                              // Close the let-go dialog
-                                              Navigator.of(context).pop();
-
-                                              // Show memory prompt
-                                              await _showMemoryPrompt(item);
-                                            },
-                                            child: Text(l10n.routeResell),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            child: Text(l10n.no),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        foregroundColor: Colors.white,
+        title: Text(
+          l10n.doesItSparkJoy,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
       ),
+      body: Container(
+        decoration: const BoxDecoration(gradient: _joyMintPurpleGradient),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                _buildJoyProgressIndicator(2),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      _buildJoySurface(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: AspectRatio(
+                                aspectRatio: 4 / 3,
+                                child: widget.photoPath.isEmpty
+                                    ? Container(
+                                        color: Colors.grey.shade200,
+                                        child: const Icon(
+                                          Icons.photo_outlined,
+                                          size: 80,
+                                          color: Colors.black45,
+                                        ),
+                                      )
+                                    : Image.file(
+                                        File(widget.photoPath),
+                                        fit: BoxFit.cover,
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              widget.itemName,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF111827),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Chip(
+                              backgroundColor: const Color(0xFFEFF4FF),
+                              label: Text(
+                                widget.category.label(context),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: const Color(0xFF374151),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildJoySurface(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.doesItSparkJoy,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF111827),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.joyQuestionDescription,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: const Color(0xFF4B5563),
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: _handleKeep,
+                        child: Text(l10n.yes),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _handleLetGo,
+                        child: Text(l10n.no),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LetGoOption extends StatelessWidget {
+  const _LetGoOption({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFFF3F4F6),
+        ),
+        child: Icon(icon, color: const Color(0xFF374151)),
+      ),
+      title: Text(
+        label,
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      onTap: onTap,
     );
   }
 }

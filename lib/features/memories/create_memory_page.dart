@@ -61,6 +61,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
 
     final memory = Memory.fromDeclutteredItem(
       id: 'memory_${DateTime.now().millisecondsSinceEpoch}',
+      userId: 'temp-user-id', // TODO: Replace with actual userId from AuthService
       itemName: _itemName,
       category: widget.item?.category.name ?? 'Miscellaneous',
       createdAt: DateTime.now(),

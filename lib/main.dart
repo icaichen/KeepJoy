@@ -192,6 +192,10 @@ class _MainNavigatorState extends State<MainNavigator> {
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
 
+  // Temporary placeholder userId until authentication is integrated
+  // TODO: Replace with actual userId from AuthService after integration
+  static const String _placeholderUserId = 'temp-user-id';
+
   // Calculate streak (consecutive days of activity)
   int _calculateStreak() {
     if (_activityDates.isEmpty) return 0;
@@ -269,6 +273,7 @@ class _MainNavigatorState extends State<MainNavigator> {
     setState(() {
       _activeSession = DeepCleaningSession(
         id: const Uuid().v4(),
+        userId: _placeholderUserId,
         area: area,
         startTime: DateTime.now(),
       );
@@ -302,6 +307,7 @@ class _MainNavigatorState extends State<MainNavigator> {
       if (item.status == DeclutterStatus.resell) {
         final resellItem = ResellItem(
           id: 'resell_${DateTime.now().millisecondsSinceEpoch}',
+          userId: _placeholderUserId,
           declutterItemId: item.id,
           status: ResellStatus.toSell,
           createdAt: DateTime.now(),
