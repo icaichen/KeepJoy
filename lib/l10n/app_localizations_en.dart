@@ -1008,27 +1008,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todaysTip1 =>
-      '📸 Deep Cleaning Mode: Tap \'Deep Cleaning\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!';
+      'Deep Cleaning Mode: Tap \'Deep Cleaning\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!';
 
   @override
   String get todaysTip2 =>
-      '❤️ Joy Declutter Method: Having trouble deciding what to keep? Try \'Joy Declutter\' from the home screen. Take a photo of any item, and we\'ll guide you through the KonMari question: \'Does this spark joy?\' Hold it in your hands and trust your feelings. If it doesn\'t bring joy, we\'ll help you let it go with gratitude.';
+      'Joy Declutter Method: Having trouble deciding what to keep? Try \'Joy Declutter\' from the home screen. Take a photo of any item, and we\'ll guide you through the KonMari question: \'Does this spark joy?\' Hold it in your hands and trust your feelings. If it doesn\'t bring joy, we\'ll help you let it go with gratitude.';
 
   @override
   String get todaysTip3 =>
-      '🎭 Create Lasting Memories: Before letting go of sentimental items, create a memory! Tap the memory icon when decluttering. Capture a photo, write down what this item meant to you, and preserve the story. The physical item may be gone, but your cherished memory lives forever in the app.';
+      'Create Lasting Memories: Before letting go of sentimental items, create a memory! Tap the memory icon when decluttering. Capture a photo, write down what this item meant to you, and preserve the story. The physical item may be gone, but your cherished memory lives forever in the app.';
 
   @override
   String get todaysTip4 =>
-      '⚡ Quick Sweep Timer: Need motivation? Try \'Quick Sweep\' for a 15-minute power session! Pick any area (living room, closet, desk), start the timer, and race against the clock. It turns decluttering into an exciting game. See how many items you can clear before time runs out!';
+      'Quick Sweep Timer: Need motivation? Try \'Quick Sweep\' for a 15-minute power session! Pick any area (living room, closet, desk), start the timer, and race against the clock. It turns decluttering into an exciting game. See how many items you can clear before time runs out!';
 
   @override
   String get todaysTip5 =>
-      '💰 Resell Tracker: Planning to sell items? Use our Resell Tracker! When letting go of items, select \'Resell\' and we\'ll add them to your selling list. Track listings, record sold prices, and watch your monthly earnings grow. Transform clutter into cash!';
+      'Resell Tracker: Planning to sell items? Use our Resell Tracker! When letting go of items, select \'Resell\' and we\'ll add them to your selling list. Track listings, record sold prices, and watch your monthly earnings grow. Transform clutter into cash!';
 
   @override
   String get todaysTip6 =>
-      '🎯 Quick Declutter Scan: Fastest way to declutter! Tap \'Quick Declutter\' and scan items one by one. Our AI identifies each item instantly. Simply decide: Keep or Let Go? Perfect for rapid decluttering sessions when you need to clear out fast!';
+      'Quick Declutter Scan: Fastest way to declutter! Tap \'Quick Declutter\' and scan items one by one. Our AI identifies each item instantly. Simply decide: Keep or Let Go? Perfect for rapid decluttering sessions when you need to clear out fast!';
 
   @override
   String get welcomeTagline => 'Transform your space, spark joy in your life';

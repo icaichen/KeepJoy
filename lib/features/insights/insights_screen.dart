@@ -103,7 +103,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
         value: sessionsThisMonth.length.toString(),
         unit: isChinese ? '次' : 'times',
         title: isChinese ? '深度整理' : 'Deep Cleaning',
-        subtitle: isChinese ? '本月完成' : 'This month',
       ),
       _MetricCardData(
         icon: Icons.inventory_2_rounded,
@@ -112,7 +111,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
         value: widget.declutteredItems.length.toString(),
         unit: isChinese ? '件' : 'items',
         title: isChinese ? '已整理物品' : 'Items Sorted',
-        subtitle: isChinese ? '累计整理' : 'Total organized',
       ),
       _MetricCardData(
         icon: Icons.favorite_rounded,
@@ -121,7 +119,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
         value: avgJoyIndex.toStringAsFixed(1),
         unit: '',
         title: isChinese ? '心动指数' : 'Joy Index',
-        subtitle: isChinese ? '平均快乐值' : 'Average joy level',
       ),
       _MetricCardData(
         icon: Icons.attach_money_rounded,
@@ -130,7 +127,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
         value: totalValue.toStringAsFixed(0),
         unit: isChinese ? '元' : '\$',
         title: isChinese ? '新生价值' : 'New Life Value',
-        subtitle: isChinese ? '转售收入' : 'Resale income',
       ),
       _MetricCardData(
         icon: Icons.track_changes_rounded,
@@ -139,7 +135,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
         value: avgFocusIndex.toStringAsFixed(1),
         unit: '',
         title: isChinese ? '专注度' : 'Focus Level',
-        subtitle: isChinese ? '整理时的专注' : 'During cleaning',
       ),
       _MetricCardData(
         icon: Icons.local_fire_department_rounded,
@@ -148,7 +143,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
         value: streakDays.toString(),
         unit: isChinese ? '天' : 'days',
         title: isChinese ? '坚持天数' : 'Streak',
-        subtitle: isChinese ? '连续整理' : 'Consistent organizing',
       ),
     ];
 
@@ -180,113 +174,102 @@ class _InsightsScreenState extends State<InsightsScreen> {
     )!;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          // Sticky header (transparent at first, becomes white)
-          SliverAppBar(
-            pinned: true,
-            toolbarHeight: 60,
-            backgroundColor: headerBgColor,
-            elevation: scrollProgress > 0.8 ? 0.5 : 0,
-            shadowColor: Colors.black.withValues(alpha: 0.1),
-            flexibleSpace: SafeArea(
-              child: Container(
-                height: 60,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Stack(
-                  children: [
-                    // Header title (fades IN and moves to center)
-                    if (headerTitleOpacity > 0.01)
-                      Align(
-                        alignment: titleAlignment,
-                        child: Opacity(
-                          opacity: headerTitleOpacity,
-                          child: Text(
-                            isChinese ? '洞察' : 'Insight',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: headerTitleColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    // Profile icon (fades out)
-                    if (iconOpacity > 0.01)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: Opacity(
-                          opacity: iconOpacity,
-                          child: Center(
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 20,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF6B4E71), // Purple at top
+              Color(0xFF8A6E8F), // Mid purple
+              Color(0xFF95E3C6), // Mint green
+              Color(0xFFD5F2E9), // Light mint
+              Color(0xFFF5FBF8), // Very light mint
+              Colors.white,      // Fade to white
+            ],
+            stops: [0.0, 0.15, 0.3, 0.45, 0.6, 1.0],
+          ),
+        ),
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            // Sticky header (transparent at first, becomes white)
+            SliverAppBar(
+              pinned: true,
+              toolbarHeight: 60,
+              backgroundColor: headerBgColor,
+              elevation: scrollProgress > 0.8 ? 0.5 : 0,
+              shadowColor: Colors.black.withValues(alpha: 0.1),
+              flexibleSpace: SafeArea(
+                child: Container(
+                  height: 60,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Stack(
+                    children: [
+                      // Header title (fades IN and moves to center)
+                      if (headerTitleOpacity > 0.01)
+                        Align(
+                          alignment: titleAlignment,
+                          child: Opacity(
+                            opacity: headerTitleOpacity,
+                            child: Text(
+                              isChinese ? '洞察' : 'Insight',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: headerTitleColor,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
+                      // Profile icon (fades out)
+                      if (iconOpacity > 0.01)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Opacity(
+                            opacity: iconOpacity,
+                            child: Center(
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          // Gradient section - SCROLLABLE CONTENT with title at top left
-          SliverToBoxAdapter(
-            child: Container(
-              height: gradientHeight,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF6B4E71), // Purple at top
-                    Color(0xFF8A6E8F), // Mid purple
-                    Color(0xFF95E3C6), // Mint green
-                    Color(0xFFD5F2E9), // Light mint
-                    Color(0xFFF5FBF8), // Very light mint
-                    Colors.white,      // Fade to white
-                  ],
-                  stops: [0.0, 0.25, 0.5, 0.7, 0.9, 1.0],
-                ),
-              ),
+            // Big title "洞察" at top left
+            SliverToBoxAdapter(
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        isChinese ? '洞察' : 'Insight',
-                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          fontSize: 34,
-                        ),
-                      ),
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+                  child: Text(
+                    isChinese ? '洞察' : 'Insight',
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      fontSize: 34,
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          // Content area - starts overlapping the gradient
-          SliverToBoxAdapter(
-            child: Transform.translate(
-              offset: const Offset(0, -80), // Pull card up into gradient area
+            // Content area with cards
+            SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -309,42 +292,42 @@ class _InsightsScreenState extends State<InsightsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                        Text(
-                          isChinese ? '本月成就' : 'Monthly Achievements',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                          Text(
+                            isChinese ? '本月成就' : 'Monthly Achievements',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          isChinese
-                              ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
-                              : 'Processed ${widget.declutteredItems.length} items',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.black54,
+                          const SizedBox(height: 4),
+                          Text(
+                            isChinese
+                                ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
+                                : 'Processed ${widget.declutteredItems.length} items',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.black54,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        // Horizontal scrollable metric cards inside container
-                        SizedBox(
-                          height: 180,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: metrics.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right: index < metrics.length - 1 ? 16 : 0,
-                                ),
-                                child: _buildMetricCard(context, metrics[index]),
-                              );
-                            },
+                          const SizedBox(height: 20),
+                          // Horizontal scrollable metric cards inside container
+                          SizedBox(
+                            height: 120,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: metrics.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    right: index < metrics.length - 1 ? 12 : 0,
+                                  ),
+                                  child: _buildMetricCard(context, metrics[index]),
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 24),
                   // Other cards
                   Column(
@@ -366,15 +349,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMetricCard(BuildContext context, _MetricCardData metric) {
     return Container(
-      width: 160,
+      width: 140,
       decoration: BoxDecoration(
         color: metric.bgColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -383,69 +367,62 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Icon container
           Container(
-            width: 48,
-            height: 48,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: metric.iconColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               metric.icon,
               color: metric.iconColor,
-              size: 28,
+              size: 24,
             ),
           ),
-          // Value and title
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 8),
+          // Value and unit
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    metric.value,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w700,
-                      height: 1.0,
+              Text(
+                metric.value,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  height: 1.0,
+                ),
+              ),
+              if (metric.unit.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(left: 2, bottom: 2),
+                  child: Text(
+                    metric.unit,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  if (metric.unit.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 2),
-                      child: Text(
-                        metric.unit,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                metric.title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                metric.subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black54,
-                ),
-              ),
             ],
+          ),
+          const SizedBox(height: 4),
+          // Title
+          Text(
+            metric.title,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -629,7 +606,6 @@ class _MetricCardData {
     required this.value,
     required this.unit,
     required this.title,
-    required this.subtitle,
   });
 
   final IconData icon;
@@ -638,5 +614,4 @@ class _MetricCardData {
   final String value;
   final String unit;
   final String title;
-  final String subtitle;
 }

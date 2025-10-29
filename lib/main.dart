@@ -830,6 +830,83 @@ class _HomeScreen extends StatelessWidget {
     );
   }
 
+  void _showQuickTips(BuildContext context, AppLocalizations l10n) {
+    final tips = _getAllQuickTips(l10n);
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        final sheetTheme = Theme.of(sheetContext);
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.todaysTip,
+                  style: sheetTheme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: tips.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemBuilder: (_, index) {
+                    final tip = tips[index];
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '•',
+                          style: sheetTheme.textTheme.bodyLarge?.copyWith(
+                            height: 1.4,
+                            color: const Color(0xFF1F2937),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            tip,
+                            style: sheetTheme.textTheme.bodyMedium?.copyWith(
+                              height: 1.6,
+                              color: const Color(0xFF4B5563),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   String _formatQuote(String quote) {
     // Remove attribution from the end if it exists (— Author or — Unknown)
     final emDashIndex = quote.indexOf(' —');
@@ -883,8 +960,8 @@ class _HomeScreen extends StatelessWidget {
     return messages[dayOfYear % messages.length];
   }
 
-  String _getTodaysTip(AppLocalizations l10n) {
-    final tips = [
+  List<String> _getAllQuickTips(AppLocalizations l10n) {
+    return [
       l10n.todaysTip1,
       l10n.todaysTip2,
       l10n.todaysTip3,
@@ -892,6 +969,10 @@ class _HomeScreen extends StatelessWidget {
       l10n.todaysTip5,
       l10n.todaysTip6,
     ];
+  }
+
+  String _getTodaysTip(AppLocalizations l10n) {
+    final tips = _getAllQuickTips(l10n);
     final now = DateTime.now();
     final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
     return tips[dayOfYear % tips.length];
@@ -902,10 +983,6 @@ class _HomeScreen extends StatelessWidget {
     // Return first 40 characters as preview
     if (tip.length <= 40) return tip;
     return '${tip.substring(0, 40)}...';
-  }
-
-  String _getTodaysTipFull(AppLocalizations l10n) {
-    return _getTodaysTip(l10n);
   }
 
   Widget _buildStartDeclutterGradientCard({
@@ -1753,45 +1830,7 @@ class _HomeScreen extends StatelessWidget {
                       border: Border.all(color: const Color(0xFFE4E8EF)),
                     ),
                     child: InkWell(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Row(
-                              children: [
-                                Container(
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFEFF4FB),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.lightbulb_outline,
-                                    color: Color(0xFF1F6FEB),
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(l10n.todaysTip),
-                              ],
-                            ),
-                            content: Text(
-                              _getTodaysTipFull(l10n),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    height: 1.6,
-                                  ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: Text(l10n.ok),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                      onTap: () => _showQuickTips(context, l10n),
                       borderRadius: BorderRadius.circular(18),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -1799,7 +1838,6 @@ class _HomeScreen extends StatelessWidget {
                           vertical: 18,
                         ),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               width: 36,
@@ -1817,25 +1855,14 @@ class _HomeScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l10n.quickTip,
-                                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF111827),
-                                        ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _getTodaysTipPreview(l10n),
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                          color: const Color(0xFF4B5563),
-                                          height: 1.5,
-                                        ),
-                                  ),
-                                ],
+                              child: Text(
+                                _getTodaysTipPreview(l10n),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: const Color(0xFF4B5563),
+                                      height: 1.4,
+                                    ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
