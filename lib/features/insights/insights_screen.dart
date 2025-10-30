@@ -165,41 +165,26 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // 滚动层（包含渐变背景和所有内容）
-          SingleChildScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
-            child: Stack(
-              children: [
-                // 渐变背景 - 会随内容滚动，渐隐消失
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 400, // 渐变区域高度
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0xFFB794F6), // Purple at top
-                          Color(0xFFC9A8F7), // Light purple
-                          Color(0xFFD4BCF3), // Purple-mint transition
-                          Color(0xFFB8E5D4), // Mint green
-                          Color(0xFFC8EDE0), // Light mint
-                          Color(0xFFE0F5EC), // Very light mint
-                          Color(0xFFF2F2F7), // White
-                        ],
-                        stops: [0.0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-                // 内容层
-                Column(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFB794F6), // Purple
+              Color(0xFFB8E5D4), // Mint green
+              Color(0xFFF2F2F7), // White
+            ],
+            stops: [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Scrollable content
+            SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              child: Column(
                   children: [
                     // 顶部空间 + 标题 + Profile图标
                     SizedBox(
@@ -339,46 +324,45 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   const SizedBox(height: 32),
                 ],
               ),
-            ],
-          ),
-        ),
-        // Real header that appears when scrolling is complete
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: IgnorePointer(
-            ignoring: realHeaderOpacity < 0.5,
-            child: Opacity(
-              opacity: realHeaderOpacity,
-              child: Container(
-                height: topPadding + kToolbarHeight,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF2F2F7),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Color(0xFFE5E5EA),
-                      width: 0.5,
+            ),
+            // Real header that appears when scrolling is complete
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                ignoring: realHeaderOpacity < 0.5,
+                child: Opacity(
+                  opacity: realHeaderOpacity,
+                  child: Container(
+                    height: topPadding + kToolbarHeight,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF2F2F7),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0xFFE5E5EA),
+                          width: 0.5,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                padding: EdgeInsets.only(top: topPadding),
-                alignment: Alignment.center,
-                child: Text(
-                  summaryTitle,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    padding: EdgeInsets.only(top: topPadding),
+                    alignment: Alignment.center,
+                    child: Text(
+                      summaryTitle,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
-      ],
-    ),
-  );
+      ),
+    );
 }
 
   Widget _buildMetricCard(BuildContext context, _MetricCardData metric) {

@@ -1116,8 +1116,8 @@ class _HomeScreen extends StatelessWidget {
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+                      horizontal: 24,
+                      vertical: 20,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1127,11 +1127,12 @@ class _HomeScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 "Monthly Progress",
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Display',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1140,12 +1141,12 @@ class _HomeScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 _formatDate(DateTime.now()),
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.75,
-                                      ),
-                                    ),
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xBFFFFFFF), // 75% opacity white
+                                ),
                                 textAlign: TextAlign.right,
                                 maxLines: 2,
                                 softWrap: true,
@@ -1153,7 +1154,7 @@ class _HomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         Row(
                           children: [
                             Expanded(
@@ -1975,18 +1976,22 @@ class _WhiteProgressCard extends StatelessWidget {
       children: [
         Text(
           value,
-          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 42,
+            fontWeight: FontWeight.w700,
             color: Colors.white,
-            fontSize: 28,
+            height: 1.0,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.white.withValues(alpha: 0.75),
-            fontSize: 11,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Text',
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Color(0xBFFFFFFF), // 75% opacity white
           ),
           textAlign: TextAlign.center,
           maxLines: 2,

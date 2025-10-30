@@ -131,7 +131,7 @@ abstract class AppLocalizations {
   /// No description provided for @continueYourJoyJourney.
   ///
   /// In en, this message translates to:
-  /// **'Continue your declutter joy journey'**
+  /// **'Continue your journey'**
   String get continueYourJoyJourney;
 
   /// No description provided for @tagline1.
