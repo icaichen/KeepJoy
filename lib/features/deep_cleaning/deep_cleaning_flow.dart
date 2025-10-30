@@ -87,7 +87,6 @@ class DeepCleaningFlowPage extends StatefulWidget {
 
 class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
   final TextEditingController _areaController = TextEditingController();
-  bool _placeholderInitialized = false;
 
   @override
   void dispose() {
@@ -100,15 +99,6 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
     final l10n = AppLocalizations.of(context)!;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    if (!_placeholderInitialized) {
-      final isChinese = Localizations.localeOf(
-        context,
-      ).languageCode.toLowerCase().startsWith('zh');
-      _areaController.text = isChinese
-          ? '输入整理区域'
-          : 'Please enter the area to declutter';
-      _placeholderInitialized = true;
-    }
 
     final isChinese = Localizations.localeOf(
       context,
@@ -169,36 +159,51 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                             .toList(),
                       ),
                       const SizedBox(height: 28),
-                      TextField(
-                        controller: _areaController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          hintText: isChinese ? '输入整理区域' : 'Custom area name',
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE1E7EF),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4, bottom: 8),
+                            child: Text(
+                              isChinese ? '输入整理区域' : 'Enter the Area',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: _deepCleaningPrimaryColor,
+                              ),
                             ),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE1E7EF),
+                          TextField(
+                            controller: _areaController,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              hintText: '',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE1E7EF),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE1E7EF),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(
+                                  color: _deepCleaningPrimaryColor,
+                                  width: 1.5,
+                                ),
+                              ),
                             ),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(
-                              color: _deepCleaningPrimaryColor,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
+                        ],
                       ),
                     ],
                   ),

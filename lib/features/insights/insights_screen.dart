@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
+import 'package:keepjoy_app/features/insights/yearly_reports_screen.dart';
+import 'package:keepjoy_app/features/profile/profile_page.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/memory.dart';
@@ -27,7 +29,6 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-  bool _showJoyPercent = true; // true = Joy Percent, false = Joy Count
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
 
@@ -215,8 +216,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               // Profile Icon on the right
                               GestureDetector(
                                 onTap: () {
-                                  // TODO: Navigate to profile screen
-                                  print('Profile tapped');
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => ProfilePage(
+                                        onLocaleChange: (locale) {
+                                          // Locale change handled by root app
+                                        },
+                                      ),
+                                    ),
+                                  );
                                 },
                                 child: Container(
                                   width: 40,
@@ -317,11 +325,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _buildJoyIndexCard(context, isChinese),
-                  ),
-                  const SizedBox(height: 24),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _buildLetGoDetailsCard(context, isChinese),
@@ -660,314 +663,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildJoyIndexCard(BuildContext context, bool isChinese) {
-    // Calculate joy index trend over selected period (last 30 days)
-    final now = DateTime.now();
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-
-    // Group items by week
-    final weeklyJoyData = <int, List<int>>{}; // week -> list of joy levels
-    final weeklyJoyCount = <int, int>{}; // week -> count of items with joy
-    final weeklyTotalCount = <int, int>{}; // week -> total items decluttered
-
-    for (final item in widget.declutteredItems) {
-      if (item.createdAt.isAfter(thirtyDaysAgo)) {
-        final weekIndex =
-            now.difference(item.createdAt).inDays ~/
-            7; // 0 = this week, 1 = last week, etc.
-        if (weekIndex < 5) {
-          // Only last 5 weeks
-          weeklyTotalCount[weekIndex] = (weeklyTotalCount[weekIndex] ?? 0) + 1;
-
-          if (item.joyLevel != null && item.joyLevel! > 0) {
-            weeklyJoyData.putIfAbsent(weekIndex, () => []).add(item.joyLevel!);
-            weeklyJoyCount[weekIndex] = (weeklyJoyCount[weekIndex] ?? 0) + 1;
-          }
-        }
-      }
-    }
-
-    // Calculate weekly joy percent
-    final weeklyJoyPercent = <int, double>{};
-    weeklyTotalCount.forEach((week, total) {
-      final joyCount = weeklyJoyCount[week] ?? 0;
-      weeklyJoyPercent[week] = total > 0 ? (joyCount / total * 100) : 0.0;
-    });
-
-    // Calculate average joy percent
-    final avgJoyPercent = weeklyJoyPercent.isEmpty
-        ? 0.0
-        : weeklyJoyPercent.values.reduce((a, b) => a + b) /
-              weeklyJoyPercent.length;
-
-    // Calculate total joy count
-    final itemsWithJoy = widget.declutteredItems
-        .where((item) => item.joyLevel != null && item.joyLevel! > 0)
-        .toList();
-    final totalJoyCount = itemsWithJoy.length;
-
-    // Determine trend
-    String trendText;
-    String trendIcon;
-    Color trendColor;
-
-    if (weeklyJoyPercent.length >= 2) {
-      final weeks = weeklyJoyPercent.keys.toList()..sort();
-      final recentWeek = weeklyJoyPercent[weeks.first] ?? 0;
-      final olderWeek = weeklyJoyPercent[weeks.last] ?? 0;
-
-      if (recentWeek > olderWeek) {
-        trendText = isChinese ? '上升' : 'Rising';
-        trendIcon = '↑';
-        trendColor = const Color(0xFF4CAF50);
-      } else if (recentWeek < olderWeek) {
-        trendText = isChinese ? '下降' : 'Falling';
-        trendIcon = '↓';
-        trendColor = const Color(0xFFF44336);
-      } else {
-        trendText = isChinese ? '稳定' : 'Stable';
-        trendIcon = '→';
-        trendColor = const Color(0xFF9E9E9E);
-      }
-    } else {
-      trendText = isChinese ? '暂无' : 'N/A';
-      trendIcon = '—';
-      trendColor = const Color(0xFF9E9E9E);
-    }
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title
-          Text(
-            isChinese ? '心动指数趋势' : 'Joy Index Trend',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-          ),
-          const SizedBox(height: 20),
-
-          // Toggle between Joy Percent and Joy Count
-          Row(
-            children: [
-              Text(
-                isChinese ? '趋势指标' : 'Trend Metric',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _showJoyPercent = true;
-                            });
-                          },
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: _showJoyPercent
-                                  ? Colors.white
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: _showJoyPercent
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : [],
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              isChinese ? '心动比例' : 'Joy Percent',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: _showJoyPercent
-                                        ? Colors.black87
-                                        : Colors.black45,
-                                    fontWeight: _showJoyPercent
-                                        ? FontWeight.w600
-                                        : FontWeight.w500,
-                                  ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _showJoyPercent = false;
-                            });
-                          },
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: !_showJoyPercent
-                                  ? Colors.white
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: !_showJoyPercent
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : [],
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              isChinese ? '心动次数' : 'Joy Count',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: !_showJoyPercent
-                                        ? Colors.black87
-                                        : Colors.black45,
-                                    fontWeight: !_showJoyPercent
-                                        ? FontWeight.w600
-                                        : FontWeight.w500,
-                                  ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // Chart
-          if (weeklyJoyPercent.isEmpty && weeklyJoyCount.isEmpty)
-            Container(
-              height: 150,
-              alignment: Alignment.center,
-              child: Text(
-                isChinese
-                    ? '还没有足够的数据来显示趋势'
-                    : 'Not enough data to show trend yet',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-              ),
-            )
-          else
-            SizedBox(
-              height: 200,
-              child: CustomPaint(
-                painter: _JoyTrendChartPainter(
-                  weeklyData: _showJoyPercent
-                      ? weeklyJoyPercent
-                      : weeklyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
-                  maxWeeks: 5,
-                  isPercent: _showJoyPercent,
-                  isChinese: isChinese,
-                ),
-              ),
-            ),
-
-          const SizedBox(height: 20),
-
-          // Summary stats
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem(
-                context,
-                label: isChinese ? '平均心动比例' : 'Avg Joy %',
-                value: '${avgJoyPercent.toStringAsFixed(0)}%',
-                color: const Color(0xFFFF9AA2),
-              ),
-              _buildStatItem(
-                context,
-                label: isChinese ? '总心动次数' : 'Total Joy',
-                value: totalJoyCount.toString(),
-                color: const Color(0xFF5ECFB8),
-              ),
-              _buildStatItem(
-                context,
-                label: isChinese ? '趋势分析' : 'Trend',
-                value: '$trendIcon $trendText',
-                color: trendColor,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.black54),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: color,
-          ),
-        ),
-      ],
     );
   }
 
@@ -1599,12 +1294,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to yearly reports screen
-        print('Yearly Reports tapped');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isChinese ? '年度报告功能开发中' : 'Yearly Reports coming soon'),
-            duration: const Duration(seconds: 2),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => YearlyReportsScreen(
+              declutteredItems: widget.declutteredItems,
+              resellItems: widget.resellItems,
+              deepCleaningSessions: widget.deepCleaningSessions,
+            ),
           ),
         );
       },

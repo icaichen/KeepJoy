@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +17,7 @@ import 'features/insights/insights_screen.dart';
 import 'features/items/items_screen.dart';
 import 'features/memories/create_memory_page.dart';
 import 'l10n/app_localizations.dart';
+import 'theme/typography.dart';
 import 'package:keepjoy_app/models/activity_entry.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -50,112 +53,9 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
-        fontFamily: 'SF Pro',
-        fontFamilyFallback: const [
-          'Source Han Sans CN',
-          'Noto Sans SC',
-          'PingFang SC',
-          'Roboto',
-          'Inter',
-        ],
-        // Cohesive Typography System
-        textTheme: const TextTheme(
-          // Display styles - for hero content
-          displayLarge: TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -1.0,
-            height: 1.2,
-          ),
-          displayMedium: TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-            height: 1.2,
-          ),
-          displaySmall: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.3,
-            height: 1.3,
-          ),
-          // Headlines - for section titles
-          headlineLarge: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.5,
-            height: 1.3,
-          ),
-          headlineMedium: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.3,
-            height: 1.3,
-          ),
-          headlineSmall: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.2,
-            height: 1.3,
-          ),
-          // Titles - for card titles and important text
-          titleLarge: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
-            height: 1.4,
-          ),
-          titleMedium: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0,
-            height: 1.4,
-          ),
-          titleSmall: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0,
-            height: 1.4,
-          ),
-          // Body text - for regular content
-          bodyLarge: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0,
-            height: 1.5,
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0,
-            height: 1.5,
-          ),
-          bodySmall: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0,
-            height: 1.4,
-          ),
-          // Labels - for buttons and small text
-          labelLarge: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.1,
-            height: 1.4,
-          ),
-          labelMedium: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.1,
-            height: 1.4,
-          ),
-          labelSmall: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.1,
-            height: 1.4,
-          ),
-        ),
+        fontFamily: AppTypography.primaryFont,
+        fontFamilyFallback: AppTypography.chineseFallbacks,
+        textTheme: AppTypography.textTheme,
       ),
       locale: _locale,
       localizationsDelegates: const [
@@ -503,7 +403,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   }
 }
 
-class _HomeScreen extends StatelessWidget {
+class _HomeScreen extends StatefulWidget {
   final DeepCleaningSession? activeSession;
   final VoidCallback onStopSession;
   final Function(String area) onStartSession;
@@ -535,6 +435,48 @@ class _HomeScreen extends StatelessWidget {
     required this.onAddPlannedSession,
     required this.activityHistory,
   });
+
+  @override
+  State<_HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<_HomeScreen> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Start a timer to update the UI every second if there's an active session
+    if (widget.activeSession != null) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(_HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Handle timer based on active session state
+    if (widget.activeSession != null && _timer == null) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    } else if (widget.activeSession == null && _timer != null) {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   String _getQuoteOfDay(AppLocalizations l10n) {
     // Get day of year to determine which quote to show
@@ -706,7 +648,7 @@ class _HomeScreen extends StatelessWidget {
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
-    final activities = activityHistory.take(5).toList();
+    final activities = widget.activityHistory.take(5).toList();
 
     showModalBottomSheet<void>(
       context: context,
@@ -1026,14 +968,7 @@ class _HomeScreen extends StatelessWidget {
         toolbarHeight: 80,
         title: Text(
           _getGreeting(l10n),
-          style: const TextStyle(
-            fontFamily: 'SF Pro Display',
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: Color(0xDE000000), // black87
-            letterSpacing: 0,
-            height: 1.0,
-          ),
+          style: AppTypography.greeting,
         ),
         centerTitle: false,
         actions: [
@@ -1043,7 +978,7 @@ class _HomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => ProfilePage(onLocaleChange: onLocaleChange),
+                  builder: (_) => ProfilePage(onLocaleChange: widget.onLocaleChange),
                 ),
               );
             },
@@ -1059,7 +994,7 @@ class _HomeScreen extends StatelessWidget {
             // Purple Section - FULL WIDTH
             Container(
               width: double.infinity,
-              decoration: const BoxDecoration(color: Colors.white),
+              decoration: const BoxDecoration(color: Color(0xFFF5F5F7)),
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.05,
                 vertical: 24,
@@ -1076,28 +1011,14 @@ class _HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             l10n.continueYourJoyJourney,
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Display',
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xDE000000), // black87
-                              letterSpacing: 0,
-                              height: 1.0,
-                            ),
+                            style: AppTypography.heroTitle,
                             textAlign: TextAlign.center,
                             softWrap: true,
                           ),
                           const SizedBox(height: 10),
                           Text(
                             _getDailyTagline(l10n),
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Text',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0x8A000000), // black54
-                              letterSpacing: 0,
-                              height: 1.0,
-                            ),
+                            style: AppTypography.subtitle,
                             textAlign: TextAlign.center,
                             softWrap: true,
                           ),
@@ -1124,7 +1045,7 @@ class _HomeScreen extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
-                      vertical: 20,
+                      vertical: 32,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1134,12 +1055,7 @@ class _HomeScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 "Monthly Progress",
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Display',
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
+                                style: AppTypography.cardTitle.white,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1148,11 +1064,8 @@ class _HomeScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 _formatDate(DateTime.now()),
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xBFFFFFFF), // 75% opacity white
+                                style: AppTypography.caption.copyWith(
+                                  color: const Color(0xBFFFFFFF), // 75% opacity white
                                 ),
                                 textAlign: TextAlign.right,
                                 maxLines: 2,
@@ -1161,13 +1074,13 @@ class _HomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 32),
                         Row(
                           children: [
                             Expanded(
                               child: _WhiteProgressCard(
                                 label: l10n.itemDecluttered,
-                                value: '$declutteredCount',
+                                value: '${widget.declutteredCount}',
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -1181,7 +1094,7 @@ class _HomeScreen extends StatelessWidget {
                             Expanded(
                               child: _WhiteProgressCard(
                                 label: l10n.newValueCreated,
-                                value: newValue.toStringAsFixed(0),
+                                value: widget.newValue.toStringAsFixed(0),
                               ),
                             ),
                           ],
@@ -1197,7 +1110,7 @@ class _HomeScreen extends StatelessWidget {
                     onTap: () => _showActivityHistory(context, l10n),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF8FF),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -1226,26 +1139,12 @@ class _HomeScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   l10n.streakAchievement,
-                                  style: const TextStyle(
-                                    fontFamily: 'SF Pro Text',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xDE000000), // black87
-                                    letterSpacing: 0,
-                                    height: 1.0,
-                                  ),
+                                  style: AppTypography.cardTitle.black87,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  l10n.daysStreak(streak),
-                                  style: const TextStyle(
-                                    fontFamily: 'SF Pro Text',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0x8A000000), // black54
-                                    letterSpacing: 0,
-                                    height: 1.0,
-                                  ),
+                                  l10n.daysStreak(widget.streak),
+                                  style: AppTypography.subtitle,
                                 ),
                               ],
                             ),
@@ -1265,7 +1164,7 @@ class _HomeScreen extends StatelessWidget {
             SizedBox(height: screenHeight * 0.03),
 
             // Continue Your Session section (only show if active session exists)
-            if (activeSession != null)
+            if (widget.activeSession != null)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Column(
@@ -1329,7 +1228,7 @@ class _HomeScreen extends StatelessWidget {
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                           _getElapsedTime(
-                                            activeSession!.startTime,
+                                            widget.activeSession!.startTime,
                                           ),
                                           style: const TextStyle(
                                             fontSize: 32,
@@ -1346,7 +1245,7 @@ class _HomeScreen extends StatelessWidget {
                                       const SizedBox(height: 2),
                                       // Location and status
                                       Text(
-                                        '${activeSession!.area} - ${l10n.inProgress}',
+                                        '${widget.activeSession!.area} - ${l10n.inProgress}',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Color(0xFF6B7280),
@@ -1356,114 +1255,107 @@ class _HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                // Right side: Buttons
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    // Resume button
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF414B5A),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            // Buttons side by side
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF414B5A),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {
+                                          // Navigate back to timer
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  DeepCleaningTimerPage(
+                                                    area: widget.activeSession!.area,
+                                                    beforePhotoPath:
+                                                        widget.activeSession!
+                                                            .beforePhotoPath,
+                                                    onStopSession:
+                                                        widget.onStopSession,
+                                                  ),
+                                            ),
+                                          );
+                                        },
                                         borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          onTap: () {
-                                            // Navigate back to timer
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    DeepCleaningTimerPage(
-                                                      area: activeSession!.area,
-                                                      beforePhotoPath:
-                                                          activeSession!
-                                                              .beforePhotoPath,
-                                                      onStopSession:
-                                                          onStopSession,
-                                                    ),
-                                              ),
-                                            );
-                                          },
-                                          borderRadius: BorderRadius.circular(
-                                            10,
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 10,
                                           ),
-                                          child: const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 14,
-                                              vertical: 6,
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.play_arrow,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.play_arrow,
+                                                color: Colors.white,
+                                                size: 18,
+                                              ),
+                                              SizedBox(width: 6),
+                                              Text(
+                                                'Resume',
+                                                style: TextStyle(
                                                   color: Colors.white,
-                                                  size: 14,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
                                                 ),
-                                                SizedBox(width: 6),
-                                                Text(
-                                                  'Resume',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    // Stop button (square)
-                                    Container(
-                                      width: 34,
-                                      height: 34,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF414B5A),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          onTap: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) => AlertDialog(
-                                                content: Text(
-                                                  l10n.deepCleaningSessionCompleted,
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.of(
-                                                        context,
-                                                      ).pop();
-                                                      onStopSession();
-                                                    },
-                                                    child: Text(l10n.ok),
-                                                  ),
-                                                ],
                                               ),
-                                            );
-                                          },
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          child: const Center(
-                                            child: Icon(
-                                              Icons.stop_rounded,
-                                              color: Colors.white,
-                                              size: 14,
-                                            ),
+                                            ],
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // Stop button
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEF4444),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () {
+                                        // Navigate to timer page (finish cleaning flow)
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                DeepCleaningTimerPage(
+                                                  area: widget.activeSession!.area,
+                                                  beforePhotoPath:
+                                                      widget.activeSession!
+                                                          .beforePhotoPath,
+                                                  onStopSession:
+                                                      widget.onStopSession,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 10,
+                                        ),
+                                        child: Icon(
+                                          Icons.stop_rounded,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1487,14 +1379,7 @@ class _HomeScreen extends StatelessWidget {
                     children: [
                       Text(
                         l10n.declutterCalendar,
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Display',
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xDE000000), // black87
-                          letterSpacing: 0,
-                          height: 1.0,
-                        ),
+                        style: AppTypography.sectionHeader,
                       ),
                       TextButton.icon(
                         onPressed: () async {
@@ -1503,7 +1388,7 @@ class _HomeScreen extends StatelessWidget {
                             builder: (_) => const AddSessionDialog(),
                           );
                           if (session != null) {
-                            onAddPlannedSession(session);
+                            widget.onAddPlannedSession(session);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(l10n.sessionCreated)),
@@ -1519,14 +1404,14 @@ class _HomeScreen extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Show next planned session or empty state - both are clickable to show calendar
-                  if (plannedSessions.isEmpty)
+                  if (widget.plannedSessions.isEmpty)
                     _buildStartDeclutterGradientCard(
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => ActivityCalendarPage(
-                              declutteredItems: declutteredItems,
-                              memories: memories,
+                              declutteredItems: widget.declutteredItems,
+                              memories: widget.memories,
                             ),
                           ),
                         );
@@ -1570,8 +1455,8 @@ class _HomeScreen extends StatelessWidget {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => ActivityCalendarPage(
-                              declutteredItems: declutteredItems,
-                              memories: memories,
+                              declutteredItems: widget.declutteredItems,
+                              memories: widget.memories,
                             ),
                           ),
                         );
@@ -1584,13 +1469,13 @@ class _HomeScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _getNextSessionTitle(plannedSessions.first),
+                                  _getNextSessionTitle(widget.plannedSessions.first),
                                   style: Theme.of(context).textTheme.bodyLarge
                                       ?.copyWith(fontWeight: FontWeight.w600),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '${plannedSessions.first.title} • ${plannedSessions.first.scheduledTime}',
+                                  '${widget.plannedSessions.first.title} • ${widget.plannedSessions.first.scheduledTime}',
                                   style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: Theme.of(context)
@@ -1631,21 +1516,14 @@ class _HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     l10n.startDeclutter,
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Display',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xDE000000), // black87
-                      letterSpacing: 0,
-                      height: 1.0,
-                    ),
+                    style: AppTypography.sectionHeader,
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: _buildStartDeclutterGradientCard(
-                          onTap: onOpenJoyDeclutter,
+                          onTap: widget.onOpenJoyDeclutter,
                           colors: const [Color(0xFF3570FF), Color(0xFF1BCBFF)],
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1667,14 +1545,7 @@ class _HomeScreen extends StatelessWidget {
                               const SizedBox(height: 12),
                               Text(
                                 l10n.joyDeclutterTitle,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 0,
-                                  height: 1.0,
-                                ),
+                                style: AppTypography.buttonText.white,
                               ),
                             ],
                           ),
@@ -1683,7 +1554,7 @@ class _HomeScreen extends StatelessWidget {
                       SizedBox(width: screenWidth * 0.03),
                       Expanded(
                         child: _buildStartDeclutterGradientCard(
-                          onTap: onOpenQuickDeclutter,
+                          onTap: widget.onOpenQuickDeclutter,
                           colors: const [Color(0xFFFF6CAB), Color(0xFFFF8F61)],
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1705,14 +1576,7 @@ class _HomeScreen extends StatelessWidget {
                               const SizedBox(height: 12),
                               Text(
                                 l10n.quickDeclutterTitle,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 0,
-                                  height: 1.0,
-                                ),
+                                style: AppTypography.buttonText.white,
                               ),
                             ],
                           ),
@@ -1726,8 +1590,8 @@ class _HomeScreen extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => DeepCleaningFlowPage(
-                            onStartSession: onStartSession,
-                            onStopSession: onStopSession,
+                            onStartSession: widget.onStartSession,
+                            onStopSession: widget.onStopSession,
                           ),
                         ),
                       );
@@ -1758,14 +1622,7 @@ class _HomeScreen extends StatelessWidget {
                         Expanded(
                           child: Text(
                             l10n.deepCleaningTitle,
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Display',
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: 0,
-                              height: 1.0,
-                            ),
+                            style: AppTypography.cardTitle.white,
                           ),
                         ),
                         Icon(
@@ -1789,14 +1646,7 @@ class _HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     l10n.dailyInspiration,
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Display',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xDE000000), // black87
-                      letterSpacing: 0,
-                      height: 1.0,
-                    ),
+                    style: AppTypography.sectionHeader,
                   ),
                   const SizedBox(height: 12),
 
@@ -1822,28 +1672,14 @@ class _HomeScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(
                             _formatQuote(quoteOfDay),
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Text',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              fontStyle: FontStyle.italic,
-                              color: Color(0xDE000000), // black87
-                              letterSpacing: 0,
-                              height: 1.5,
-                            ),
+                            style: AppTypography.quote.black87,
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 12),
                           Text(
                             '- ${_getQuoteAttribution(quoteOfDay)}',
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Text',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              fontStyle: FontStyle.italic,
-                              color: Color(0xFF757575), // grey600
-                              letterSpacing: 0,
-                              height: 1.0,
+                            style: AppTypography.quoteAttribution.copyWith(
+                              color: const Color(0xFF757575), // grey600
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -1923,26 +1759,12 @@ class _HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             l10n.joyCheck,
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Display',
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xDE000000), // black87
-                              letterSpacing: 0,
-                              height: 1.0,
-                            ),
+                            style: AppTypography.cardTitle.black87,
                           ),
                           const SizedBox(height: 6),
                           Text(
                             l10n.whatBroughtYouJoy,
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Text',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xDE000000), // black87
-                              letterSpacing: 0,
-                              height: 1.0,
-                            ),
+                            style: AppTypography.subtitle,
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 18),
@@ -2057,22 +1879,13 @@ class _WhiteProgressCard extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(
-            fontFamily: 'SF Pro Display',
-            fontSize: 42,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-            height: 1.0,
-          ),
+          style: AppTypography.metricValue.white,
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            fontFamily: 'SF Pro Text',
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: Color(0xBFFFFFFF), // 75% opacity white
+          style: AppTypography.metricLabel.copyWith(
+            color: const Color(0xBFFFFFFF), // 75% opacity white
           ),
           textAlign: TextAlign.center,
           maxLines: 2,
