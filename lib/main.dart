@@ -1062,14 +1062,7 @@ class _HomeScreen extends StatelessWidget {
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF6B5CE7), // Purple
-                    Color(0xFF5ECFB8), // Mint green
-                  ],
-                ),
+                color: Colors.white,
               ),
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.05,
@@ -1088,7 +1081,7 @@ class _HomeScreen extends StatelessWidget {
                           Text(
                             l10n.continueYourJoyJourney,
                             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  color: Colors.white,
+                                  color: Colors.black87,
                                   fontSize: 32,
                                   fontWeight: FontWeight.w700,
                                   height: 1.2,
@@ -1100,7 +1093,7 @@ class _HomeScreen extends StatelessWidget {
                           Text(
                             _getDailyTagline(l10n),
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                  color: Colors.black54,
                                   fontSize: 18,
                                   height: 1.4,
                                 ),
@@ -1113,10 +1106,10 @@ class _HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // This Month's Progress Section with semi-transparent card
+                  // This Month's Progress Section with colored card
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: const Color(0xFFE3ECFF),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     padding: const EdgeInsets.symmetric(
@@ -1134,7 +1127,7 @@ class _HomeScreen extends StatelessWidget {
                                 style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.white,
+                                      color: Colors.black87,
                                     ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1146,9 +1139,7 @@ class _HomeScreen extends StatelessWidget {
                                 _formatDate(DateTime.now()),
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.8,
-                                      ),
+                                      color: Colors.black54,
                                     ),
                                 textAlign: TextAlign.right,
                                 maxLines: 2,
@@ -1193,7 +1184,7 @@ class _HomeScreen extends StatelessWidget {
                     onTap: () => _showActivityHistory(context, l10n),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: const Color(0xFFEFF8FF),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -1225,7 +1216,7 @@ class _HomeScreen extends StatelessWidget {
                                   style:
                                       Theme.of(context).textTheme.bodyMedium
                                           ?.copyWith(
-                                    color: Colors.white,
+                                    color: Colors.black87,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -1235,9 +1226,7 @@ class _HomeScreen extends StatelessWidget {
                                   style:
                                       Theme.of(context).textTheme.bodyMedium
                                           ?.copyWith(
-                                    color: Colors.white.withValues(
-                                      alpha: 0.9,
-                                    ),
+                                    color: Colors.black54,
                                   ),
                                 ),
                               ],
@@ -1245,7 +1234,7 @@ class _HomeScreen extends StatelessWidget {
                           ),
                           Icon(
                             Icons.chevron_right,
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: Colors.black45,
                             size: 28,
                           ),
                         ],
@@ -2445,7 +2434,7 @@ class _WhiteProgressCard extends StatelessWidget {
           value,
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black87,
             fontSize: 28,
           ),
         ),
@@ -2453,7 +2442,7 @@ class _WhiteProgressCard extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.white.withValues(alpha: 0.9),
+            color: Colors.black54,
             fontSize: 11,
           ),
           textAlign: TextAlign.center,

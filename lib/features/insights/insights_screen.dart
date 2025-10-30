@@ -1,4 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
+import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
@@ -22,25 +26,7 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-  final ScrollController _scrollController = ScrollController();
-  double _scrollOffset = 0.0;
   bool _showJoyPercent = true; // true = Joy Percent, false = Joy Count
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(() {
-      setState(() {
-        _scrollOffset = _scrollController.offset;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,22 +52,30 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
 
     // Calculate Joy Index (average joy level from items with joyLevel)
-    final itemsWithJoy = widget.declutteredItems.where((item) => item.joyLevel != null).toList();
+    final itemsWithJoy = widget.declutteredItems
+        .where((item) => item.joyLevel != null)
+        .toList();
     final avgJoyIndex = itemsWithJoy.isEmpty
         ? 0.0
-        : itemsWithJoy.map((item) => item.joyLevel!).reduce((a, b) => a + b) / itemsWithJoy.length;
+        : itemsWithJoy.map((item) => item.joyLevel!).reduce((a, b) => a + b) /
+              itemsWithJoy.length;
 
     // Calculate New Life Value (total sold price from resell items)
-    final soldItems = widget.resellItems.where((item) => item.soldPrice != null);
+    final soldItems = widget.resellItems.where(
+      (item) => item.soldPrice != null,
+    );
     final totalValue = soldItems.isEmpty
         ? 0.0
         : soldItems.map((item) => item.soldPrice!).reduce((a, b) => a + b);
 
     // Calculate average focus index from sessions
-    final sessionsWithFocus = sessionsThisMonth.where((s) => s.focusIndex != null);
+    final sessionsWithFocus = sessionsThisMonth.where(
+      (s) => s.focusIndex != null,
+    );
     final avgFocusIndex = sessionsWithFocus.isEmpty
         ? 0.0
-        : sessionsWithFocus.map((s) => s.focusIndex!).reduce((a, b) => a + b) / sessionsWithFocus.length;
+        : sessionsWithFocus.map((s) => s.focusIndex!).reduce((a, b) => a + b) /
+              sessionsWithFocus.length;
 
     // Calculate streak
     final streakDays = widget.streak;
@@ -137,182 +131,221 @@ class _InsightsScreenState extends State<InsightsScreen> {
       ),
     ];
 
-    // Calculate scroll progress
-    final double maxScroll = 200.0;
-    final double scrollProgress = (_scrollOffset / maxScroll).clamp(0.0, 1.0);
-    final double headerOpacity = scrollProgress;
-    final double titleOpacity = 1.0 - scrollProgress;
-
     return Scaffold(
-      body: Stack(
-        children: [
-          // Animated gradient background
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color.lerp(const Color(0xFF6B4E71), Colors.white, scrollProgress)!,
-                  Color.lerp(const Color(0xFF8A6E8F), Colors.white, scrollProgress)!,
-                  Color.lerp(const Color(0xFF95E3C6), Colors.white, scrollProgress)!,
-                  Colors.white,
-                ],
-              ),
-            ),
-          ),
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.white,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 280,
+            pinned: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final scrollY = (constraints.maxHeight - kToolbarHeight).clamp(
+                  0.0,
+                  200.0,
+                );
+                final progress = 1 - (scrollY / 200.0);
 
-          // Scrollable content
-          NotificationListener<ScrollNotification>(
-            onNotification: (notification) {
-              if (notification is ScrollUpdateNotification) {
-                setState(() {
-                  _scrollOffset = notification.metrics.pixels;
-                });
-              }
-              return true;
-            },
-            child: ListView(
-              padding: const EdgeInsets.only(top: 200),
-              children: [
-                // Monthly Achievement Card
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Gradient background (scrolls up slightly)
+                    Transform.translate(
+                      offset: Offset(0, progress * -40),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0xFF6B4E71),
+                              Color(0xFF95E3C6),
+                              Colors.white,
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isChinese ? '本月成就' : 'Monthly Achievements',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+
+                    // Large title area
+                    Positioned(
+                      left: 24,
+                      bottom: 40,
+                      child: Opacity(
+                        opacity: 1 - progress,
+                        child: Text(
+                          isChinese ? '洞察' : 'Insight',
+                          style: const TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          isChinese
-                              ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
-                              : 'Processed ${widget.declutteredItems.length} items',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.black54,
+                      ),
+                    ),
+
+                    // Profile icon
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + 12,
+                      right: 16,
+                      child: Opacity(
+                        opacity: 1 - progress,
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 22,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          height: 120,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: metrics.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right: index < metrics.length - 1 ? 12 : 0,
+                      ),
+                    ),
+
+                    // Top pinned header with blur
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: ClipRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(
+                            sigmaX: 10 * progress,
+                            sigmaY: 10 * progress,
+                          ),
+                          child: Container(
+                            height:
+                                kToolbarHeight +
+                                MediaQuery.of(context).padding.top,
+                            color: Colors.white.withValues(
+                              alpha: progress * 0.6,
+                            ),
+                            alignment: Alignment.center,
+                            child: SafeArea(
+                              child: Opacity(
+                                opacity: progress,
+                                child: Text(
+                                  isChinese ? '洞察' : 'Insight',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
                                 ),
-                                child: _buildMetricCard(context, metrics[index]),
-                              );
-                            },
+                              ),
+                            ),
                           ),
                         ),
-                      ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+
+          // Content
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Column(
+                children: [
+                  // Monthly Achievement Card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isChinese ? '本月成就' : 'Monthly Achievements',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isChinese
+                                ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
+                                : 'Processed ${widget.declutteredItems.length} items',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            height: 130,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: metrics.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    right: index < metrics.length - 1 ? 12 : 0,
+                                  ),
+                                  child: _buildMetricCard(
+                                    context,
+                                    metrics[index],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _buildMonthlyReportCard(context, isChinese, areaCounts),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _buildJoyIndexCard(context, isChinese),
-                ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _buildLetGoDetailsCard(context, isChinese),
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-
-          // Large title in gradient area (fades out)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 100,
-            left: 24,
-            right: 24,
-            child: Opacity(
-              opacity: titleOpacity,
-              child: Text(
-                isChinese ? '洞察' : 'Insight',
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  fontSize: 34,
-                ),
-              ),
-            ),
-          ),
-
-          // Top header (fades in)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 100,
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: headerOpacity * 0.9),
-              ),
-              child: Opacity(
-                opacity: headerOpacity,
-                child: Text(
-                  isChinese ? '洞察' : 'Insight',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _buildMonthlyReportCard(
+                      context,
+                      isChinese,
+                      areaCounts,
+                    ),
                   ),
-                ),
-              ),
-            ),
-          ),
-
-          // Profile icon (fades out)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            right: 16,
-            child: Opacity(
-              opacity: 1.0 - scrollProgress,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _buildJoyIndexCard(context, isChinese),
+                  ),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _buildLetGoDetailsCard(context, isChinese),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _buildResellAnalysisCard(context, isChinese),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _buildMemoryLaneCard(context, isChinese),
+                  ),
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
           ),
@@ -324,6 +357,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   Widget _buildMetricCard(BuildContext context, _MetricCardData metric) {
     return Container(
       width: 140,
+      height: 120,
       decoration: BoxDecoration(
         color: metric.bgColor,
         borderRadius: BorderRadius.circular(16),
@@ -335,58 +369,63 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.all(10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Icon container
           Container(
-            width: 40,
-            height: 40,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: metric.iconColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              metric.icon,
-              color: metric.iconColor,
-              size: 24,
-            ),
+            child: Icon(metric.icon, color: metric.iconColor, size: 18),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           // Value and unit
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                metric.value,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  height: 1.0,
+              Flexible(
+                child: Text(
+                  metric.value,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 22,
+                    height: 1.0,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               if (metric.unit.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(left: 2, bottom: 2),
+                  padding: const EdgeInsets.only(left: 2, bottom: 1),
                   child: Text(
                     metric.unit,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: const TextStyle(
                       color: Colors.black54,
                       fontWeight: FontWeight.w500,
+                      fontSize: 11,
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           // Title
           Text(
             metric.title,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: const TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.w600,
+              fontSize: 10,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -415,7 +454,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
 
     // Get max count for heatmap
-    final maxAreaCount = areaCounts.isEmpty ? 1 : areaCounts.values.reduce((a, b) => a > b ? a : b);
+    final maxAreaCount = areaCounts.isEmpty
+        ? 1
+        : areaCounts.values.reduce((a, b) => a > b ? a : b);
 
     return Container(
       width: double.infinity,
@@ -448,7 +489,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
           _buildReportSection(
             context,
             title: isChinese ? '整理频次' : 'Cleaning Frequency',
-            subtitle: isChinese ? '回顾整理频次、类别与区域' : 'Review frequency, categories & areas',
+            subtitle: isChinese
+                ? '回顾整理频次、类别与区域'
+                : 'Review frequency, categories & areas',
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -485,10 +528,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
             title: isChinese ? '整理类别' : 'Categories',
             child: categoryCounts.isEmpty
                 ? Text(
-                    isChinese ? '本月还没有分类整理记录，先挑一件物品开始吧。' : 'No categorized items yet. Start with one item.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.black54,
-                    ),
+                    isChinese
+                        ? '本月还没有分类整理记录，先挑一件物品开始吧。'
+                        : 'No categorized items yet. Start with one item.',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                   )
                 : Wrap(
                     spacing: 8,
@@ -511,9 +556,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
             child: areaCounts.isEmpty
                 ? Text(
                     isChinese ? '还没有记录整理区域。' : 'No areas recorded yet.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.black54,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                   )
                 : Wrap(
                     spacing: 8,
@@ -526,17 +571,23 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         intensity,
                       )!;
                       return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: color,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           '${entry.key} (${entry.value})',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: intensity > 0.5 ? Colors.white : Colors.black87,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: intensity > 0.5
+                                    ? Colors.white
+                                    : Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
                         ),
                       );
                     }).toList(),
@@ -551,24 +602,33 @@ class _InsightsScreenState extends State<InsightsScreen> {
             title: isChinese ? '整理前后对比' : 'Before & After',
             child: widget.deepCleaningSessions.isEmpty
                 ? Text(
-                    isChinese ? '这个月还没有拍下整理前后的对比，下次记得记录成果。' : 'No before/after photos yet. Remember to record your progress next time.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.black54,
-                    ),
+                    isChinese
+                        ? '这个月还没有拍下整理前后的对比，下次记得记录成果。'
+                        : 'No before/after photos yet. Remember to record your progress next time.',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                   )
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: widget.deepCleaningSessions.take(3).map((session) {
-                      final improvement = session.beforeMessinessIndex != null && session.afterMessinessIndex != null
-                          ? ((session.beforeMessinessIndex! - session.afterMessinessIndex!) / session.beforeMessinessIndex! * 100).toStringAsFixed(0)
+                    children: widget.deepCleaningSessions.take(3).map((
+                      session,
+                    ) {
+                      final improvement =
+                          session.beforeMessinessIndex != null &&
+                              session.afterMessinessIndex != null
+                          ? ((session.beforeMessinessIndex! -
+                                        session.afterMessinessIndex!) /
+                                    session.beforeMessinessIndex! *
+                                    100)
+                                .toStringAsFixed(0)
                           : null;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(
                           '${session.area}: ${improvement != null ? (isChinese ? "改善 $improvement%" : "$improvement% improvement") : (isChinese ? "完成整理" : "Completed")}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.black87,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.black87),
                         ),
                       );
                     }).toList(),
@@ -591,8 +651,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     for (final item in widget.declutteredItems) {
       if (item.createdAt.isAfter(thirtyDaysAgo)) {
-        final weekIndex = now.difference(item.createdAt).inDays ~/ 7; // 0 = this week, 1 = last week, etc.
-        if (weekIndex < 5) { // Only last 5 weeks
+        final weekIndex =
+            now.difference(item.createdAt).inDays ~/
+            7; // 0 = this week, 1 = last week, etc.
+        if (weekIndex < 5) {
+          // Only last 5 weeks
           weeklyTotalCount[weekIndex] = (weeklyTotalCount[weekIndex] ?? 0) + 1;
 
           if (item.joyLevel != null && item.joyLevel! > 0) {
@@ -613,10 +676,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
     // Calculate average joy percent
     final avgJoyPercent = weeklyJoyPercent.isEmpty
         ? 0.0
-        : weeklyJoyPercent.values.reduce((a, b) => a + b) / weeklyJoyPercent.length;
+        : weeklyJoyPercent.values.reduce((a, b) => a + b) /
+              weeklyJoyPercent.length;
 
     // Calculate total joy count
-    final itemsWithJoy = widget.declutteredItems.where((item) => item.joyLevel != null && item.joyLevel! > 0).toList();
+    final itemsWithJoy = widget.declutteredItems
+        .where((item) => item.joyLevel != null && item.joyLevel! > 0)
+        .toList();
     final totalJoyCount = itemsWithJoy.length;
 
     // Determine trend
@@ -676,9 +742,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
           const SizedBox(height: 4),
           Text(
             isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.black54,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 20),
 
@@ -712,12 +778,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
                           child: Container(
                             height: 40,
                             decoration: BoxDecoration(
-                              color: _showJoyPercent ? Colors.white : Colors.transparent,
+                              color: _showJoyPercent
+                                  ? Colors.white
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: _showJoyPercent
                                   ? [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.1),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -727,10 +797,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
                             alignment: Alignment.center,
                             child: Text(
                               isChinese ? '心动比例' : 'Joy Percent',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: _showJoyPercent ? Colors.black87 : Colors.black45,
-                                fontWeight: _showJoyPercent ? FontWeight.w600 : FontWeight.w500,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: _showJoyPercent
+                                        ? Colors.black87
+                                        : Colors.black45,
+                                    fontWeight: _showJoyPercent
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                  ),
                             ),
                           ),
                         ),
@@ -745,12 +820,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
                           child: Container(
                             height: 40,
                             decoration: BoxDecoration(
-                              color: !_showJoyPercent ? Colors.white : Colors.transparent,
+                              color: !_showJoyPercent
+                                  ? Colors.white
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: !_showJoyPercent
                                   ? [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.1),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -760,10 +839,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
                             alignment: Alignment.center,
                             child: Text(
                               isChinese ? '心动次数' : 'Joy Count',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: !_showJoyPercent ? Colors.black87 : Colors.black45,
-                                fontWeight: !_showJoyPercent ? FontWeight.w600 : FontWeight.w500,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: !_showJoyPercent
+                                        ? Colors.black87
+                                        : Colors.black45,
+                                    fontWeight: !_showJoyPercent
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                  ),
                             ),
                           ),
                         ),
@@ -783,10 +867,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
               height: 150,
               alignment: Alignment.center,
               child: Text(
-                isChinese ? '还没有足够的数据来显示趋势' : 'Not enough data to show trend yet',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.black54,
-                ),
+                isChinese
+                    ? '还没有足够的数据来显示趋势'
+                    : 'Not enough data to show trend yet',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
               ),
             )
           else
@@ -794,7 +880,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
               height: 200,
               child: CustomPaint(
                 painter: _JoyTrendChartPainter(
-                  weeklyData: _showJoyPercent ? weeklyJoyPercent : weeklyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
+                  weeklyData: _showJoyPercent
+                      ? weeklyJoyPercent
+                      : weeklyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
                   maxWeeks: 5,
                   isPercent: _showJoyPercent,
                   isChinese: isChinese,
@@ -833,14 +921,19 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, {required String label, required String value, required Color color}) {
+  Widget _buildStatItem(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required Color color,
+  }) {
     return Column(
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.black54,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.black54),
         ),
         const SizedBox(height: 4),
         Text(
@@ -874,9 +967,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.black54,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
         ],
         const SizedBox(height: 12),
@@ -913,9 +1006,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
         ),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.black54,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           textAlign: TextAlign.center,
         ),
       ],
@@ -926,10 +1019,18 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final theme = Theme.of(context);
 
     // Calculate counts for each disposal method
-    final resellCount = widget.declutteredItems.where((item) => item.status == DeclutterStatus.resell).length;
-    final recycleCount = widget.declutteredItems.where((item) => item.status == DeclutterStatus.recycle).length;
-    final donateCount = widget.declutteredItems.where((item) => item.status == DeclutterStatus.donate).length;
-    final discardCount = widget.declutteredItems.where((item) => item.status == DeclutterStatus.discard).length;
+    final resellCount = widget.declutteredItems
+        .where((item) => item.status == DeclutterStatus.resell)
+        .length;
+    final recycleCount = widget.declutteredItems
+        .where((item) => item.status == DeclutterStatus.recycle)
+        .length;
+    final donateCount = widget.declutteredItems
+        .where((item) => item.status == DeclutterStatus.donate)
+        .length;
+    final discardCount = widget.declutteredItems
+        .where((item) => item.status == DeclutterStatus.discard)
+        .length;
 
     final total = resellCount + recycleCount + donateCount + discardCount;
 
@@ -988,9 +1089,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         discardColor: discardColor,
                       ),
                     )
-                  : CustomPaint(
-                      painter: _EmptyDonutChartPainter(),
-                    ),
+                  : CustomPaint(painter: _EmptyDonutChartPainter()),
             ),
           ),
           const SizedBox(height: 24),
@@ -1047,17 +1146,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
         Text(
           label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: Colors.black87,
-          ),
+          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black87),
         ),
         const SizedBox(width: 8),
         Text(
@@ -1068,6 +1162,365 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildResellAnalysisCard(BuildContext context, bool isChinese) {
+    // Calculate resell metrics
+    final soldItems = widget.resellItems
+        .where((item) => item.status == ResellStatus.sold)
+        .toList();
+    final totalSoldItems = soldItems.length;
+
+    // Average transaction price
+    final avgPrice = soldItems.isEmpty
+        ? 0.0
+        : soldItems
+                  .map((item) => item.soldPrice ?? 0.0)
+                  .reduce((a, b) => a + b) /
+              totalSoldItems;
+
+    // Average days to sell (from creation to sold date)
+    final avgDays = soldItems.isEmpty
+        ? 0.0
+        : soldItems
+                  .where((item) => item.soldDate != null)
+                  .map(
+                    (item) => item.soldDate!.difference(item.createdAt).inDays,
+                  )
+                  .reduce((a, b) => a + b) /
+              soldItems.where((item) => item.soldDate != null).length;
+
+    // Success rate (sold / total resell items)
+    final successRate = widget.resellItems.isEmpty
+        ? 0.0
+        : (totalSoldItems / widget.resellItems.length) * 100;
+
+    // Total revenue
+    final totalRevenue = soldItems.isEmpty
+        ? 0.0
+        : soldItems
+              .map((item) => item.soldPrice ?? 0.0)
+              .reduce((a, b) => a + b);
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                ResellAnalysisReportScreen(resellItems: widget.resellItems),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFFF9E6), Color(0xFFFFECB3)],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD93D).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.trending_up_rounded,
+                    color: Color(0xFFFFD93D),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '转卖分析' : 'Resell Analysis',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        isChinese ? '点击查看完整报告' : 'Tap to view full report',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Colors.black54,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Metrics grid
+            Row(
+              children: [
+                Expanded(
+                  child: _buildResellMetric(
+                    context,
+                    label: isChinese ? '平均交易价' : 'Avg Price',
+                    value: '¥${avgPrice.toStringAsFixed(0)}',
+                    icon: Icons.payments_rounded,
+                    color: const Color(0xFFFFD93D),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildResellMetric(
+                    context,
+                    label: isChinese ? '平均售出天数' : 'Avg Days',
+                    value: avgDays.toStringAsFixed(0),
+                    icon: Icons.schedule_rounded,
+                    color: const Color(0xFF89CFF0),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildResellMetric(
+                    context,
+                    label: isChinese ? '成交率' : 'Success Rate',
+                    value: '${successRate.toStringAsFixed(0)}%',
+                    icon: Icons.check_circle_rounded,
+                    color: const Color(0xFF5ECFB8),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildResellMetric(
+                    context,
+                    label: isChinese ? '总收入' : 'Total Revenue',
+                    value: '¥${totalRevenue.toStringAsFixed(0)}',
+                    icon: Icons.account_balance_wallet_rounded,
+                    color: const Color(0xFFFF9AA2),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResellMetric(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.black54,
+                    fontSize: 11,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+              fontSize: 20,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMemoryLaneCard(BuildContext context, bool isChinese) {
+    // Get items with photos
+    final itemsWithPhotos = widget.declutteredItems
+        .where((item) => item.photoPath != null)
+        .toList();
+    final photoCount = itemsWithPhotos.length;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MemoryLaneReportScreen(
+              declutteredItems: widget.declutteredItems,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF3EBFF), Color(0xFFE6D5FF)],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB794F6).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.photo_library_rounded,
+                    color: Color(0xFFB794F6),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '记忆长廊' : 'Memory Lane',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        isChinese ? '重温你的整理旅程' : 'Revisit your journey',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Colors.black54,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (photoCount == 0)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    isChinese
+                        ? '还没有记录照片，开始记录你的整理瞬间吧'
+                        : 'No photos yet. Start capturing your decluttering moments',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.photo_camera_rounded,
+                      size: 32,
+                      color: Color(0xFFB794F6),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$photoCount ${isChinese ? '张照片' : 'photos'}',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                        ),
+                        Text(
+                          isChinese ? '点击查看完整回忆' : 'Tap to view memories',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1231,9 +1684,7 @@ class _JoyTrendChartPainter extends CustomPainter {
       ..color = const Color(0xFFE0E0E0)
       ..strokeWidth = 1;
 
-    final textPaint = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
+    final textPaint = TextPainter(textDirection: TextDirection.ltr);
 
     // Calculate dimensions
     final padding = 30.0;
@@ -1244,7 +1695,8 @@ class _JoyTrendChartPainter extends CustomPainter {
     // Find max value for scaling
     final maxValue = isPercent
         ? 100.0
-        : weeklyData.values.reduce((a, b) => a > b ? a : b) * 1.2; // Add 20% padding for count
+        : weeklyData.values.reduce((a, b) => a > b ? a : b) *
+              1.2; // Add 20% padding for count
 
     // Draw horizontal grid lines
     for (int i = 0; i <= 5; i++) {
@@ -1259,7 +1711,8 @@ class _JoyTrendChartPainter extends CustomPainter {
     // Prepare data points (reverse order so week 0 is on the right)
     final points = <Offset>[];
     final labels = <String>[];
-    final sortedWeeks = weeklyData.keys.toList()..sort((a, b) => b.compareTo(a)); // Descending order
+    final sortedWeeks = weeklyData.keys.toList()
+      ..sort((a, b) => b.compareTo(a)); // Descending order
 
     // Generate month labels
     final now = DateTime.now();
@@ -1268,7 +1721,9 @@ class _JoyTrendChartPainter extends CustomPainter {
       final value = weeklyData[week]!;
 
       // X position: spread evenly across chart width
-      final x = padding + (chartWidth * i / (sortedWeeks.length - 1).clamp(1, double.infinity));
+      final x =
+          padding +
+          (chartWidth * i / (sortedWeeks.length - 1).clamp(1, double.infinity));
 
       // Y position: scale based on max value
       final normalizedValue = value / maxValue;
@@ -1292,8 +1747,14 @@ class _JoyTrendChartPainter extends CustomPainter {
     for (int i = 0; i < points.length - 1; i++) {
       final current = points[i];
       final next = points[i + 1];
-      final controlPoint1 = Offset(current.dx + (next.dx - current.dx) / 3, current.dy);
-      final controlPoint2 = Offset(current.dx + 2 * (next.dx - current.dx) / 3, next.dy);
+      final controlPoint1 = Offset(
+        current.dx + (next.dx - current.dx) / 3,
+        current.dy,
+      );
+      final controlPoint2 = Offset(
+        current.dx + 2 * (next.dx - current.dx) / 3,
+        next.dy,
+      );
       fillPath.cubicTo(
         controlPoint1.dx,
         controlPoint1.dy,
@@ -1315,8 +1776,14 @@ class _JoyTrendChartPainter extends CustomPainter {
     for (int i = 0; i < points.length - 1; i++) {
       final current = points[i];
       final next = points[i + 1];
-      final controlPoint1 = Offset(current.dx + (next.dx - current.dx) / 3, current.dy);
-      final controlPoint2 = Offset(current.dx + 2 * (next.dx - current.dx) / 3, next.dy);
+      final controlPoint1 = Offset(
+        current.dx + (next.dx - current.dx) / 3,
+        current.dy,
+      );
+      final controlPoint2 = Offset(
+        current.dx + 2 * (next.dx - current.dx) / 3,
+        next.dy,
+      );
       linePath.cubicTo(
         controlPoint1.dx,
         controlPoint1.dy,
@@ -1349,7 +1816,10 @@ class _JoyTrendChartPainter extends CustomPainter {
       textPaint.layout();
       textPaint.paint(
         canvas,
-        Offset(point.dx - textPaint.width / 2, size.height - bottomPadding + 10),
+        Offset(
+          point.dx - textPaint.width / 2,
+          size.height - bottomPadding + 10,
+        ),
       );
     }
   }
