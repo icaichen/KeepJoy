@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 
 enum TrendMetric {
@@ -16,9 +17,14 @@ enum TrendMetric {
 }
 
 class ResellAnalysisReportScreen extends StatefulWidget {
-  const ResellAnalysisReportScreen({super.key, required this.resellItems});
+  const ResellAnalysisReportScreen({
+    super.key,
+    required this.resellItems,
+    required this.declutteredItems,
+  });
 
   final List<ResellItem> resellItems;
+  final List<DeclutterItem> declutteredItems;
 
   @override
   State<ResellAnalysisReportScreen> createState() =>
@@ -410,6 +416,94 @@ class _ResellAnalysisReportScreenState
                     ),
                   ),
 
+                  const SizedBox(height: 24),
+
+                  // Category Performance Analysis
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isChinese ? '品类表现分析' : 'Category Performance',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isChinese
+                                ? '各品类的成交金额和成交率'
+                                : 'Revenue and success rate by category',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 24),
+                          _buildCategoryPerformance(context, isChinese),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 30+ Days Unsold Items
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isChinese ? '超过30天未售出统计' : '30+ Days Unsold',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isChinese
+                                ? '按品类统计超过30天未售出的物品'
+                                : 'Unsold items over 30 days by category',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 24),
+                          _buildUnsoldItems(context, isChinese),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 32),
                 ],
               ),
@@ -417,6 +511,271 @@ class _ResellAnalysisReportScreenState
           ),
         ],
       ),
+    );
+  }
+
+  // Helper method to get category from declutter item ID
+  DeclutterCategory? _getCategoryForResellItem(ResellItem resellItem) {
+    try {
+      final declutterItem = widget.declutteredItems.firstWhere(
+        (item) => item.id == resellItem.declutterItemId,
+      );
+      return declutterItem.category;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Build category performance widget
+  Widget _buildCategoryPerformance(BuildContext context, bool isChinese) {
+    // Calculate category data
+    final categoryData = <DeclutterCategory, Map<String, dynamic>>{};
+
+    for (final resellItem in widget.resellItems) {
+      final category = _getCategoryForResellItem(resellItem);
+      if (category == null) continue;
+
+      if (!categoryData.containsKey(category)) {
+        categoryData[category] = {
+          'totalRevenue': 0.0,
+          'totalCount': 0,
+          'soldCount': 0,
+        };
+      }
+
+      categoryData[category]!['totalCount'] += 1;
+
+      if (resellItem.status == ResellStatus.sold &&
+          resellItem.soldPrice != null) {
+        categoryData[category]!['soldCount'] += 1;
+        categoryData[category]!['totalRevenue'] += resellItem.soldPrice!;
+      }
+    }
+
+    if (categoryData.isEmpty) {
+      return Container(
+        height: 150,
+        alignment: Alignment.center,
+        child: Text(
+          isChinese ? '暂无数据' : 'No data available',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+        ),
+      );
+    }
+
+    // Sort by revenue
+    final sortedCategories = categoryData.entries.toList()
+      ..sort(
+        (a, b) => b.value['totalRevenue'].compareTo(a.value['totalRevenue']),
+      );
+
+    return Column(
+      children: sortedCategories.map((entry) {
+        final category = entry.key;
+        final revenue = entry.value['totalRevenue'] as double;
+        final successRate = entry.value['totalCount'] > 0
+            ? (entry.value['soldCount'] / entry.value['totalCount'] * 100)
+            : 0.0;
+        final maxRevenue = sortedCategories.first.value['totalRevenue'];
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    category.label(context),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    '¥${revenue.toStringAsFixed(0)} | ${successRate.toStringAsFixed(0)}%',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Revenue bar
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0E0E0),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: FractionallySizedBox(
+                        widthFactor: maxRevenue > 0 ? revenue / maxRevenue : 0,
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD93D),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Success rate indicator
+                  Container(
+                    width: 60,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0E0E0),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: FractionallySizedBox(
+                      widthFactor: successRate / 100,
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF5ECFB8),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // Build unsold items widget
+  Widget _buildUnsoldItems(BuildContext context, bool isChinese) {
+    final now = DateTime.now();
+    final categoryUnsoldCount = <DeclutterCategory, int>{};
+
+    // Calculate unsold items by category (30+ days)
+    for (final resellItem in widget.resellItems) {
+      if (resellItem.status != ResellStatus.sold) {
+        final daysListed = now.difference(resellItem.createdAt).inDays;
+        if (daysListed > 30) {
+          final category = _getCategoryForResellItem(resellItem);
+          if (category != null) {
+            categoryUnsoldCount[category] =
+                (categoryUnsoldCount[category] ?? 0) + 1;
+          }
+        }
+      }
+    }
+
+    if (categoryUnsoldCount.isEmpty) {
+      return Container(
+        height: 100,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F9FF),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF5ECFB8),
+              size: 32,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isChinese
+                  ? '太棒了！没有超过30天未售出的物品'
+                  : 'Great! No items unsold over 30 days',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF5ECFB8),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Sort by count
+    final sortedCategories = categoryUnsoldCount.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return Column(
+      children: sortedCategories.map((entry) {
+        final category = entry.key;
+        final count = entry.value;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF3E0),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFFFD93D).withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD93D).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    count.toString(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFFFD93D),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      category.label(context),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      isChinese
+                          ? '$count 件物品超过30天未售出'
+                          : '$count item${count > 1 ? 's' : ''} unsold over 30 days',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: Colors.black38,
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 

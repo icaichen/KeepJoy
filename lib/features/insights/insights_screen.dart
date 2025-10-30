@@ -27,6 +27,30 @@ class InsightsScreen extends StatefulWidget {
 
 class _InsightsScreenState extends State<InsightsScreen> {
   bool _showJoyPercent = true; // true = Joy Percent, false = Joy Count
+  final ScrollController _sc = ScrollController();
+  double offset = 0;
+
+  // 可调参数（改为静态常量避免 NaN）
+  static const double minHeader = 60.0;
+  static const double maxHeader = 120.0;
+  static const double triggerPoint = 260.0; // Insight 顶部被短Header盖住时
+  static const double heroHeight = 320.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _sc.addListener(() {
+      if (mounted) {
+        setState(() => offset = _sc.offset);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _sc.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,226 +155,312 @@ class _InsightsScreenState extends State<InsightsScreen> {
       ),
     ];
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.white,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 280,
-            pinned: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            flexibleSpace: LayoutBuilder(
-              builder: (context, constraints) {
-                final scrollY = (constraints.maxHeight - kToolbarHeight).clamp(
-                  0.0,
-                  200.0,
-                );
-                final progress = 1 - (scrollY / 200.0);
+    // Calculate animation progress
+    final progress = (offset / triggerPoint).clamp(0.0, 1.0);
+    final headerHeight = (minHeader + (maxHeader - minHeader) * progress).clamp(
+      minHeader,
+      maxHeader,
+    );
+    final headerOpacity = progress.clamp(0.0, 1.0);
+    final newTitleOpacity = ((progress - 0.7) / 0.3).clamp(0.0, 1.0);
+    final pinnedTitle = isChinese ? '精选' : 'Pinned';
+    final summaryTitle = isChinese ? '洞察' : 'Insights';
+    final editLabel = isChinese ? '编辑' : 'Edit';
+    final mediaQuery = MediaQuery.of(context);
+    final topPadding = mediaQuery.padding.top;
 
-                return Stack(
-                  fit: StackFit.expand,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F2F7),
+      body: Stack(
+        children: [
+          // 滚动内容层（包含渐变背景和内容）
+          ListView(
+            controller: _sc,
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.zero,
+            children: [
+              // 顶部空间 + 大标题 + Profile Icon
+              SizedBox(
+                height: heroHeight,
+                child: Stack(
                   children: [
-                    // Gradient background (scrolls up slightly)
-                    Transform.translate(
-                      offset: Offset(0, progress * -40),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0xFF6B4E71),
-                              Color(0xFF95E3C6),
-                              Colors.white,
-                            ],
+                    // 渐变背景，随滚动产生轻微位移
+                    Positioned.fill(
+                      child: Transform.translate(
+                        offset: Offset(0, -offset * 0.35),
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0xFFFFB184),
+                                Color(0xFFFFC49C),
+                                Color(0xFFFFE6CA),
+                                Color(0xFFFFF5E8),
+                              ],
+                              stops: [0.0, 0.35, 0.7, 1.0],
+                            ),
                           ),
                         ),
                       ),
                     ),
-
-                    // Large title area
+                    // 大标题
                     Positioned(
                       left: 24,
-                      bottom: 40,
-                      child: Opacity(
-                        opacity: 1 - progress,
-                        child: Text(
-                          isChinese ? '洞察' : 'Insight',
-                          style: const TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Profile icon
-                    Positioned(
-                      top: MediaQuery.of(context).padding.top + 12,
-                      right: 16,
-                      child: Opacity(
-                        opacity: 1 - progress,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            color: Colors.white,
-                            size: 22,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Top pinned header with blur
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: ClipRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: 10 * progress,
-                            sigmaY: 10 * progress,
-                          ),
-                          child: Container(
-                            height:
-                                kToolbarHeight +
-                                MediaQuery.of(context).padding.top,
-                            color: Colors.white.withValues(
-                              alpha: progress * 0.6,
-                            ),
-                            alignment: Alignment.center,
-                            child: SafeArea(
-                              child: Opacity(
-                                opacity: progress,
-                                child: Text(
-                                  isChinese ? '洞察' : 'Insight',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
+                      right: 160,
+                      bottom: 52,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Opacity(
+                            opacity: (1.0 - progress).clamp(0.0, 1.0),
+                            child: Text(
+                              summaryTitle,
+                              style: const TextStyle(
+                                fontSize: 46,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1B1B1F),
+                                letterSpacing: -0.6,
+                                height: 1.05,
                               ),
                             ),
                           ),
+                          const SizedBox(height: 16),
+                          Opacity(
+                            opacity: (1.0 - progress).clamp(0.0, 1.0),
+                            child: Text(
+                              pinnedTitle,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1B1B1F),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Profile Icon
+                    Positioned(
+                      right: 16,
+                      top: topPadding + 12,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.28),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      right: 20,
+                      bottom: 44,
+                      child: Opacity(
+                        opacity: (1.0 - progress).clamp(0.0, 1.0),
+                        child: _buildEditButton(
+                          label: editLabel,
+                          foreground: const Color(0xFF007AFF),
                         ),
                       ),
                     ),
                   ],
-                );
-              },
-            ),
-          ),
-
-          // Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Column(
-                children: [
-                  // Monthly Achievement Card
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isChinese ? '本月成就' : 'Monthly Achievements',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87,
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            isChinese
-                                ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
-                                : 'Processed ${widget.declutteredItems.length} items',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: Colors.black54),
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            height: 130,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: metrics.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    right: index < metrics.length - 1 ? 12 : 0,
-                                  ),
-                                  child: _buildMetricCard(
-                                    context,
-                                    metrics[index],
-                                  ),
-                                );
-                              },
+                ),
+              ),
+              // 内容
+              Container(
+                decoration: const BoxDecoration(color: Color(0xFFF2F2F7)),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Column(
+                    children: [
+                      if (progress > 0.01)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Opacity(
+                            opacity: progress,
+                            child: Text(
+                              pinnedTitle,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1B1B1F),
+                              ),
                             ),
                           ),
-                        ],
+                        ),
+                      SizedBox(height: progress > 0.01 ? 12 : 0),
+
+                      // Monthly Achievement Card
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isChinese ? '本月成就' : 'Monthly Achievements',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black87,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                isChinese
+                                    ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
+                                    : 'Processed ${widget.declutteredItems.length} items',
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.black54),
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                height: 130,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: metrics.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: EdgeInsets.only(
+                                        right: index < metrics.length - 1
+                                            ? 12
+                                            : 0,
+                                      ),
+                                      child: _buildMetricCard(
+                                        context,
+                                        metrics[index],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _buildMonthlyReportCard(
+                          context,
+                          isChinese,
+                          areaCounts,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _buildJoyIndexCard(context, isChinese),
+                      ),
+                      const SizedBox(height: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _buildLetGoDetailsCard(context, isChinese),
+                      ),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _buildResellAnalysisCard(context, isChinese),
+                      ),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _buildMemoryLaneCard(context, isChinese),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // 顶部 Header Bar（短 -> 长，pinned 在顶部）
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Opacity(
+              opacity: headerOpacity > 0.1 ? 1.0 : 0.0, // 只在开始滚动后显示
+              child: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 10 * progress,
+                    sigmaY: 10 * progress,
+                  ),
+                  child: Container(
+                    height: headerHeight,
+                    color: Colors.white.withValues(
+                      alpha: 0.25 + 0.45 * headerOpacity,
+                    ),
+                    padding: EdgeInsets.only(top: topPadding),
+                    child: Opacity(
+                      opacity: headerOpacity,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Opacity(
+                              opacity: newTitleOpacity,
+                              child: Text(
+                                summaryTitle,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1B1B1F),
+                                ),
+                              ),
+                            ),
+                            _buildEditButton(
+                              label: editLabel,
+                              foreground: const Color(0xFF007AFF),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _buildMonthlyReportCard(
-                      context,
-                      isChinese,
-                      areaCounts,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _buildJoyIndexCard(context, isChinese),
-                  ),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _buildLetGoDetailsCard(context, isChinese),
-                  ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _buildResellAnalysisCard(context, isChinese),
-                  ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _buildMemoryLaneCard(context, isChinese),
-                  ),
-                  const SizedBox(height: 32),
-                ],
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEditButton({required String label, required Color foreground}) {
+    return TextButton(
+      onPressed: () {},
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        foregroundColor: foreground,
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      ),
+      child: Text(label),
     );
   }
 
@@ -1208,8 +1318,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                ResellAnalysisReportScreen(resellItems: widget.resellItems),
+            builder: (context) => ResellAnalysisReportScreen(
+              resellItems: widget.resellItems,
+              declutteredItems: widget.declutteredItems,
+            ),
           ),
         );
       },
