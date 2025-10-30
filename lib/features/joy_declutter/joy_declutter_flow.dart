@@ -15,6 +15,70 @@ const LinearGradient _joyMintPurpleGradient = LinearGradient(
   colors: [Color(0xFF6B5CE7), Color(0xFF5ECFB8)],
 );
 
+const Color _joyBackgroundColor = Color(0xFFF5F5F7);
+const Color _joyPrimaryColor = Color(0xFF111827);
+const Color _joyCardShadow = Color(0x11000000);
+
+Widget _buildJoyTopBar(
+  BuildContext context, {
+  required int currentStep,
+  required int totalSteps,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => Navigator.of(context).maybePop(),
+            splashRadius: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.close_rounded),
+            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+            splashRadius: 20,
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          totalSteps,
+          (index) => Container(
+            width: 24,
+            height: 3,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: index <= currentStep ? _joyPrimaryColor : const Color(0xFFE0E5EB),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 24),
+    ],
+  );
+}
+
+BoxDecoration _joyCardDecoration({Color? color}) {
+  return BoxDecoration(
+    color: color ?? Colors.white,
+    borderRadius: BorderRadius.circular(24),
+    boxShadow: const [
+      BoxShadow(
+        color: _joyCardShadow,
+        blurRadius: 20,
+        offset: Offset(0, 12),
+      ),
+    ],
+  );
+}
+
 Widget _buildJoyProgressIndicator(int activeIndex, {int totalSteps = 3}) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.center,
@@ -26,8 +90,8 @@ Widget _buildJoyProgressIndicator(int activeIndex, {int totalSteps = 3}) {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: index == activeIndex
-              ? Colors.black.withValues(alpha: 0.75)
-              : Colors.white.withValues(alpha: 0.45),
+              ? _joyPrimaryColor
+              : const Color(0xFFD1D5DB),
           borderRadius: BorderRadius.circular(4),
         ),
       );
@@ -40,11 +104,9 @@ Widget _buildJoySurface({
   EdgeInsetsGeometry margin = EdgeInsets.zero,
   EdgeInsetsGeometry padding = const EdgeInsets.all(24),
 }) {
-  return Card(
+  return Container(
     margin: margin,
-    elevation: 0,
-    color: Colors.white.withValues(alpha: 0.95),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+    decoration: _joyCardDecoration(),
     child: Padding(padding: padding, child: child),
   );
 }
@@ -106,124 +168,106 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: false,
-        foregroundColor: Colors.white,
-        title: Text(
-          l10n.joyDeclutterTitle,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(gradient: _joyMintPurpleGradient),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                _buildJoyProgressIndicator(0),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: _buildJoySurface(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.joyDeclutterCaptureTitle,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF111827),
-                          ),
+      backgroundColor: _joyBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJoyTopBar(context, currentStep: 0, totalSteps: 3),
+              Text(
+                l10n.joyDeclutterTitle,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _joyPrimaryColor,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: _buildJoySurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.joyDeclutterCaptureTitle,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: _joyPrimaryColor,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.captureItemToStart,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF4B5563),
-                            height: 1.4,
-                          ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.captureItemToStart,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.4,
                         ),
-                        const SizedBox(height: 24),
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  const Color(
-                                    0xFF6B5CE7,
-                                  ).withValues(alpha: 0.85),
-                                  const Color(
-                                    0xFF5ECFB8,
-                                  ).withValues(alpha: 0.85),
-                                ],
+                      ),
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            gradient: _joyMintPurpleGradient,
+                            boxShadow: const [
+                              BoxShadow(
+                                color: _joyCardShadow,
+                                blurRadius: 24,
+                                offset: Offset(0, 16),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.06),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 12),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.camera_alt_rounded,
-                                size: 72,
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              size: 72,
+                              color: Colors.white.withOpacity(0.92),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            onPressed: _isProcessing ? null : _takePicture,
-                            icon: _isProcessing
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(Icons.photo_camera_rounded),
-                            label: Text(l10n.takePicture),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _isProcessing ? null : _takePicture,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _joyPrimaryColor,
                           ),
+                          icon: _isProcessing
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.photo_camera_rounded),
+                          label: Text(l10n.takePicture),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  isChinese
-                      ? '拍攝物品，我們會陪你完成怦然心動檢查。'
-                      : 'Capture one item at a time—we will guide your joy check.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.85),
-                  ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isChinese
+                    ? '拍攝物品，我們會陪你完成怦然心動檢查。'
+                    : 'Capture one item at a time—we will guide your joy check.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 8),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -331,187 +375,175 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: false,
-        foregroundColor: Colors.white,
-        title: Text(
-          l10n.joyDeclutterCaptureTitle,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(gradient: _joyMintPurpleGradient),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                _buildJoyProgressIndicator(1),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      _buildJoySurface(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child: AspectRatio(
-                                aspectRatio: 4 / 3,
-                                child: widget.photoPath.isEmpty
-                                    ? Container(
-                                        color: Colors.grey.shade200,
-                                        child: const Icon(
-                                          Icons.photo_camera_outlined,
-                                          size: 80,
-                                          color: Colors.black45,
-                                        ),
-                                      )
-                                    : Image.file(
-                                        File(widget.photoPath),
-                                        fit: BoxFit.cover,
-                                      ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            TextField(
-                              controller: _nameController,
-                              textCapitalization: TextCapitalization.sentences,
-                              decoration: InputDecoration(
-                                labelText: l10n.itemName,
-                                hintText: _itemName ?? l10n.itemName,
-                                suffixIcon: _isIdentifying
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(12),
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        ),
-                                      )
-                                    : _isAISuggested
-                                    ? Tooltip(
-                                        message: l10n.aiSuggested,
-                                        child: const Icon(
-                                          Icons.auto_awesome,
-                                          size: 20,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              onChanged: (_) {
-                                if (_isAISuggested) {
-                                  setState(() => _isAISuggested = false);
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            DropdownMenu<DeclutterCategory>(
-                              initialSelection: _selectedCategory,
-                              label: Text(l10n.category),
-                              dropdownMenuEntries: DeclutterCategory.values
-                                  .map(
-                                    (category) => DropdownMenuEntry(
-                                      value: category,
-                                      label: category.label(context),
-                                    ),
-                                  )
-                                  .toList(),
-                              onSelected: (value) {
-                                if (value != null) {
-                                  setState(() => _selectedCategory = value);
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildJoySurface(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 20,
-                          horizontal: 20,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.doesItSparkJoy,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF111827),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.joyQuestionDescription,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFF4B5563),
-                                height: 1.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
+      backgroundColor: _joyBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJoyTopBar(context, currentStep: 1, totalSteps: 3),
+              Expanded(
+                child: ListView(
+                  children: [
+                    _buildJoySurface(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: _retakePicture,
-                              child: Text(l10n.retakePhoto),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: AspectRatio(
+                              aspectRatio: 4 / 3,
+                              child: widget.photoPath.isEmpty
+                                  ? Container(
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(
+                                        Icons.photo_camera_outlined,
+                                        size: 80,
+                                        color: Colors.black45,
+                                      ),
+                                    )
+                                  : Image.file(
+                                      File(widget.photoPath),
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: FilledButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => _JoyQuestionPage(
-                                      photoPath: widget.photoPath,
-                                      itemName:
-                                          _nameController.text.trim().isEmpty
-                                          ? (_itemName ?? l10n.itemName)
-                                          : _nameController.text.trim(),
-                                      category: _selectedCategory,
-                                      onItemCompleted: widget.onItemCompleted,
-                                      onMemoryCreated: widget.onMemoryCreated,
-                                    ),
+                          const SizedBox(height: 20),
+                          TextField(
+                            controller: _nameController,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: InputDecoration(
+                              labelText: l10n.itemName,
+                              hintText: _itemName ?? l10n.itemName,
+                              suffixIcon: _isIdentifying
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: Padding(
+                                        padding: EdgeInsets.all(12),
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    )
+                                  : _isAISuggested
+                                      ? Tooltip(
+                                          message: l10n.aiSuggested,
+                                          child: const Icon(
+                                            Icons.auto_awesome,
+                                            size: 20,
+                                          ),
+                                        )
+                                      : null,
+                            ),
+                            onChanged: (_) {
+                              if (_isAISuggested) {
+                                setState(() => _isAISuggested = false);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownMenu<DeclutterCategory>(
+                            initialSelection: _selectedCategory,
+                            label: Text(l10n.category),
+                            dropdownMenuEntries: DeclutterCategory.values
+                                .map(
+                                  (category) => DropdownMenuEntry(
+                                    value: category,
+                                    label: category.label(context),
                                   ),
-                                );
-                              },
-                              child: Text(l10n.nextStep),
+                                )
+                                .toList(),
+                            onSelected: (value) {
+                              if (value != null) {
+                                setState(() => _selectedCategory = value);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildJoySurface(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 20,
+                        horizontal: 20,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.doesItSparkJoy,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: _joyPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.joyQuestionDescription,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              height: 1.5,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _isAISuggested
-                            ? l10n.aiSuggested
-                            : l10n.captureItemToStart,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _retakePicture,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _joyPrimaryColor,
+                              side: BorderSide(
+                                color: _joyPrimaryColor.withOpacity(0.4),
+                              ),
+                            ),
+                            child: Text(l10n.retakePhoto),
+                          ),
                         ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => _JoyQuestionPage(
+                                    photoPath: widget.photoPath,
+                                    itemName: _nameController.text.trim().isEmpty
+                                        ? (_itemName ?? l10n.itemName)
+                                        : _nameController.text.trim(),
+                                    category: _selectedCategory,
+                                    onItemCompleted: widget.onItemCompleted,
+                                    onMemoryCreated: widget.onMemoryCreated,
+                                  ),
+                                ),
+                              );
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _joyPrimaryColor,
+                            ),
+                            child: Text(l10n.nextStep),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _isAISuggested ? l10n.aiSuggested : l10n.captureItemToStart,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

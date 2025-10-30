@@ -1080,25 +1080,32 @@ class _HomeScreen extends StatelessWidget {
                 children: [
                   // Welcome Section - Centered
                   Center(
-                    child: SizedBox(
-                      width: screenWidth * 0.8,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: screenWidth * 0.85),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
                             l10n.continueYourJoyJourney,
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(color: Colors.white),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _getDailyTagline(l10n),
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.9),
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.2,
                                 ),
                             textAlign: TextAlign.center,
+                            softWrap: true,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            _getDailyTagline(l10n),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 18,
+                                  height: 1.4,
+                                ),
+                            textAlign: TextAlign.center,
+                            softWrap: true,
                           ),
                         ],
                       ),
@@ -1502,11 +1509,11 @@ class _HomeScreen extends StatelessWidget {
 
                   // Show next planned session or empty state - both are clickable to show calendar
                   if (plannedSessions.isEmpty)
-                    _buildStartDeclutterGradientCard(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ActivityCalendarPage(
+                  _buildStartDeclutterGradientCard(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ActivityCalendarPage(
                               declutteredItems: declutteredItems,
                               memories: memories,
                             ),
@@ -1516,20 +1523,6 @@ class _HomeScreen extends StatelessWidget {
                       colors: const [Color(0xFFF5F6FF), Color(0xFFE4E9FF)],
                       child: Row(
                         children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFD9DEFF),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.calendar_month,
-                              color: Color(0xFF5C6BFF),
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
                           Expanded(
                             child: Text(
                               l10n.startPlanningDeclutter,
@@ -1542,11 +1535,19 @@ class _HomeScreen extends StatelessWidget {
                                   ),
                             ),
                           ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                          const SizedBox(width: 16),
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFD9DEFF),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.calendar_month,
+                              color: Color(0xFF5C6BFF),
+                              size: 24,
+                            ),
                           ),
                         ],
                       ),
@@ -1567,19 +1568,6 @@ class _HomeScreen extends StatelessWidget {
                       colors: const [Color(0xFFF5F6FF), Color(0xFFE4E9FF)],
                       child: Row(
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFE9E3FF),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.access_time,
-                              color: Color(0xFF6B5CE7),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1597,17 +1585,24 @@ class _HomeScreen extends StatelessWidget {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withValues(alpha: 0.7),
+                                        .withValues(alpha: 0.7),
                                       ),
                                 ),
                               ],
                             ),
                           ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                          const SizedBox(width: 16),
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE9E3FF),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.access_time,
+                              color: Color(0xFF6B5CE7),
+                            ),
                           ),
                         ],
                       ),
@@ -1971,12 +1966,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
     final pending = widget.pendingItems;
     final completed = widget.declutteredItems;
 
-    // Filter items that need review: let go (not kept/pending) and no purchase review
+    // Filter items that need review: all completed items without purchase review (including kept)
     final itemsNeedingReview = completed
-        .where((item) =>
-            item.status != DeclutterStatus.keep &&
-            item.status != DeclutterStatus.pending &&
-            item.purchaseReview == null)
+        .where((item) => item.purchaseReview == null)
         .toList();
 
     final currentItems = _segment == ItemsSegment.toDeclutter
@@ -1990,20 +1982,18 @@ class _ItemsScreenState extends State<ItemsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Pending review section
-            if (itemsNeedingReview.isNotEmpty) ...[
-              _PendingReviewSection(
-                items: itemsNeedingReview,
-                isExpanded: _showPendingReviews,
-                onToggle: () {
-                  setState(() {
-                    _showPendingReviews = !_showPendingReviews;
-                  });
-                },
-                isChinese: isChinese,
-              ),
-              const SizedBox(height: 20),
-            ],
+            // Pending review section - always visible
+            _PendingReviewSection(
+              items: itemsNeedingReview,
+              isExpanded: _showPendingReviews,
+              onToggle: () {
+                setState(() {
+                  _showPendingReviews = !_showPendingReviews;
+                });
+              },
+              isChinese: isChinese,
+            ),
+            const SizedBox(height: 20),
             Center(
               child: SegmentedButton<ItemsSegment>(
                 segments: [

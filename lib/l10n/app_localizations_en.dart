@@ -24,7 +24,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeBack => 'Welcome back to your joy journey';
 
   @override
-  String get continueYourJoyJourney => 'Continue your joy journey';
+  String get continueYourJoyJourney => 'Continue your declutter joy journey';
 
   @override
   String get tagline1 => 'Continue organizing your space with mindfulness';
@@ -33,7 +33,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagline2 => 'Transforming spaces, one item at a time';
 
   @override
-  String get tagline3 => 'Creating clarity through intentional living';
+  String get tagline3 => 'Creating clarity with intentional living';
 
   @override
   String get tagline4 => 'Every item has a story, honor it with purpose';

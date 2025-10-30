@@ -24,7 +24,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get welcomeBack => '欢迎回到你的怦然心动之旅';
 
   @override
-  String get continueYourJoyJourney => '继续你的怦然心动之旅';
+  String get continueYourJoyJourney => '继续你的整理怦然之旅';
 
   @override
   String get tagline1 => '用正念继续整理你的空间';
@@ -33,7 +33,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tagline2 => '一次一件物品，改变空间';
 
   @override
-  String get tagline3 => '通过有意识的生活创造清晰';
+  String get tagline3 => '以有意识的生活创造清晰';
 
   @override
   String get tagline4 => '每件物品都有故事，用心对待';

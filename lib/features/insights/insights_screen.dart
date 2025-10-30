@@ -1,7 +1,4 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
@@ -27,14 +24,7 @@ class InsightsScreen extends StatefulWidget {
 class _InsightsScreenState extends State<InsightsScreen> {
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
-
-  static const _chipColors = <Color>[
-    Color(0xFF52C7B8),
-    Color(0xFF9E7DB6),
-    Color(0xFFF0AD57),
-    Color(0xFFB0B5FF),
-    Color(0xFFD18BBF),
-  ];
+  bool _showJoyPercent = true; // true = Joy Percent, false = Joy Count
 
   @override
   void initState() {
@@ -54,7 +44,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
@@ -148,233 +137,189 @@ class _InsightsScreenState extends State<InsightsScreen> {
       ),
     ];
 
-    final gradientHeight = 200.0; // Fixed gradient height
-
-    // Calculate scroll progress based on how much the gradient has scrolled away
-    final maxScroll = gradientHeight; // When gradient title reaches header
-    final scrollProgress = (_scrollOffset / maxScroll).clamp(0.0, 1.0);
-
-    // Header expands from thin to full height
-    final headerHeight = 20.0 + (40.0 * scrollProgress); // 20px → 60px
-
-    // Semi-transparent blurred background
-    final headerBgColor = Color.lerp(
-      Colors.transparent,
-      Colors.white.withValues(alpha: 0.8),
-      scrollProgress,
-    )!;
-
-    // Header title slides up from bottom of header and moves to center
-    final headerTitleOpacity = scrollProgress;
-    final headerTitleColor = Colors.black87;
-
-    // Title slides up from bottom (starts at bottom of header, ends at center)
-    final titleVerticalOffset = 20.0 * (1.0 - scrollProgress); // Slides up from +20 to 0
-
-    // Title alignment (starts left, moves to center)
-    final titleAlignment = Alignment.lerp(
-      Alignment.centerLeft,
-      Alignment.center,
-      scrollProgress,
-    )!;
-
-    // Icon opacity (fades out as we scroll)
-    final iconOpacity = 1.0 - scrollProgress;
+    // Calculate scroll progress
+    final double maxScroll = 200.0;
+    final double scrollProgress = (_scrollOffset / maxScroll).clamp(0.0, 1.0);
+    final double headerOpacity = scrollProgress;
+    final double titleOpacity = 1.0 - scrollProgress;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF6B4E71), // Purple at top
-              Color(0xFF8A6E8F), // Mid purple
-              Color(0xFF95E3C6), // Mint green
-              Color(0xFFD5F2E9), // Light mint
-              Color(0xFFF5FBF8), // Very light mint
-              Colors.white,      // Fade to white
-            ],
-            stops: [0.0, 0.15, 0.3, 0.45, 0.6, 1.0],
-          ),
-        ),
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            // Sticky header (thin at first, expands on scroll)
-            SliverAppBar(
-              pinned: true,
-              toolbarHeight: headerHeight,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              flexibleSpace: ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: 10.0 * scrollProgress,
-                    sigmaY: 10.0 * scrollProgress,
-                  ),
-                  child: Container(
-                    color: headerBgColor,
-                    child: SafeArea(
-                      child: Container(
-                        height: headerHeight,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Stack(
-                          children: [
-                            // Header title (slides up from bottom and fades in)
-                            if (headerTitleOpacity > 0.01)
-                              Positioned(
-                                left: titleAlignment == Alignment.center ? 0 : 0,
-                                right: titleAlignment == Alignment.center ? 0 : null,
-                                top: (headerHeight / 2) - 12 + titleVerticalOffset,
-                                child: Opacity(
-                                  opacity: headerTitleOpacity,
-                                  child: Text(
-                                    isChinese ? '洞察' : 'Insight',
-                                    textAlign: titleAlignment == Alignment.center
-                                        ? TextAlign.center
-                                        : TextAlign.left,
-                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: headerTitleColor,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            // Profile icon (only visible initially)
-                            if (iconOpacity > 0.01)
-                              Positioned(
-                                right: 0,
-                                top: (headerHeight / 2) - 18,
-                                child: Opacity(
-                                  opacity: iconOpacity,
-                                  child: Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.3),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.person,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Big title "洞察" at top left
-            SliverToBoxAdapter(
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
-                  child: Text(
-                    isChinese ? '洞察' : 'Insight',
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      fontSize: 34,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Content area with cards
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    // Monthly Achievement Card (white container with carousel inside)
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isChinese ? '本月成就' : 'Monthly Achievements',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            isChinese
-                                ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
-                                : 'Processed ${widget.declutteredItems.length} items',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          // Horizontal scrollable metric cards inside container
-                          SizedBox(
-                            height: 120,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: metrics.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    right: index < metrics.length - 1 ? 12 : 0,
-                                  ),
-                                  child: _buildMetricCard(context, metrics[index]),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  // Monthly Report Card - 本月整理报告
-                  _buildMonthlyReportCard(context, isChinese, areaCounts),
-                  const SizedBox(height: 24),
-                  // Other cards
-                  Column(
-                    children: [
-                      _buildAreaSummaryCard(
-                        context: context,
-                        title: isChinese ? '整理区域' : l10n.cleaningAreas,
-                        areaCounts: areaCounts,
-                        isChinese: isChinese,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildLetGoDetailsCard(context, isChinese),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+      body: Stack(
+        children: [
+          // Animated gradient background
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color.lerp(const Color(0xFF6B4E71), Colors.white, scrollProgress)!,
+                  Color.lerp(const Color(0xFF8A6E8F), Colors.white, scrollProgress)!,
+                  Color.lerp(const Color(0xFF95E3C6), Colors.white, scrollProgress)!,
+                  Colors.white,
                 ],
+              ),
+            ),
+          ),
+
+          // Scrollable content
+          NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is ScrollUpdateNotification) {
+                setState(() {
+                  _scrollOffset = notification.metrics.pixels;
+                });
+              }
+              return true;
+            },
+            child: ListView(
+              padding: const EdgeInsets.only(top: 200),
+              children: [
+                // Monthly Achievement Card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isChinese ? '本月成就' : 'Monthly Achievements',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isChinese
+                              ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
+                              : 'Processed ${widget.declutteredItems.length} items',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 120,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: metrics.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: index < metrics.length - 1 ? 12 : 0,
+                                ),
+                                child: _buildMetricCard(context, metrics[index]),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _buildMonthlyReportCard(context, isChinese, areaCounts),
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _buildJoyIndexCard(context, isChinese),
+                ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _buildLetGoDetailsCard(context, isChinese),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+
+          // Large title in gradient area (fades out)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 100,
+            left: 24,
+            right: 24,
+            child: Opacity(
+              opacity: titleOpacity,
+              child: Text(
+                isChinese ? '洞察' : 'Insight',
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  fontSize: 34,
+                ),
+              ),
+            ),
+          ),
+
+          // Top header (fades in)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 100,
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: headerOpacity * 0.9),
+              ),
+              child: Opacity(
+                opacity: headerOpacity,
+                child: Text(
+                  isChinese ? '洞察' : 'Insight',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Profile icon (fades out)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 16,
+            child: Opacity(
+              opacity: 1.0 - scrollProgress,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildMetricCard(BuildContext context, _MetricCardData metric) {
     return Container(
@@ -465,10 +410,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
     // Calculate category counts
     final categoryCounts = <String, int>{};
     for (final item in widget.declutteredItems) {
-      if (item.category != null) {
-        final categoryName = item.category.toString().split('.').last;
-        categoryCounts[categoryName] = (categoryCounts[categoryName] ?? 0) + 1;
-      }
+      final categoryName = item.category.toString().split('.').last;
+      categoryCounts[categoryName] = (categoryCounts[categoryName] ?? 0) + 1;
     }
 
     // Get max count for heatmap
@@ -636,6 +579,281 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
+  Widget _buildJoyIndexCard(BuildContext context, bool isChinese) {
+    // Calculate joy index trend over selected period (last 30 days)
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+    // Group items by week
+    final weeklyJoyData = <int, List<int>>{}; // week -> list of joy levels
+    final weeklyJoyCount = <int, int>{}; // week -> count of items with joy
+    final weeklyTotalCount = <int, int>{}; // week -> total items decluttered
+
+    for (final item in widget.declutteredItems) {
+      if (item.createdAt.isAfter(thirtyDaysAgo)) {
+        final weekIndex = now.difference(item.createdAt).inDays ~/ 7; // 0 = this week, 1 = last week, etc.
+        if (weekIndex < 5) { // Only last 5 weeks
+          weeklyTotalCount[weekIndex] = (weeklyTotalCount[weekIndex] ?? 0) + 1;
+
+          if (item.joyLevel != null && item.joyLevel! > 0) {
+            weeklyJoyData.putIfAbsent(weekIndex, () => []).add(item.joyLevel!);
+            weeklyJoyCount[weekIndex] = (weeklyJoyCount[weekIndex] ?? 0) + 1;
+          }
+        }
+      }
+    }
+
+    // Calculate weekly joy percent
+    final weeklyJoyPercent = <int, double>{};
+    weeklyTotalCount.forEach((week, total) {
+      final joyCount = weeklyJoyCount[week] ?? 0;
+      weeklyJoyPercent[week] = total > 0 ? (joyCount / total * 100) : 0.0;
+    });
+
+    // Calculate average joy percent
+    final avgJoyPercent = weeklyJoyPercent.isEmpty
+        ? 0.0
+        : weeklyJoyPercent.values.reduce((a, b) => a + b) / weeklyJoyPercent.length;
+
+    // Calculate total joy count
+    final itemsWithJoy = widget.declutteredItems.where((item) => item.joyLevel != null && item.joyLevel! > 0).toList();
+    final totalJoyCount = itemsWithJoy.length;
+
+    // Determine trend
+    String trendText;
+    String trendIcon;
+    Color trendColor;
+
+    if (weeklyJoyPercent.length >= 2) {
+      final weeks = weeklyJoyPercent.keys.toList()..sort();
+      final recentWeek = weeklyJoyPercent[weeks.first] ?? 0;
+      final olderWeek = weeklyJoyPercent[weeks.last] ?? 0;
+
+      if (recentWeek > olderWeek) {
+        trendText = isChinese ? '上升' : 'Rising';
+        trendIcon = '↑';
+        trendColor = const Color(0xFF4CAF50);
+      } else if (recentWeek < olderWeek) {
+        trendText = isChinese ? '下降' : 'Falling';
+        trendIcon = '↓';
+        trendColor = const Color(0xFFF44336);
+      } else {
+        trendText = isChinese ? '稳定' : 'Stable';
+        trendIcon = '→';
+        trendColor = const Color(0xFF9E9E9E);
+      }
+    } else {
+      trendText = isChinese ? '暂无' : 'N/A';
+      trendIcon = '—';
+      trendColor = const Color(0xFF9E9E9E);
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          Text(
+            isChinese ? '心动指数趋势' : 'Joy Index Trend',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Toggle between Joy Percent and Joy Count
+          Row(
+            children: [
+              Text(
+                isChinese ? '趋势指标' : 'Trend Metric',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _showJoyPercent = true;
+                            });
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: _showJoyPercent ? Colors.white : Colors.transparent,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: _showJoyPercent
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.1),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              isChinese ? '心动比例' : 'Joy Percent',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: _showJoyPercent ? Colors.black87 : Colors.black45,
+                                fontWeight: _showJoyPercent ? FontWeight.w600 : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _showJoyPercent = false;
+                            });
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: !_showJoyPercent ? Colors.white : Colors.transparent,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: !_showJoyPercent
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.1),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              isChinese ? '心动次数' : 'Joy Count',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: !_showJoyPercent ? Colors.black87 : Colors.black45,
+                                fontWeight: !_showJoyPercent ? FontWeight.w600 : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Chart
+          if (weeklyJoyPercent.isEmpty && weeklyJoyCount.isEmpty)
+            Container(
+              height: 150,
+              alignment: Alignment.center,
+              child: Text(
+                isChinese ? '还没有足够的数据来显示趋势' : 'Not enough data to show trend yet',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.black54,
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 200,
+              child: CustomPaint(
+                painter: _JoyTrendChartPainter(
+                  weeklyData: _showJoyPercent ? weeklyJoyPercent : weeklyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
+                  maxWeeks: 5,
+                  isPercent: _showJoyPercent,
+                  isChinese: isChinese,
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 20),
+
+          // Summary stats
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem(
+                context,
+                label: isChinese ? '平均心动比例' : 'Avg Joy %',
+                value: '${avgJoyPercent.toStringAsFixed(0)}%',
+                color: const Color(0xFFFF9AA2),
+              ),
+              _buildStatItem(
+                context,
+                label: isChinese ? '总心动次数' : 'Total Joy',
+                value: totalJoyCount.toString(),
+                color: const Color(0xFF5ECFB8),
+              ),
+              _buildStatItem(
+                context,
+                label: isChinese ? '趋势分析' : 'Trend',
+                value: '$trendIcon $trendText',
+                color: trendColor,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(BuildContext context, {required String label, required String value, required Color color}) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildReportSection(
     BuildContext context, {
     required String title,
@@ -701,104 +919,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
           textAlign: TextAlign.center,
         ),
       ],
-    );
-  }
-
-  Widget _buildAreaSummaryCard({
-    required BuildContext context,
-    required String title,
-    required Map<String, int> areaCounts,
-    required bool isChinese,
-  }) {
-    final theme = Theme.of(context);
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x15000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            areaCounts.isEmpty
-                ? (isChinese
-                      ? '本月还没有分类整理记录，先挑一件物品开始吧。'
-                      : 'No categorized sessions yet this month. Start with one area!')
-                : (isChinese
-                      ? '最近整理的区域分布如下。'
-                      : 'Here’s where you’ve been tidying recently.'),
-            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
-          ),
-          const SizedBox(height: 16),
-          if (areaCounts.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 32),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0F0F3),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                Icons.layers_outlined,
-                color: Colors.black26,
-                size: 36,
-              ),
-            )
-          else
-            Builder(
-              builder: (_) {
-                final entries = areaCounts.entries.toList();
-                return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    for (var i = 0; i < entries.length; i++)
-                      _buildAreaChip(
-                        theme,
-                        entries[i].key,
-                        entries[i].value,
-                        _chipColors[i % _chipColors.length],
-                      ),
-                  ],
-                );
-              },
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAreaChip(ThemeData theme, String area, int count, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-      decoration: BoxDecoration(
-        color: count == 0 ? color.withValues(alpha: 0.2) : color,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Text(
-        '$area ×$count',
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: count == 0 ? color.withValues(alpha: 0.9) : Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 
@@ -1072,6 +1192,170 @@ class _EmptyDonutChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Joy trend chart painter (line chart)
+class _JoyTrendChartPainter extends CustomPainter {
+  final Map<int, double> weeklyData; // week index -> value (percent or count)
+  final int maxWeeks;
+  final bool isPercent;
+  final bool isChinese;
+
+  _JoyTrendChartPainter({
+    required this.weeklyData,
+    required this.maxWeeks,
+    required this.isPercent,
+    required this.isChinese,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (weeklyData.isEmpty) return;
+
+    final paint = Paint()
+      ..color = const Color(0xFFFF9AA2)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final fillPaint = Paint()
+      ..color = const Color(0xFFFF9AA2).withValues(alpha: 0.1)
+      ..style = PaintingStyle.fill;
+
+    final dotPaint = Paint()
+      ..color = const Color(0xFFFF9AA2)
+      ..style = PaintingStyle.fill;
+
+    final gridPaint = Paint()
+      ..color = const Color(0xFFE0E0E0)
+      ..strokeWidth = 1;
+
+    final textPaint = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+
+    // Calculate dimensions
+    final padding = 30.0;
+    final bottomPadding = 40.0;
+    final chartWidth = size.width - (padding * 2);
+    final chartHeight = size.height - padding - bottomPadding;
+
+    // Find max value for scaling
+    final maxValue = isPercent
+        ? 100.0
+        : weeklyData.values.reduce((a, b) => a > b ? a : b) * 1.2; // Add 20% padding for count
+
+    // Draw horizontal grid lines
+    for (int i = 0; i <= 5; i++) {
+      final y = padding + (chartHeight * i / 5);
+      canvas.drawLine(
+        Offset(padding, y),
+        Offset(size.width - padding, y),
+        gridPaint,
+      );
+    }
+
+    // Prepare data points (reverse order so week 0 is on the right)
+    final points = <Offset>[];
+    final labels = <String>[];
+    final sortedWeeks = weeklyData.keys.toList()..sort((a, b) => b.compareTo(a)); // Descending order
+
+    // Generate month labels
+    final now = DateTime.now();
+    for (int i = 0; i < sortedWeeks.length; i++) {
+      final week = sortedWeeks[i];
+      final value = weeklyData[week]!;
+
+      // X position: spread evenly across chart width
+      final x = padding + (chartWidth * i / (sortedWeeks.length - 1).clamp(1, double.infinity));
+
+      // Y position: scale based on max value
+      final normalizedValue = value / maxValue;
+      final y = padding + (chartHeight * (1 - normalizedValue));
+
+      points.add(Offset(x, y));
+
+      // Calculate which month this week belongs to
+      final weekDate = now.subtract(Duration(days: week * 7));
+      final monthLabel = '${weekDate.month}${isChinese ? '月' : 'M'}';
+      labels.add(monthLabel);
+    }
+
+    if (points.isEmpty) return;
+
+    // Draw filled area under the line
+    final fillPath = Path();
+    fillPath.moveTo(points.first.dx, size.height - bottomPadding);
+    fillPath.lineTo(points.first.dx, points.first.dy);
+
+    for (int i = 0; i < points.length - 1; i++) {
+      final current = points[i];
+      final next = points[i + 1];
+      final controlPoint1 = Offset(current.dx + (next.dx - current.dx) / 3, current.dy);
+      final controlPoint2 = Offset(current.dx + 2 * (next.dx - current.dx) / 3, next.dy);
+      fillPath.cubicTo(
+        controlPoint1.dx,
+        controlPoint1.dy,
+        controlPoint2.dx,
+        controlPoint2.dy,
+        next.dx,
+        next.dy,
+      );
+    }
+
+    fillPath.lineTo(points.last.dx, size.height - bottomPadding);
+    fillPath.close();
+    canvas.drawPath(fillPath, fillPaint);
+
+    // Draw the line
+    final linePath = Path();
+    linePath.moveTo(points.first.dx, points.first.dy);
+
+    for (int i = 0; i < points.length - 1; i++) {
+      final current = points[i];
+      final next = points[i + 1];
+      final controlPoint1 = Offset(current.dx + (next.dx - current.dx) / 3, current.dy);
+      final controlPoint2 = Offset(current.dx + 2 * (next.dx - current.dx) / 3, next.dy);
+      linePath.cubicTo(
+        controlPoint1.dx,
+        controlPoint1.dy,
+        controlPoint2.dx,
+        controlPoint2.dy,
+        next.dx,
+        next.dy,
+      );
+    }
+
+    canvas.drawPath(linePath, paint);
+
+    // Draw dots and labels at each data point
+    for (int i = 0; i < points.length; i++) {
+      final point = points[i];
+
+      // Draw dot
+      canvas.drawCircle(point, 5, dotPaint);
+      canvas.drawCircle(point, 3, Paint()..color = Colors.white);
+
+      // Draw month label below
+      textPaint.text = TextSpan(
+        text: labels[i],
+        style: const TextStyle(
+          color: Color(0xFF9E9E9E),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+      textPaint.layout();
+      textPaint.paint(
+        canvas,
+        Offset(point.dx - textPaint.width / 2, size.height - bottomPadding + 10),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 class _MetricCardData {
