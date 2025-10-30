@@ -1023,26 +1023,17 @@ class _HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _getGreeting(l10n),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              l10n.readyToSparkJoy,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+        title: Text(
+          _getGreeting(l10n),
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
-            ),
-          ],
         ),
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_outline),
+            icon: const Icon(Icons.person_outline, size: 32),
+            iconSize: 32,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -1051,6 +1042,7 @@ class _HomeScreen extends StatelessWidget {
               );
             },
           ),
+          const SizedBox(width: 4),
         ],
       ),
       backgroundColor: const Color(0xFFF5F5F7),

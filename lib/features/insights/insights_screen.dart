@@ -155,30 +155,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate scroll-based animations
-    const expandedHeight = 120.0; // Title area height
-    final scrollProgress = (_scrollOffset / expandedHeight).clamp(0.0, 1.0);
+    const titleAreaHeight = 120.0; // Title container height
+    final scrollProgress = (_scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
 
-    // Short header is visible during scroll but fades out when title is gone
-    final shortHeaderOpacity = scrollProgress > 0.01 && scrollProgress < 0.95 ? 1.0 : 0.0;
+    // Title and icon fade out as user scrolls
+    final titleOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
 
-    // Real header appears only when scrolling is complete
-    final realHeaderOpacity = scrollProgress >= 0.95 ? 1.0 : 0.0;
-
-    // Calculate background color at current scroll position (sync with gradient)
-    Color getBackgroundColorAtScroll() {
-      const gradientHeight = 400.0;
-      final gradientProgress = (_scrollOffset / gradientHeight).clamp(0.0, 1.0);
-
-      if (gradientProgress <= 0.5) {
-        // Between purple and middle color
-        final t = gradientProgress / 0.5;
-        return Color.lerp(const Color(0xFFB794F6), const Color(0xFF9B7FE8), t)!;
-      } else {
-        // Between middle color and white
-        final t = (gradientProgress - 0.5) / 0.5;
-        return Color.lerp(const Color(0xFF9B7FE8), const Color(0xFFF2F2F7), t)!;
-      }
-    }
+    // Real header appears immediately when title disappears (scrollProgress >= 1.0)
+    final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     return Scaffold(
       body: Stack(
@@ -189,23 +173,27 @@ class _InsightsScreenState extends State<InsightsScreen> {
             physics: const BouncingScrollPhysics(),
             child: Stack(
               children: [
-                // 渐变背景 - 会随内容滚动，在1/3处消失
+                // 渐变背景 - 会随内容滚动，渐隐消失
                 Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
-                  height: 400, // 渐变区域高度，1/3屏幕左右
+                  height: 400, // 渐变区域高度
                   child: Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Color(0xFFB794F6), // Purple
-                          Color(0xFF9B7FE8),
-                          Color(0xFFF2F2F7), // Fade to white
+                          Color(0xFFB794F6), // Purple at top
+                          Color(0xFFC9A8F7), // Light purple
+                          Color(0xFFD4BCF3), // Purple-mint transition
+                          Color(0xFFB8E5D4), // Mint green
+                          Color(0xFFC8EDE0), // Light mint
+                          Color(0xFFE0F5EC), // Very light mint
+                          Color(0xFFF2F2F7), // White
                         ],
-                        stops: [0.0, 0.5, 1.0],
+                        stops: [0.0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0],
                       ),
                     ),
                   ),
@@ -222,36 +210,39 @@ class _InsightsScreenState extends State<InsightsScreen> {
                           right: 16,
                           top: topPadding + 12,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Large title on the left
-                            Text(
-                              summaryTitle,
-                              style: const TextStyle(
-                                fontSize: 46,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black87,
-                                letterSpacing: -0.6,
-                                height: 1.05,
+                        child: Opacity(
+                          opacity: titleOpacity,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Large title on the left
+                              Text(
+                                summaryTitle,
+                                style: const TextStyle(
+                                  fontSize: 46,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: -0.6,
+                                  height: 1.05,
+                                ),
                               ),
-                            ),
-                            // Profile Icon on the right
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
+                              // Profile Icon on the right
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Color(0xFFB794F6),
+                                  size: 22,
+                                ),
                               ),
-                              child: const Icon(
-                                Icons.person,
-                                color: Color(0xFFB794F6),
-                                size: 22,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -349,23 +340,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 ],
               ),
             ],
-          ),
-        ),
-        // Short header bar that covers scrolling content (2/3 height of real header)
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: IgnorePointer(
-            child: Opacity(
-              opacity: shortHeaderOpacity,
-              child: Container(
-                height: (topPadding + kToolbarHeight) * 0.67,
-                decoration: BoxDecoration(
-                  color: getBackgroundColorAtScroll(),
-                ),
-              ),
-            ),
           ),
         ),
         // Real header that appears when scrolling is complete
