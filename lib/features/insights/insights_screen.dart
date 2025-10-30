@@ -155,9 +155,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate scroll-based animations
-    const expandedHeight = 280.0;
-    final minHeight = topPadding + kToolbarHeight;
-    final scrollProgress = (_scrollOffset / (expandedHeight - minHeight)).clamp(0.0, 1.0);
+    const expandedHeight = 120.0; // Title area height
+    final scrollProgress = (_scrollOffset / expandedHeight).clamp(0.0, 1.0);
 
     // Short header is visible during scroll but fades out when title is gone
     final shortHeaderOpacity = scrollProgress > 0.01 && scrollProgress < 0.95 ? 1.0 : 0.0;
@@ -165,80 +164,101 @@ class _InsightsScreenState extends State<InsightsScreen> {
     // Real header appears only when scrolling is complete
     final realHeaderOpacity = scrollProgress >= 0.95 ? 1.0 : 0.0;
 
+    // Calculate background color at current scroll position (sync with gradient)
+    Color getBackgroundColorAtScroll() {
+      const gradientHeight = 400.0;
+      final gradientProgress = (_scrollOffset / gradientHeight).clamp(0.0, 1.0);
+
+      if (gradientProgress <= 0.5) {
+        // Between purple and middle color
+        final t = gradientProgress / 0.5;
+        return Color.lerp(const Color(0xFFB794F6), const Color(0xFF9B7FE8), t)!;
+      } else {
+        // Between middle color and white
+        final t = (gradientProgress - 0.5) / 0.5;
+        return Color.lerp(const Color(0xFF9B7FE8), const Color(0xFFF2F2F7), t)!;
+      }
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
       body: Stack(
         children: [
-          CustomScrollView(
+          // 滚动层（包含渐变背景和所有内容）
+          SingleChildScrollView(
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
-            slivers: [
-              // 渐变背景 + 大标题 + Profile图标 (作为普通内容，会滚动)
-              SliverToBoxAdapter(
-                child: Container(
-                  height: 280,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFFB794F6), // Purple
-                        Color(0xFF9B7FE8),
-                        Color(0xFFF2F2F7), // White at 1/3
-                      ],
-                      stops: [0.0, 0.33, 1.0],
+            child: Stack(
+              children: [
+                // 渐变背景 - 会随内容滚动，在1/3处消失
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 400, // 渐变区域高度，1/3屏幕左右
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFFB794F6), // Purple
+                          Color(0xFF9B7FE8),
+                          Color(0xFFF2F2F7), // Fade to white
+                        ],
+                        stops: [0.0, 0.5, 1.0],
+                      ),
                     ),
                   ),
-                  child: Stack(
-                    children: [
-                      // Large title
-                      Positioned(
-                        left: 24,
-                        right: 80,
-                        bottom: 60,
-                        child: Text(
-                          summaryTitle,
-                          style: const TextStyle(
-                            fontSize: 46,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black87,
-                            letterSpacing: -0.6,
-                            height: 1.05,
-                          ),
-                        ),
-                      ),
-                      // Profile Icon
-                      Positioned(
-                        right: 16,
-                        top: topPadding + 12,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            color: Color(0xFFB794F6),
-                            size: 22,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              ),
-          // Content cards
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Column(
-                children: [
-                  // Monthly Achievement Card
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(
+                // 内容层
+                Column(
+                  children: [
+                    // 顶部空间 + 标题 + Profile图标
+                    SizedBox(
+                      height: 120,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: 24,
+                          right: 16,
+                          top: topPadding + 12,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Large title on the left
+                            Text(
+                              summaryTitle,
+                              style: const TextStyle(
+                                fontSize: 46,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.black87,
+                                letterSpacing: -0.6,
+                                height: 1.05,
+                              ),
+                            ),
+                            // Profile Icon on the right
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.person,
+                                color: Color(0xFFB794F6),
+                                size: 22,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Content cards
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -328,72 +348,64 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   const SizedBox(height: 32),
                 ],
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-      // Short header bar that covers scrolling content (2/3 height of real header)
-      Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        child: IgnorePointer(
-          child: Opacity(
-            opacity: shortHeaderOpacity,
-            child: Container(
-              height: (topPadding + kToolbarHeight) * 0.67,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFB794F6),
-                    Color(0xFF9B7FE8),
-                  ],
+        ),
+        // Short header bar that covers scrolling content (2/3 height of real header)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: IgnorePointer(
+            child: Opacity(
+              opacity: shortHeaderOpacity,
+              child: Container(
+                height: (topPadding + kToolbarHeight) * 0.67,
+                decoration: BoxDecoration(
+                  color: getBackgroundColorAtScroll(),
                 ),
               ),
             ),
           ),
         ),
-      ),
-      // Real header that appears when scrolling is complete
-      Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        child: IgnorePointer(
-          ignoring: realHeaderOpacity < 0.5,
-          child: Opacity(
-            opacity: realHeaderOpacity,
-            child: Container(
-              height: topPadding + kToolbarHeight,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF2F2F7),
-                border: Border(
-                  bottom: BorderSide(
-                    color: Color(0xFFE5E5EA),
-                    width: 0.5,
+        // Real header that appears when scrolling is complete
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: IgnorePointer(
+            ignoring: realHeaderOpacity < 0.5,
+            child: Opacity(
+              opacity: realHeaderOpacity,
+              child: Container(
+                height: topPadding + kToolbarHeight,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF2F2F7),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Color(0xFFE5E5EA),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                padding: EdgeInsets.only(top: topPadding),
+                alignment: Alignment.center,
+                child: Text(
+                  summaryTitle,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
                   ),
                 ),
               ),
-              padding: EdgeInsets.only(top: topPadding),
-              alignment: Alignment.center,
-              child: Text(
-                summaryTitle,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
             ),
           ),
         ),
-      ),
-    ],
-  ),
-);
-  }
+      ],
+    ),
+  );
+}
 
   Widget _buildMetricCard(BuildContext context, _MetricCardData metric) {
     return Container(
