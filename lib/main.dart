@@ -1072,18 +1072,19 @@ class _HomeScreen extends StatelessWidget {
                   // Welcome Section - Centered
                   Center(
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: screenWidth * 0.85),
+                      constraints: BoxConstraints(maxWidth: screenWidth * 0.8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
                             l10n.continueYourJoyJourney,
-                            style: Theme.of(context).textTheme.headlineMedium
+                            style: Theme.of(context).textTheme.displaySmall
                                 ?.copyWith(
                                   color: Colors.black87,
-                                  fontSize: 32,
+                                  fontSize: 36,
                                   fontWeight: FontWeight.w700,
-                                  height: 1.2,
+                                  height: 1.18,
+                                  letterSpacing: 0.5,
                                 ),
                             textAlign: TextAlign.center,
                             softWrap: true,
@@ -1093,8 +1094,9 @@ class _HomeScreen extends StatelessWidget {
                             _getDailyTagline(l10n),
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
-                                  color: Colors.black54,
+                                  color: const Color(0xFF4C4F56),
                                   fontSize: 18,
+                                  fontWeight: FontWeight.w300,
                                   height: 1.4,
                                 ),
                             textAlign: TextAlign.center,
@@ -1114,9 +1116,11 @@ class _HomeScreen extends StatelessWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Color(0xFFB8A9F5), // Lavender purple
-                          Color(0xFFB5F5E1), // Mint green
+                          Color(0xFFA98EF1), // Deeper lavender purple
+                          Color(0xFFB8A9F5), // Primary purple
+                          Color(0xFFCFF8E8), // Mint accent
                         ],
+                        stops: [0.0, 0.7, 1.0],
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(
@@ -1134,7 +1138,7 @@ class _HomeScreen extends StatelessWidget {
                                 style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
+                                      color: Colors.white,
                                     ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1145,7 +1149,11 @@ class _HomeScreen extends StatelessWidget {
                               child: Text(
                                 _formatDate(DateTime.now()),
                                 style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(color: Colors.black54),
+                                    ?.copyWith(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.75,
+                                      ),
+                                    ),
                                 textAlign: TextAlign.right,
                                 maxLines: 2,
                                 softWrap: true,
@@ -1173,7 +1181,7 @@ class _HomeScreen extends StatelessWidget {
                             Expanded(
                               child: _WhiteProgressCard(
                                 label: l10n.newValueCreated,
-                                value: '¥${newValue.toStringAsFixed(0)}',
+                                value: newValue.toStringAsFixed(0),
                               ),
                             ),
                           ],
@@ -1977,16 +1985,17 @@ class _WhiteProgressCard extends StatelessWidget {
           value,
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Colors.white,
             fontSize: 28,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.black54, fontSize: 11),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Colors.white.withValues(alpha: 0.75),
+            fontSize: 11,
+          ),
           textAlign: TextAlign.center,
           maxLines: 2,
           softWrap: true,
