@@ -5,6 +5,7 @@ import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
+import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 
 class InsightsScreen extends StatefulWidget {
@@ -14,12 +15,14 @@ class InsightsScreen extends StatefulWidget {
     required this.resellItems,
     required this.deepCleaningSessions,
     required this.streak,
+    required this.memories,
   });
 
   final List<DeclutterItem> declutteredItems;
   final List<ResellItem> resellItems;
   final List<DeepCleaningSession> deepCleaningSessions;
   final int streak;
+  final List<Memory> memories;
 
   @override
   State<InsightsScreen> createState() => _InsightsScreenState();
@@ -1492,11 +1495,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildMemoryLaneCard(BuildContext context, bool isChinese) {
-    // Get items with photos
-    final itemsWithPhotos = widget.declutteredItems
-        .where((item) => item.photoPath != null)
-        .toList();
-    final photoCount = itemsWithPhotos.length;
+    final sortedMemories = widget.memories.isEmpty
+        ? <Memory>[]
+        : (List<Memory>.from(widget.memories)
+            ..sort((a, b) => a.createdAt.compareTo(b.createdAt)));
+
+    final firstMemory = sortedMemories.isNotEmpty ? sortedMemories.first : null;
+    final latestMemory = sortedMemories.isNotEmpty ? sortedMemories.last : null;
 
     return GestureDetector(
       onTap: () {
@@ -1504,7 +1509,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => MemoryLaneReportScreen(
-              declutteredItems: widget.declutteredItems,
+              memories: widget.memories,
             ),
           ),
         );
@@ -1574,7 +1579,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            if (photoCount == 0)
+            if (widget.memories.isEmpty)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -1583,9 +1588,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    isChinese
-                        ? '还没有记录照片，开始记录你的整理瞬间吧'
-                        : 'No photos yet. Start capturing your decluttering moments',
+                    isChinese ? '暂无回忆' : 'No memories yet',
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
@@ -1600,30 +1603,64 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
                   children: [
-                    const Icon(
-                      Icons.photo_camera_rounded,
-                      size: 32,
-                      color: Color(0xFFB794F6),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Text(
-                          '$photoCount ${isChinese ? '张照片' : 'photos'}',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87,
+                        Text('🌱', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isChinese ? '第一个回忆' : 'First Memory',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.black54,
+                                  fontSize: 10,
+                                ),
                               ),
+                              Text(
+                                firstMemory!.title,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          isChinese ? '点击查看完整回忆' : 'Tap to view memories',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: Colors.black54),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text('✨', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isChinese ? '最新回忆' : 'Latest Memory',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.black54,
+                                  fontSize: 10,
+                                ),
+                              ),
+                              Text(
+                                latestMemory!.title,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

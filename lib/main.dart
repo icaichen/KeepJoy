@@ -454,6 +454,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         resellItems: List.unmodifiable(_resellItems),
         deepCleaningSessions: List.unmodifiable(_completedSessions),
         streak: _calculateStreak(),
+        memories: List.unmodifiable(_memories),
       ),
     ];
 
@@ -759,14 +760,15 @@ class _HomeScreen extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: activities.length,
-                    separatorBuilder: (_, __) => const Divider(
-                      height: 24,
-                      color: Color(0xFFE5E7EB),
-                    ),
+                    separatorBuilder: (_, __) =>
+                        const Divider(height: 24, color: Color(0xFFE5E7EB)),
                     itemBuilder: (_, index) {
                       final entry = activities[index];
-                      final subtitle =
-                          _activitySubtitle(entry, l10n, isChinese);
+                      final subtitle = _activitySubtitle(
+                        entry,
+                        l10n,
+                        isChinese,
+                      );
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -791,9 +793,9 @@ class _HomeScreen extends StatelessWidget {
                                   _activityTitle(entry, l10n),
                                   style: sheetTheme.textTheme.bodyLarge
                                       ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF111827),
-                                  ),
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF111827),
+                                      ),
                                 ),
                                 if (subtitle != null) ...[
                                   const SizedBox(height: 4),
@@ -801,8 +803,8 @@ class _HomeScreen extends StatelessWidget {
                                     subtitle,
                                     style: sheetTheme.textTheme.bodyMedium
                                         ?.copyWith(
-                                      color: const Color(0xFF4B5563),
-                                    ),
+                                          color: const Color(0xFF4B5563),
+                                        ),
                                   ),
                                 ],
                               ],
@@ -1059,9 +1061,7 @@ class _HomeScreen extends StatelessWidget {
             // Purple Section - FULL WIDTH
             Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
+              decoration: const BoxDecoration(color: Colors.white),
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.05,
                 vertical: 24,
@@ -1078,7 +1078,8 @@ class _HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             l10n.continueYourJoyJourney,
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(
                                   color: Colors.black87,
                                   fontSize: 32,
                                   fontWeight: FontWeight.w700,
@@ -1090,7 +1091,8 @@ class _HomeScreen extends StatelessWidget {
                           const SizedBox(height: 10),
                           Text(
                             _getDailyTagline(l10n),
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
                                   color: Colors.black54,
                                   fontSize: 18,
                                   height: 1.4,
@@ -1107,8 +1109,15 @@ class _HomeScreen extends StatelessWidget {
                   // This Month's Progress Section with colored card
                   Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE3ECFF),
                       borderRadius: BorderRadius.circular(20),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFFB8A9F5), // Lavender purple
+                          Color(0xFFB5F5E1), // Mint green
+                        ],
+                      ),
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -1136,9 +1145,7 @@ class _HomeScreen extends StatelessWidget {
                               child: Text(
                                 _formatDate(DateTime.now()),
                                 style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.black54,
-                                    ),
+                                    ?.copyWith(color: Colors.black54),
                                 textAlign: TextAlign.right,
                                 maxLines: 2,
                                 softWrap: true,
@@ -1211,21 +1218,17 @@ class _HomeScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   l10n.streakAchievement,
-                                  style:
-                                      Theme.of(context).textTheme.bodyMedium
-                                          ?.copyWith(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   l10n.daysStreak(streak),
-                                  style:
-                                      Theme.of(context).textTheme.bodyMedium
-                                          ?.copyWith(
-                                    color: Colors.black54,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(color: Colors.black54),
                                 ),
                               ],
                             ),
@@ -1467,7 +1470,8 @@ class _HomeScreen extends StatelessWidget {
                     children: [
                       Text(
                         l10n.declutterCalendar,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF111827),
                             ),
@@ -1496,11 +1500,11 @@ class _HomeScreen extends StatelessWidget {
 
                   // Show next planned session or empty state - both are clickable to show calendar
                   if (plannedSessions.isEmpty)
-                  _buildStartDeclutterGradientCard(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ActivityCalendarPage(
+                    _buildStartDeclutterGradientCard(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ActivityCalendarPage(
                               declutteredItems: declutteredItems,
                               memories: memories,
                             ),
@@ -1572,7 +1576,7 @@ class _HomeScreen extends StatelessWidget {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                        .withValues(alpha: 0.7),
+                                            .withValues(alpha: 0.7),
                                       ),
                                 ),
                               ],
@@ -1608,9 +1612,9 @@ class _HomeScreen extends StatelessWidget {
                   Text(
                     l10n.startDeclutter,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF111827),
-                        ),
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF111827),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -1753,9 +1757,9 @@ class _HomeScreen extends StatelessWidget {
                   Text(
                     l10n.dailyInspiration,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF111827),
-                        ),
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF111827),
+                    ),
                   ),
                   const SizedBox(height: 12),
 
@@ -1781,7 +1785,8 @@ class _HomeScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(
                             _formatQuote(quoteOfDay),
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
                                   fontSize: 16,
                                   fontStyle: FontStyle.italic,
                                   height: 1.6,
@@ -1792,7 +1797,8 @@ class _HomeScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(
                             '- ${_getQuoteAttribution(quoteOfDay)}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   fontSize: 14,
                                   color: const Color(0xFF6B7280),
                                 ),
@@ -1839,7 +1845,8 @@ class _HomeScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 _getTodaysTipPreview(l10n),
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
                                       color: const Color(0xFF4B5563),
                                       height: 1.4,
                                     ),
@@ -1870,7 +1877,8 @@ class _HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             l10n.joyCheck,
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF111827),
                                 ),
@@ -1878,9 +1886,8 @@ class _HomeScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             l10n.whatBroughtYouJoy,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: const Color(0xFF4B5563),
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: const Color(0xFF4B5563)),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 18),
@@ -1890,7 +1897,10 @@ class _HomeScreen extends StatelessWidget {
                               onPressed: () {
                                 // Handle sharing joy
                               },
-                              icon: const Icon(Icons.sentiment_satisfied_alt, size: 18),
+                              icon: const Icon(
+                                Icons.sentiment_satisfied_alt,
+                                size: 18,
+                              ),
                               label: Text(l10n.shareYourJoy),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF414B5A),
@@ -1902,9 +1912,10 @@ class _HomeScreen extends StatelessWidget {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                textStyle: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
                             ),
                           ),
@@ -1973,10 +1984,9 @@ class _WhiteProgressCard extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.black54,
-            fontSize: 11,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.black54, fontSize: 11),
           textAlign: TextAlign.center,
           maxLines: 2,
           softWrap: true,
