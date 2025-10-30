@@ -45,209 +45,268 @@ class _ItemsScreenState extends State<ItemsScreen> {
     final recentItemsToShow = recentItems.take(10).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7F8),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          isChinese ? '我的物品' : 'My Items',
-          style: const TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF6B4E71)),
-            onPressed: () {
-              // Navigate to add item
-            },
-          ),
-        ],
-      ),
-      body: widget.items.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.inventory_2_outlined,
-                      size: 80,
-                      color: Colors.black26,
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      isChinese ? '还没有物品' : 'No items yet',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      isChinese
-                          ? '使用"快速整理"或"心动检视"开始记录物品'
-                          : 'Use Quick Declutter or Joy Declutter to start',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black38,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : SingleChildScrollView(
+      backgroundColor: const Color(0xFFF5F6F7),
+      body: SafeArea(
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-            // Filter tabs
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  _buildFilterTab(
-                    isChinese ? '全部' : 'All Items',
-                    ItemsFilter.all,
-                    isChinese,
+                  _buildHeaderButton(
+                    Icons.arrow_back_ios_new_rounded,
+                    Navigator.of(context).canPop()
+                        ? () => Navigator.of(context).pop()
+                        : null,
                   ),
-                  const SizedBox(width: 12),
-                  _buildFilterTab(
-                    isChinese ? '待整理' : 'To Declutter',
-                    ItemsFilter.toDeclutter,
-                    isChinese,
+                  const SizedBox(width: 16),
+                  Text(
+                    isChinese ? '我的物品' : 'My Items',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1C1C1E),
+                    ),
                   ),
-                  const SizedBox(width: 12),
-                  _buildFilterTab(
-                    isChinese ? '已整理' : 'Decluttered',
-                    ItemsFilter.decluttered,
-                    isChinese,
-                  ),
+                  const Spacer(),
+                  _buildHeaderButton(Icons.add_rounded, () {
+                    // Navigate to add item
+                  }),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Stats cards
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      icon: Icons.hourglass_empty_rounded,
-                      iconColor: const Color(0xFFFFB74D),
-                      title: isChinese ? '待整理' : 'To Declutter',
-                      count: toDecluterItems.length,
-                      subtitle: isChinese ? '件剩余' : 'items remaining',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      icon: Icons.check_circle_rounded,
-                      iconColor: const Color(0xFF5ECFB8),
-                      title: isChinese ? '已整理' : 'Decluttered',
-                      count: declutteredItems.length,
-                      subtitle: isChinese ? '件完成' : 'items completed',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Categories section
-            if (categoryStats.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  isChinese ? '分类' : 'Categories',
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.5,
-                  children: categoryStats.entries.map((entry) {
-                    return _buildCategoryCard(
-                      entry.key,
-                      entry.value['total'] as int,
-                      entry.value['remaining'] as int,
-                      isChinese,
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: 32),
-            ],
-
-            // Recent items section
-            if (recentItemsToShow.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      isChinese ? '最近物品' : 'Recent Items',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to all items
-                      },
-                      child: Text(
-                        isChinese ? '查看全部' : 'View All',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF95E3C6),
+            if (widget.items.isEmpty)
+              Expanded(child: _buildEmptyState(context, isChinese))
+            else
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      // Filter tabs
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            _buildFilterTab(
+                              isChinese ? '全部' : 'All Items',
+                              ItemsFilter.all,
+                              isChinese,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildFilterTab(
+                              isChinese ? '待整理' : 'To Declutter',
+                              ItemsFilter.toDeclutter,
+                              isChinese,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildFilterTab(
+                              isChinese ? '已整理' : 'Decluttered',
+                              ItemsFilter.decluttered,
+                              isChinese,
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard(
+                                icon: Icons.hourglass_empty_rounded,
+                                iconColor: const Color(0xFFF3A65A),
+                                title: isChinese ? '待整理' : 'To Declutter',
+                                count: toDecluterItems.length,
+                                subtitle: isChinese ? '件剩余' : 'items remaining',
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildStatCard(
+                                icon: Icons.check_circle_rounded,
+                                iconColor: const Color(0xFF69C7A0),
+                                title: isChinese ? '已整理' : 'Decluttered',
+                                count: declutteredItems.length,
+                                subtitle: isChinese ? '件完成' : 'items completed',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+
+                      if (categoryStats.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            isChinese ? '分类' : 'Categories',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1C1C1E),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: GridView.count(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 1.55,
+                            children: categoryStats.entries.map((entry) {
+                              return _buildCategoryCard(
+                                entry.key,
+                                entry.value['total'] as int,
+                                entry.value['remaining'] as int,
+                                isChinese,
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                      ],
+
+                      if (recentItemsToShow.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                isChinese ? '最近物品' : 'Recent Items',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1C1C1E),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  // Navigate to all items
+                                },
+                                child: Text(
+                                  isChinese ? '查看全部' : 'View All',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF94B26F),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: recentItemsToShow.length,
+                          itemBuilder: (context, index) {
+                            return _buildRecentItemCard(
+                              recentItemsToShow[index],
+                              isChinese,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 28),
+                      ],
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: recentItemsToShow.length,
-                itemBuilder: (context, index) {
-                  return _buildRecentItemCard(
-                    recentItemsToShow[index],
-                    isChinese,
-                  );
-                },
-              ),
-              const SizedBox(height: 32),
-            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, bool isChinese) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: const Color(0xFFE4E6EA)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0F111827),
+                    blurRadius: 18,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.inventory_2_outlined,
+                size: 40,
+                color: Color(0xFFB0B4BB),
+              ),
+            ),
+            const SizedBox(height: 28),
+            Text(
+              isChinese ? '还没有物品' : 'No items yet',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1C1C1E),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              isChinese
+                  ? '使用“快速整理”或“心动检视”开始记录物品'
+                  : 'Use Quick Declutter or Joy Declutter to start tracking.',
+              style: const TextStyle(
+                fontSize: 15,
+                color: Color(0xFF6F7278),
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderButton(IconData icon, VoidCallback? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E4E8)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D111827),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 18, color: const Color(0xFF1C1C1E)),
       ),
     );
   }
@@ -264,10 +323,22 @@ class _ItemsScreenState extends State<ItemsScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF95E3C6)
-                : const Color(0xFFE8E8ED),
+            color: isSelected ? const Color(0xFF97B777) : Colors.white,
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFF97B777)
+                  : const Color(0xFFE0E3E7),
+            ),
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(
+                      color: Color(0x1A7D9160),
+                      blurRadius: 12,
+                      offset: Offset(0, 8),
+                    ),
+                  ]
+                : null,
           ),
           alignment: Alignment.center,
           child: Text(
@@ -275,7 +346,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : const Color(0xFF8E8E93),
+              color: isSelected ? Colors.white : const Color(0xFF7E828A),
             ),
           ),
         ),
@@ -291,15 +362,16 @@ class _ItemsScreenState extends State<ItemsScreen> {
     required String subtitle,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Color(0x10111827),
+            blurRadius: 18,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -311,37 +383,37 @@ class _ItemsScreenState extends State<ItemsScreen> {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black54,
+                  color: Color(0xFF6F7278),
                 ),
               ),
               const Spacer(),
               Container(
-                width: 28,
-                height: 28,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.15),
+                  color: iconColor.withValues(alpha: 0.18),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 16, color: iconColor),
+                child: Icon(icon, size: 18, color: iconColor),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text(
             count.toString(),
             style: const TextStyle(
-              fontSize: 32,
+              fontSize: 30,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
-              height: 1.0,
+              color: Color(0xFF1C1C1E),
+              height: 1.05,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: const TextStyle(fontSize: 13, color: Colors.black45),
+            style: const TextStyle(fontSize: 13, color: Color(0xFF7F8289)),
           ),
         ],
       ),
@@ -356,15 +428,16 @@ class _ItemsScreenState extends State<ItemsScreen> {
   ) {
     final isDone = remaining == 0;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Color(0x10111827),
+            blurRadius: 16,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -375,15 +448,15 @@ class _ItemsScreenState extends State<ItemsScreen> {
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: _getCategoryColor(category).withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   _getCategoryIcon(category),
-                  size: 20,
+                  size: 22,
                   color: _getCategoryColor(category),
                 ),
               ),
@@ -395,20 +468,20 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: isDone
-                      ? const Color(0xFF5ECFB8).withValues(alpha: 0.15)
-                      : const Color(0xFFFFB74D).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                      ? const Color(0xFFE5F5EE)
+                      : const Color(0xFFFEF2E4),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(
                   isDone
                       ? (isChinese ? '全部完成' : 'All done!')
                       : '$remaining ${isChinese ? "剩余" : "left"}',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isDone
-                        ? const Color(0xFF5ECFB8)
-                        : const Color(0xFFFFB74D),
+                        ? const Color(0xFF58B993)
+                        : const Color(0xFFEB9D42),
                   ),
                 ),
               ),
@@ -420,15 +493,15 @@ class _ItemsScreenState extends State<ItemsScreen> {
               Text(
                 category.label(context),
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: Color(0xFF1C1C1E),
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 '$total ${isChinese ? "已整理" : "decluttered"}',
-                style: const TextStyle(fontSize: 12, color: Colors.black45),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF7F8289)),
               ),
             ],
           ),
@@ -460,79 +533,94 @@ class _ItemsScreenState extends State<ItemsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Color(0x10111827),
+            blurRadius: 18,
+            offset: Offset(0, 8),
           ),
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Item icon
           Container(
-            width: 56,
-            height: 56,
+            width: 54,
+            height: 54,
             decoration: BoxDecoration(
               color: _getCategoryColor(item.category).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
               _getCategoryIcon(item.category),
-              size: 28,
+              size: 26,
               color: _getCategoryColor(item.category),
             ),
           ),
-          const SizedBox(width: 16),
-          // Item info
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1C1C1E),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   '${item.category.label(context)} • $timeText',
-                  style: const TextStyle(fontSize: 13, color: Colors.black45),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF7F8289),
+                  ),
                 ),
                 if (item.notes != null && item.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     item.notes!,
-                    style: const TextStyle(fontSize: 12, color: Colors.black38),
-                    maxLines: 1,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF9A9DA3),
+                    ),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Status badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              statusText,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: statusColor,
-              ),
             ),
           ),
         ],
