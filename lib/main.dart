@@ -13,6 +13,7 @@ import 'features/profile/profile_page.dart';
 import 'features/resell/resell_tracker_page.dart';
 import 'features/insights/insights_screen.dart';
 import 'features/items/items_screen.dart';
+import 'features/memories/create_memory_page.dart';
 import 'l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/activity_entry.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
@@ -1025,9 +1026,14 @@ class _HomeScreen extends StatelessWidget {
         toolbarHeight: 80,
         title: Text(
           _getGreeting(l10n),
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            color: Color(0xDE000000), // black87
+            letterSpacing: 0,
+            height: 1.0,
+          ),
         ),
         centerTitle: false,
         actions: [
@@ -1070,27 +1076,28 @@ class _HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             l10n.continueYourJoyJourney,
-                            style: Theme.of(context).textTheme.displaySmall
-                                ?.copyWith(
-                                  color: Colors.black87,
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.18,
-                                  letterSpacing: 0.5,
-                                ),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Display',
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xDE000000), // black87
+                              letterSpacing: 0,
+                              height: 1.0,
+                            ),
                             textAlign: TextAlign.center,
                             softWrap: true,
                           ),
                           const SizedBox(height: 10),
                           Text(
                             _getDailyTagline(l10n),
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: const Color(0xFF4C4F56),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w300,
-                                  height: 1.4,
-                                ),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0x8A000000), // black54
+                              letterSpacing: 0,
+                              height: 1.0,
+                            ),
                             textAlign: TextAlign.center,
                             softWrap: true,
                           ),
@@ -1219,17 +1226,26 @@ class _HomeScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   l10n.streakAchievement,
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                  style: const TextStyle(
+                                    fontFamily: 'SF Pro Text',
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xDE000000), // black87
+                                    letterSpacing: 0,
+                                    height: 1.0,
+                                  ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   l10n.daysStreak(streak),
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(color: Colors.black54),
+                                  style: const TextStyle(
+                                    fontFamily: 'SF Pro Text',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0x8A000000), // black54
+                                    letterSpacing: 0,
+                                    height: 1.0,
+                                  ),
                                 ),
                               ],
                             ),
@@ -1471,11 +1487,14 @@ class _HomeScreen extends StatelessWidget {
                     children: [
                       Text(
                         l10n.declutterCalendar,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
+                        style: const TextStyle(
+                          fontFamily: 'SF Pro Display',
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xDE000000), // black87
+                          letterSpacing: 0,
+                          height: 1.0,
+                        ),
                       ),
                       TextButton.icon(
                         onPressed: () async {
@@ -1612,9 +1631,13 @@ class _HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     l10n.startDeclutter,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF111827),
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xDE000000), // black87
+                      letterSpacing: 0,
+                      height: 1.0,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1645,9 +1668,12 @@ class _HomeScreen extends StatelessWidget {
                               Text(
                                 l10n.joyDeclutterTitle,
                                 style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0,
+                                  height: 1.0,
                                 ),
                               ),
                             ],
@@ -1680,9 +1706,12 @@ class _HomeScreen extends StatelessWidget {
                               Text(
                                 l10n.quickDeclutterTitle,
                                 style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0,
+                                  height: 1.0,
                                 ),
                               ),
                             ],
@@ -1730,9 +1759,12 @@ class _HomeScreen extends StatelessWidget {
                           child: Text(
                             l10n.deepCleaningTitle,
                             style: const TextStyle(
+                              fontFamily: 'SF Pro Display',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
                               color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0,
+                              height: 1.0,
                             ),
                           ),
                         ),
@@ -1757,9 +1789,13 @@ class _HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     l10n.dailyInspiration,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF111827),
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xDE000000), // black87
+                      letterSpacing: 0,
+                      height: 1.0,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1786,23 +1822,29 @@ class _HomeScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(
                             _formatQuote(quoteOfDay),
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  fontSize: 16,
-                                  fontStyle: FontStyle.italic,
-                                  height: 1.6,
-                                  color: const Color(0xFF374151),
-                                ),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              fontStyle: FontStyle.italic,
+                              color: Color(0xDE000000), // black87
+                              letterSpacing: 0,
+                              height: 1.5,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 12),
                           Text(
                             '- ${_getQuoteAttribution(quoteOfDay)}',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  fontSize: 14,
-                                  color: const Color(0xFF6B7280),
-                                ),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              fontStyle: FontStyle.italic,
+                              color: Color(0xFF757575), // grey600
+                              letterSpacing: 0,
+                              height: 1.0,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -1846,11 +1888,14 @@ class _HomeScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 _getTodaysTipPreview(l10n),
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: const Color(0xFF4B5563),
-                                      height: 1.4,
-                                    ),
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xDE000000), // black87
+                                  letterSpacing: 0,
+                                  height: 1.0,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1878,31 +1923,67 @@ class _HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             l10n.joyCheck,
-                            style: Theme.of(context).textTheme.labelLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF111827),
-                                ),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Display',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xDE000000), // black87
+                              letterSpacing: 0,
+                              height: 1.0,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             l10n.whatBroughtYouJoy,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: const Color(0xFF4B5563)),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xDE000000), // black87
+                              letterSpacing: 0,
+                              height: 1.0,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 18),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed: () {
-                                // Handle sharing joy
+                              onPressed: () async {
+                                final memory = await Navigator.of(context)
+                                    .push<Memory>(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const CreateMemoryPage(),
+                                      ),
+                                    );
+
+                                if (memory != null && context.mounted) {
+                                  // Call the onMemoryCreated callback from parent
+                                  final mainState = context
+                                      .findAncestorStateOfType<
+                                        _MainNavigatorState
+                                      >();
+                                  mainState?._onMemoryCreated(memory);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(l10n.memoryCreated)),
+                                  );
+                                }
                               },
                               icon: const Icon(
                                 Icons.sentiment_satisfied_alt,
                                 size: 18,
                               ),
-                              label: Text(l10n.shareYourJoy),
+                              label: Text(
+                                l10n.createMemory,
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  letterSpacing: 0,
+                                ),
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF414B5A),
                                 foregroundColor: Colors.white,

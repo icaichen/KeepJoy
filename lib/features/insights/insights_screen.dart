@@ -199,7 +199,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                           opacity: titleOpacity,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               // Large title on the left
                               Text(
@@ -209,21 +209,27 @@ class _InsightsScreenState extends State<InsightsScreen> {
                                   fontWeight: FontWeight.w800,
                                   color: Colors.white,
                                   letterSpacing: -0.6,
-                                  height: 1.05,
+                                  height: 1.0,
                                 ),
                               ),
                               // Profile Icon on the right
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.person,
-                                  color: Color(0xFFB794F6),
-                                  size: 22,
+                              GestureDetector(
+                                onTap: () {
+                                  // TODO: Navigate to profile screen
+                                  print('Profile tapped');
+                                },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Color(0xFFB794F6),
+                                    size: 22,
+                                  ),
                                 ),
                               ),
                             ],
@@ -253,19 +259,28 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         children: [
                           Text(
                             isChinese ? '本月成就' : 'Monthly Achievements',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87,
-                                ),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Display',
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xDE000000), // black87
+                              letterSpacing: 0,
+                              height: 1.0,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             isChinese
                                 ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
                                 : 'Processed ${widget.declutteredItems.length} items',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: Colors.black54),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0x8A000000), // black54
+                              letterSpacing: 0,
+                              height: 1.0,
+                            ),
                           ),
                           const SizedBox(height: 20),
                           SizedBox(
@@ -315,6 +330,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _buildResellAnalysisCard(context, isChinese),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _buildYearlyReportsCard(context, isChinese),
                   ),
                   const SizedBox(height: 20),
                   Padding(
@@ -496,16 +516,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // 1. 整理频次 - Cleaning Frequency
-          _buildReportSection(
-            context,
-            title: isChinese ? '整理频次' : 'Cleaning Frequency',
-            subtitle: isChinese
-                ? '回顾整理频次、类别与区域'
-                : 'Review frequency, categories & areas',
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
+          // 1. 整理频次 - Cleaning Frequency (no title)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
                 _buildFrequencyItem(
                   context,
                   icon: Icons.bolt_rounded,
@@ -529,9 +543,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 ),
               ],
             ),
-          ),
 
-          const SizedBox(height: 20),
+          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
           // 2. 整理类别 - Categories
           _buildReportSection(
@@ -558,7 +571,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   ),
           ),
 
-          const SizedBox(height: 20),
+          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
           // 3. 整理区域 - Areas with heatmap
           _buildReportSection(
@@ -605,7 +618,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   ),
           ),
 
-          const SizedBox(height: 20),
+          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
           // 4. 整理前后对比 - Before/After Comparison
           _buildReportSection(
@@ -1565,6 +1578,155 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   ],
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildYearlyReportsCard(BuildContext context, bool isChinese) {
+    // Calculate yearly totals
+    final now = DateTime.now();
+    final yearStart = DateTime(now.year, 1, 1);
+
+    final yearlyDecluttered = widget.declutteredItems
+        .where((item) => item.createdAt.isAfter(yearStart))
+        .length;
+
+    final yearlyDeepCleaning = widget.deepCleaningSessions
+        .where((session) => session.startTime.isAfter(yearStart))
+        .length;
+
+    return GestureDetector(
+      onTap: () {
+        // TODO: Navigate to yearly reports screen
+        print('Yearly Reports tapped');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isChinese ? '年度报告功能开发中' : 'Yearly Reports coming soon'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFE6F4F9), Color(0xFFD4E9F3)],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF89CFF0).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_today_rounded,
+                    color: Color(0xFF89CFF0),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '年度报告' : 'Yearly Reports',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        isChinese ? '点击查看年度总结' : 'Tap to view annual summary',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Colors.black54,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Quick stats
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        yearlyDecluttered.toString(),
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF5ECFB8),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isChinese ? '物品' : 'Items',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: const Color(0xFFE5E5EA),
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        yearlyDeepCleaning.toString(),
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF89CFF0),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isChinese ? '整理' : 'Sessions',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

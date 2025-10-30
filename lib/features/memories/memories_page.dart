@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/memory.dart';
-import 'create_memory_page.dart';
 import 'memory_detail_page.dart';
 
 /// iOS-style memory page with grid layout similar to Photos app
@@ -31,10 +30,7 @@ class _MemoriesPageState extends State<MemoriesPage> {
     final memories = widget.memories;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.memoriesTitle),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: Text(l10n.memoriesTitle), centerTitle: false),
       body: memories.isEmpty
           ? _EmptyMemoriesState()
           : GridView.builder(
@@ -51,30 +47,7 @@ class _MemoriesPageState extends State<MemoriesPage> {
                 return _MemoryGridItem(memory: memory);
               },
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _createMemory,
-        child: const Icon(Icons.add),
-      ),
     );
-  }
-
-  Future<void> _createMemory() async {
-    final memory = await Navigator.of(context).push<Memory>(
-      MaterialPageRoute(
-        builder: (_) => const CreateMemoryPage(),
-      ),
-    );
-
-    if (memory != null) {
-      widget.onMemoryCreated(memory);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.memoryCreated),
-          ),
-        );
-      }
-    }
   }
 }
 
@@ -89,10 +62,7 @@ class _MemoryGridItem extends StatelessWidget {
     return GestureDetector(
       onTap: () => _openMemoryDetail(context),
       child: memory.hasPhoto
-          ? Image.file(
-              memory.photoFile!,
-              fit: BoxFit.cover,
-            )
+          ? Image.file(memory.photoFile!, fit: BoxFit.cover)
           : Container(
               color: Colors.grey[200],
               child: Center(
@@ -107,9 +77,7 @@ class _MemoryGridItem extends StatelessWidget {
 
   void _openMemoryDetail(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => MemoryDetailPage(memory: memory),
-      ),
+      MaterialPageRoute(builder: (context) => MemoryDetailPage(memory: memory)),
     );
   }
 }
@@ -119,7 +87,7 @@ class _EmptyMemoriesState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -129,20 +97,15 @@ class _EmptyMemoriesState extends StatelessWidget {
             Container(
               width: 120,
               height: 120,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.photo_library_outlined,
-                size: 60,
-              ),
+              decoration: const BoxDecoration(shape: BoxShape.circle),
+              child: const Icon(Icons.photo_library_outlined, size: 60),
             ),
             const SizedBox(height: 24),
             Text(
               l10n.memoriesEmptyTitle,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(

@@ -20,7 +20,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.profile),
+        title: Text(
+          l10n.profile,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0,
+          ),
+        ),
         centerTitle: false,
       ),
       body: SingleChildScrollView(
@@ -41,9 +49,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Text(
                         'U',
                         style: TextStyle(
+                          fontFamily: 'SF Pro Display',
                           fontSize: 32,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                           color: Theme.of(context).colorScheme.primary,
+                          letterSpacing: 0,
                         ),
                       ),
                     ),
@@ -55,15 +65,22 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           Text(
                             'User Name',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Display',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'user@example.com',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
                               color: Colors.grey,
+                              letterSpacing: 0,
                             ),
                           ),
                         ],

@@ -65,9 +65,12 @@ class _ItemsScreenState extends State<ItemsScreen> {
                   Text(
                     isChinese ? '我的物品' : 'My Items',
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 28,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
+                      letterSpacing: 0,
+                      height: 1.0,
                     ),
                   ),
                   const Spacer(),
@@ -148,9 +151,12 @@ class _ItemsScreenState extends State<ItemsScreen> {
                           child: Text(
                             isChinese ? '分类' : 'Categories',
                             style: const TextStyle(
-                              fontSize: 20,
+                              fontFamily: 'SF Pro Display',
+                              fontSize: 22,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF1C1C1E),
+                              letterSpacing: 0,
+                              height: 1.0,
                             ),
                           ),
                         ),
@@ -186,9 +192,12 @@ class _ItemsScreenState extends State<ItemsScreen> {
                               Text(
                                 isChinese ? '最近物品' : 'Recent Items',
                                 style: const TextStyle(
-                                  fontSize: 20,
+                                  fontFamily: 'SF Pro Display',
+                                  fontSize: 22,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF1C1C1E),
+                                  letterSpacing: 0,
+                                  height: 1.0,
                                 ),
                               ),
                               TextButton(
@@ -198,9 +207,12 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                 child: Text(
                                   isChinese ? '查看全部' : 'View All',
                                   style: const TextStyle(
-                                    fontSize: 15,
+                                    fontFamily: 'SF Pro Text',
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFF94B26F),
+                                    letterSpacing: 0,
+                                    height: 1.0,
                                   ),
                                 ),
                               ),
