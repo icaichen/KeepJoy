@@ -10,7 +10,6 @@ import 'features/joy_declutter/joy_declutter_flow.dart';
 import 'features/quick_declutter/quick_declutter_flow.dart';
 import 'features/memories/memories_page.dart';
 import 'features/profile/profile_page.dart';
-import 'features/resell/resell_tracker_page.dart';
 import 'features/insights/insights_screen.dart';
 import 'features/items/items_screen.dart';
 import 'features/memories/create_memory_page.dart';
@@ -251,6 +250,22 @@ class _MainNavigatorState extends State<MainNavigator> {
     });
   }
 
+  void _onItemCompleted(DeclutterItem item) {
+    // Handle item reassessment from Items page
+    if (item.status == DeclutterStatus.keep) {
+      // Item stays as pending, just update it
+      setState(() {
+        final index = _pendingItems.indexWhere((i) => i.id == item.id);
+        if (index != -1) {
+          _pendingItems[index] = item;
+        }
+      });
+    } else {
+      // Item is being let go, move to decluttered
+      _addDeclutteredItem(item);
+    }
+  }
+
   void _updateResellItem(ResellItem item) {
     setState(() {
       final index = _resellItems.indexWhere((r) => r.id == item.id);
@@ -263,6 +278,14 @@ class _MainNavigatorState extends State<MainNavigator> {
   void _deleteResellItem(ResellItem item) {
     setState(() {
       _resellItems.removeWhere((r) => r.id == item.id);
+    });
+  }
+
+  void _deleteDeclutterItem(String itemId) {
+    setState(() {
+      _pendingItems.removeWhere((item) => item.id == itemId);
+      _declutteredItems.removeWhere((item) => item.id == itemId);
+      _resellItems.removeWhere((r) => r.declutterItemId == itemId);
     });
   }
 
@@ -335,13 +358,14 @@ class _MainNavigatorState extends State<MainNavigator> {
       ),
       ItemsScreen(
         items: List.unmodifiable([..._pendingItems, ..._declutteredItems]),
-      ),
-      ResellTrackerPage(
         resellItems: List.unmodifiable(_resellItems),
-        declutteredItems: List.unmodifiable(_declutteredItems),
+        onItemCompleted: _onItemCompleted,
+        onMemoryCreated: _onMemoryCreated,
         onUpdateResellItem: _updateResellItem,
-        onDeleteResellItem: _deleteResellItem,
+        onDeleteItem: _deleteDeclutterItem,
       ),
+      // Placeholder for center button (not used)
+      const Center(child: Text('Add')),
       MemoriesPage(
         memories: List.unmodifiable(_memories),
         onMemoryDeleted: _onMemoryDeleted,
@@ -359,43 +383,262 @@ class _MainNavigatorState extends State<MainNavigator> {
 
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: pages),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home_outlined),
-            activeIcon: const Icon(Icons.home),
-            label: l10n.home,
+      floatingActionButton: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF5ECFB8), Color(0xFF4EBAA8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.grid_view_outlined),
-            activeIcon: const Icon(Icons.grid_view),
-            label: l10n.items,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF5ECFB8).withValues(alpha: 0.4),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              // Show cleaning mode selection
+              showModalBottomSheet<void>(
+                context: context,
+                backgroundColor: Colors.transparent,
+                builder: (sheetContext) {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Handle bar
+                            Center(
+                              child: Container(
+                                width: 40,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE5E7EB),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+
+                            // Joy Declutter
+                            _buildCleaningModeButton(
+                              icon: Icons.auto_awesome_rounded,
+                              title: l10n.joyDeclutterTitle,
+                              colors: [const Color(0xFF3570FF), const Color(0xFF1BCBFF)],
+                              onTap: () {
+                                Navigator.pop(sheetContext);
+                                _openJoyDeclutter(context);
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Quick Declutter
+                            _buildCleaningModeButton(
+                              icon: Icons.bolt_rounded,
+                              title: l10n.quickDeclutterTitle,
+                              colors: [const Color(0xFFFF6CAB), const Color(0xFFFF8F61)],
+                              onTap: () {
+                                Navigator.pop(sheetContext);
+                                _openQuickDeclutter(context);
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Deep Cleaning
+                            _buildCleaningModeButton(
+                              icon: Icons.spa_rounded,
+                              title: l10n.deepCleaningTitle,
+                              colors: [const Color(0xFF34E27A), const Color(0xFF00B86B)],
+                              onTap: () {
+                                Navigator.pop(sheetContext);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => DeepCleaningFlowPage(
+                                      onStartSession: _startSession,
+                                      onStopSession: _stopSession,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+            customBorder: const CircleBorder(),
+            child: const Icon(
+              Icons.add,
+              color: Colors.white,
+              size: 32,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.attach_money_outlined),
-            activeIcon: const Icon(Icons.attach_money),
-            label: l10n.resellTracker,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8,
+        color: Colors.white,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavBarItem(
+                icon: Icons.home_outlined,
+                activeIcon: Icons.home,
+                label: l10n.home,
+                index: 0,
+                isActive: _selectedIndex == 0,
+                onTap: () => setState(() => _selectedIndex = 0),
+              ),
+              _buildNavBarItem(
+                icon: Icons.grid_view_outlined,
+                activeIcon: Icons.grid_view,
+                label: l10n.items,
+                index: 1,
+                isActive: _selectedIndex == 1,
+                onTap: () => setState(() => _selectedIndex = 1),
+              ),
+              const SizedBox(width: 80), // Space for FAB
+              _buildNavBarItem(
+                icon: Icons.bookmark_border,
+                activeIcon: Icons.bookmark,
+                label: l10n.memories,
+                index: 3,
+                isActive: _selectedIndex == 3,
+                onTap: () => setState(() => _selectedIndex = 3),
+              ),
+              _buildNavBarItem(
+                icon: Icons.info_outline,
+                activeIcon: Icons.info,
+                label: l10n.insights,
+                index: 4,
+                isActive: _selectedIndex == 4,
+                onTap: () => setState(() => _selectedIndex = 4),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.bookmark_border),
-            activeIcon: const Icon(Icons.bookmark),
-            label: l10n.memories,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavBarItem({
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required int index,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isActive ? activeIcon : icon,
+              color: isActive ? const Color(0xFF5ECFB8) : const Color(0xFF9CA3AF),
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: isActive ? const Color(0xFF5ECFB8) : const Color(0xFF9CA3AF),
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCleaningModeButton({
+    required IconData icon,
+    required String title,
+    required List<Color> colors,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: colors),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: colors[0].withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.info_outline),
-            activeIcon: const Icon(Icons.info),
-            label: l10n.insights,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -940,6 +1183,152 @@ class _HomeScreenState extends State<_HomeScreen> {
     return '${tip.substring(0, 40)}...';
   }
 
+  void _showCleaningModeSelection(BuildContext context, AppLocalizations l10n) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE5E7EB),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Joy Declutter
+                  _buildModeButton(
+                    icon: Icons.auto_awesome_rounded,
+                    title: l10n.joyDeclutterTitle,
+                    colors: [const Color(0xFF3570FF), const Color(0xFF1BCBFF)],
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      widget.onOpenJoyDeclutter();
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Quick Declutter
+                  _buildModeButton(
+                    icon: Icons.bolt_rounded,
+                    title: l10n.quickDeclutterTitle,
+                    colors: [const Color(0xFFFF6CAB), const Color(0xFFFF8F61)],
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      widget.onOpenQuickDeclutter();
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Deep Cleaning
+                  _buildModeButton(
+                    icon: Icons.spa_rounded,
+                    title: l10n.deepCleaningTitle,
+                    colors: [const Color(0xFF34E27A), const Color(0xFF00B86B)],
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DeepCleaningFlowPage(
+                            onStartSession: widget.onStartSession,
+                            onStopSession: widget.onStopSession,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildModeButton({
+    required IconData icon,
+    required String title,
+    required List<Color> colors,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: colors),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: colors[0].withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStartDeclutterGradientCard({
     required VoidCallback onTap,
     required List<Color> colors,
@@ -1007,134 +1396,336 @@ class _HomeScreenState extends State<_HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Monthly Progress Section with glassy gradient card
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFFB794F6), // Purple
-                          Color(0xFFA78BFA), // Medium purple
-                          Color(0xFF5ECFB8), // Mint green
-                        ],
-                        stops: [0.0, 0.6, 1.0],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFB794F6).withValues(alpha: 0.4),
-                          blurRadius: 30,
-                          spreadRadius: 0,
-                          offset: const Offset(0, 10),
-                        ),
-                        BoxShadow(
-                          color: const Color(0xFF5ECFB8).withValues(alpha: 0.3),
-                          blurRadius: 40,
-                          spreadRadius: -5,
-                          offset: const Offset(0, 15),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 32,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Monthly Progress",
-                          style: TextStyle(
-                            fontFamily: 'SF Pro Display',
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            letterSpacing: 0,
+                  // Streak Achievement (only show if there's a streak)
+                  if (widget.streak > 0) ...[
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => _showActivityHistory(context, l10n),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFFFDB022).withValues(alpha: 0.1),
+                              const Color(0xFFFFD700).withValues(alpha: 0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          textAlign: TextAlign.center,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFFFDB022).withValues(alpha: 0.2),
+                            width: 1.5,
+                          ),
                         ),
-                        const SizedBox(height: 24),
-                        Row(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
                           children: [
-                            Expanded(
-                              child: _WhiteProgressCard(
-                                label: l10n.itemDecluttered,
-                                value: '${widget.declutteredCount}',
-                              ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Color(0xFFFDB022), Color(0xFFFFD700)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Color(0x40FDB022),
+                                        blurRadius: 12,
+                                        offset: Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.local_fire_department_rounded,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        l10n.streakAchievement,
+                                        style: const TextStyle(
+                                          fontFamily: 'SF Pro Display',
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF111827),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text: '${widget.streak}',
+                                              style: const TextStyle(
+                                                fontFamily: 'SF Pro Display',
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w800,
+                                                color: Color(0xFFFDB022),
+                                                height: 1.0,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: ' ${widget.streak == 1 ? (Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh') ? '天' : 'day') : (Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh') ? '天' : 'days')}',
+                                              style: const TextStyle(
+                                                fontFamily: 'SF Pro Text',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF6B7280),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Color(0xFFD1D5DB),
+                                  size: 24,
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _WhiteProgressCard(
-                                label: l10n.areasCleared,
-                                value: '0',
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _WhiteProgressCard(
-                                label: l10n.newValueCreated,
-                                value: widget.newValue.toStringAsFixed(0),
+                            const SizedBox(height: 20),
+                            // Day indicators
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                widget.streak > 14 ? 14 : widget.streak,
+                                (index) => Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                                  width: widget.streak > 14 ? 6 : 8,
+                                  height: widget.streak > 14 ? 6 : 8,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFFFDB022), Color(0xFFFFD700)],
+                                    ),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFDB022).withValues(alpha: 0.3),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )..addAll(
+                                widget.streak > 14
+                                    ? [
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          '+',
+                                          style: TextStyle(
+                                            fontFamily: 'SF Pro Display',
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFFFDB022),
+                                          ),
+                                        ),
+                                      ]
+                                    : [],
                               ),
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
+                  ],
 
-                  // Streak Achievement
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => _showActivityHistory(context, l10n),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                  // Quote Card
+                  Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE4E8EF)),
+                    ),
+                    child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
+                        horizontal: 24,
+                        vertical: 20,
                       ),
-                      child: Row(
+                      child: Column(
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFDB022), // Gold color
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.emoji_events,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l10n.streakAchievement,
-                                  style: AppTypography.cardTitle.black87,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  l10n.daysStreak(widget.streak),
-                                  style: AppTypography.subtitle,
-                                ),
-                              ],
-                            ),
-                          ),
                           Icon(
-                            Icons.chevron_right,
-                            color: Colors.black45,
-                            size: 28,
+                            Icons.format_quote_rounded,
+                            color: const Color(0xFF9CA3AF),
+                            size: 32,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _formatQuote(quoteOfDay),
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xDE000000), // black87
+                              letterSpacing: 0,
+                              height: 1.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            '- ${_getQuoteAttribution(quoteOfDay)}',
+                            style: AppTypography.quoteAttribution.copyWith(
+                              color: const Color(0xFF757575), // grey600
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Joy Check Card
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE4E8EF)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 22,
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            l10n.joyCheck,
+                            style: AppTypography.cardTitle.black87,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            l10n.whatBroughtYouJoy,
+                            style: AppTypography.subtitle,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 18),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final memory = await Navigator.of(context)
+                                    .push<Memory>(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const CreateMemoryPage(),
+                                      ),
+                                    );
+
+                                if (memory != null && context.mounted) {
+                                  // Call the onMemoryCreated callback from parent
+                                  final mainState = context
+                                      .findAncestorStateOfType<
+                                        _MainNavigatorState
+                                      >();
+                                  mainState?._onMemoryCreated(memory);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(l10n.memoryCreated)),
+                                  );
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.sentiment_satisfied_alt,
+                                size: 18,
+                              ),
+                              label: Text(
+                                l10n.createMemory,
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  letterSpacing: 0,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF414B5A),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                textStyle: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Quick Tip Card
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE4E8EF)),
+                    ),
+                    child: InkWell(
+                      onTap: () => _showQuickTips(context, l10n),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 18,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF4FB),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.lightbulb_outline,
+                                color: Color(0xFF1F6FEB),
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                _getTodaysTipPreview(l10n),
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xDE000000), // black87
+                                  letterSpacing: 0,
+                                  height: 1.0,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -1349,329 +1940,6 @@ class _HomeScreenState extends State<_HomeScreen> {
                 ),
               ),
 
-
-            // Start Declutter section
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.startDeclutter,
-                    style: AppTypography.sectionHeader,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStartDeclutterGradientCard(
-                          onTap: widget.onOpenJoyDeclutter,
-                          colors: const [Color(0xFF3570FF), Color(0xFF1BCBFF)],
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.auto_awesome_rounded,
-                                  color: Colors.white,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                l10n.joyDeclutterTitle,
-                                style: AppTypography.buttonText.white,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: screenWidth * 0.03),
-                      Expanded(
-                        child: _buildStartDeclutterGradientCard(
-                          onTap: widget.onOpenQuickDeclutter,
-                          colors: const [Color(0xFFFF6CAB), Color(0xFFFF8F61)],
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.bolt_rounded,
-                                  color: Colors.white,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                l10n.quickDeclutterTitle,
-                                style: AppTypography.buttonText.white,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: screenHeight * 0.015),
-                  _buildStartDeclutterGradientCard(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => DeepCleaningFlowPage(
-                            onStartSession: widget.onStartSession,
-                            onStopSession: widget.onStopSession,
-                          ),
-                        ),
-                      );
-                    },
-                    colors: const [Color(0xFF34E27A), Color(0xFF00B86B)],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.spa_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            l10n.deepCleaningTitle,
-                            style: AppTypography.cardTitle.white,
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.03),
-
-            // Daily Inspiration
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.dailyInspiration,
-                    style: AppTypography.sectionHeader,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Quote Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE4E8EF)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 20,
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.format_quote_rounded,
-                            color: const Color(0xFF9CA3AF),
-                            size: 32,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _formatQuote(quoteOfDay),
-                            style: AppTypography.quote.black87,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '- ${_getQuoteAttribution(quoteOfDay)}',
-                            style: AppTypography.quoteAttribution.copyWith(
-                              color: const Color(0xFF757575), // grey600
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Joy Check Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE4E8EF)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 22,
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            l10n.joyCheck,
-                            style: AppTypography.cardTitle.black87,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            l10n.whatBroughtYouJoy,
-                            style: AppTypography.subtitle,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 18),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                final memory = await Navigator.of(context)
-                                    .push<Memory>(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const CreateMemoryPage(),
-                                      ),
-                                    );
-
-                                if (memory != null && context.mounted) {
-                                  // Call the onMemoryCreated callback from parent
-                                  final mainState = context
-                                      .findAncestorStateOfType<
-                                        _MainNavigatorState
-                                      >();
-                                  mainState?._onMemoryCreated(memory);
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(l10n.memoryCreated)),
-                                  );
-                                }
-                              },
-                              icon: const Icon(
-                                Icons.sentiment_satisfied_alt,
-                                size: 18,
-                              ),
-                              label: Text(
-                                l10n.createMemory,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  letterSpacing: 0,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF414B5A),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                textStyle: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Quick Tip Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE4E8EF)),
-                    ),
-                    child: InkWell(
-                      onTap: () => _showQuickTips(context, l10n),
-                      borderRadius: BorderRadius.circular(18),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 18,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEFF4FB),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Icon(
-                                Icons.lightbulb_outline,
-                                color: Color(0xFF1F6FEB),
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                _getTodaysTipPreview(l10n),
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xDE000000), // black87
-                                  letterSpacing: 0,
-                                  height: 1.0,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
             SizedBox(height: screenHeight * 0.03),
           ],
         ),
