@@ -15,29 +15,42 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
       appBar: AppBar(
+        backgroundColor: const Color(0xFFF5F5F7),
+        elevation: 0,
         title: Text(
           l10n.profile,
           style: const TextStyle(
             fontFamily: 'SF Pro Display',
-            fontSize: 22,
+            fontSize: 28,
             fontWeight: FontWeight.w700,
+            color: Color(0xFF000000),
             letterSpacing: 0,
           ),
         ),
         centerTitle: false,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(screenWidth * 0.04),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Account Details Section
-            Card(
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -45,14 +58,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     // Profile Avatar
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                      child: Text(
+                      backgroundColor: const Color(0xFFB794F6).withValues(alpha: 0.15),
+                      child: const Text(
                         'U',
                         style: TextStyle(
                           fontFamily: 'SF Pro Display',
                           fontSize: 32,
                           fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Color(0xFFB794F6),
                           letterSpacing: 0,
                         ),
                       ),
@@ -63,23 +76,24 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'User Name',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'SF Pro Display',
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
                               letterSpacing: 0,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
+                          const Text(
                             'user@example.com',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'SF Pro Text',
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
-                              color: Colors.grey,
+                              color: Color(0xFF6B7280),
                               letterSpacing: 0,
                             ),
                           ),
@@ -88,7 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     // Edit Button
                     IconButton(
-                      icon: const Icon(Icons.edit_outlined),
+                      icon: const Icon(Icons.edit_outlined, color: Color(0xFF6B7280)),
                       onPressed: () {
                         // TODO: Implement edit profile
                       },
@@ -97,12 +111,23 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            SizedBox(height: screenHeight * 0.03),
+            const SizedBox(height: 32),
 
             // Settings Section
             _buildSectionTitle(context, l10n.settings),
-            SizedBox(height: screenHeight * 0.01),
-            Card(
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
                 children: [
                   _SettingsTile(
@@ -112,7 +137,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       _showLanguageDialog(context);
                     },
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1, indent: 56),
                   _SettingsTile(
                     icon: Icons.notifications_outlined,
                     title: l10n.notifications,
@@ -120,7 +145,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       // TODO: Implement notifications settings
                     },
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1, indent: 56),
                   _SettingsTile(
                     icon: Icons.palette_outlined,
                     title: l10n.theme,
@@ -131,12 +156,23 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            SizedBox(height: screenHeight * 0.03),
+            const SizedBox(height: 32),
 
             // Support & Information Section
             _buildSectionTitle(context, l10n.support),
-            SizedBox(height: screenHeight * 0.01),
-            Card(
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
                 children: [
                   _SettingsTile(
@@ -146,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       // TODO: Implement help
                     },
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1, indent: 56),
                   _SettingsTile(
                     icon: Icons.info_outline,
                     title: l10n.aboutApp,
@@ -154,7 +190,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       _showAboutDialog(context);
                     },
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1, indent: 56),
                   _SettingsTile(
                     icon: Icons.privacy_tip_outlined,
                     title: l10n.privacyPolicy,
@@ -162,7 +198,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       // TODO: Implement privacy policy
                     },
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1, indent: 56),
                   _SettingsTile(
                     icon: Icons.description_outlined,
                     title: l10n.termsOfService,
@@ -170,7 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       // TODO: Implement terms
                     },
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1, indent: 56),
                   _SettingsTile(
                     icon: Icons.star_outline,
                     title: l10n.rateApp,
@@ -178,7 +214,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       // TODO: Implement rate app
                     },
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1, indent: 56),
                   _SettingsTile(
                     icon: Icons.share_outlined,
                     title: l10n.shareApp,
@@ -189,12 +225,23 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            SizedBox(height: screenHeight * 0.03),
+            const SizedBox(height: 32),
 
             // Data Management Section
             _buildSectionTitle(context, l10n.data),
-            SizedBox(height: screenHeight * 0.01),
-            Card(
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
                 children: [
                   _SettingsTile(
@@ -204,7 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       // TODO: Implement export
                     },
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1, indent: 56),
                   _SettingsTile(
                     icon: Icons.delete_outline,
                     title: l10n.clearAllData,
@@ -216,18 +263,21 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            SizedBox(height: screenHeight * 0.03),
+            const SizedBox(height: 32),
 
             // Version
             Center(
               child: Text(
                 '${l10n.version} 1.0.0',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    ),
+                style: const TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF9CA3AF),
+                ),
               ),
             ),
-            SizedBox(height: screenHeight * 0.02),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -239,9 +289,13 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+        style: const TextStyle(
+          fontFamily: 'SF Pro Display',
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF111827),
+          letterSpacing: 0,
+        ),
       ),
     );
   }
@@ -253,7 +307,16 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.languageSettings),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Language',
+          style: TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -265,7 +328,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 widget.onLocaleChange(const Locale('en'));
               },
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _LanguageOption(
               title: l10n.chinese,
               isSelected: currentLocale.languageCode == 'zh',
@@ -286,7 +349,16 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.theme),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Theme',
+          style: TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -298,7 +370,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // TODO: Implement theme switching
               },
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _ThemeOption(
               title: l10n.darkMode,
               isSelected: true,
@@ -307,7 +379,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // TODO: Implement theme switching
               },
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _ThemeOption(
               title: l10n.systemDefault,
               isSelected: false,
@@ -328,14 +400,37 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.aboutApp),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'About App',
+          style: TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
         content: Text(
           'KeepJoy helps you declutter your life with joy.\n\n${l10n.version} 1.0.0',
+          style: const TextStyle(
+            fontFamily: 'SF Pro Text',
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF111827),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l10n.ok),
+            child: Text(
+              l10n.ok,
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFB794F6),
+              ),
+            ),
           ),
         ],
       ),
@@ -352,16 +447,39 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.clearAllData),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          l10n.clearAllData,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
         content: Text(
           isChinese
               ? '确定要清除所有数据吗？此操作无法撤销。'
               : 'Are you sure you want to clear all data? This cannot be undone.',
+          style: const TextStyle(
+            fontFamily: 'SF Pro Text',
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF111827),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF6B7280),
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -377,7 +495,12 @@ class _ProfilePageState extends State<ProfilePage> {
             },
             child: Text(
               isChinese ? '清除' : 'Clear',
-              style: TextStyle(color: Colors.red),
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.red,
+              ),
             ),
           ),
         ],
@@ -404,20 +527,32 @@ class _SettingsTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            Icon(icon, size: 24, color: textColor),
-            SizedBox(width: 16),
+            Icon(
+              icon,
+              size: 24,
+              color: textColor ?? const Color(0xFF6B7280),
+            ),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: textColor,
-                    ),
+                style: TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: textColor ?? const Color(0xFF111827),
+                  letterSpacing: 0,
+                ),
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey),
+            Icon(
+              Icons.chevron_right,
+              color: const Color(0xFF9CA3AF),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -440,24 +575,35 @@ class _LanguageOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFB794F6).withValues(alpha: 0.1) : Colors.transparent,
           border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey.shade300,
+            color: isSelected ? const Color(0xFFB794F6) : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Expanded(child: Text(title)),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected ? const Color(0xFFB794F6) : const Color(0xFF111827),
+                ),
+              ),
+            ),
             if (isSelected)
-              Icon(
-                Icons.check,
-                color: Theme.of(context).colorScheme.primary,
+              const Icon(
+                Icons.check_circle,
+                color: Color(0xFFB794F6),
+                size: 22,
               ),
           ],
         ),
@@ -481,24 +627,35 @@ class _ThemeOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFB794F6).withValues(alpha: 0.1) : Colors.transparent,
           border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey.shade300,
+            color: isSelected ? const Color(0xFFB794F6) : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Expanded(child: Text(title)),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected ? const Color(0xFFB794F6) : const Color(0xFF111827),
+                ),
+              ),
+            ),
             if (isSelected)
-              Icon(
-                Icons.check,
-                color: Theme.of(context).colorScheme.primary,
+              const Icon(
+                Icons.check_circle,
+                color: Color(0xFFB794F6),
+                size: 22,
               ),
           ],
         ),

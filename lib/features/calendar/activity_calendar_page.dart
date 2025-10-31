@@ -1,169 +1,544 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
-import '../../l10n/app_localizations.dart';
-import 'package:keepjoy_app/models/declutter_item.dart';
-import 'package:keepjoy_app/models/memory.dart';
+import 'package:keepjoy_app/models/planned_session.dart';
+import 'package:keepjoy_app/services/data_repository.dart';
 
-/// Full-screen calendar page showing decluttering activity
+/// Declutter planning calendar page
 class ActivityCalendarPage extends StatefulWidget {
   const ActivityCalendarPage({
     super.key,
-    required this.declutteredItems,
-    required this.memories,
+    required this.plannedSessions,
+    required this.onSessionsChanged,
   });
 
-  final List<DeclutterItem> declutteredItems;
-  final List<Memory> memories;
+  final List<PlannedSession> plannedSessions;
+  final VoidCallback onSessionsChanged;
 
   @override
   State<ActivityCalendarPage> createState() => _ActivityCalendarPageState();
 }
 
 class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
-  late DateTime _selectedMonth;
+  final _repository = DataRepository();
+  DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
 
   @override
   void initState() {
     super.initState();
-    _selectedMonth = DateTime.now();
     _selectedDay = DateTime.now();
-  }
-
-  void _previousMonth() {
-    setState(() {
-      _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
-      _selectedDay = null;
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
     });
   }
 
-  void _nextMonth() {
-    setState(() {
-      _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
-      _selectedDay = null;
-    });
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
-  Map<DateTime, int> _getActivityCounts() {
-    final counts = <DateTime, int>{};
-
-    // Count decluttered items
-    for (final item in widget.declutteredItems) {
-      final date = DateTime(
-        item.createdAt.year,
-        item.createdAt.month,
-        item.createdAt.day,
+  List<PlannedSession> _getSessionsForDay(DateTime day) {
+    return widget.plannedSessions.where((session) {
+      if (session.scheduledDate == null) return false;
+      final sessionDate = DateTime(
+        session.scheduledDate!.year,
+        session.scheduledDate!.month,
+        session.scheduledDate!.day,
       );
-      counts[date] = (counts[date] ?? 0) + 1;
+      final compareDate = DateTime(day.year, day.month, day.day);
+      return sessionDate == compareDate;
+    }).toList();
+  }
+
+  List<PlannedSession> _getUnscheduledSessions() {
+    return widget.plannedSessions
+        .where((session) => session.scheduledDate == null && !session.isCompleted)
+        .toList();
+  }
+
+  Future<void> _addNewPlan() async {
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+    final titleController = TextEditingController();
+    final areaController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isChinese ? '添加新计划' : 'Add New Plan'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: InputDecoration(
+                labelText: isChinese ? '计划标题' : 'Plan Title',
+                hintText: isChinese ? '例如：整理卧室' : 'e.g., Clean bedroom',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: areaController,
+              decoration: InputDecoration(
+                labelText: isChinese ? '整理区域' : 'Area',
+                hintText: isChinese ? '例如：卧室' : 'e.g., Bedroom',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(isChinese ? '取消' : 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(isChinese ? '添加' : 'Add'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && titleController.text.isNotEmpty) {
+      try {
+        final newSession = PlannedSession(
+          id: const Uuid().v4(),
+          title: titleController.text,
+          area: areaController.text.isNotEmpty ? areaController.text : titleController.text,
+          createdAt: DateTime.now(),
+          priority: TaskPriority.someday,
+        );
+
+        await _repository.createPlannedSession(newSession);
+        widget.onSessionsChanged();
+      } catch (e) {
+        // Handle error
+      }
     }
 
-    return counts;
+    titleController.dispose();
+    areaController.dispose();
   }
 
-  List<DeclutterItem> _getItemsForDay(DateTime day) {
-    return widget.declutteredItems.where((item) {
-      return item.createdAt.year == day.year &&
-          item.createdAt.month == day.month &&
-          item.createdAt.day == day.day;
-    }).toList();
+  Future<void> _toggleSessionCompletion(PlannedSession session) async {
+    try {
+      await _repository.toggleTaskCompletion(session);
+      widget.onSessionsChanged();
+    } catch (e) {
+      // Handle error
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final activityCounts = _getActivityCounts();
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    final scheduledSessions = widget.plannedSessions.where((s) => s.isScheduled).toList();
+    final unscheduledSessions = _getUnscheduledSessions();
+    final hasAnySessions = scheduledSessions.isNotEmpty || unscheduledSessions.isNotEmpty;
+
+    // Calculate scroll-based animations
+    const headerHeight = 100.0;
+    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
+    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.activityCalendar),
-        centerTitle: false,
-      ),
-      body: Column(
+      backgroundColor: const Color(0xFFF5F5F7),
+      body: Stack(
         children: [
-          // Month selector
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Scrollable content
+          SingleChildScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            child: Column(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: _previousMonth,
-                ),
-                Text(
-                  DateFormat.yMMMM().format(_selectedMonth),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+                // Header space
+                const SizedBox(height: 120),
+
+                // Content
+                if (!hasAnySessions)
+                  // Empty state
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEBE6F5),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: _nextMonth,
-                ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              isChinese ? '开始规划你的整理计划' : 'Start planning your declutter plan',
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Display',
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF111827),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFB8D9F5),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: const Icon(
+                              Icons.calendar_month_rounded,
+                              size: 32,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  // Calendar and sessions
+                  Column(
+                    children: [
+                      // Calendar
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: _SimpleCalendar(
+                            focusedDay: _focusedDay,
+                            selectedDay: _selectedDay,
+                            onDaySelected: (day) {
+                              setState(() {
+                                _selectedDay = day;
+                              });
+                            },
+                            onMonthChanged: (month) {
+                              setState(() {
+                                _focusedDay = month;
+                              });
+                            },
+                            getSessionsForDay: _getSessionsForDay,
+                          ),
+                        ),
+                      ),
+
+                      // Sessions for selected day
+                      if (_selectedDay != null) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              DateFormat.MMMEd().format(_selectedDay!),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF111827),
+                              ),
+                            ),
+                          ),
+                        ),
+                        ..._getSessionsForDay(_selectedDay!).map((session) => _SessionTile(
+                              session: session,
+                              onToggle: () => _toggleSessionCompletion(session),
+                            )),
+                      ],
+
+                      // Unscheduled tasks
+                      if (unscheduledSessions.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                          child: Row(
+                            children: [
+                              Text(
+                                isChinese ? '待安排' : 'Unscheduled',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE5E7EB),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${unscheduledSessions.length}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ...unscheduledSessions.map((session) => _SessionTile(
+                              session: session,
+                              onToggle: () => _toggleSessionCompletion(session),
+                            )),
+                      ],
+
+                      const SizedBox(height: 80),
+                    ],
+                  ),
               ],
             ),
           ),
 
-          // Calendar grid
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _CalendarGrid(
-              month: _selectedMonth,
-              activityCounts: activityCounts,
-              selectedDay: _selectedDay,
-              onDaySelected: (day) {
-                setState(() {
-                  _selectedDay = day;
-                });
-              },
+          // Collapsed header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: collapsedHeaderOpacity < 0.5,
+              child: Opacity(
+                opacity: collapsedHeaderOpacity,
+                child: Container(
+                  height: topPadding + kToolbarHeight,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F5F7),
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
+                    ),
+                  ),
+                  padding: EdgeInsets.only(top: topPadding),
+                  alignment: Alignment.center,
+                  child: Text(
+                    isChinese ? '整理日历' : 'Declutter Calendar',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
 
-          const SizedBox(height: 16),
-
-          // Selected day details
-          if (_selectedDay != null)
-            Expanded(
-              child: _DayDetailView(
-                selectedDay: _selectedDay!,
-                items: _getItemsForDay(_selectedDay!),
+          // Original header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 120,
+              child: Padding(
+                padding: EdgeInsets.only(left: 24, right: 16, top: topPadding + 12),
+                child: Opacity(
+                  opacity: headerOpacity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        isChinese ? '整理日历' : 'Declutter Calendar',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _addNewPlan,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.add, color: Colors.white, size: 20),
+                              const SizedBox(width: 4),
+                              Text(
+                                isChinese ? '添加新计划' : 'Add Plan',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
+          ),
         ],
       ),
     );
   }
 }
 
-/// Calendar grid widget
-class _CalendarGrid extends StatelessWidget {
-  const _CalendarGrid({
-    required this.month,
-    required this.activityCounts,
-    required this.selectedDay,
-    required this.onDaySelected,
-  });
+class _SessionTile extends StatelessWidget {
+  final PlannedSession session;
+  final VoidCallback onToggle;
 
-  final DateTime month;
-  final Map<DateTime, int> activityCounts;
-  final DateTime? selectedDay;
-  final Function(DateTime) onDaySelected;
+  const _SessionTile({
+    required this.session,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final firstDayOfMonth = DateTime(month.year, month.month, 1);
-    final lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
-    final firstWeekday = firstDayOfMonth.weekday % 7; // 0 = Sunday
-    final daysInMonth = lastDayOfMonth.day;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: onToggle,
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: session.isCompleted ? const Color(0xFFB794F6) : Colors.white,
+                border: Border.all(
+                  color: session.isCompleted ? const Color(0xFFB794F6) : const Color(0xFFD1D5DB),
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: session.isCompleted
+                  ? const Icon(Icons.check, size: 16, color: Colors.white)
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  session.title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: session.isCompleted ? const Color(0xFF9CA3AF) : const Color(0xFF111827),
+                    decoration: session.isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                if (session.scheduledTime != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      session.scheduledTime!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
+// Simple calendar widget
+class _SimpleCalendar extends StatelessWidget {
+  final DateTime focusedDay;
+  final DateTime? selectedDay;
+  final Function(DateTime) onDaySelected;
+  final Function(DateTime) onMonthChanged;
+  final List<PlannedSession> Function(DateTime) getSessionsForDay;
+
+  const _SimpleCalendar({
+    required this.focusedDay,
+    required this.selectedDay,
+    required this.onDaySelected,
+    required this.onMonthChanged,
+    required this.getSessionsForDay,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final firstDayOfMonth = DateTime(focusedDay.year, focusedDay.month, 1);
+    final lastDayOfMonth = DateTime(focusedDay.year, focusedDay.month + 1, 0);
+    final firstWeekday = firstDayOfMonth.weekday % 7;
+    final daysInMonth = lastDayOfMonth.day;
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
 
     return Column(
       children: [
+        // Month header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left),
+              onPressed: () {
+                onMonthChanged(DateTime(focusedDay.year, focusedDay.month - 1));
+              },
+            ),
+            Text(
+              DateFormat.yMMMM().format(focusedDay),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.chevron_right),
+              onPressed: () {
+                onMonthChanged(DateTime(focusedDay.year, focusedDay.month + 1));
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
         // Weekday headers
         Row(
           children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) {
@@ -171,10 +546,11 @@ class _CalendarGrid extends StatelessWidget {
               child: Center(
                 child: Text(
                   day,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
               ),
             );
@@ -184,194 +560,81 @@ class _CalendarGrid extends StatelessWidget {
 
         // Calendar days
         ...List.generate((daysInMonth + firstWeekday) ~/ 7 + 1, (weekIndex) {
-          return Row(
-            children: List.generate(7, (dayIndex) {
-              final dayNumber = weekIndex * 7 + dayIndex - firstWeekday + 1;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: List.generate(7, (dayIndex) {
+                final dayNumber = weekIndex * 7 + dayIndex - firstWeekday + 1;
 
-              if (dayNumber < 1 || dayNumber > daysInMonth) {
-                return const Expanded(child: SizedBox(height: 48));
-              }
+                if (dayNumber < 1 || dayNumber > daysInMonth) {
+                  return const Expanded(child: SizedBox(height: 40));
+                }
 
-              final date = DateTime(month.year, month.month, dayNumber);
-              final count = activityCounts[date] ?? 0;
-              final isToday = date == todayDate;
-              final isSelected = selectedDay != null &&
-                  date.year == selectedDay!.year &&
-                  date.month == selectedDay!.month &&
-                  date.day == selectedDay!.day;
+                final date = DateTime(focusedDay.year, focusedDay.month, dayNumber);
+                final sessions = getSessionsForDay(date);
+                final hasSessions = sessions.isNotEmpty;
+                final isToday = date.year == todayDate.year &&
+                    date.month == todayDate.month &&
+                    date.day == todayDate.day;
+                final isSelected = selectedDay != null &&
+                    date.year == selectedDay!.year &&
+                    date.month == selectedDay!.month &&
+                    date.day == selectedDay!.day;
 
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onDaySelected(date),
-                  child: Container(
-                    height: 48,
-                    margin: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : null,
-                      border: isToday
-                          ? Border.all(
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 2,
-                            )
-                          : null,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: Text(
-                            '$dayNumber',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: isSelected
-                                      ? Theme.of(context).colorScheme.onPrimaryContainer
-                                      : null,
-                                  fontWeight: count > 0 || isToday
-                                      ? FontWeight.bold
-                                      : null,
-                                ),
-                          ),
-                        ),
-                        if (count > 0)
-                          Positioned(
-                            bottom: 4,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  shape: BoxShape.circle,
-                                ),
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => onDaySelected(date),
+                    child: Container(
+                      height: 40,
+                      margin: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFFB794F6)
+                            : isToday
+                                ? const Color(0xFFB794F6).withValues(alpha: 0.2)
+                                : null,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Text(
+                              '$dayNumber',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: hasSessions || isToday ? FontWeight.w600 : FontWeight.w400,
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF111827),
                               ),
                             ),
                           ),
-                      ],
+                          if (hasSessions && !isSelected)
+                            Positioned(
+                              bottom: 4,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  width: 4,
+                                  height: 4,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF5ECFB8),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           );
         }),
       ],
-    );
-  }
-}
-
-/// Day detail view showing activities
-class _DayDetailView extends StatelessWidget {
-  const _DayDetailView({
-    required this.selectedDay,
-    required this.items,
-  });
-
-  final DateTime selectedDay;
-  final List<DeclutterItem> items;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  DateFormat.MMMEd().format(selectedDay),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.itemsCount(items.length),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ),
-
-          if (items.isEmpty)
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.event_busy,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.noActivityThisDay,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: item.photoPath != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                File(item.photoPath!),
-                                width: 48,
-                                height: 48,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.inventory_2_outlined,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                              ),
-                            ),
-                      title: Text(item.name),
-                      subtitle: Text(
-                        '${item.category.label(context)} • ${item.status.label(context)}',
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

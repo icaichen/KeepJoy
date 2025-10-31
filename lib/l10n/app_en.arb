@@ -424,9 +424,12 @@
   "createMemory": "Create Memory",
   "createMemoryTitle": "Create a Memory",
   "whatDidThisItemBring": "What did this item bring you?",
-  "sentimentChildhoodMemory": "Childhood Memory",
-  "sentimentGrownTogether": "Grown Together",
-  "sentimentMissionCompleted": "Mission Completed",
+  "sentimentLove": "Love",
+  "sentimentNostalgia": "Nostalgia",
+  "sentimentAdventure": "Adventure",
+  "sentimentHappy": "Happy",
+  "sentimentGrateful": "Grateful",
+  "sentimentPeaceful": "Peaceful",
   "memoryDescription": "Memory Description",
   "describeYourMemory": "Describe your memory with this item...",
   "createMemoryPrompt": "Would you like to create a memory for this item?",
@@ -521,5 +524,16 @@
   "noSessionsThisMonth": "No sessions this month",
   "tapAreaToViewReport": "Tap area to view report",
   "sessions": "{count} sessions",
-  "times": "×{count}"
+  "times": "×{count}",
+
+  "todaysFocus": "Today's Focus",
+  "addTask": "Add a task...",
+  "noTasksYet": "No tasks yet. Add your first one!",
+  "completed": "Completed",
+  "markAsComplete": "Mark as Complete",
+  "startDeepCleaning": "Start Deep Cleaning",
+  "schedule": "Schedule",
+  "delete": "Delete",
+  "taskAdded": "Task added",
+  "taskCompleted": "Task completed"
 }

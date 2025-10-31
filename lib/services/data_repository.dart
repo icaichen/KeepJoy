@@ -249,6 +249,56 @@ class DataRepository {
     await _client.from('planned_sessions').delete().eq('id', id);
   }
 
+  /// Fetch today's incomplete tasks (scheduled for today OR marked as "today" priority)
+  Future<List<PlannedSession>> fetchTodayTasks() async {
+    if (_userId == null) return [];
+
+    // Fetch all incomplete tasks and filter in memory for flexibility
+    final response = await _client
+        .from('planned_sessions')
+        .select()
+        .eq('user_id', _userId!)
+        .eq('is_completed', false)
+        .order('created_at', ascending: true);
+
+    final allTasks = (response as List)
+        .map((json) => PlannedSession.fromJson(json))
+        .toList();
+
+    // Filter for today's tasks
+    return allTasks.where((task) => task.isForToday).toList();
+  }
+
+  /// Fetch today's completed tasks
+  Future<List<PlannedSession>> fetchTodayCompletedTasks() async {
+    if (_userId == null) return [];
+
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+
+    final response = await _client
+        .from('planned_sessions')
+        .select()
+        .eq('user_id', _userId!)
+        .eq('is_completed', true)
+        .gte('completed_at', startOfDay.toIso8601String())
+        .order('completed_at', ascending: false);
+
+    return (response as List)
+        .map((json) => PlannedSession.fromJson(json))
+        .toList();
+  }
+
+  /// Toggle task completion
+  Future<PlannedSession> toggleTaskCompletion(PlannedSession task) async {
+    final updated = task.copyWith(
+      isCompleted: !task.isCompleted,
+      completedAt: !task.isCompleted ? DateTime.now() : null,
+      updatedAt: DateTime.now(),
+    );
+    return updatePlannedSession(updated);
+  }
+
   // ========================================================================
   // BATCH OPERATIONS
   // ========================================================================

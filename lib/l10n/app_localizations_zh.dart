@@ -852,13 +852,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get whatDidThisItemBring => '这件物品给你带来了什么？';
 
   @override
-  String get sentimentChildhoodMemory => '童年回忆';
+  String get sentimentLove => '爱';
 
   @override
-  String get sentimentGrownTogether => '伴随成长';
+  String get sentimentNostalgia => '怀念';
 
   @override
-  String get sentimentMissionCompleted => '完成使命';
+  String get sentimentAdventure => '冒险';
+
+  @override
+  String get sentimentHappy => '快乐';
+
+  @override
+  String get sentimentGrateful => '感激';
+
+  @override
+  String get sentimentPeaceful => '平静';
 
   @override
   String get memoryDescription => '回忆描述';
@@ -1104,4 +1113,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String times(Object count) {
     return '×$count';
   }
+
+  @override
+  String get todaysFocus => '今日计划';
+
+  @override
+  String get addTask => '添加新任务...';
+
+  @override
+  String get noTasksYet => '暂无任务，添加第一个吧！';
+
+  @override
+  String get completed => '已完成';
+
+  @override
+  String get markAsComplete => '标记为完成';
+
+  @override
+  String get startDeepCleaning => '开始深度清洁';
+
+  @override
+  String get schedule => '安排时间';
+
+  @override
+  String get delete => '删除';
+
+  @override
+  String get taskAdded => '任务已添加';
+
+  @override
+  String get taskCompleted => '任务已完成';
 }

@@ -8,8 +8,6 @@ import 'package:uuid/uuid.dart';
 import 'features/deep_cleaning/deep_cleaning_flow.dart';
 import 'features/joy_declutter/joy_declutter_flow.dart';
 import 'features/quick_declutter/quick_declutter_flow.dart';
-import 'features/calendar/activity_calendar_page.dart';
-import 'features/calendar/add_session_dialog.dart';
 import 'features/memories/memories_page.dart';
 import 'features/profile/profile_page.dart';
 import 'features/resell/resell_tracker_page.dart';
@@ -442,6 +440,8 @@ class _HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<_HomeScreen> {
   Timer? _timer;
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
 
   @override
   void initState() {
@@ -454,6 +454,12 @@ class _HomeScreenState extends State<_HomeScreen> {
         }
       });
     }
+    // Listen to scroll changes
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
+    });
   }
 
   @override
@@ -475,6 +481,7 @@ class _HomeScreenState extends State<_HomeScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -869,12 +876,17 @@ class _HomeScreenState extends State<_HomeScreen> {
   }
 
   String _getNextSessionTitle(PlannedSession session) {
+    // Handle unscheduled tasks
+    if (session.scheduledDate == null) {
+      return "Unscheduled Task";
+    }
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final sessionDate = DateTime(
-      session.scheduledDate.year,
-      session.scheduledDate.month,
-      session.scheduledDate.day,
+      session.scheduledDate!.year,
+      session.scheduledDate!.month,
+      session.scheduledDate!.day,
     );
     final difference = sessionDate.difference(today).inDays;
 
@@ -959,39 +971,32 @@ class _HomeScreenState extends State<_HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    final topPadding = MediaQuery.of(context).padding.top;
 
     // Get quote of the day
     final quoteOfDay = _getQuoteOfDay(l10n);
 
+    // Calculate scroll-based animations
+    const headerHeight = 100.0;
+    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
+    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 80,
-        title: Text(
-          _getGreeting(l10n),
-          style: AppTypography.greeting,
-        ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_outline, size: 32),
-            iconSize: 32,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ProfilePage(onLocaleChange: widget.onLocaleChange),
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
       backgroundColor: const Color(0xFFF5F5F7),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Purple Section - FULL WIDTH
+      body: Stack(
+        children: [
+          // Scrollable content
+          SingleChildScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header space
+                const SizedBox(height: 120),
+
+                // Purple Section - FULL WIDTH
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(color: Color(0xFFF5F5F7)),
@@ -1002,33 +1007,7 @@ class _HomeScreenState extends State<_HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Welcome Section - Centered
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: screenWidth * 0.8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            l10n.continueYourJoyJourney,
-                            style: AppTypography.heroTitle,
-                            textAlign: TextAlign.center,
-                            softWrap: true,
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            _getDailyTagline(l10n),
-                            style: AppTypography.subtitle,
-                            textAlign: TextAlign.center,
-                            softWrap: true,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // This Month's Progress Section with colored card
+                  // Monthly Progress Section with glassy gradient card
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
@@ -1036,45 +1015,46 @@ class _HomeScreenState extends State<_HomeScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Color(0xFFA98EF1), // Deeper lavender purple
-                          Color(0xFFB8A9F5), // Primary purple
-                          Color(0xFFCFF8E8), // Mint accent
+                          Color(0xFFB794F6), // Purple
+                          Color(0xFFA78BFA), // Medium purple
+                          Color(0xFF5ECFB8), // Mint green
                         ],
-                        stops: [0.0, 0.7, 1.0],
+                        stops: [0.0, 0.6, 1.0],
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFB794F6).withValues(alpha: 0.4),
+                          blurRadius: 30,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 10),
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFF5ECFB8).withValues(alpha: 0.3),
+                          blurRadius: 40,
+                          spreadRadius: -5,
+                          offset: const Offset(0, 15),
+                        ),
+                      ],
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 32,
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                "Monthly Progress",
-                                style: AppTypography.cardTitle.white,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _formatDate(DateTime.now()),
-                                style: AppTypography.caption.copyWith(
-                                  color: const Color(0xBFFFFFFF), // 75% opacity white
-                                ),
-                                textAlign: TextAlign.right,
-                                maxLines: 2,
-                                softWrap: true,
-                              ),
-                            ),
-                          ],
+                        const Text(
+                          "Monthly Progress",
+                          style: TextStyle(
+                            fontFamily: 'SF Pro Display',
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: 0,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
                         Row(
                           children: [
                             Expanded(
@@ -1102,7 +1082,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // Streak Achievement
                   GestureDetector(
@@ -1114,14 +1094,14 @@ class _HomeScreenState extends State<_HomeScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                        horizontal: 20,
+                        vertical: 16,
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 40,
-                            height: 40,
+                            width: 48,
+                            height: 48,
                             decoration: const BoxDecoration(
                               color: Color(0xFFFDB022), // Gold color
                               shape: BoxShape.circle,
@@ -1129,10 +1109,10 @@ class _HomeScreenState extends State<_HomeScreen> {
                             child: const Icon(
                               Icons.emoji_events,
                               color: Colors.white,
-                              size: 22,
+                              size: 26,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1161,6 +1141,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                 ],
               ),
             ),
+
             SizedBox(height: screenHeight * 0.03),
 
             // Continue Your Session section (only show if active session exists)
@@ -1368,145 +1349,6 @@ class _HomeScreenState extends State<_HomeScreen> {
                 ),
               ),
 
-            // Declutter Calendar Widget (Planned Sessions)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.declutterCalendar,
-                        style: AppTypography.sectionHeader,
-                      ),
-                      TextButton.icon(
-                        onPressed: () async {
-                          final session = await showDialog<PlannedSession>(
-                            context: context,
-                            builder: (_) => const AddSessionDialog(),
-                          );
-                          if (session != null) {
-                            widget.onAddPlannedSession(session);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(l10n.sessionCreated)),
-                              );
-                            }
-                          }
-                        },
-                        icon: const Icon(Icons.add, size: 18),
-                        label: Text(l10n.addNew),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Show next planned session or empty state - both are clickable to show calendar
-                  if (widget.plannedSessions.isEmpty)
-                    _buildStartDeclutterGradientCard(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ActivityCalendarPage(
-                              declutteredItems: widget.declutteredItems,
-                              memories: widget.memories,
-                            ),
-                          ),
-                        );
-                      },
-                      colors: const [Color(0xFFF5F6FF), Color(0xFFE4E9FF)],
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              l10n.startPlanningDeclutter,
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.9),
-                                  ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFD9DEFF),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.calendar_month,
-                              color: Color(0xFF5C6BFF),
-                              size: 24,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    // Show next upcoming session - clickable to show calendar
-                    _buildStartDeclutterGradientCard(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ActivityCalendarPage(
-                              declutteredItems: widget.declutteredItems,
-                              memories: widget.memories,
-                            ),
-                          ),
-                        );
-                      },
-                      colors: const [Color(0xFFF5F6FF), Color(0xFFE4E9FF)],
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _getNextSessionTitle(widget.plannedSessions.first),
-                                  style: Theme.of(context).textTheme.bodyLarge
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  '${widget.plannedSessions.first.title} • ${widget.plannedSessions.first.scheduledTime}',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.7),
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFE9E3FF),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.access_time,
-                              color: Color(0xFF6B5CE7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
 
             // Start Declutter section
             Padding(
@@ -1689,60 +1531,6 @@ class _HomeScreenState extends State<_HomeScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Quick Tip Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE4E8EF)),
-                    ),
-                    child: InkWell(
-                      onTap: () => _showQuickTips(context, l10n),
-                      borderRadius: BorderRadius.circular(18),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 18,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEFF4FB),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Icon(
-                                Icons.lightbulb_outline,
-                                color: Color(0xFF1F6FEB),
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                _getTodaysTipPreview(l10n),
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xDE000000), // black87
-                                  letterSpacing: 0,
-                                  height: 1.0,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
                   // Joy Check Card
                   Container(
                     decoration: BoxDecoration(
@@ -1827,6 +1615,60 @@ class _HomeScreenState extends State<_HomeScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+
+                  // Quick Tip Card
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE4E8EF)),
+                    ),
+                    child: InkWell(
+                      onTap: () => _showQuickTips(context, l10n),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 18,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF4FB),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.lightbulb_outline,
+                                color: Color(0xFF1F6FEB),
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                _getTodaysTipPreview(l10n),
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xDE000000), // black87
+                                  letterSpacing: 0,
+                                  height: 1.0,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1834,6 +1676,120 @@ class _HomeScreenState extends State<_HomeScreen> {
           ],
         ),
       ),
+
+      // Collapsed header (appears when scrolling)
+      Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        child: IgnorePointer(
+          ignoring: collapsedHeaderOpacity < 0.5,
+          child: Opacity(
+            opacity: collapsedHeaderOpacity,
+            child: Container(
+              height: topPadding + kToolbarHeight,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5F5F7),
+                border: Border(
+                  bottom: BorderSide(
+                    color: Color(0xFFE5E5EA),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              padding: EdgeInsets.only(top: topPadding),
+              alignment: Alignment.center,
+              child: const Text(
+                'KeepJoy',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+
+      // Original header (fades out when scrolling)
+      Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        child: SizedBox(
+          height: 120,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 16,
+              top: topPadding + 12,
+            ),
+            child: Opacity(
+              opacity: headerOpacity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Large greeting on the left
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _getGreeting(l10n),
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                          letterSpacing: -0.5,
+                          height: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'ready to start your declutter joy',
+                        style: TextStyle(
+                          fontFamily: 'SF Pro Display',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF6B7280),
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Profile Icon on the right
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ProfilePage(onLocaleChange: widget.onLocaleChange),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFB794F6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
     );
   }
 }
@@ -1879,13 +1835,24 @@ class _WhiteProgressCard extends StatelessWidget {
       children: [
         Text(
           value,
-          style: AppTypography.metricValue.white,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 52,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            height: 1.0,
+            letterSpacing: -1,
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Text(
           label,
-          style: AppTypography.metricLabel.copyWith(
-            color: const Color(0xBFFFFFFF), // 75% opacity white
+          style: const TextStyle(
+            fontFamily: 'SF Pro Text',
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Color(0xE6FFFFFF), // 90% opacity
+            height: 1.2,
           ),
           textAlign: TextAlign.center,
           maxLines: 2,

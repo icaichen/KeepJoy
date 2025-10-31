@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 
 /// Sentiment/meaning associated with a memory
 enum MemorySentiment {
-  childhoodMemory('Childhood Memory', '童年回忆'),
-  grownTogether('Grown Together', '伴随成长'),
-  missionCompleted('Mission Completed', '完成使命');
+  love('Love', '爱'),
+  nostalgia('Nostalgia', '怀念'),
+  adventure('Adventure', '冒险'),
+  happy('Happy', '快乐'),
+  grateful('Grateful', '感激'),
+  peaceful('Peaceful', '平静');
 
   const MemorySentiment(this.english, this.chinese);
   final String english;
@@ -138,6 +141,20 @@ class Memory {
 
   // Create from JSON from Supabase
   factory Memory.fromJson(Map<String, dynamic> json) {
+    // Handle sentiment with backward compatibility for old values
+    MemorySentiment? sentiment;
+    if (json['sentiment'] != null) {
+      try {
+        sentiment = MemorySentiment.values.firstWhere(
+          (e) => e.name == json['sentiment'],
+        );
+      } catch (e) {
+        // If old sentiment value doesn't match new enum, set to null
+        // This handles migration from old sentiments gracefully
+        sentiment = null;
+      }
+    }
+
     return Memory(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -152,11 +169,7 @@ class Memory {
       itemName: json['item_name'] as String?,
       category: json['category'] as String?,
       notes: json['notes'] as String?,
-      sentiment: json['sentiment'] != null
-          ? MemorySentiment.values.firstWhere(
-              (e) => e.name == json['sentiment'],
-            )
-          : null,
+      sentiment: sentiment,
     );
   }
 

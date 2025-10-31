@@ -191,18 +191,33 @@ class MemoryLaneReportScreen extends StatelessWidget {
 
     final emotions = [
       {
-        'sentiment': MemorySentiment.childhoodMemory,
-        'label': isChinese ? '童年回忆' : 'Childhood Memory',
+        'sentiment': MemorySentiment.love,
+        'label': isChinese ? '爱' : 'Love',
         'color': const Color(0xFFFF9AA2)
       },
       {
-        'sentiment': MemorySentiment.grownTogether,
-        'label': isChinese ? '伴随成长' : 'Grown Together',
+        'sentiment': MemorySentiment.nostalgia,
+        'label': isChinese ? '怀念' : 'Nostalgia',
+        'color': const Color(0xFFFFD93D)
+      },
+      {
+        'sentiment': MemorySentiment.adventure,
+        'label': isChinese ? '冒险' : 'Adventure',
+        'color': const Color(0xFF89CFF0)
+      },
+      {
+        'sentiment': MemorySentiment.happy,
+        'label': isChinese ? '快乐' : 'Happy',
+        'color': const Color(0xFFFFA07A)
+      },
+      {
+        'sentiment': MemorySentiment.grateful,
+        'label': isChinese ? '感激' : 'Grateful',
         'color': const Color(0xFF5ECFB8)
       },
       {
-        'sentiment': MemorySentiment.missionCompleted,
-        'label': isChinese ? '完成使命' : 'Mission Completed',
+        'sentiment': MemorySentiment.peaceful,
+        'label': isChinese ? '平静' : 'Peaceful',
         'color': const Color(0xFFB794F6)
       },
     ];

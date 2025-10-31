@@ -1724,23 +1724,41 @@ abstract class AppLocalizations {
   /// **'What did this item bring you?'**
   String get whatDidThisItemBring;
 
-  /// No description provided for @sentimentChildhoodMemory.
+  /// No description provided for @sentimentLove.
   ///
   /// In en, this message translates to:
-  /// **'Childhood Memory'**
-  String get sentimentChildhoodMemory;
+  /// **'Love'**
+  String get sentimentLove;
 
-  /// No description provided for @sentimentGrownTogether.
+  /// No description provided for @sentimentNostalgia.
   ///
   /// In en, this message translates to:
-  /// **'Grown Together'**
-  String get sentimentGrownTogether;
+  /// **'Nostalgia'**
+  String get sentimentNostalgia;
 
-  /// No description provided for @sentimentMissionCompleted.
+  /// No description provided for @sentimentAdventure.
   ///
   /// In en, this message translates to:
-  /// **'Mission Completed'**
-  String get sentimentMissionCompleted;
+  /// **'Adventure'**
+  String get sentimentAdventure;
+
+  /// No description provided for @sentimentHappy.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy'**
+  String get sentimentHappy;
+
+  /// No description provided for @sentimentGrateful.
+  ///
+  /// In en, this message translates to:
+  /// **'Grateful'**
+  String get sentimentGrateful;
+
+  /// No description provided for @sentimentPeaceful.
+  ///
+  /// In en, this message translates to:
+  /// **'Peaceful'**
+  String get sentimentPeaceful;
 
   /// No description provided for @memoryDescription.
   ///
@@ -2197,6 +2215,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'×{count}'**
   String times(Object count);
+
+  /// No description provided for @todaysFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Focus'**
+  String get todaysFocus;
+
+  /// No description provided for @addTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a task...'**
+  String get addTask;
+
+  /// No description provided for @noTasksYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks yet. Add your first one!'**
+  String get noTasksYet;
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completed;
+
+  /// No description provided for @markAsComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Complete'**
+  String get markAsComplete;
+
+  /// No description provided for @startDeepCleaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Deep Cleaning'**
+  String get startDeepCleaning;
+
+  /// No description provided for @schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get schedule;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @taskAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Task added'**
+  String get taskAdded;
+
+  /// No description provided for @taskCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Task completed'**
+  String get taskCompleted;
 }
 
 class _AppLocalizationsDelegate

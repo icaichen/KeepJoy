@@ -874,13 +874,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatDidThisItemBring => 'What did this item bring you?';
 
   @override
-  String get sentimentChildhoodMemory => 'Childhood Memory';
+  String get sentimentLove => 'Love';
 
   @override
-  String get sentimentGrownTogether => 'Grown Together';
+  String get sentimentNostalgia => 'Nostalgia';
 
   @override
-  String get sentimentMissionCompleted => 'Mission Completed';
+  String get sentimentAdventure => 'Adventure';
+
+  @override
+  String get sentimentHappy => 'Happy';
+
+  @override
+  String get sentimentGrateful => 'Grateful';
+
+  @override
+  String get sentimentPeaceful => 'Peaceful';
 
   @override
   String get memoryDescription => 'Memory Description';
@@ -1133,4 +1142,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String times(Object count) {
     return '×$count';
   }
+
+  @override
+  String get todaysFocus => 'Today\'s Focus';
+
+  @override
+  String get addTask => 'Add a task...';
+
+  @override
+  String get noTasksYet => 'No tasks yet. Add your first one!';
+
+  @override
+  String get completed => 'Completed';
+
+  @override
+  String get markAsComplete => 'Mark as Complete';
+
+  @override
+  String get startDeepCleaning => 'Start Deep Cleaning';
+
+  @override
+  String get schedule => 'Schedule';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get taskAdded => 'Task added';
+
+  @override
+  String get taskCompleted => 'Task completed';
 }

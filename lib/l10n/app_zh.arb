@@ -315,9 +315,12 @@
   "createMemory": "创建回忆",
   "createMemoryTitle": "创建回忆",
   "whatDidThisItemBring": "这件物品给你带来了什么？",
-  "sentimentChildhoodMemory": "童年回忆",
-  "sentimentGrownTogether": "伴随成长",
-  "sentimentMissionCompleted": "完成使命",
+  "sentimentLove": "爱",
+  "sentimentNostalgia": "怀念",
+  "sentimentAdventure": "冒险",
+  "sentimentHappy": "快乐",
+  "sentimentGrateful": "感激",
+  "sentimentPeaceful": "平静",
   "memoryDescription": "回忆描述",
   "describeYourMemory": "描述你与这件物品的回忆...",
   "createMemoryPrompt": "要为这件物品创建回忆吗？",
@@ -412,5 +415,16 @@
   "noSessionsThisMonth": "本月暂无整理记录",
   "tapAreaToViewReport": "点击区域查看详细报告",
   "sessions": "{count} 次",
-  "times": "×{count}"
+  "times": "×{count}",
+
+  "todaysFocus": "今日计划",
+  "addTask": "添加新任务...",
+  "noTasksYet": "暂无任务，添加第一个吧！",
+  "completed": "已完成",
+  "markAsComplete": "标记为完成",
+  "startDeepCleaning": "开始深度清洁",
+  "schedule": "安排时间",
+  "delete": "删除",
+  "taskAdded": "任务已添加",
+  "taskCompleted": "任务已完成"
 }
