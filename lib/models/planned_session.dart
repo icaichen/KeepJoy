@@ -16,6 +16,24 @@ enum TaskPriority {
   }
 }
 
+/// Session mode type
+enum SessionMode {
+  deepCleaning,
+  joyDeclutter,
+  quickDeclutter;
+
+  String displayName(bool isChinese) {
+    switch (this) {
+      case SessionMode.deepCleaning:
+        return isChinese ? '深度整理' : 'Deep Cleaning';
+      case SessionMode.joyDeclutter:
+        return isChinese ? '心动整理' : 'Joy Declutter';
+      case SessionMode.quickDeclutter:
+        return isChinese ? '快速整理' : 'Quick Declutter';
+    }
+  }
+}
+
 /// Model for a planned decluttering session or task
 class PlannedSession {
   PlannedSession({
@@ -31,6 +49,8 @@ class PlannedSession {
     this.isCompleted = false,
     this.completedAt,
     this.priority = TaskPriority.someday,
+    this.mode = SessionMode.deepCleaning,
+    this.goal,
   });
 
   final String id;
@@ -45,6 +65,8 @@ class PlannedSession {
   final bool isCompleted;
   final DateTime? completedAt;
   final TaskPriority priority;
+  final SessionMode mode; // Deep Cleaning, Joy Declutter, or Quick Declutter
+  final String? goal; // e.g., "Declutter 50 items"
 
   /// Check if this task should appear in "Today's Focus"
   bool get isForToday {
@@ -86,6 +108,8 @@ class PlannedSession {
       'is_completed': isCompleted,
       'completed_at': completedAt?.toIso8601String(),
       'priority': priority.name,
+      'mode': mode.name,
+      'goal': goal,
     };
   }
 
@@ -115,6 +139,13 @@ class PlannedSession {
               orElse: () => TaskPriority.someday,
             )
           : TaskPriority.someday,
+      mode: json['mode'] != null
+          ? SessionMode.values.firstWhere(
+              (e) => e.name == json['mode'],
+              orElse: () => SessionMode.deepCleaning,
+            )
+          : SessionMode.deepCleaning,
+      goal: json['goal'] as String?,
     );
   }
 
@@ -131,6 +162,8 @@ class PlannedSession {
     bool? isCompleted,
     DateTime? completedAt,
     TaskPriority? priority,
+    SessionMode? mode,
+    String? goal,
   }) {
     return PlannedSession(
       id: id ?? this.id,
@@ -145,6 +178,8 @@ class PlannedSession {
       isCompleted: isCompleted ?? this.isCompleted,
       completedAt: completedAt ?? this.completedAt,
       priority: priority ?? this.priority,
+      mode: mode ?? this.mode,
+      goal: goal ?? this.goal,
     );
   }
 }

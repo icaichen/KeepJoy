@@ -217,6 +217,9 @@ class Memory {
     return null;
   }
 
+  /// Get the story (description) of the memory
+  String get story => description ?? '';
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -233,7 +236,7 @@ class Memory {
 }
 
 /// Types of memories that can be created
-enum MemoryType { decluttering, cleaning, custom }
+enum MemoryType { decluttering, cleaning, custom, grateful, lesson, celebrate }
 
 extension MemoryTypeExtension on MemoryType {
   String get displayName {
@@ -244,6 +247,32 @@ extension MemoryTypeExtension on MemoryType {
         return 'Cleaning';
       case MemoryType.custom:
         return 'Custom';
+      case MemoryType.grateful:
+        return 'Grateful';
+      case MemoryType.lesson:
+        return 'Lesson';
+      case MemoryType.celebrate:
+        return 'Celebrate';
+    }
+  }
+
+  String label(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    final isChinese = locale.languageCode.toLowerCase().startsWith('zh');
+
+    switch (this) {
+      case MemoryType.decluttering:
+        return isChinese ? '整理' : 'Decluttering';
+      case MemoryType.cleaning:
+        return isChinese ? '清洁' : 'Cleaning';
+      case MemoryType.custom:
+        return isChinese ? '自定义' : 'Custom';
+      case MemoryType.grateful:
+        return isChinese ? '感恩' : 'Grateful';
+      case MemoryType.lesson:
+        return isChinese ? '教训' : 'Lesson';
+      case MemoryType.celebrate:
+        return isChinese ? '庆祝' : 'Celebrate';
     }
   }
 
@@ -255,6 +284,12 @@ extension MemoryTypeExtension on MemoryType {
         return '🧹';
       case MemoryType.custom:
         return '💭';
+      case MemoryType.grateful:
+        return '🙏';
+      case MemoryType.lesson:
+        return '📚';
+      case MemoryType.celebrate:
+        return '🎉';
     }
   }
 }

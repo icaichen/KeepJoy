@@ -23,6 +23,7 @@ Widget _buildJoyTopBar(
   BuildContext context, {
   required int currentStep,
   required int totalSteps,
+  required String title,
 }) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,6 +36,17 @@ Widget _buildJoyTopBar(
             splashRadius: 20,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
+          ),
+          const Spacer(),
+          Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'SF Pro Display',
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.4,
+            ),
           ),
           const Spacer(),
           IconButton(
@@ -181,15 +193,12 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildJoyTopBar(context, currentStep: 0, totalSteps: 3),
-              Text(
-                l10n.joyDeclutterTitle,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: _joyPrimaryColor,
-                ),
+              _buildJoyTopBar(
+                context,
+                currentStep: 0,
+                totalSteps: 3,
+                title: l10n.joyDeclutterTitle,
               ),
-              const SizedBox(height: 12),
               Expanded(
                 child: _buildJoySurface(
                   child: Column(
@@ -369,6 +378,176 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
     }
   }
 
+  Future<void> _showMemoryPrompt(DeclutterItem item) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final shouldCreateMemory = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.createMemoryQuestion),
+        content: Text(l10n.createMemoryPrompt),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.skipMemory),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.createMemory),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldCreateMemory == true && mounted) {
+      final memory = await Navigator.of(context).push<Memory>(
+        MaterialPageRoute(
+          builder: (_) => CreateMemoryPage(
+            item: item,
+            photoPath: widget.photoPath,
+            itemName: item.name,
+          ),
+        ),
+      );
+
+      if (memory != null) {
+        widget.onMemoryCreated(memory);
+      }
+    }
+
+    if (mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
+
+  Future<void> _handleKeep() async {
+    final l10n = AppLocalizations.of(context)!;
+    final itemName = _nameController.text.trim().isEmpty
+        ? (_itemName ?? l10n.itemName)
+        : _nameController.text.trim();
+
+    final item = DeclutterItem(
+      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      name: itemName,
+      category: _selectedCategory,
+      createdAt: DateTime.now(),
+      status: DeclutterStatus.keep,
+      photoPath: widget.photoPath,
+    );
+
+    widget.onItemCompleted(item);
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.itemSaved)));
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _handleLetGo() async {
+    final l10n = AppLocalizations.of(context)!;
+    final itemName = _nameController.text.trim().isEmpty
+        ? (_itemName ?? l10n.itemName)
+        : _nameController.text.trim();
+
+    final status = await showModalBottomSheet<DeclutterStatus>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.timeToLetGo,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.joyQuestionDescription,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    height: 1.4,
+                    color: Colors.black.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _LetGoOption(
+                  icon: Icons.delete_outline,
+                  label: l10n.routeDiscard,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                ),
+                _LetGoOption(
+                  icon: Icons.volunteer_activism_outlined,
+                  label: l10n.routeDonation,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                ),
+                _LetGoOption(
+                  icon: Icons.recycling_outlined,
+                  label: l10n.routeRecycle,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                ),
+                _LetGoOption(
+                  icon: Icons.attach_money_outlined,
+                  label: l10n.routeResell,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: Text(l10n.cancel),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (status == null || !mounted) {
+      return;
+    }
+
+    final item = DeclutterItem(
+      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      name: itemName,
+      category: _selectedCategory,
+      createdAt: DateTime.now(),
+      status: status,
+      photoPath: widget.photoPath,
+    );
+
+    widget.onItemCompleted(item);
+
+    await _showMemoryPrompt(item);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -382,7 +561,12 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildJoyTopBar(context, currentStep: 1, totalSteps: 3),
+              _buildJoyTopBar(
+                context,
+                currentStep: 1,
+                totalSteps: 3,
+                title: l10n.joyDeclutterTitle,
+              ),
               Expanded(
                 child: ListView(
                   children: [
@@ -492,42 +676,42 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    OutlinedButton(
+                      onPressed: _retakePicture,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _joyPrimaryColor,
+                        side: BorderSide(
+                          color: _joyPrimaryColor.withValues(alpha: 0.4),
+                        ),
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      child: Text(l10n.retakePhoto),
+                    ),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton(
-                            onPressed: _retakePicture,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _joyPrimaryColor,
-                              side: BorderSide(
-                                color: _joyPrimaryColor.withOpacity(0.4),
-                              ),
+                          child: FilledButton(
+                            onPressed: _handleKeep,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              minimumSize: const Size.fromHeight(48),
                             ),
-                            child: Text(l10n.retakePhoto),
+                            child: Text(l10n.yes),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: FilledButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => _JoyQuestionPage(
-                                    photoPath: widget.photoPath,
-                                    itemName: _nameController.text.trim().isEmpty
-                                        ? (_itemName ?? l10n.itemName)
-                                        : _nameController.text.trim(),
-                                    category: _selectedCategory,
-                                    onItemCompleted: widget.onItemCompleted,
-                                    onMemoryCreated: widget.onMemoryCreated,
-                                  ),
-                                ),
-                              );
-                            },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: _joyPrimaryColor,
+                          child: OutlinedButton(
+                            onPressed: _handleLetGo,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFEF4444),
+                              side: const BorderSide(
+                                color: Color(0xFFEF4444),
+                              ),
+                              minimumSize: const Size.fromHeight(48),
                             ),
-                            child: Text(l10n.nextStep),
+                            child: Text(l10n.no),
                           ),
                         ),
                       ],
@@ -544,321 +728,6 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _JoyQuestionPage extends StatefulWidget {
-  final String photoPath;
-  final String itemName;
-  final DeclutterCategory category;
-  final Function(DeclutterItem) onItemCompleted;
-  final Function(Memory) onMemoryCreated;
-
-  const _JoyQuestionPage({
-    required this.photoPath,
-    required this.itemName,
-    required this.category,
-    required this.onItemCompleted,
-    required this.onMemoryCreated,
-  });
-
-  @override
-  State<_JoyQuestionPage> createState() => _JoyQuestionPageState();
-}
-
-class _JoyQuestionPageState extends State<_JoyQuestionPage> {
-  Future<void> _showMemoryPrompt(DeclutterItem item) async {
-    final l10n = AppLocalizations.of(context)!;
-
-    final shouldCreateMemory = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.createMemoryQuestion),
-        content: Text(l10n.createMemoryPrompt),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.skipMemory),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.createMemory),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldCreateMemory == true && mounted) {
-      final memory = await Navigator.of(context).push<Memory>(
-        MaterialPageRoute(
-          builder: (_) => CreateMemoryPage(
-            item: item,
-            photoPath: widget.photoPath,
-            itemName: item.name,
-          ),
-        ),
-      );
-
-      if (memory != null) {
-        widget.onMemoryCreated(memory);
-      }
-    }
-
-    if (mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    }
-  }
-
-  Future<void> _handleKeep() async {
-    final l10n = AppLocalizations.of(context)!;
-    final item = DeclutterItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-      name: widget.itemName,
-      category: widget.category,
-      createdAt: DateTime.now(),
-      status: DeclutterStatus.keep,
-      photoPath: widget.photoPath,
-    );
-
-    widget.onItemCompleted(item);
-
-    if (!mounted) {
-      return;
-    }
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.itemSaved)));
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-
-  Future<void> _handleLetGo() async {
-    final l10n = AppLocalizations.of(context)!;
-    final status = await showModalBottomSheet<DeclutterStatus>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (sheetContext) {
-        final theme = Theme.of(sheetContext);
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.timeToLetGo,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.joyQuestionDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.4,
-                    color: Colors.black.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _LetGoOption(
-                  icon: Icons.delete_outline,
-                  label: l10n.routeDiscard,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
-                ),
-                _LetGoOption(
-                  icon: Icons.volunteer_activism_outlined,
-                  label: l10n.routeDonation,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
-                ),
-                _LetGoOption(
-                  icon: Icons.recycling_outlined,
-                  label: l10n.routeRecycle,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
-                ),
-                _LetGoOption(
-                  icon: Icons.attach_money_outlined,
-                  label: l10n.routeResell,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
-                ),
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(),
-                  child: Text(l10n.cancel),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (status == null || !mounted) {
-      return;
-    }
-
-    final item = DeclutterItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-      name: widget.itemName,
-      category: widget.category,
-      createdAt: DateTime.now(),
-      status: status,
-      photoPath: widget.photoPath,
-    );
-
-    widget.onItemCompleted(item);
-
-    await _showMemoryPrompt(item);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: false,
-        foregroundColor: Colors.white,
-        title: Text(
-          l10n.doesItSparkJoy,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(gradient: _joyMintPurpleGradient),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                _buildJoyProgressIndicator(2),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      _buildJoySurface(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child: AspectRatio(
-                                aspectRatio: 4 / 3,
-                                child: widget.photoPath.isEmpty
-                                    ? Container(
-                                        color: Colors.grey.shade200,
-                                        child: const Icon(
-                                          Icons.photo_outlined,
-                                          size: 80,
-                                          color: Colors.black45,
-                                        ),
-                                      )
-                                    : Image.file(
-                                        File(widget.photoPath),
-                                        fit: BoxFit.cover,
-                                      ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              widget.itemName,
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF111827),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Chip(
-                              backgroundColor: const Color(0xFFEFF4FF),
-                              label: Text(
-                                widget.category.label(context),
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFF374151),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildJoySurface(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.doesItSparkJoy,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF111827),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              l10n.joyQuestionDescription,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFF4B5563),
-                                height: 1.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: _handleKeep,
-                        child: Text(l10n.yes),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _handleLetGo,
-                        child: Text(l10n.no),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
           ),
         ),
       ),

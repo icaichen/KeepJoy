@@ -7,6 +7,101 @@ import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import '../../services/ai_identification_service.dart';
 
+// Quick Declutter styling constants to match Joy Declutter
+const LinearGradient _quickPinkOrangeGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [Color(0xFFEC4899), Color(0xFFF97316)],
+);
+
+const Color _quickBackgroundColor = Color(0xFFF5F5F7);
+const Color _quickPrimaryColor = Color(0xFF111827);
+const Color _quickCardShadow = Color(0x11000000);
+
+Widget _buildQuickTopBar(
+  BuildContext context, {
+  required int currentStep,
+  required int totalSteps,
+  required String title,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => Navigator.of(context).maybePop(),
+            splashRadius: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const Spacer(),
+          Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'SF Pro Display',
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.4,
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.close_rounded),
+            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+            splashRadius: 20,
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          totalSteps,
+          (index) => Container(
+            width: 24,
+            height: 3,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: index <= currentStep ? _quickPrimaryColor : const Color(0xFFE0E5EB),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 24),
+    ],
+  );
+}
+
+BoxDecoration _quickCardDecoration({Color? color}) {
+  return BoxDecoration(
+    color: color ?? Colors.white,
+    borderRadius: BorderRadius.circular(24),
+    boxShadow: const [
+      BoxShadow(
+        color: _quickCardShadow,
+        blurRadius: 20,
+        offset: Offset(0, 12),
+      ),
+    ],
+  );
+}
+
+Widget _buildQuickSurface({
+  required Widget child,
+  EdgeInsetsGeometry margin = EdgeInsets.zero,
+  EdgeInsetsGeometry padding = const EdgeInsets.all(24),
+}) {
+  return Container(
+    margin: margin,
+    decoration: _quickCardDecoration(),
+    child: Padding(padding: padding, child: child),
+  );
+}
+
 class QuickDeclutterFlowPage extends StatefulWidget {
   const QuickDeclutterFlowPage({super.key, required this.onItemCreated});
 
@@ -61,68 +156,134 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
+
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.quickDeclutterTitle), centerTitle: false),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.inbox_outlined),
-                title: Text(l10n.itemsCaptured),
-                trailing: Text(
-                  '$_itemsCaptured',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+      backgroundColor: _quickBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildQuickTopBar(
+                context,
+                currentStep: 0,
+                totalSteps: 2,
+                title: l10n.quickDeclutterTitle,
               ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: Card(
-                child: Center(
+              Expanded(
+                child: _buildQuickSurface(
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.camera_alt, size: 80),
-                      const SizedBox(height: 16),
+                      Text(
+                        isChinese ? '批量整理物品' : 'Batch Declutter Items',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: _quickPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         l10n.captureItemToStart,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.copyWith(height: 1.4),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Items captured counter
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.inbox_outlined, size: 24, color: Color(0xFF6B7280)),
+                            const SizedBox(width: 12),
+                            Text(
+                              l10n.itemsCaptured,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '$_itemsCaptured',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: _quickPrimaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: _isProcessing ? null : _takePicture,
-                        icon: _isProcessing
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.photo_camera),
-                        label: Text(l10n.takePicture),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            gradient: _quickPinkOrangeGradient,
+                            boxShadow: const [
+                              BoxShadow(
+                                color: _quickCardShadow,
+                                blurRadius: 24,
+                                offset: Offset(0, 16),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              size: 72,
+                              color: Colors.white.withOpacity(0.92),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _isProcessing ? null : _takePicture,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _quickPrimaryColor,
+                          ),
+                          icon: _isProcessing
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.photo_camera_rounded),
+                          label: Text(l10n.takePicture),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              isChinese
-                  ? '使用「快速整理」拍照記錄待處理物品。'
-                  : 'Use Quick Declutter to capture items that still need decisions.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                isChinese
+                    ? '快速拍攝多個物品，稍後再決定去留。'
+                    : 'Quickly capture multiple items—decide later.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-
+import 'package:intl/intl.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'memory_detail_page.dart';
 
-/// iOS-style memory page with grid layout similar to Photos app
+enum MemoryViewMode { grid, timeline }
+
 class MemoriesPage extends StatefulWidget {
   const MemoriesPage({
     super.key,
@@ -24,34 +25,135 @@ class MemoriesPage extends StatefulWidget {
 }
 
 class _MemoriesPageState extends State<MemoriesPage> {
+  MemoryViewMode _viewMode = MemoryViewMode.grid;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
     final memories = widget.memories;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.memoriesTitle), centerTitle: false),
-      body: memories.isEmpty
-          ? _EmptyMemoriesState()
-          : GridView.builder(
-              padding: const EdgeInsets.all(1),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 1,
-                mainAxisSpacing: 1,
-                childAspectRatio: 1,
+      backgroundColor: const Color(0xFFF5F6F7),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with view mode toggle
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.memoriesTitle,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1C1C1E),
+                      letterSpacing: 0,
+                      height: 1.0,
+                    ),
+                  ),
+                  // View mode toggle
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        _buildViewModeButton(
+                          icon: Icons.grid_view_rounded,
+                          mode: MemoryViewMode.grid,
+                          isSelected: _viewMode == MemoryViewMode.grid,
+                        ),
+                        const SizedBox(width: 4),
+                        _buildViewModeButton(
+                          icon: Icons.timeline_rounded,
+                          mode: MemoryViewMode.timeline,
+                          isSelected: _viewMode == MemoryViewMode.timeline,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              itemCount: memories.length,
-              itemBuilder: (context, index) {
-                final memory = memories[index];
-                return _MemoryGridItem(memory: memory);
-              },
             ),
+            if (memories.isEmpty)
+              Expanded(child: _EmptyMemoriesState())
+            else
+              Expanded(
+                child: _viewMode == MemoryViewMode.grid
+                    ? _GridView(memories: memories)
+                    : _TimelineView(memories: memories, isChinese: isChinese),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildViewModeButton({
+    required IconData icon,
+    required MemoryViewMode mode,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () => setState(() => _viewMode = mode),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected
+              ? const [
+                  BoxShadow(
+                    color: Color(0x1A000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: isSelected ? const Color(0xFF1C1C1E) : const Color(0xFF9CA3AF),
+        ),
+      ),
     );
   }
 }
 
-/// Individual memory grid item
+// Grid View (Original Photo Wall Style)
+class _GridView extends StatelessWidget {
+  final List<Memory> memories;
+
+  const _GridView({required this.memories});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(1),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 1,
+        mainAxisSpacing: 1,
+        childAspectRatio: 1,
+      ),
+      itemCount: memories.length,
+      itemBuilder: (context, index) {
+        final memory = memories[index];
+        return _MemoryGridItem(memory: memory);
+      },
+    );
+  }
+}
+
 class _MemoryGridItem extends StatelessWidget {
   const _MemoryGridItem({required this.memory});
 
@@ -82,44 +184,369 @@ class _MemoryGridItem extends StatelessWidget {
   }
 }
 
-/// Empty state when no memories exist
+// Timeline View with Dotted Line
+class _TimelineView extends StatelessWidget {
+  final List<Memory> memories;
+  final bool isChinese;
+
+  const _TimelineView({required this.memories, required this.isChinese});
+
+  @override
+  Widget build(BuildContext context) {
+    // Sort memories by date (newest first)
+    final sortedMemories = List<Memory>.from(memories)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    // Group memories by date
+    final groupedMemories = <String, List<Memory>>{};
+    for (final memory in sortedMemories) {
+      final dateKey = DateFormat('yyyy-MM-dd').format(memory.createdAt);
+      groupedMemories.putIfAbsent(dateKey, () => []).add(memory);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      itemCount: groupedMemories.length,
+      itemBuilder: (context, index) {
+        final dateKey = groupedMemories.keys.elementAt(index);
+        final dateMemories = groupedMemories[dateKey]!;
+        final date = DateTime.parse(dateKey);
+        final isLast = index == groupedMemories.length - 1;
+
+        return _TimelineDateSection(
+          date: date,
+          memories: dateMemories,
+          isChinese: isChinese,
+          isLast: isLast,
+        );
+      },
+    );
+  }
+}
+
+class _TimelineDateSection extends StatelessWidget {
+  final DateTime date;
+  final List<Memory> memories;
+  final bool isChinese;
+  final bool isLast;
+
+  const _TimelineDateSection({
+    required this.date,
+    required this.memories,
+    required this.isChinese,
+    required this.isLast,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dateLabel = isChinese
+        ? DateFormat('yyyy年M月d日', 'zh_CN').format(date)
+        : DateFormat('MMMM d, yyyy').format(date);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Date header
+        Padding(
+          padding: const EdgeInsets.only(left: 50, bottom: 16, top: 8),
+          child: Text(
+            dateLabel,
+            style: const TextStyle(
+              fontFamily: 'SF Pro Display',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF6B7280),
+            ),
+          ),
+        ),
+        // Memories for this date
+        ...memories.asMap().entries.map((entry) {
+          final isLastMemory = entry.key == memories.length - 1 && isLast;
+          return _TimelineMemoryItem(
+            memory: entry.value,
+            showLine: !isLastMemory,
+          );
+        }),
+      ],
+    );
+  }
+}
+
+class _TimelineMemoryItem extends StatelessWidget {
+  final Memory memory;
+  final bool showLine;
+
+  const _TimelineMemoryItem({
+    required this.memory,
+    required this.showLine,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Timeline line with dot
+          SizedBox(
+            width: 40,
+            child: Column(
+              children: [
+                // Dot
+                Container(
+                  width: 12,
+                  height: 12,
+                  margin: const EdgeInsets.only(top: 24),
+                  decoration: BoxDecoration(
+                    color: _getTypeColor(memory.type),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getTypeColor(memory.type).withValues(alpha: 0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                // Vertical dotted line
+                if (showLine)
+                  Expanded(
+                    child: CustomPaint(
+                      painter: _DottedLinePainter(
+                        color: const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Memory card
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => MemoryDetailPage(memory: memory),
+                  ),
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE5E7EA)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Time
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 14,
+                          color: const Color(0xFF9CA3AF),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          DateFormat('HH:mm').format(memory.createdAt),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF9CA3AF),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Spacer(),
+                        // Memory type badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getTypeColor(memory.type).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                memory.type.icon,
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                memory.type.label(context),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: _getTypeColor(memory.type),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Photo if present
+                    if (memory.hasPhoto) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(
+                          memory.photoFile!,
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
+                    // Item name if present
+                    if (memory.itemName != null && memory.itemName!.isNotEmpty) ...[
+                      Text(
+                        memory.itemName!,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1C1C1E),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                    ],
+
+                    // Memory story
+                    if (memory.story.isNotEmpty)
+                      Text(
+                        memory.story,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF6B7280),
+                          height: 1.5,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getTypeColor(MemoryType type) {
+    switch (type) {
+      case MemoryType.decluttering:
+        return const Color(0xFF5ECFB8);
+      case MemoryType.cleaning:
+        return const Color(0xFF89CFF0);
+      case MemoryType.custom:
+        return const Color(0xFFB794F6);
+      case MemoryType.grateful:
+        return const Color(0xFFFF9AA2);
+      case MemoryType.lesson:
+        return const Color(0xFF89CFF0);
+      case MemoryType.celebrate:
+        return const Color(0xFFFFD93D);
+    }
+  }
+}
+
+// Custom painter for dotted line
+class _DottedLinePainter extends CustomPainter {
+  final Color color;
+
+  _DottedLinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    const dashHeight = 4;
+    const dashSpace = 4;
+    double startY = 0;
+
+    while (startY < size.height) {
+      canvas.drawLine(
+        Offset(size.width / 2, startY),
+        Offset(size.width / 2, startY + dashHeight),
+        paint,
+      );
+      startY += dashHeight + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DottedLinePainter oldDelegate) => false;
+}
+
 class _EmptyMemoriesState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(48),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 120,
               height: 120,
-              decoration: const BoxDecoration(shape: BoxShape.circle),
-              child: const Icon(Icons.photo_library_outlined, size: 60),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Icon(
+                Icons.photo_library_outlined,
+                size: 56,
+                color: Color(0xFF9CA3AF),
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             Text(
               l10n.memoriesEmptyTitle,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1C1C1E),
+              ),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
-              l10n.memoriesEmptySubtitle,
+              isChinese
+                  ? '开始整理你的物品，\n创建美好的回忆吧'
+                  : 'Start decluttering to create\nbeautiful memories',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate back to home to start decluttering
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-              child: Text(l10n.memoriesEmptyAction),
+              style: const TextStyle(
+                fontSize: 15,
+                color: Color(0xFF6B7280),
+                height: 1.5,
+              ),
             ),
           ],
         ),

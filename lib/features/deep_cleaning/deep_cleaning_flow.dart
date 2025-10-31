@@ -15,6 +15,7 @@ const int _deepCleaningTotalSteps = 5;
 Widget _buildDeepCleaningTopBar(
   BuildContext context, {
   required int currentStep,
+  required String title,
 }) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,6 +28,17 @@ Widget _buildDeepCleaningTopBar(
             splashRadius: 20,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
+          ),
+          const Spacer(),
+          Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'SF Pro Display',
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.4,
+            ),
           ),
           const Spacer(),
           IconButton(
@@ -127,7 +139,11 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 0),
+              _buildDeepCleaningTopBar(
+                context,
+                currentStep: 0,
+                title: l10n.deepCleaningTitle,
+              ),
               Text(
                 isChinese
                     ? '今天你想专注哪些区域？'
@@ -431,7 +447,7 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 1),
+              _buildDeepCleaningTopBar(context, currentStep: 1, title: l10n.deepCleaningTitle),
               Text(
                 l10n.beforePhoto,
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -676,7 +692,7 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 2),
+              _buildDeepCleaningTopBar(context, currentStep: 2, title: l10n.deepCleaningTitle),
               Text(
                 l10n.deepCleaningTitle,
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -959,7 +975,7 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 3),
+              _buildDeepCleaningTopBar(context, currentStep: 3, title: l10n.deepCleaningTitle),
               Text(
                 l10n.afterPhoto,
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -1172,7 +1188,7 @@ class _UserInputPageState extends State<UserInputPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 4),
+              _buildDeepCleaningTopBar(context, currentStep: 4, title: l10n.deepCleaningTitle),
               Text(
                 widget.area,
                 style: theme.textTheme.titleMedium?.copyWith(

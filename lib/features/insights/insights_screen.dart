@@ -115,15 +115,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
         bgColor: const Color(0xFFE6F7F4),
         value: widget.declutteredItems.length.toString(),
         unit: isChinese ? '件' : 'items',
-        title: isChinese ? '已整理物品' : 'Items Sorted',
-      ),
-      _MetricCardData(
-        icon: Icons.favorite_rounded,
-        iconColor: const Color(0xFFFF9AA2),
-        bgColor: const Color(0xFFFFF0F2),
-        value: avgJoyIndex.toStringAsFixed(1),
-        unit: '',
-        title: isChinese ? '心动指数' : 'Joy Index',
+        title: isChinese ? '已整理物品' : 'Item Decluttered',
       ),
       _MetricCardData(
         icon: Icons.attach_money_rounded,
@@ -131,25 +123,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
         bgColor: const Color(0xFFFFF9E6),
         value: totalValue.toStringAsFixed(0),
         unit: isChinese ? '元' : '\$',
-        title: isChinese ? '新生价值' : 'New Life Value',
-      ),
-      _MetricCardData(
-        icon: Icons.track_changes_rounded,
-        iconColor: const Color(0xFF89CFF0),
-        bgColor: const Color(0xFFE6F4F9),
-        value: avgFocusIndex.toStringAsFixed(1),
-        unit: '',
-        title: isChinese ? '专注度' : 'Focus Level',
-      ),
-      _MetricCardData(
-        icon: Icons.local_fire_department_rounded,
-        iconColor: const Color(0xFFFF6B6B),
-        bgColor: const Color(0xFFFFEDED),
-        value: streakDays.toString(),
-        unit: isChinese ? '天' : 'days',
-        title: isChinese ? '坚持天数' : 'Streak',
+        title: isChinese ? '转售价值' : 'Resell Value',
       ),
     ];
+
+    // Calculate environmental impact (donated + recycled + resold items)
+    final environmentalItems = widget.declutteredItems.where((item) =>
+      item.status == DeclutterStatus.donate ||
+      item.status == DeclutterStatus.recycle ||
+      item.status == DeclutterStatus.resell
+    ).length;
 
     final summaryTitle = isChinese ? '洞察' : 'Insights';
 
@@ -248,25 +231,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     // Content cards
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isChinese ? '本月成就' : 'Monthly Achievements',
+                            isChinese ? '本月进度' : 'Monthly Progress',
                             style: const TextStyle(
                               fontFamily: 'SF Pro Display',
                               fontSize: 22,
@@ -276,21 +245,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               height: 1.0,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            isChinese
-                                ? '共处理 ${widget.declutteredItems.length} 件物品，释放空间'
-                                : 'Processed ${widget.declutteredItems.length} items',
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Text',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0x8A000000), // black54
-                              letterSpacing: 0,
-                              height: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
                           SizedBox(
                             height: 130,
                             child: ListView.builder(
@@ -311,10 +266,46 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               },
                             ),
                           ),
+                          if (environmentalItems > 0) ...[
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.eco_rounded,
+                                    color: Color(0xFF43A047),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      isChinese
+                                          ? '已通过捐赠、回收和转售为 $environmentalItems 件物品找到新生命，减少碳排放 🌱'
+                                          : '$environmentalItems items given new life through donation, recycling & resale, reducing carbon footprint 🌱',
+                                      style: const TextStyle(
+                                        fontFamily: 'SF Pro Text',
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF2E7D32),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                  ),
                   const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -391,34 +382,23 @@ class _InsightsScreenState extends State<InsightsScreen> {
   Widget _buildMetricCard(BuildContext context, _MetricCardData metric) {
     return Container(
       width: 140,
-      height: 120,
+      height: 130,
       decoration: BoxDecoration(
-        color: metric.bgColor,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(
+          color: metric.iconColor.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
       ),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icon container
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: metric.iconColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(metric.icon, color: metric.iconColor, size: 18),
-          ),
-          const SizedBox(height: 6),
+          // Icon
+          Icon(metric.icon, color: metric.iconColor, size: 28),
+          const SizedBox(height: 10),
           // Value and unit
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -429,10 +409,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 child: Text(
                   metric.value,
                   style: const TextStyle(
-                    color: Colors.black87,
+                    fontFamily: 'SF Pro Display',
+                    color: Color(0xDE000000),
                     fontWeight: FontWeight.w700,
-                    fontSize: 22,
+                    fontSize: 26,
                     height: 1.0,
+                    letterSpacing: -0.5,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -440,26 +422,31 @@ class _InsightsScreenState extends State<InsightsScreen> {
               ),
               if (metric.unit.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(left: 2, bottom: 1),
+                  padding: const EdgeInsets.only(left: 2, bottom: 2),
                   child: Text(
                     metric.unit,
                     style: const TextStyle(
-                      color: Colors.black54,
+                      fontFamily: 'SF Pro Text',
+                      color: Color(0x8A000000),
                       fontWeight: FontWeight.w500,
-                      fontSize: 11,
+                      fontSize: 13,
+                      height: 1.0,
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           // Title
           Text(
             metric.title,
             style: const TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-              fontSize: 10,
+              fontFamily: 'SF Pro Text',
+              color: Color(0x8A000000),
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+              height: 1.2,
+              letterSpacing: 0,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,

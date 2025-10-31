@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -20,9 +21,11 @@ class CreateMemoryPage extends StatefulWidget {
 class _CreateMemoryPageState extends State<CreateMemoryPage> {
   final TextEditingController _itemNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
   DeclutterCategory? _selectedCategory;
   MemorySentiment? _selectedSentiment;
   bool _isLoading = false;
+  String? _capturedPhotoPath;
 
   @override
   void initState() {
@@ -44,10 +47,73 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
   }
 
   String? get _photoPath {
+    // Prioritize captured photo, then widget photo
+    if (_capturedPhotoPath != null) {
+      return _capturedPhotoPath;
+    }
     if (widget.item != null) {
       return widget.item!.photoPath;
     }
     return widget.photoPath;
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+      );
+
+      if (photo != null && mounted) {
+        setState(() {
+          _capturedPhotoPath = photo.path;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Color(0xFFB794F6)),
+                  title: const Text('Take Photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Color(0xFFB794F6)),
+                  title: const Text('Choose from Gallery'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _createMemory() {
@@ -140,65 +206,68 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                 ),
               ),
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              child: _photoPath != null && _photoPath!.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.file(
-                      File(_photoPath!),
-                      height: screenHeight * 0.35,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : Container(
-                    height: screenHeight * 0.35,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+              child: GestureDetector(
+                onTap: _showImageSourceDialog,
+                child: _photoPath != null && _photoPath!.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.file(
+                          File(_photoPath!),
+                          height: screenHeight * 0.35,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFB794F6).withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.add_photo_alternate_outlined,
-                            size: 36,
-                            color: Color(0xFFB794F6),
-                          ),
+                      )
+                    : Container(
+                        height: screenHeight * 0.35,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Take photo or upload photo',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF6B7280),
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFB794F6).withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_photo_alternate_outlined,
+                                size: 36,
+                                color: Color(0xFFB794F6),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Take photo or upload photo',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Capture this special moment',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF9CA3AF),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Capture this special moment',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF9CA3AF),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+              ),
             ),
 
             // Compact white card containing all form fields
