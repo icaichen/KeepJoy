@@ -171,11 +171,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showAddSessionDialog(BuildContext context, bool isChinese) {
-    final TextEditingController areaController = TextEditingController();
     final TextEditingController goalController = TextEditingController();
-    DateTime? selectedDate = DateTime.now();
-    TimeOfDay? selectedTime;
-    SessionMode selectedMode = SessionMode.deepCleaning;
+    DateTime? selectedDate;
 
     showModalBottomSheet<void>(
       context: context,
@@ -195,223 +192,151 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 top: 12,
               ),
               child: SafeArea(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 36,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(999),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        isChinese ? '创建新任务' : 'Create New Session',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                        ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      isChinese ? '创建新任务' : 'Create New Session',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
                       ),
-                      const SizedBox(height: 20),
+                    ),
+                    const SizedBox(height: 20),
 
-                      // Mode Selection
-                      Text(
-                        isChinese ? '模式' : 'Mode',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: SessionMode.values.map((mode) {
-                          final isSelected = selectedMode == mode;
-                          return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: InkWell(
-                                onTap: () {
-                                  setModalState(() {
-                                    selectedMode = mode;
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFF414B5A) : Colors.white,
-                                    border: Border.all(
-                                      color: isSelected ? const Color(0xFF414B5A) : const Color(0xFFE5E7EA),
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    mode.displayName(isChinese),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: isSelected ? Colors.white : const Color(0xFF6B7280),
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 16),
-
-                      TextField(
-                        controller: areaController,
-                        decoration: InputDecoration(
-                          labelText: isChinese ? '区域' : 'Area',
-                          hintText: isChinese ? '例如：厨房、卧室' : 'e.g., Kitchen, Bedroom',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      TextField(
-                        controller: goalController,
-                        decoration: InputDecoration(
-                          labelText: isChinese ? '目标（可选）' : 'Goal (Optional)',
-                          hintText: isChinese ? '例如：整理50件物品' : 'e.g., Declutter 50 items',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                        shape: RoundedRectangleBorder(
+                    // Free-form goal input
+                    TextField(
+                      controller: goalController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: isChinese ? '目标' : 'Goal',
+                        hintText: isChinese
+                            ? '例如：12月底前整理50件物品\n或：清理厨房并拍照记录'
+                            : 'e.g., Declutter 50 items by end of December\nor Clean kitchen and take photos',
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFFE5E7EA)),
                         ),
-                        leading: const Icon(Icons.calendar_today),
-                        title: Text(isChinese ? '日期' : 'Date'),
-                        subtitle: Text(
-                          selectedDate != null
-                              ? DateFormat(isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy').format(selectedDate!)
-                              : (isChinese ? '选择日期' : 'Select date'),
-                        ),
-                        onTap: () async {
-                          final picked = await showDatePicker(
-                            context: builderContext,
-                            initialDate: selectedDate ?? DateTime.now(),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
-                          );
-                          if (picked != null) {
-                            setModalState(() {
-                              selectedDate = picked;
-                            });
-                          }
-                        },
+                        alignLabelWithHint: true,
                       ),
-                      const SizedBox(height: 12),
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFFE5E7EA)),
-                        ),
-                        leading: const Icon(Icons.access_time),
-                        title: Text(isChinese ? '时间' : 'Time'),
-                        subtitle: Text(
-                          selectedTime != null
-                              ? selectedTime!.format(builderContext)
-                              : (isChinese ? '选择时间（可选）' : 'Select time (optional)'),
-                        ),
-                        onTap: () async {
-                          final picked = await showTimePicker(
-                            context: builderContext,
-                            initialTime: selectedTime ?? TimeOfDay.now(),
-                          );
-                          if (picked != null) {
-                            setModalState(() {
-                              selectedTime = picked;
-                            });
-                          }
-                        },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Optional date
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFFE5E7EA)),
                       ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(sheetContext),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                side: const BorderSide(color: Color(0xFFE5E7EA)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(isChinese ? '取消' : 'Cancel'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
+                      leading: const Icon(Icons.calendar_today),
+                      title: Text(isChinese ? '日期（可选）' : 'Date (Optional)'),
+                      subtitle: Text(
+                        selectedDate != null
+                            ? DateFormat(isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy').format(selectedDate!)
+                            : (isChinese ? '点击选择日期' : 'Tap to select date'),
+                      ),
+                      trailing: selectedDate != null
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 20),
                               onPressed: () {
-                                if (areaController.text.trim().isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(isChinese ? '请输入区域名称' : 'Please enter an area name'),
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                final newSession = PlannedSession(
-                                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                                  title: '${areaController.text} Declutter',
-                                  area: areaController.text.trim(),
-                                  scheduledDate: selectedDate,
-                                  scheduledTime: selectedTime?.format(builderContext),
-                                  createdAt: DateTime.now(),
-                                  priority: TaskPriority.thisWeek,
-                                  mode: selectedMode,
-                                  goal: goalController.text.trim().isEmpty ? null : goalController.text.trim(),
-                                );
-
-                                widget.onAddPlannedSession(newSession);
-                                Navigator.pop(sheetContext);
-
+                                setModalState(() {
+                                  selectedDate = null;
+                                });
+                              },
+                            )
+                          : null,
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: builderContext,
+                          initialDate: selectedDate ?? DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (picked != null) {
+                          setModalState(() {
+                            selectedDate = picked;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              side: const BorderSide(color: Color(0xFFE5E7EA)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(isChinese ? '取消' : 'Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (goalController.text.trim().isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(isChinese ? '任务已创建' : 'Session created'),
+                                    content: Text(isChinese ? '请输入目标' : 'Please enter a goal'),
                                   ),
                                 );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF414B5A),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                return;
+                              }
+
+                              final newSession = PlannedSession(
+                                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                title: goalController.text.trim(),
+                                area: 'General',
+                                scheduledDate: selectedDate,
+                                scheduledTime: null,
+                                createdAt: DateTime.now(),
+                                priority: TaskPriority.thisWeek,
+                                mode: SessionMode.quickDeclutter,
+                                goal: goalController.text.trim(),
+                              );
+
+                              widget.onAddPlannedSession(newSession);
+                              Navigator.pop(sheetContext);
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(isChinese ? '任务已创建' : 'Session created'),
                                 ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF414B5A),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Text(isChinese ? '创建' : 'Create'),
                             ),
+                            child: Text(isChinese ? '创建' : 'Create'),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
             );
@@ -749,6 +674,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return isChinese ? '$dateStr $time' : '$dateStr at $time';
     } else {
       return dateStr;
+    }
+  }
+
+  void _startSessionFromPlanned(PlannedSession session) {
+    switch (session.mode) {
+      case SessionMode.deepCleaning:
+        // For deep cleaning, start the session (which will take to before photo page)
+        widget.onStartSession(session.area);
+        break;
+      case SessionMode.joyDeclutter:
+        // For joy declutter, navigate to joy declutter flow
+        widget.onOpenJoyDeclutter();
+        break;
+      case SessionMode.quickDeclutter:
+        // For quick declutter, navigate to quick declutter flow
+        widget.onOpenQuickDeclutter();
+        break;
     }
   }
 
@@ -1298,108 +1240,111 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Planned session cards with swipe to delete
-                        ...widget.plannedSessions.take(3).map((session) {
-                          return Dismissible(
-                            key: Key(session.id),
-                            background: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 20),
-                              child: const Icon(
-                                Icons.delete,
-                                color: Colors.white,
-                              ),
-                            ),
-                            direction: DismissDirection.endToStart,
-                            onDismissed: (direction) {
-                              widget.onDeletePlannedSession(session);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(isChinese ? '任务已删除' : 'Session deleted'),
+                        // Planned session cards container with swipe to delete
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE5E7EA)),
+                          ),
+                          child: Column(
+                            children: widget.plannedSessions.take(3).map((session) {
+                              return Dismissible(
+                                key: Key(session.id),
+                                background: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                  ),
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 20),
+                                  child: const Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                direction: DismissDirection.endToStart,
+                                onDismissed: (direction) {
+                                  widget.onDeletePlannedSession(session);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(isChinese ? '任务已删除' : 'Session deleted'),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: const Color(0xFFE5E7EA),
+                                        width: widget.plannedSessions.take(3).last == session ? 0 : 1,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 48,
+                                        height: 48,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF3F4F6),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Icon(
+                                          Icons.calendar_month_rounded,
+                                          color: Color(0xFF6B7280),
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              session.goal ?? session.area,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF1C1C1E),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              _formatSessionDate(session.scheduledDate, session.scheduledTime, isChinese),
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Color(0xFF6B7280),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _startSessionFromPlanned(session);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF414B5A),
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 10,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        child: Text(isChinese ? '开始' : 'Start Now'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE5E7EA)),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x0A000000),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF3F4F6),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.calendar_month_rounded,
-                                      color: Color(0xFF6B7280),
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          session.area,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF1C1C1E),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          _formatSessionDate(session.scheduledDate, session.scheduledTime, isChinese),
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      widget.onStartSession(session.area);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF414B5A),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 10,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    child: Text(isChinese ? '开始' : 'Start Now'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
+                            }).toList(),
+                          ),
+                        ),
 
                         // Create New Session button
                         const SizedBox(height: 8),
