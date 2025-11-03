@@ -1570,19 +1570,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   child: Row(
                                     children: [
-                                      Container(
-                                        width: 48,
-                                        height: 48,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFF3F4F6),
-                                          borderRadius: BorderRadius.circular(12),
+                                      // Icon or checkbox based on type
+                                      if (session.goal != null && session.area == 'General')
+                                        // Goal - show checkbox
+                                        GestureDetector(
+                                          onTap: () {
+                                            widget.onTogglePlannedSession(session);
+                                          },
+                                          child: Container(
+                                            width: 48,
+                                            height: 48,
+                                            decoration: BoxDecoration(
+                                              color: session.isCompleted
+                                                  ? const Color(0xFF10B981)
+                                                  : const Color(0xFFF3F4F6),
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: session.isCompleted
+                                                  ? null
+                                                  : Border.all(color: const Color(0xFFE5E7EA)),
+                                            ),
+                                            child: Icon(
+                                              session.isCompleted
+                                                  ? Icons.check_rounded
+                                                  : Icons.flag_outlined,
+                                              color: session.isCompleted
+                                                  ? Colors.white
+                                                  : const Color(0xFF6B7280),
+                                              size: 24,
+                                            ),
+                                          ),
+                                        )
+                                      else
+                                        // Session - show calendar icon
+                                        Container(
+                                          width: 48,
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF3F4F6),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: const Icon(
+                                            Icons.calendar_month_rounded,
+                                            color: Color(0xFF6B7280),
+                                            size: 24,
+                                          ),
                                         ),
-                                        child: const Icon(
-                                          Icons.calendar_month_rounded,
-                                          color: Color(0xFF6B7280),
-                                          size: 24,
-                                        ),
-                                      ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
@@ -1590,10 +1622,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           children: [
                                             Text(
                                               session.goal ?? session.area,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
-                                                color: Color(0xFF1C1C1E),
+                                                color: const Color(0xFF1C1C1E),
+                                                decoration: session.isCompleted
+                                                    ? TextDecoration.lineThrough
+                                                    : null,
                                               ),
                                             ),
                                             const SizedBox(height: 4),
@@ -1607,23 +1642,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           ],
                                         ),
                                       ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          _startSessionFromPlanned(session);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF414B5A),
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 20,
-                                            vertical: 10,
+                                      // Show "Start Now" only for sessions, not goals
+                                      if (session.goal == null || session.area != 'General')
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            _startSessionFromPlanned(session);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFF414B5A),
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 20,
+                                              vertical: 10,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
                                           ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
+                                          child: Text(isChinese ? '开始' : 'Start Now'),
                                         ),
-                                        child: Text(isChinese ? '开始' : 'Start Now'),
-                                      ),
                                     ],
                                   ),
                                 ),
