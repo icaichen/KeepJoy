@@ -87,36 +87,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<DeclutterItem> _declutteredItems = [];
   final List<Memory> _memories = [];
   final List<ResellItem> _resellItems = [];
-  final List<PlannedSession> _plannedSessions = [
-    // Sample planned sessions to demonstrate the feature
-    PlannedSession(
-      id: 'sample-1',
-      title: 'Kitchen Deep Clean',
-      area: 'Kitchen',
-      scheduledDate: DateTime.now(), // Today
-      scheduledTime: '2:00 PM',
-      createdAt: DateTime.now(),
-      priority: TaskPriority.today,
-    ),
-    PlannedSession(
-      id: 'sample-2',
-      title: 'Bedroom Declutter',
-      area: 'Bedroom',
-      scheduledDate: DateTime.now().add(const Duration(days: 1)), // Tomorrow
-      scheduledTime: '10:00 AM',
-      createdAt: DateTime.now(),
-      priority: TaskPriority.thisWeek,
-    ),
-    PlannedSession(
-      id: 'sample-3',
-      title: 'Living Room Organization',
-      area: 'Living Room',
-      scheduledDate: DateTime.now().add(const Duration(days: 3)),
-      scheduledTime: '3:30 PM',
-      createdAt: DateTime.now(),
-      priority: TaskPriority.thisWeek,
-    ),
-  ];
+  final List<PlannedSession> _plannedSessions = [];
   final List<DeepCleaningSession> _completedSessions = [];
   final List<ActivityEntry> _activityHistory = [];
   final Set<String> _activityDates =
@@ -361,7 +332,7 @@ class _MainNavigatorState extends State<MainNavigator> {
 
   void _addPlannedSession(PlannedSession session) {
     setState(() {
-      _plannedSessions.add(session);
+      _plannedSessions.insert(0, session); // Add to beginning so it shows up first
     });
   }
 

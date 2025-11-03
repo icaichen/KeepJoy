@@ -1141,8 +1141,8 @@ class _UserInputPageState extends State<UserInputPage> {
   final TextEditingController _itemsController = TextEditingController(
     text: '0',
   );
-  double _focusIndex = 5.0;
-  double _moodIndex = 5.0;
+  double _focusIndex = 3.0; // Changed to 0-5 scale, starting at middle
+  double _moodIndex = 3.0; // Changed to 0-5 scale, starting at middle
 
   @override
   void dispose() {
@@ -1253,9 +1253,9 @@ class _UserInputPageState extends State<UserInputPage> {
                         Expanded(
                           child: Slider(
                             value: _focusIndex,
-                            min: 1,
-                            max: 10,
-                            divisions: 9,
+                            min: 0,
+                            max: 5,
+                            divisions: 5,
                             label: _focusIndex.round().toString(),
                             onChanged: (value) {
                               setState(() => _focusIndex = value);
@@ -1296,9 +1296,9 @@ class _UserInputPageState extends State<UserInputPage> {
                         Expanded(
                           child: Slider(
                             value: _moodIndex,
-                            min: 1,
-                            max: 10,
-                            divisions: 9,
+                            min: 0,
+                            max: 5,
+                            divisions: 5,
                             label: _moodIndex.round().toString(),
                             onChanged: (value) {
                               setState(() => _moodIndex = value);
@@ -1414,9 +1414,7 @@ class _SummaryPageState extends State<SummaryPage> {
       if (mounted) {
         setState(() {
           _isAnalyzing = false;
-          // Use fallback values on error
-          _beforeMessiness = 5.0;
-          _afterMessiness = 5.0;
+          // Don't use fallback values - leave as null
         });
       }
     }
@@ -1441,16 +1439,28 @@ class _SummaryPageState extends State<SummaryPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final theme = Theme.of(context);
 
-    // Calculate improvement percentage
-    final beforeMessiness = _beforeMessiness ?? 5.0;
-    final afterMessiness = _afterMessiness ?? 5.0;
-    final improvement = beforeMessiness > 0
-        ? ((beforeMessiness - afterMessiness) / beforeMessiness * 100).round()
+    // Calculate improvement percentage only if we have messiness data
+    final hasMessinessData = _beforeMessiness != null && _afterMessiness != null;
+    final improvement = hasMessinessData
+        ? ((_beforeMessiness! - _afterMessiness!) / _beforeMessiness! * 100).round()
         : 0;
 
+    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
       appBar: AppBar(
-        title: Text(l10n.summary),
+        backgroundColor: const Color(0xFFF5F5F7),
+        elevation: 0,
+        title: Text(
+          l10n.summary,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
         centerTitle: false,
         automaticallyImplyLeading: false,
       ),
@@ -1466,7 +1476,10 @@ class _SummaryPageState extends State<SummaryPage> {
               ),
             )
           : SingleChildScrollView(
-              padding: EdgeInsets.all(screenWidth * 0.04),
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.05,
+                vertical: 20,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1474,211 +1487,287 @@ class _SummaryPageState extends State<SummaryPage> {
                   Center(
                     child: Text(
                       widget.area,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Display',
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
                       ),
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
-                  // Before & After Photos
-                  if (widget.beforePhotoPath != null ||
-                      widget.afterPhotoPath != null) ...[
-                    Text(
-                      l10n.beforeAndAfter,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text(
-                                l10n.beforePhoto,
-                                style: theme.textTheme.titleSmall,
-                              ),
-                              SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: widget.beforePhotoPath != null
-                                    ? Image.file(
-                                        File(widget.beforePhotoPath!),
-                                        height: screenHeight * 0.2,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Container(
-                                        height: screenHeight * 0.2,
-                                        color: theme
-                                            .colorScheme
-                                            .surfaceContainerHighest,
-                                        child: Icon(
-                                          Icons.image_not_supported_outlined,
-                                          size: 40,
-                                          color: theme
-                                              .colorScheme
-                                              .onSurfaceVariant,
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: screenWidth * 0.02),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text(
-                                l10n.afterPhoto,
-                                style: theme.textTheme.titleSmall,
-                              ),
-                              SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: widget.afterPhotoPath != null
-                                    ? Image.file(
-                                        File(widget.afterPhotoPath!),
-                                        height: screenHeight * 0.2,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Container(
-                                        height: screenHeight * 0.2,
-                                        color: theme
-                                            .colorScheme
-                                            .surfaceContainerHighest,
-                                        child: Icon(
-                                          Icons.image_not_supported_outlined,
-                                          size: 40,
-                                          color: theme
-                                              .colorScheme
-                                              .onSurfaceVariant,
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-                  ],
-                  // AI Analysis
+
+                  // Before & After Photos (always show)
                   Text(
-                    l10n.aiAnalysis,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    l10n.beforeAndAfter,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
-                  Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.04),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              l10n.beforePhoto,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: widget.beforePhotoPath != null
+                                  ? Image.file(
+                                      File(widget.beforePhotoPath!),
+                                      height: screenHeight * 0.2,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      height: screenHeight * 0.2,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF3F4F6),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: const Color(0xFFE5E7EA)),
+                                      ),
+                                      child: const Icon(
+                                        Icons.image_not_supported_outlined,
+                                        size: 40,
+                                        color: Color(0xFF9CA3AF),
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: screenWidth * 0.03),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              l10n.afterPhoto,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: widget.afterPhotoPath != null
+                                  ? Image.file(
+                                      File(widget.afterPhotoPath!),
+                                      height: screenHeight * 0.2,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      height: screenHeight * 0.2,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF3F4F6),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: const Color(0xFFE5E7EA)),
+                                      ),
+                                      child: const Icon(
+                                        Icons.image_not_supported_outlined,
+                                        size: 40,
+                                        color: Color(0xFF9CA3AF),
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // AI Analysis
+                  Text(
+                    l10n.aiAnalysis,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.02),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE5E7EA)),
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: hasMessinessData
+                        ? Column(
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    l10n.messinessBefore,
-                                    style: theme.textTheme.bodyMedium,
-                                  ),
-                                  Text(
-                                    beforeMessiness.toStringAsFixed(1),
-                                    style: theme.textTheme.headlineMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.orange,
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        l10n.messinessBefore,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF6B7280),
+                                          fontWeight: FontWeight.w500,
                                         ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _beforeMessiness!.toStringAsFixed(1),
+                                        style: const TextStyle(
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFFF59E0B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Icon(Icons.arrow_forward_rounded, size: 32, color: Color(0xFF9CA3AF)),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        l10n.messinessAfter,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF6B7280),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _afterMessiness!.toStringAsFixed(1),
+                                        style: const TextStyle(
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF10B981),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              const Icon(Icons.arrow_forward, size: 32),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    l10n.messinessAfter,
-                                    style: theme.textTheme.bodyMedium,
-                                  ),
-                                  Text(
-                                    afterMessiness.toStringAsFixed(1),
-                                    style: theme.textTheme.headlineMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 32),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                l10n.improvement,
-                                style: theme.textTheme.titleMedium,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '$improvement%',
-                                style: theme.textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
+                              const SizedBox(height: 20),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3F4F6),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      l10n.improvement,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Color(0xFF6B7280),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '$improvement%',
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF111827),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
+                          )
+                        : Column(
+                            children: [
+                              Icon(
+                                Icons.analytics_outlined,
+                                size: 48,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                isChinese ? '无照片分析' : 'No Photo Analysis',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                isChinese ? '未提供前后照片' : 'Before and after photos not provided',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF9CA3AF),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   // Session Stats
                   Text(
                     l10n.summary,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
-                  Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.04),
-                      child: Column(
-                        children: [
-                          _StatRow(
-                            icon: Icons.timer_outlined,
-                            label: l10n.timeSpent,
-                            value: _formatTime(widget.elapsedSeconds),
-                          ),
-                          const Divider(height: 24),
-                          _StatRow(
-                            icon: Icons.inventory_2_outlined,
-                            label: l10n.itemsDecluttered,
-                            value: widget.itemsCount.toString(),
-                          ),
-                          const Divider(height: 24),
-                          _StatRow(
-                            icon: Icons.psychology_outlined,
-                            label: l10n.focusIndex,
-                            value: '${widget.focusIndex}/10',
-                          ),
-                          const Divider(height: 24),
-                          _StatRow(
-                            icon: Icons.mood_outlined,
-                            label: l10n.moodIndex,
-                            value: '${widget.moodIndex}/10',
-                          ),
-                        ],
-                      ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE5E7EA)),
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        _StatRow(
+                          icon: Icons.timer_outlined,
+                          label: l10n.timeSpent,
+                          value: _formatTime(widget.elapsedSeconds),
+                        ),
+                        const Divider(height: 24, color: Color(0xFFE5E7EA)),
+                        _StatRow(
+                          icon: Icons.inventory_2_outlined,
+                          label: l10n.itemsDecluttered,
+                          value: widget.itemsCount.toString(),
+                        ),
+                        const Divider(height: 24, color: Color(0xFFE5E7EA)),
+                        _StatRow(
+                          icon: Icons.psychology_outlined,
+                          label: l10n.focusIndex,
+                          value: '${widget.focusIndex}/5',
+                        ),
+                        const Divider(height: 24, color: Color(0xFFE5E7EA)),
+                        _StatRow(
+                          icon: Icons.mood_outlined,
+                          label: l10n.moodIndex,
+                          value: '${widget.moodIndex}/5',
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.04),
@@ -1695,7 +1784,19 @@ class _SummaryPageState extends State<SummaryPage> {
                           context,
                         ).popUntil((route) => route.isFirst);
                       },
-                      child: Text(l10n.done),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF414B5A),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        l10n.done,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
@@ -1719,16 +1820,30 @@ class _StatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(icon, color: theme.colorScheme.primary),
+        Icon(
+          icon,
+          color: const Color(0xFF6B7280),
+          size: 22,
+        ),
         const SizedBox(width: 16),
-        Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xFF111827),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
         Text(
           value,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
           ),
         ),
       ],
