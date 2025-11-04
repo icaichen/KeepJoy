@@ -603,7 +603,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Map<DateTime, List<PlannedSession>> getEventsForCalendar() {
               Map<DateTime, List<PlannedSession>> events = {};
               for (var session in widget.plannedSessions) {
-                if (session.isCompleted || session.scheduledDate == null) continue;
+                if (session.scheduledDate == null) continue;
                 final date = DateTime(
                   session.scheduledDate!.year,
                   session.scheduledDate!.month,
@@ -802,13 +802,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSessionCard(PlannedSession session, bool isChinese, BuildContext context) {
+    // Get color based on session mode
+    Color getModeColor() {
+      switch (session.mode) {
+        case SessionMode.deepCleaning:
+          return const Color(0xFF10B981); // Green
+        case SessionMode.joyDeclutter:
+          return const Color(0xFF3B82F6); // Blue
+        case SessionMode.quickDeclutter:
+          return const Color(0xFFF59E0B); // Orange
+      }
+    }
+
+    final modeColor = getModeColor();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
+        border: Border.all(
+          color: session.isCompleted
+              ? modeColor.withOpacity(0.3)
+              : const Color(0xFFE5E7EA),
+        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0A000000),
@@ -819,6 +837,108 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Row(
         children: [
+          // Color indicator bar
+          Container(
+            width: 4,
+            height: 48,
+            decoration: BoxDecoration(
+              color: modeColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Icon
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: session.isCompleted
+                  ? modeColor.withOpacity(0.2)
+                  : modeColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              session.isCompleted
+                  ? Icons.check_circle_rounded
+                  : _getIconForMode(session.mode),
+              color: modeColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${session.mode.displayName(isChinese)} - ${session.area}',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1C1C1E),
+                    decoration: session.isCompleted
+                        ? TextDecoration.lineThrough
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (session.isCompleted)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: modeColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          isChinese ? '已完成' : 'Done',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: modeColor,
+                          ),
+                        ),
+                      ),
+                    if (session.isCompleted && session.goal != null) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        '• ${session.goal}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                    if (!session.isCompleted) ...[
+                      Icon(
+                        Icons.access_time,
+                        size: 14,
+                        color: const Color(0xFF6B7280),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          _formatSessionDate(session.scheduledDate, session.scheduledTime, isChinese),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF6B7280),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Checkbox
           Checkbox(
             value: session.isCompleted,
             onChanged: (value) {
@@ -827,66 +947,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(4),
             ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.calendar_month_rounded,
-              color: Color(0xFF6B7280),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  session.area,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1C1C1E),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatSessionDate(session.scheduledDate, session.scheduledTime, isChinese),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context); // Close calendar modal
-              widget.onStartSession(session.area);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF414B5A),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 10,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text(isChinese ? '开始' : 'Start'),
+            activeColor: modeColor,
           ),
         ],
       ),
     );
+  }
+
+  IconData _getIconForMode(SessionMode mode) {
+    switch (mode) {
+      case SessionMode.deepCleaning:
+        return Icons.spa_rounded;
+      case SessionMode.joyDeclutter:
+        return Icons.auto_awesome_rounded;
+      case SessionMode.quickDeclutter:
+        return Icons.bolt_rounded;
+    }
   }
 
   String _formatSessionDate(DateTime? date, String? time, bool isChinese) {
@@ -1138,7 +1214,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                             child: Column(
                               children: [
                                 // Header with title and fire icon
@@ -1149,14 +1225,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       isChinese ? '当前连击' : 'Current Streak',
                                       style: const TextStyle(
                                         fontFamily: 'SF Pro Display',
-                                        fontSize: 18,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFF111827),
                                       ),
                                     ),
                                     Container(
-                                      width: 40,
-                                      height: 40,
+                                      width: 36,
+                                      height: 36,
                                       decoration: const BoxDecoration(
                                         color: Color(0xFFF3F4F6),
                                         shape: BoxShape.circle,
@@ -1164,37 +1240,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       child: const Icon(
                                         Icons.local_fire_department_rounded,
                                         color: Color(0xFFFDB022),
-                                        size: 24,
+                                        size: 20,
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 16),
 
                                 // Large streak number
                                 Text(
                                   '${widget.streak}',
                                   style: const TextStyle(
                                     fontFamily: 'SF Pro Display',
-                                    fontSize: 72,
+                                    fontSize: 48,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF111827),
                                     height: 1.0,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 4),
 
                                 // Subtitle
                                 Text(
                                   isChinese ? '天连续记录' : 'Days in a row',
                                   style: const TextStyle(
                                     fontFamily: 'SF Pro Text',
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                     color: Color(0xFF6B7280),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 16),
 
                                 // Dots visualization (max 7 dots)
                                 Row(
@@ -1202,9 +1278,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   children: List.generate(
                                     widget.streak > 7 ? 7 : widget.streak,
                                     (index) => Container(
-                                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                                      width: 12,
-                                      height: 12,
+                                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                                      width: 8,
+                                      height: 8,
                                       decoration: const BoxDecoration(
                                         color: Color(0xFF6B7280),
                                         shape: BoxShape.circle,
@@ -1213,12 +1289,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   )..addAll(
                                     widget.streak > 7
                                         ? [
-                                            const SizedBox(width: 8),
+                                            const SizedBox(width: 6),
                                             Text(
                                               '+${widget.streak - 7}',
                                               style: const TextStyle(
                                                 fontFamily: 'SF Pro Display',
-                                                fontSize: 14,
+                                                fontSize: 12,
                                                 fontWeight: FontWeight.w600,
                                                 color: Color(0xFF6B7280),
                                               ),
@@ -1236,7 +1312,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                       // Quote Card
                       Container(
-                        constraints: const BoxConstraints(maxWidth: 600),
+                        width: double.infinity,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(18),

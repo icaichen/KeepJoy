@@ -209,6 +209,21 @@ class _MainNavigatorState extends State<MainNavigator> {
       if (session != null) {
         // Save the completed session
         _completedSessions.insert(0, session);
+
+        // Mark corresponding planned session as completed
+        final plannedSessionIndex = _plannedSessions.indexWhere(
+          (s) =>
+            !s.isCompleted &&
+            s.area == session.area &&
+            s.mode == SessionMode.deepCleaning,
+        );
+
+        if (plannedSessionIndex != -1) {
+          _plannedSessions[plannedSessionIndex] = _plannedSessions[plannedSessionIndex].copyWith(
+            isCompleted: true,
+            completedAt: DateTime.now(),
+          );
+        }
       }
       _activeSession = null;
     });
