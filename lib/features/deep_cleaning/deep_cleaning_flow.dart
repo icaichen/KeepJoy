@@ -414,16 +414,17 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
   }
 
   void _continue() {
-    // Start session with before photo
+    // Start session with before photo - the session start time is managed by parent
     widget.onStartSession(widget.area);
 
-    // Navigate to timer
+    // Navigate to timer - pass the current time as start time for new sessions
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => DeepCleaningTimerPage(
           area: widget.area,
           beforePhotoPath: _photoPath,
           onStopSession: widget.onStopSession,
+          sessionStartTime: DateTime.now(), // New session starts now
         ),
       ),
     );
@@ -593,12 +594,14 @@ class DeepCleaningTimerPage extends StatefulWidget {
   final String area;
   final String? beforePhotoPath;
   final VoidCallback onStopSession;
+  final DateTime? sessionStartTime; // Add start time from active session
 
   const DeepCleaningTimerPage({
     super.key,
     required this.area,
     this.beforePhotoPath,
     required this.onStopSession,
+    this.sessionStartTime,
   });
 
   @override
@@ -608,13 +611,15 @@ class DeepCleaningTimerPage extends StatefulWidget {
 class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
     with SingleTickerProviderStateMixin {
   Timer? _timer;
-  int _elapsedSeconds = 0;
   bool _isRunning = false;
   late AnimationController _pulseController;
+  late DateTime _startTime;
 
   @override
   void initState() {
     super.initState();
+    // Use provided start time or create new one
+    _startTime = widget.sessionStartTime ?? DateTime.now();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -628,15 +633,22 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
     super.dispose();
   }
 
+  int get _elapsedSeconds {
+    // Calculate elapsed time from start time to now
+    return DateTime.now().difference(_startTime).inSeconds;
+  }
+
   void _startTimer() {
     if (_isRunning) return;
     setState(() {
       _isRunning = true;
     });
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _elapsedSeconds++;
-      });
+      if (mounted) {
+        setState(() {
+          // Just trigger rebuild to update elapsed time
+        });
+      }
     });
   }
 

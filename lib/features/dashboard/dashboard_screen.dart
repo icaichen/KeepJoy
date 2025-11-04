@@ -1418,6 +1418,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Row(
                               children: [
                                 Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () {
+                                      // Show confirmation dialog for stopping
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text(l10n.finishCleaning),
+                                          content: Text(l10n.finishCleaningConfirm),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: Text(l10n.cancel),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                // Navigate to finish page
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (_) => AfterPhotoPage(
+                                                      area: widget.activeSession!.area,
+                                                      beforePhotoPath: widget.activeSession!.beforePhotoPath,
+                                                      elapsedSeconds: DateTime.now().difference(widget.activeSession!.startTime).inSeconds,
+                                                      onStopSession: widget.onStopSession,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              child: Text(l10n.finish),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                      side: const BorderSide(color: Colors.red),
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: Text(isChinese ? '停止' : 'Stop'),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: () {
                                       Navigator.of(context).push(
@@ -1426,6 +1473,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             area: widget.activeSession!.area,
                                             beforePhotoPath: widget.activeSession!.beforePhotoPath,
                                             onStopSession: widget.onStopSession,
+                                            sessionStartTime: widget.activeSession!.startTime, // Pass start time
                                           ),
                                         ),
                                       );
