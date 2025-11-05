@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
@@ -31,9 +29,42 @@ class ResellAnalysisReportScreen extends StatefulWidget {
       _ResellAnalysisReportScreenState();
 }
 
+enum CategoryMetric {
+  revenue,
+  successRate;
+
+  String label(bool isChinese) {
+    switch (this) {
+      case CategoryMetric.revenue:
+        return isChinese ? '交易金额' : 'Revenue';
+      case CategoryMetric.successRate:
+        return isChinese ? '成交率' : 'Success Rate';
+    }
+  }
+}
+
 class _ResellAnalysisReportScreenState
     extends State<ResellAnalysisReportScreen> {
   TrendMetric _selectedMetric = TrendMetric.resellItems;
+  CategoryMetric _selectedCategoryMetric = CategoryMetric.revenue;
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,141 +112,76 @@ class _ResellAnalysisReportScreenState
     // Prepare trend data
     final trendData = _calculateTrendData();
 
+    final topPadding = MediaQuery.of(context).padding.top;
+    final pageName = isChinese ? '转卖分析' : 'Resell Analysis';
+
+    // Calculate scroll-based animations
+    const titleAreaHeight = 120.0;
+    final scrollProgress = (_scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
+    final titleOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+    final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+
     return Scaffold(
-      extendBodyBehindAppBar: true,
       backgroundColor: Colors.white,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_rounded,
-                color: Colors.white,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            flexibleSpace: LayoutBuilder(
-              builder: (context, constraints) {
-                final scrollY = (constraints.maxHeight - kToolbarHeight).clamp(
-                  0.0,
-                  150.0,
-                );
-                final progress = 1 - (scrollY / 150.0);
-
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Gradient background
-                    Transform.translate(
-                      offset: Offset(0, progress * -30),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [Color(0xFFFFF9E6), Color(0xFFFFD93D)],
-                          ),
-                        ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFD93D), // Yellow
+              Color(0xFFFFF9E6), // Light yellow
+              Colors.white,
+            ],
+            stops: [0.0, 0.15, 0.33],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Scrollable content
+            SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  // Top spacing + title
+                  SizedBox(
+                    height: 120,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 24,
+                        right: 16,
+                        top: topPadding + 12,
                       ),
-                    ),
-
-                    // Large title
-                    Positioned(
-                      left: 24,
-                      bottom: 40,
                       child: Opacity(
-                        opacity: 1 - progress,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        opacity: titleOpacity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            // Large title on the left
                             Text(
-                              isChinese ? '转卖分析' : 'Resell Analysis',
+                              pageName,
                               style: const TextStyle(
-                                fontSize: 34,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 46,
+                                fontWeight: FontWeight.w800,
                                 color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              isChinese ? '完整报告' : 'Full Report',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white70,
+                                letterSpacing: -0.6,
+                                height: 1.0,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
+                  ),
 
-                    // Top pinned header with blur
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: ClipRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: 10 * progress,
-                            sigmaY: 10 * progress,
-                          ),
-                          child: Container(
-                            height:
-                                kToolbarHeight +
-                                MediaQuery.of(context).padding.top,
-                            color: Colors.white.withValues(
-                              alpha: progress * 0.9,
-                            ),
-                            alignment: Alignment.center,
-                            child: SafeArea(
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.arrow_back_ios_rounded,
-                                      color: Colors.black.withValues(
-                                        alpha: progress,
-                                      ),
-                                    ),
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                  Expanded(
-                                    child: Opacity(
-                                      opacity: progress,
-                                      child: Text(
-                                        isChinese ? '转卖分析' : 'Resell Analysis',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-
-          // Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                  // Content
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                   // Metrics Section
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -401,13 +367,17 @@ class _ResellAnalysisReportScreenState
                               ),
                             )
                           else
-                            SizedBox(
-                              height: 250,
-                              child: CustomPaint(
-                                painter: _TrendChartPainter(
-                                  trendData: trendData,
-                                  selectedMetric: _selectedMetric,
-                                  isChinese: isChinese,
+                            ClipRect(
+                              child: SizedBox(
+                                height: 250,
+                                width: double.infinity,
+                                child: CustomPaint(
+                                  size: const Size(double.infinity, 250),
+                                  painter: _TrendChartPainter(
+                                    trendData: trendData,
+                                    selectedMetric: _selectedMetric,
+                                    isChinese: isChinese,
+                                  ),
                                 ),
                               ),
                             ),
@@ -504,12 +474,103 @@ class _ResellAnalysisReportScreenState
                     ),
                   ),
 
+                  const SizedBox(height: 24),
+
+                  // 交易洞察 Summary Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isChinese ? '交易洞察' : 'Transaction Insights',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                ),
+                          ),
+                          const SizedBox(height: 20),
+                          _buildTransactionInsights(context, isChinese),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // Real header that appears when scrolling is complete
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                ignoring: realHeaderOpacity < 0.5,
+                child: Opacity(
+                  opacity: realHeaderOpacity,
+                  child: Container(
+                    height: topPadding + kToolbarHeight,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0xFFE5E5EA),
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Back button
+                        Positioned(
+                          left: 0,
+                          top: topPadding,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_rounded),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                        // Centered title
+                        Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: topPadding),
+                            child: Text(
+                              pageName,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -528,20 +589,22 @@ class _ResellAnalysisReportScreenState
 
   // Build category performance widget
   Widget _buildCategoryPerformance(BuildContext context, bool isChinese) {
-    // Calculate category data
+    // Calculate category data for ALL categories
     final categoryData = <DeclutterCategory, Map<String, dynamic>>{};
 
+    // Initialize all categories with zeros
+    for (final category in DeclutterCategory.values) {
+      categoryData[category] = {
+        'totalRevenue': 0.0,
+        'totalCount': 0,
+        'soldCount': 0,
+      };
+    }
+
+    // Fill in actual data
     for (final resellItem in widget.resellItems) {
       final category = _getCategoryForResellItem(resellItem);
       if (category == null) continue;
-
-      if (!categoryData.containsKey(category)) {
-        categoryData[category] = {
-          'totalRevenue': 0.0,
-          'totalCount': 0,
-          'soldCount': 0,
-        };
-      }
 
       categoryData[category]!['totalCount'] += 1;
 
@@ -552,107 +615,144 @@ class _ResellAnalysisReportScreenState
       }
     }
 
-    if (categoryData.isEmpty) {
-      return Container(
-        height: 150,
-        alignment: Alignment.center,
-        child: Text(
-          isChinese ? '暂无数据' : 'No data available',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-        ),
-      );
+    // Find max values for scaling
+    double maxRevenue = 0;
+    for (final data in categoryData.values) {
+      if (data['totalRevenue'] > maxRevenue) {
+        maxRevenue = data['totalRevenue'];
+      }
     }
+    // Ensure maxRevenue is at least 1 to avoid division by zero
+    if (maxRevenue == 0) maxRevenue = 1;
 
-    // Sort by revenue
-    final sortedCategories = categoryData.entries.toList()
-      ..sort(
-        (a, b) => b.value['totalRevenue'].compareTo(a.value['totalRevenue']),
-      );
-
+    // Build toggle for metric selection
     return Column(
-      children: sortedCategories.map((entry) {
-        final category = entry.key;
-        final revenue = entry.value['totalRevenue'] as double;
-        final successRate = entry.value['totalCount'] > 0
-            ? (entry.value['soldCount'] / entry.value['totalCount'] * 100)
-            : 0.0;
-        final maxRevenue = sortedCategories.first.value['totalRevenue'];
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    category.label(context),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+      children: [
+        // Metric selector
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: CategoryMetric.values.map((metric) {
+              final isSelected = _selectedCategoryMetric == metric;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCategoryMetric = metric;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : [],
                     ),
-                  ),
-                  Text(
-                    '¥${revenue.toStringAsFixed(0)} | ${successRate.toStringAsFixed(0)}%',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // Revenue bar
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE0E0E0),
-                        borderRadius: BorderRadius.circular(4),
+                    child: Text(
+                      metric.label(isChinese),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: isSelected ? Colors.black87 : Colors.black54,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                       ),
-                      child: FractionallySizedBox(
-                        widthFactor: maxRevenue > 0 ? revenue / maxRevenue : 0,
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFD93D),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Bar chart for selected metric
+        Column(
+          children: DeclutterCategory.values.map((category) {
+            final data = categoryData[category]!;
+            final revenue = data['totalRevenue'] as double;
+            final totalCount = data['totalCount'] as int;
+            final soldCount = data['soldCount'] as int;
+            final successRate = totalCount > 0
+                ? (soldCount / totalCount * 100)
+                : 0.0;
+
+            // Calculate bar width based on selected metric
+            double barValue;
+            String valueText;
+            Color barColor;
+
+            if (_selectedCategoryMetric == CategoryMetric.revenue) {
+              barValue = maxRevenue > 0 ? revenue / maxRevenue : 0;
+              valueText = '¥${revenue.toStringAsFixed(0)}';
+              barColor = const Color(0xFFFFD93D);
+            } else {
+              barValue = successRate / 100;
+              valueText = '${successRate.toStringAsFixed(0)}%';
+              barColor = const Color(0xFF5ECFB8);
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        category.label(context),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
                       ),
-                    ),
+                      Text(
+                        valueText,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  // Success rate indicator
+                  const SizedBox(height: 8),
+                  // Bar
                   Container(
-                    width: 60,
-                    height: 8,
+                    height: 12,
                     decoration: BoxDecoration(
                       color: const Color(0xFFE0E0E0),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: FractionallySizedBox(
-                      widthFactor: successRate / 100,
+                      widthFactor: barValue,
                       alignment: Alignment.centerLeft,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF5ECFB8),
-                          borderRadius: BorderRadius.circular(4),
+                          color: barColor,
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -776,6 +876,181 @@ class _ResellAnalysisReportScreenState
           ),
         );
       }).toList(),
+    );
+  }
+
+  // Build transaction insights summary
+  Widget _buildTransactionInsights(BuildContext context, bool isChinese) {
+    final soldItems = widget.resellItems
+        .where((item) => item.status == ResellStatus.sold)
+        .toList();
+
+    if (soldItems.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Text(
+            isChinese ? '暂无成交数据' : 'No sold items yet',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+          ),
+        ),
+      );
+    }
+
+    // Calculate insights
+    // 1. 成交表现 (Transaction Performance) - success rate
+    final successRate = widget.resellItems.isEmpty
+        ? 0.0
+        : (soldItems.length / widget.resellItems.length * 100);
+
+    // 2. 优势品类 (Best Category) - category with highest revenue
+    final categoryRevenue = <DeclutterCategory, double>{};
+    for (final item in soldItems) {
+      if (item.soldPrice != null) {
+        final category = _getCategoryForResellItem(item);
+        if (category != null) {
+          categoryRevenue[category] =
+              (categoryRevenue[category] ?? 0) + item.soldPrice!;
+        }
+      }
+    }
+
+    DeclutterCategory? bestCategory;
+    double bestRevenue = 0;
+    categoryRevenue.forEach((category, revenue) {
+      if (revenue > bestRevenue) {
+        bestRevenue = revenue;
+        bestCategory = category;
+      }
+    });
+
+    // 3. 最快成交 (Fastest Sale) - shortest days to sell
+    int? fastestDays;
+    for (final item in soldItems) {
+      if (item.soldDate != null) {
+        final days = item.soldDate!.difference(item.createdAt).inDays;
+        if (fastestDays == null || days < fastestDays) {
+          fastestDays = days;
+        }
+      }
+    }
+
+    // 4. 最高价格 (Highest Price)
+    double highestPrice = 0;
+    for (final item in soldItems) {
+      if (item.soldPrice != null && item.soldPrice! > highestPrice) {
+        highestPrice = item.soldPrice!;
+      }
+    }
+
+    return Column(
+      children: [
+        // 成交表现
+        _buildInsightRow(
+          context,
+          icon: Icons.trending_up_rounded,
+          iconColor: const Color(0xFF10B981),
+          label: isChinese ? '成交表现' : 'Success Rate',
+          value: '${successRate.toStringAsFixed(0)}%',
+          isChinese: isChinese,
+        ),
+        const SizedBox(height: 12),
+
+        // 优势品类
+        if (bestCategory != null)
+          _buildInsightRow(
+            context,
+            icon: Icons.star_rounded,
+            iconColor: const Color(0xFFFFD93D),
+            label: isChinese ? '优势品类' : 'Best Category',
+            value: bestCategory!.label(context),
+            isChinese: isChinese,
+          ),
+        if (bestCategory != null) const SizedBox(height: 12),
+
+        // 最快成交
+        if (fastestDays != null)
+          _buildInsightRow(
+            context,
+            icon: Icons.flash_on_rounded,
+            iconColor: const Color(0xFFFF9AA2),
+            label: isChinese ? '最快成交' : 'Fastest Sale',
+            value: '$fastestDays ${isChinese ? '天' : 'days'}',
+            isChinese: isChinese,
+          ),
+        if (fastestDays != null) const SizedBox(height: 12),
+
+        // 最高价格
+        if (highestPrice > 0)
+          _buildInsightRow(
+            context,
+            icon: Icons.attach_money_rounded,
+            iconColor: const Color(0xFF5ECFB8),
+            label: isChinese ? '最高价格' : 'Highest Price',
+            value: '¥${highestPrice.toStringAsFixed(0)}',
+            isChinese: isChinese,
+          ),
+      ],
+    );
+  }
+
+  // Helper method to build insight row
+  Widget _buildInsightRow(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    required bool isChinese,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

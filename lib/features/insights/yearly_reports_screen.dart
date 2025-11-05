@@ -21,6 +21,24 @@ class YearlyReportsScreen extends StatefulWidget {
 
 class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   bool _showJoyPercent = true; // true = Joy Percent, false = Joy Count
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +46,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
     final now = DateTime.now();
     final yearStart = DateTime(now.year, 1, 1);
+    final topPadding = MediaQuery.of(context).padding.top;
+    final pageName = isChinese ? '年度报告' : 'Yearly Reports';
 
     // Calculate past 12 months activity (for heatmap)
     final past12MonthsActivity = <String, int>{};
@@ -119,18 +139,78 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     final donateCount = yearlyItems.where((item) => item.status == DeclutterStatus.donate).length;
     final discardCount = yearlyItems.where((item) => item.status == DeclutterStatus.discard).length;
 
+    // Calculate scroll-based animations
+    const titleAreaHeight = 120.0;
+    final scrollProgress = (_scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
+    final titleOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+    final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isChinese ? '年度报告' : 'Yearly Reports'),
-        backgroundColor: const Color(0xFFF2F2F7),
-        elevation: 0,
-      ),
-      backgroundColor: const Color(0xFFF2F2F7),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.white,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF89CFF0), // Blue
+              Color(0xFFE6F4F9), // Light blue
+              Colors.white,
+            ],
+            stops: [0.0, 0.15, 0.33],
+          ),
+        ),
+        child: Stack(
           children: [
+            // Scrollable content
+            SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  // Top spacing + title
+                  SizedBox(
+                    height: 120,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 24,
+                        right: 16,
+                        top: topPadding + 12,
+                      ),
+                      child: Opacity(
+                        opacity: titleOpacity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Large title on the left
+                            Text(
+                              pageName,
+                              style: const TextStyle(
+                                fontSize: 46,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.6,
+                                height: 1.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Content
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             // Year header
             Container(
               width: double.infinity,
@@ -601,6 +681,68 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     ],
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Real header that appears when scrolling is complete
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                ignoring: realHeaderOpacity < 0.5,
+                child: Opacity(
+                  opacity: realHeaderOpacity,
+                  child: Container(
+                    height: topPadding + kToolbarHeight,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0xFFE5E5EA),
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Back button
+                        Positioned(
+                          left: 0,
+                          top: topPadding,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_rounded),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                        // Centered title
+                        Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: topPadding),
+                            child: Text(
+                              pageName,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

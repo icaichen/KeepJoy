@@ -1,9 +1,7 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/memory.dart';
 
-class MemoryLaneReportScreen extends StatelessWidget {
+class MemoryLaneReportScreen extends StatefulWidget {
   const MemoryLaneReportScreen({
     super.key,
     required this.memories,
@@ -12,141 +10,109 @@ class MemoryLaneReportScreen extends StatelessWidget {
   final List<Memory> memories;
 
   @override
+  State<MemoryLaneReportScreen> createState() => _MemoryLaneReportScreenState();
+}
+
+class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isChinese = Localizations.localeOf(context)
         .languageCode
         .toLowerCase()
         .startsWith('zh');
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.white,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
-            flexibleSpace: LayoutBuilder(
-              builder: (context, constraints) {
-                final scrollY =
-                    (constraints.maxHeight - kToolbarHeight).clamp(0.0, 150.0);
-                final progress = 1 - (scrollY / 150.0);
+    final topPadding = MediaQuery.of(context).padding.top;
+    final pageName = isChinese ? '记忆长廊' : 'Memory Lane';
 
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Transform.translate(
-                      offset: Offset(0, progress * -30),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFFF3EBFF),
-                              Color(0xFFB794F6),
-                            ],
-                          ),
-                        ),
+    // Calculate scroll-based animations
+    const titleAreaHeight = 120.0;
+    final scrollProgress = (_scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
+    final titleOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+    final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFB794F6), // Purple
+              Color(0xFFF3EBFF), // Light purple
+              Colors.white,
+            ],
+            stops: [0.0, 0.15, 0.33],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Scrollable content
+            SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  // Top spacing + title
+                  SizedBox(
+                    height: 120,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 24,
+                        right: 16,
+                        top: topPadding + 12,
                       ),
-                    ),
-                    Positioned(
-                      left: 24,
-                      bottom: 40,
                       child: Opacity(
-                        opacity: 1 - progress,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        opacity: titleOpacity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            // Large title on the left
                             Text(
-                              isChinese ? '记忆长廊' : 'Memory Lane',
+                              pageName,
                               style: const TextStyle(
-                                fontSize: 34,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 46,
+                                fontWeight: FontWeight.w800,
                                 color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              isChinese
-                                  ? '${memories.length} 个回忆'
-                                  : '${memories.length} memories',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white70,
+                                letterSpacing: -0.6,
+                                height: 1.0,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: ClipRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: 10 * progress,
-                            sigmaY: 10 * progress,
-                          ),
-                          child: Container(
-                            height: kToolbarHeight +
-                                MediaQuery.of(context).padding.top,
-                            color: Colors.white.withValues(alpha: progress * 0.9),
-                            alignment: Alignment.center,
-                            child: SafeArea(
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.arrow_back_ios_rounded,
-                                      color: Colors.black
-                                          .withValues(alpha: progress),
-                                    ),
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                  Expanded(
-                                    child: Opacity(
-                                      opacity: progress,
-                                      child: Text(
-                                        isChinese ? '记忆长廊' : 'Memory Lane',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
+                  ),
 
-          // Content sections
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                // 1. Emotion Distribution (Vertical Bar Chart)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: _buildEmotionDistribution(context, isChinese),
-                ),
-                const SizedBox(height: 20),
+                  // Content sections
+                  Column(
+                    children: [
+                      // 1. Emotion Distribution (Vertical Bar Chart)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                        child: _buildEmotionDistribution(context, isChinese),
+                      ),
+                      const SizedBox(height: 20),
 
                 // 2. Memory Heatmap
                 Padding(
@@ -170,12 +136,63 @@ class MemoryLaneReportScreen extends StatelessWidget {
                 const SizedBox(height: 20),
               ],
             ),
-          ),
+          ],
+        ),
+      ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 32),
-          ),
-        ],
+      // Real header that appears when scrolling is complete
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                ignoring: realHeaderOpacity < 0.5,
+                child: Opacity(
+                  opacity: realHeaderOpacity,
+                  child: Container(
+                    height: topPadding + kToolbarHeight,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0xFFE5E5EA),
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Back button
+                        Positioned(
+                          left: 0,
+                          top: topPadding,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_rounded),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                        // Centered title
+                        Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: topPadding),
+                            child: Text(
+                              pageName,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -183,7 +200,7 @@ class MemoryLaneReportScreen extends StatelessWidget {
   // 1. VERTICAL BAR CHART for emotions
   Widget _buildEmotionDistribution(BuildContext context, bool isChinese) {
     final sentimentCounts = <MemorySentiment, int>{};
-    for (final memory in memories) {
+    for (final memory in widget.memories) {
       if (memory.sentiment != null) {
         sentimentCounts[memory.sentiment!] = (sentimentCounts[memory.sentiment!] ?? 0) + 1;
       }
@@ -275,7 +292,7 @@ class MemoryLaneReportScreen extends StatelessWidget {
   Widget _buildMemoryHeatmap(BuildContext context, bool isChinese) {
     final monthlyData = <String, int>{};
 
-    for (final memory in memories) {
+    for (final memory in widget.memories) {
       final monthKey =
           '${memory.createdAt.year}-${memory.createdAt.month.toString().padLeft(2, '0')}';
       monthlyData[monthKey] = (monthlyData[monthKey] ?? 0) + 1;
@@ -470,7 +487,7 @@ class MemoryLaneReportScreen extends StatelessWidget {
     // Group memories by category (category is a String)
     final categoryGroups = <String, List<Memory>>{};
 
-    for (final memory in memories) {
+    for (final memory in widget.memories) {
       if (memory.category != null && memory.category!.isNotEmpty) {
         categoryGroups.putIfAbsent(memory.category!, () => []).add(memory);
       }
@@ -549,9 +566,9 @@ class MemoryLaneReportScreen extends StatelessWidget {
 
   // 4. TIME MARKERS
   Widget _buildTimeMarkers(BuildContext context, bool isChinese) {
-    final sortedMemories = memories.isEmpty
+    final sortedMemories = widget.memories.isEmpty
         ? <Memory>[]
-        : (List<Memory>.from(memories)
+        : (List<Memory>.from(widget.memories)
             ..sort((a, b) => a.createdAt.compareTo(b.createdAt)));
 
     Memory? firstMemory = sortedMemories.isNotEmpty ? sortedMemories.first : null;
@@ -560,7 +577,7 @@ class MemoryLaneReportScreen extends StatelessWidget {
     // Find longest story (by description length)
     Memory? longestStory;
     int maxLength = 0;
-    for (final memory in memories) {
+    for (final memory in widget.memories) {
       final length = (memory.description?.length ?? 0) + (memory.notes?.length ?? 0);
       if (length > maxLength) {
         maxLength = length;
@@ -586,7 +603,7 @@ class MemoryLaneReportScreen extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.all(20),
-      child: memories.isEmpty
+      child: widget.memories.isEmpty
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -682,8 +699,8 @@ class MemoryLaneReportScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               isChinese
-                                  ? '$totalDays 天 · ${memories.length} 个回忆'
-                                  : '$totalDays days · ${memories.length} memories',
+                                  ? '$totalDays 天 · ${widget.memories.length} 个回忆'
+                                  : '$totalDays days · ${widget.memories.length} memories',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Colors.black54,
                                   ),
