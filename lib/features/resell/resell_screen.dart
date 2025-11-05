@@ -26,10 +26,29 @@ class ResellScreen extends StatefulWidget {
 
 class _ResellScreenState extends State<ResellScreen> {
   int _selectedTab = 0; // 0 = To Sell, 1 = Listing, 2 = Sold
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate total money earned from sold items
     final soldItems = widget.resellItems.where((item) => item.status == ResellStatus.sold);
@@ -54,190 +73,255 @@ class _ResellScreenState extends State<ResellScreen> {
         displayItems = [];
     }
 
+    // Calculate scroll-based animations
+    const headerHeight = 100.0;
+    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
+    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+
+    final pageName = isChinese ? '转售' : 'Resell';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F7),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-              child: Text(
-                isChinese ? '转售' : 'Resell',
-                style: const TextStyle(
-                  fontFamily: 'SF Pro Display',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1C1C1E),
-                  letterSpacing: 0,
-                  height: 1.0,
-                ),
-              ),
-            ),
-
-            Expanded(
-              child: ListView(
+      body: Stack(
+        children: [
+          // Scrollable content
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: SizedBox(height: topPadding + 80)),
+              SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                children: [
-                  // Total Earned Card
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFE5E7EA)),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x0A000000),
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Total Earned Card
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFE5E7EA)),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.attach_money_rounded,
+                              size: 28,
+                              color: Color(0xFF10B981),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isChinese ? '总收入' : 'Total Earned',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '$currencySymbol${totalEarned.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF10B981),
+                                    height: 1.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  isChinese ? '${soldItems.length} 件已售出' : '${soldItems.length} items sold',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(16),
+                    const SizedBox(height: 24),
+
+                    // Tabs
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildTab(
+                              isChinese ? '待售' : 'To Sell',
+                              0,
+                              widget.resellItems.where((item) => item.status == ResellStatus.toSell).length,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.attach_money_rounded,
-                            size: 28,
-                            color: Color(0xFF10B981),
+                          Expanded(
+                            child: _buildTab(
+                              isChinese ? '在售' : 'Listing',
+                              1,
+                              widget.resellItems.where((item) => item.status == ResellStatus.listing).length,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
+                          Expanded(
+                            child: _buildTab(
+                              isChinese ? '已售' : 'Sold',
+                              2,
+                              soldItems.length,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Item List
+                    if (displayItems.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(48),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                isChinese ? '总收入' : 'Total Earned',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF6B7280),
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3F4F6),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '$currencySymbol${totalEarned.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF10B981),
-                                  height: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                isChinese ? '${soldItems.length} 件已售出' : '${soldItems.length} items sold',
-                                style: const TextStyle(
-                                  fontSize: 12,
+                                child: const Icon(
+                                  Icons.sell_outlined,
+                                  size: 36,
                                   color: Color(0xFF9CA3AF),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                isChinese ? '暂无物品' : 'No items',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF6B7280),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                      )
+                    else
+                      ...displayItems.map((resellItem) {
+                        // Find the corresponding declutter item
+                        final declutterItem = widget.items.firstWhere(
+                          (item) => item.id == resellItem.declutterItemId,
+                          orElse: () => DeclutterItem(
+                            id: '',
+                            name: isChinese ? '未知物品' : 'Unknown Item',
+                            category: DeclutterCategory.miscellaneous,
+                            createdAt: DateTime.now(),
+                            status: DeclutterStatus.resell,
+                          ),
+                        );
 
-                  // Tabs
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _buildTab(
-                            isChinese ? '待售' : 'To Sell',
-                            0,
-                            widget.resellItems.where((item) => item.status == ResellStatus.toSell).length,
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildTab(
-                            isChinese ? '在售' : 'Listing',
-                            1,
-                            widget.resellItems.where((item) => item.status == ResellStatus.listing).length,
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildTab(
-                            isChinese ? '已售' : 'Sold',
-                            2,
-                            soldItems.length,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                        return _buildResellItemCard(resellItem, declutterItem, isChinese, currencySymbol);
+                      }),
+                  ]),
+                ),
+              ),
+            ],
+          ),
 
-                  // Item List
-                  if (displayItems.isEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(48),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF3F4F6),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Icon(
-                                Icons.sell_outlined,
-                                size: 36,
-                                color: Color(0xFF9CA3AF),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              isChinese ? '暂无物品' : 'No items',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF6B7280),
-                              ),
-                            ),
-                          ],
-                        ),
+          // Collapsed header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: collapsedHeaderOpacity < 0.5,
+              child: Opacity(
+                opacity: collapsedHeaderOpacity,
+                child: Container(
+                  height: topPadding + kToolbarHeight,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F6F7),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Color(0xFFE5E5EA),
+                        width: 0.5,
                       ),
-                    )
-                  else
-                    ...displayItems.map((resellItem) {
-                      // Find the corresponding declutter item
-                      final declutterItem = widget.items.firstWhere(
-                        (item) => item.id == resellItem.declutterItemId,
-                        orElse: () => DeclutterItem(
-                          id: '',
-                          name: isChinese ? '未知物品' : 'Unknown Item',
-                          category: DeclutterCategory.miscellaneous,
-                          createdAt: DateTime.now(),
-                          status: DeclutterStatus.resell,
-                        ),
-                      );
-
-                      return _buildResellItemCard(resellItem, declutterItem, isChinese, currencySymbol);
-                    }),
-                ],
+                    ),
+                  ),
+                  padding: EdgeInsets.only(top: topPadding),
+                  alignment: Alignment.center,
+                  child: Text(
+                    pageName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1C1C1E),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Original header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 100,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: topPadding + 12,
+                ),
+                child: Opacity(
+                  opacity: headerOpacity,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      pageName,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1C1C1E),
+                        letterSpacing: -0.5,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

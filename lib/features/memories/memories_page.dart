@@ -26,73 +26,156 @@ class MemoriesPage extends StatefulWidget {
 
 class _MemoriesPageState extends State<MemoriesPage> {
   MemoryViewMode _viewMode = MemoryViewMode.grid;
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
     final memories = widget.memories;
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    // Calculate scroll-based animations
+    const headerHeight = 120.0;
+    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
+    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+
+    final pageName = l10n.memoriesTitle;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F7),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with view mode toggle
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.memoriesTitle,
+      body: Stack(
+        children: [
+          // Scrollable content
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: SizedBox(height: topPadding + 80)),
+              SliverToBoxAdapter(
+                child: memories.isEmpty
+                    ? SizedBox(
+                        height: MediaQuery.of(context).size.height - topPadding - 80,
+                        child: _EmptyMemoriesState(),
+                      )
+                    : _viewMode == MemoryViewMode.grid
+                        ? _GridViewWrapper(memories: memories)
+                        : _TimelineView(memories: memories, isChinese: isChinese),
+              ),
+            ],
+          ),
+
+          // Collapsed header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: collapsedHeaderOpacity < 0.5,
+              child: Opacity(
+                opacity: collapsedHeaderOpacity,
+                child: Container(
+                  height: topPadding + kToolbarHeight,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F6F7),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Color(0xFFE5E5EA),
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                  padding: EdgeInsets.only(top: topPadding),
+                  alignment: Alignment.center,
+                  child: Text(
+                    pageName,
                     style: const TextStyle(
-                      fontFamily: 'SF Pro Display',
-                      fontSize: 28,
+                      fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1C1C1E),
-                      letterSpacing: 0,
-                      height: 1.0,
                     ),
                   ),
-                  // View mode toggle
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        _buildViewModeButton(
-                          icon: Icons.grid_view_rounded,
-                          mode: MemoryViewMode.grid,
-                          isSelected: _viewMode == MemoryViewMode.grid,
-                        ),
-                        const SizedBox(width: 4),
-                        _buildViewModeButton(
-                          icon: Icons.timeline_rounded,
-                          mode: MemoryViewMode.timeline,
-                          isSelected: _viewMode == MemoryViewMode.timeline,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-            if (memories.isEmpty)
-              Expanded(child: _EmptyMemoriesState())
-            else
-              Expanded(
-                child: _viewMode == MemoryViewMode.grid
-                    ? _GridView(memories: memories)
-                    : _TimelineView(memories: memories, isChinese: isChinese),
+          ),
+
+          // Original header with view mode toggle
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 120,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 16,
+                  top: topPadding + 12,
+                ),
+                child: Opacity(
+                  opacity: headerOpacity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        pageName,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1C1C1E),
+                          letterSpacing: -0.5,
+                          height: 1.0,
+                        ),
+                      ),
+                      // View mode toggle
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            _buildViewModeButton(
+                              icon: Icons.grid_view_rounded,
+                              mode: MemoryViewMode.grid,
+                              isSelected: _viewMode == MemoryViewMode.grid,
+                            ),
+                            const SizedBox(width: 4),
+                            _buildViewModeButton(
+                              icon: Icons.timeline_rounded,
+                              mode: MemoryViewMode.timeline,
+                              isSelected: _viewMode == MemoryViewMode.timeline,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -138,6 +221,33 @@ class _GridView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      padding: const EdgeInsets.all(1),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 1,
+        mainAxisSpacing: 1,
+        childAspectRatio: 1,
+      ),
+      itemCount: memories.length,
+      itemBuilder: (context, index) {
+        final memory = memories[index];
+        return _MemoryGridItem(memory: memory);
+      },
+    );
+  }
+}
+
+// Wrapper for GridView to work with CustomScrollView
+class _GridViewWrapper extends StatelessWidget {
+  final List<Memory> memories;
+
+  const _GridViewWrapper({required this.memories});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(1),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,

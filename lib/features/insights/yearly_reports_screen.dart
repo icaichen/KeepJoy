@@ -406,10 +406,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             const SizedBox(height: 20),
 
             // Joy Index Trend
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _buildJoyIndexCard(context, isChinese),
-            ),
+            _buildJoyIndexCard(context, isChinese),
             const SizedBox(height: 20),
 
             // Yearly Report Card (Similar to Monthly Report)

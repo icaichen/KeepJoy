@@ -25,9 +25,29 @@ class ItemsScreen extends StatefulWidget {
 }
 
 class _ItemsScreenState extends State<ItemsScreen> {
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate stats
     final toDecluterItems = widget.items
@@ -37,44 +57,98 @@ class _ItemsScreenState extends State<ItemsScreen> {
         .where((item) => item.status != DeclutterStatus.keep)
         .toList();
 
+    // Calculate scroll-based animations
+    const headerHeight = 100.0;
+    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
+    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+
+    final pageName = isChinese ? '我的物品' : 'My Items';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F7),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-              child: Row(
-                children: [
-                  Text(
-                    isChinese ? '我的物品' : 'My Items',
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Display',
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1C1C1E),
-                      letterSpacing: 0,
-                      height: 1.0,
+      body: Stack(
+        children: [
+          // Scrollable content
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: SizedBox(height: topPadding + 80)),
+              SliverToBoxAdapter(
+                child: _buildAllItemsTab(toDecluterItems, declutteredItems, isChinese),
+              ),
+            ],
+          ),
+
+          // Collapsed header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: collapsedHeaderOpacity < 0.5,
+              child: Opacity(
+                opacity: collapsedHeaderOpacity,
+                child: Container(
+                  height: topPadding + kToolbarHeight,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F6F7),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Color(0xFFE5E5EA),
+                        width: 0.5,
+                      ),
                     ),
                   ),
-                  const Spacer(),
-                  _buildHeaderButton(Icons.add_rounded, () {
-                    // Navigate to add item
-                  }),
-                ],
+                  padding: EdgeInsets.only(top: topPadding),
+                  alignment: Alignment.center,
+                  child: Text(
+                    pageName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1C1C1E),
+                    ),
+                  ),
+                ),
               ),
             ),
+          ),
 
-            const SizedBox(height: 20),
-
-            // All Items Content
-            Expanded(
-              child: _buildAllItemsTab(toDecluterItems, declutteredItems, isChinese),
+          // Original header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 100,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: topPadding + 12,
+                ),
+                child: Opacity(
+                  opacity: headerOpacity,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      pageName,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1C1C1E),
+                        letterSpacing: -0.5,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -86,8 +160,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
   ) {
     final categoryStats = _calculateCategoryStats(widget.items);
 
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+      child: Column(
       children: [
         const SizedBox(height: 8),
 
@@ -153,30 +228,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildHeaderButton(IconData icon, VoidCallback? onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E4E8)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0D111827),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: 18, color: const Color(0xFF1C1C1E)),
-      ),
+    ),
     );
   }
 
