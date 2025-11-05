@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:keepjoy_app/features/deep_cleaning/deep_cleaning_flow.dart';
-import 'package:keepjoy_app/features/insights/deep_cleaning_report_screen.dart';
 import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
 import 'package:keepjoy_app/features/insights/yearly_reports_screen.dart';
@@ -21,8 +21,16 @@ import 'package:keepjoy_app/theme/typography.dart';
 
 class DashboardScreen extends StatefulWidget {
   final DeepCleaningSession? activeSession;
-  final VoidCallback onStopSession;
-  final Function(String area) onStartSession;
+  final void Function({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) onStopSession;
+  final Function(String area, {String? beforePhotoPath}) onStartSession;
   final VoidCallback onOpenQuickDeclutter;
   final VoidCallback onOpenJoyDeclutter;
   final void Function(Locale) onLocaleChange;
@@ -1950,25 +1958,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 12),
                       _buildReportCard(
                         context,
-                        icon: Icons.auto_graph_rounded,
-                        iconColor: const Color(0xFFB794F6),
-                        bgColors: [const Color(0xFFF3EBFF), const Color(0xFFE6D5FF)],
-                        title: isChinese ? '深度整理分析' : 'Deep Cleaning Analytics',
-                        subtitle: isChinese ? '查看专注度和心情统计' : 'View focus & mood statistics',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DeepCleaningReportScreen(
-                                sessions: widget.deepCleaningSessions,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildReportCard(
-                        context,
                         icon: Icons.photo_library_rounded,
                         iconColor: const Color(0xFFFF9AA2),
                         bgColors: [const Color(0xFFFFEEF0), const Color(0xFFFFDDE0)],
@@ -2238,19 +2227,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildMonthlyReportCard(BuildContext context, bool isChinese) {
-    // Calculate cleaning frequency by type
-    final joyDeclutterCount = widget.declutteredItems.length;
-    final deepCleaningCount = widget.deepCleaningSessions.length;
-    final quickTidyCount = 0; // TODO: Add when we have quick tidy feature
-
-    // Calculate category counts
-    final categoryCounts = <String, int>{};
-    for (final item in widget.declutteredItems) {
-      final categoryLabel = item.category.label(context);
-      categoryCounts[categoryLabel] = (categoryCounts[categoryLabel] ?? 0) + 1;
-    }
-
-    // Calculate area counts from deep cleaning sessions
+    // Calculate THIS MONTH's metrics
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
     final nextMonthStart = DateTime(now.year, now.month + 1, 1);
@@ -2261,15 +2238,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
             session.startTime.isBefore(nextMonthStart))
         .toList();
 
+    // 1. Deep cleaning sessions count
+    final deepCleaningCount = sessionsThisMonth.length;
+
+    // 2. Cleaned items count
+    final cleanedItemsCount = sessionsThisMonth
+        .where((session) => session.itemsCount != null)
+        .fold(0, (sum, session) => sum + session.itemsCount!);
+
+    // 3. Average focus
+    final sessionsWithFocus = sessionsThisMonth
+        .where((session) => session.focusIndex != null)
+        .toList();
+    final averageFocus = sessionsWithFocus.isEmpty
+        ? 0.0
+        : sessionsWithFocus
+                .map((session) => session.focusIndex!)
+                .reduce((a, b) => a + b) /
+            sessionsWithFocus.length;
+
+    // 4. Average joy
+    final sessionsWithMood = sessionsThisMonth
+        .where((session) => session.moodIndex != null)
+        .toList();
+    final averageJoy = sessionsWithMood.isEmpty
+        ? 0.0
+        : sessionsWithMood
+                .map((session) => session.moodIndex!)
+                .reduce((a, b) => a + b) /
+            sessionsWithMood.length;
+
+    // Group ALL sessions by area (not just this month)
+    final sessionsByArea = <String, List<DeepCleaningSession>>{};
+    for (final session in widget.deepCleaningSessions) {
+      sessionsByArea.update(
+        session.area,
+        (list) => list..add(session),
+        ifAbsent: () => [session],
+      );
+    }
+
+    // Define common predefined areas
+    final commonAreas = [
+      isChinese ? '厨房' : 'Kitchen',
+      isChinese ? '卧室' : 'Bedroom',
+      isChinese ? '客厅' : 'Living Room',
+      isChinese ? '浴室' : 'Bathroom',
+      isChinese ? '书房' : 'Study',
+      isChinese ? '衣柜' : 'Closet',
+    ];
+
+    // Combine common areas with custom areas
+    final allAreas = <String>{...commonAreas, ...sessionsByArea.keys}.toList();
+
+    // Calculate area counts for heatmap
     final areaCounts = <String, int>{};
-    for (final session in sessionsThisMonth) {
-      areaCounts.update(session.area, (value) => value + 1, ifAbsent: () => 1);
+    for (final area in allAreas) {
+      areaCounts[area] = sessionsByArea[area]?.length ?? 0;
     }
 
     // Get max count for heatmap
-    final maxAreaCount = areaCounts.isEmpty
+    final maxAreaCount = areaCounts.values.isEmpty
         ? 1
-        : areaCounts.values.reduce((a, b) => a > b ? a : b);
+        : areaCounts.values.reduce((a, b) => a > b ? a : b).clamp(1, double.infinity).toInt();
 
     return Container(
       width: double.infinity,
@@ -2291,7 +2322,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           // Title
           Text(
-            isChinese ? '本月整理报告' : 'Monthly Report',
+            isChinese ? '深度整理分析' : 'Deep Cleaning Analysis',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.black87,
@@ -2299,138 +2330,149 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 20),
 
-          // 1. 整理频次 - Cleaning Frequency (no title)
+          // Metrics Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildFrequencyItem(
-                context,
-                icon: Icons.bolt_rounded,
-                color: const Color(0xFF5ECFB8),
-                count: deepCleaningCount,
-                label: isChinese ? '极速大扫除' : 'Deep Clean',
+              Expanded(
+                child: _buildDeepCleaningMetricItem(
+                  context,
+                  icon: Icons.cleaning_services_rounded,
+                  color: const Color(0xFFB794F6),
+                  value: deepCleaningCount.toString(),
+                  label: isChinese ? '整理次数' : 'Sessions',
+                ),
               ),
-              _buildFrequencyItem(
-                context,
-                icon: Icons.pan_tool_rounded,
-                color: const Color(0xFFFF9AA2),
-                count: joyDeclutterCount,
-                label: isChinese ? '心动整理' : 'Joy Declutter',
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDeepCleaningMetricItem(
+                  context,
+                  icon: Icons.inventory_2_rounded,
+                  color: const Color(0xFF5ECFB8),
+                  value: cleanedItemsCount.toString(),
+                  label: isChinese ? '清理物品' : 'Items',
+                ),
               ),
-              _buildFrequencyItem(
-                context,
-                icon: Icons.description_rounded,
-                color: const Color(0xFF89CFF0),
-                count: quickTidyCount,
-                label: isChinese ? '心动小帮手' : 'Quick Tidy',
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDeepCleaningMetricItem(
+                  context,
+                  icon: Icons.spa_rounded,
+                  color: const Color(0xFF89CFF0),
+                  value: averageFocus.toStringAsFixed(1),
+                  label: isChinese ? '平均专注度' : 'Avg Focus',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDeepCleaningMetricItem(
+                  context,
+                  icon: Icons.sentiment_satisfied_rounded,
+                  color: const Color(0xFFFFD93D),
+                  value: averageJoy.toStringAsFixed(1),
+                  label: isChinese ? '平均愉悦度' : 'Avg Joy',
+                ),
               ),
             ],
           ),
 
           const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
-          // 2. 整理类别 - Categories
-          _buildReportSection(
-            context,
-            title: isChinese ? '整理类别' : 'Categories',
-            child: categoryCounts.isEmpty
-                ? Text(
-                    isChinese
-                        ? '本月还没有分类整理记录，先挑一件物品开始吧。'
-                        : 'No categorized items yet. Start with one item.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.black54,
-                    ),
-                  )
-                : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: categoryCounts.entries.map((entry) {
-                      return Chip(
-                        label: Text('${entry.key} (${entry.value})'),
-                        backgroundColor: const Color(0xFFF5F5F5),
-                      );
-                    }).toList(),
-                  ),
-          ),
-
-          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
-
-          // 3. 整理区域 - Areas with heatmap
+          // Cleaning Areas with heatmap (ALL areas)
           _buildReportSection(
             context,
             title: isChinese ? '整理区域' : 'Cleaning Areas',
-            child: areaCounts.isEmpty
-                ? Text(
-                    isChinese ? '还没有记录整理区域。' : 'No areas recorded yet.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.black54,
-                    ),
-                  )
-                : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: areaCounts.entries.map((entry) {
-                      final intensity = entry.value / maxAreaCount;
-                      final color = Color.lerp(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: allAreas.map((area) {
+                final count = areaCounts[area] ?? 0;
+                final intensity = count == 0 ? 0.0 : count / maxAreaCount;
+                final color = count == 0
+                    ? const Color(0xFFE0E0E0)
+                    : Color.lerp(
                         const Color(0xFFE0E0E0),
                         const Color(0xFF5ECFB8),
                         intensity,
                       )!;
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${entry.key} (${entry.value})',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: intensity > 0.5 ? Colors.white : Colors.black87,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '$area ($count)',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: intensity > 0.5 ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
 
           const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
-          // 4. 整理前后对比 - Before/After Comparison
+          // Before & After - Area-based sessions (clickable)
           _buildReportSection(
             context,
             title: isChinese ? '整理前后对比' : 'Before & After',
-            child: widget.deepCleaningSessions.isEmpty
+            child: sessionsByArea.isEmpty
                 ? Text(
                     isChinese
-                        ? '这个月还没有拍下整理前后的对比，下次记得记录成果。'
-                        : 'No before/after photos yet. Remember to record your progress next time.',
+                        ? '还没有深度整理记录，开始第一次整理吧。'
+                        : 'No deep cleaning records yet. Start your first session.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.black54,
                     ),
                   )
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: widget.deepCleaningSessions.take(3).map((session) {
-                      final improvement =
-                          session.beforeMessinessIndex != null &&
-                                  session.afterMessinessIndex != null
-                              ? ((session.beforeMessinessIndex! -
-                                          session.afterMessinessIndex!) /
-                                      session.beforeMessinessIndex! *
-                                      100)
-                                  .toStringAsFixed(0)
-                              : null;
+                    children: sessionsByArea.entries.map((entry) {
+                      final area = entry.key;
+                      final sessions = entry.value;
+                      final sessionCount = sessions.length;
+
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          '${session.area}: ${improvement != null ? (isChinese ? "改善 $improvement%" : "$improvement% improvement") : (isChinese ? "完成整理" : "Completed")}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.black87,
+                        child: InkWell(
+                          onTap: () {
+                            _showAreaDeepCleaningReport(context, area, isChinese);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '$area ($sessionCount ${isChinese ? '次' : 'sessions'})',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 14,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -2473,40 +2515,580 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildFrequencyItem(
+  Widget _buildDeepCleaningMetricItem(
     BuildContext context, {
     required IconData icon,
     required Color color,
-    required int count,
+    required String value,
     required String label,
   }) {
-    return Column(
-      children: [
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(16),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+              fontSize: 22,
+            ),
           ),
-          child: Icon(icon, color: color, size: 28),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          count.toString(),
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.black54,
+              fontSize: 11,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.black54,
+        ],
+      ),
+    );
+  }
+
+  void _showAreaDeepCleaningReport(BuildContext context, String area, bool isChinese) {
+    // Get all sessions for this area, sorted by date (most recent first)
+    final areaSessions = widget.deepCleaningSessions
+        .where((session) => session.area == area)
+        .toList()
+      ..sort((a, b) => b.startTime.compareTo(a.startTime));
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.7,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (builderContext, scrollController) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '$area ${isChinese ? '整理记录' : 'Cleaning History'}',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${areaSessions.length} ${isChinese ? '次整理' : 'sessions'}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: areaSessions.length,
+                      itemBuilder: (context, index) {
+                        final session = areaSessions[index];
+                        final dateStr = DateFormat(
+                          isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                        ).format(session.startTime);
+
+                        final improvement = session.beforeMessinessIndex != null &&
+                                session.afterMessinessIndex != null
+                            ? ((session.beforeMessinessIndex! -
+                                        session.afterMessinessIndex!) /
+                                    session.beforeMessinessIndex! *
+                                    100)
+                                .toStringAsFixed(0)
+                            : null;
+
+                        return GestureDetector(
+                          onTap: () {
+                            _showSessionDetail(context, session, isChinese);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFE5E7EA)),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x0A000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      dateStr,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF111827),
+                                      ),
+                                    ),
+                                    if (improvement != null)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          isChinese ? '改善 $improvement%' : '$improvement% better',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF10B981),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    if (session.focusIndex != null) ...[
+                                      Icon(
+                                        Icons.spa_rounded,
+                                        size: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${isChinese ? '专注度' : 'Focus'}: ${session.focusIndex}/5',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                    ],
+                                    if (session.moodIndex != null) ...[
+                                      Icon(
+                                        Icons.sentiment_satisfied_rounded,
+                                        size: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${isChinese ? '愉悦度' : 'Joy'}: ${session.moodIndex}/5',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                if (session.itemsCount != null) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${isChinese ? '清理物品' : 'Items cleaned'}: ${session.itemsCount}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showSessionDetail(
+    BuildContext context,
+    DeepCleaningSession session,
+    bool isChinese,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (builderContext, scrollController) {
+            // Calculate metrics
+            final improvement = session.beforeMessinessIndex != null &&
+                    session.afterMessinessIndex != null
+                ? ((session.beforeMessinessIndex! -
+                            session.afterMessinessIndex!) /
+                        session.beforeMessinessIndex! *
+                        100)
+                    .toStringAsFixed(0)
+                : null;
+
+            final dateStr = DateFormat(
+              isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+            ).format(session.startTime);
+
+            final hasPhotos = session.beforePhotoPath != null &&
+                session.afterPhotoPath != null;
+
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  // Drag handle
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Content
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                      children: [
+                        // Header with close button
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    session.area,
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF111827),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dateStr,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(sheetContext),
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Section title
+                        Text(
+                          isChinese ? '整理数据' : 'Session Data',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Photo comparison slider
+                        if (hasPhotos) ...[
+                          Container(
+                            height: 240,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              color: Colors.grey[200],
+                            ),
+                            child: PageView(
+                              children: [
+                                // Before photo
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.file(
+                                        File(session.beforePhotoPath!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      Positioned(
+                                        top: 12,
+                                        left: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.6),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            isChinese ? '整理前' : 'Before',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // After photo
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.file(
+                                        File(session.afterPhotoPath!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      Positioned(
+                                        top: 12,
+                                        left: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.6),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            isChinese ? '整理后' : 'After',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.swipe_left_rounded,
+                                  size: 16,
+                                  color: Colors.grey[600],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  isChinese ? '左右滑动查看' : 'Swipe to compare',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Divider
+                        const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EA)),
+                        const SizedBox(height: 24),
+
+                        // Metrics in simple list format
+                        // Duration
+                        if (session.elapsedSeconds != null)
+                          _buildMetricRow(
+                            label: isChinese ? '时长' : 'Duration',
+                            value: '${(session.elapsedSeconds! / 60).toStringAsFixed(0)} ${isChinese ? '分钟' : 'min'}',
+                          ),
+
+                        // Items decluttered
+                        if (session.itemsCount != null)
+                          _buildMetricRow(
+                            label: isChinese ? '清理物品' : 'Items decluttered',
+                            value: '${session.itemsCount}',
+                          ),
+
+                        // Messiness reduction
+                        if (improvement != null && session.beforeMessinessIndex != null && session.afterMessinessIndex != null)
+                          _buildMetricRow(
+                            label: isChinese ? '整洁度提升' : 'Messiness reduced',
+                            value: '$improvement% (${isChinese ? '从' : 'from'} ${session.beforeMessinessIndex!.toStringAsFixed(0)} ${isChinese ? '到' : 'to'} ${session.afterMessinessIndex!.toStringAsFixed(0)})',
+                          ),
+
+                        // Focus
+                        if (session.focusIndex != null)
+                          _buildMetricRow(
+                            label: isChinese ? '专注度' : 'Focus',
+                            value: '${session.focusIndex}/5',
+                          ),
+
+                        // Joy
+                        if (session.moodIndex != null)
+                          _buildMetricRow(
+                            label: isChinese ? '愉悦度' : 'Joy',
+                            value: '${session.moodIndex}/5',
+                          ),
+
+                        // Show message if no metrics available
+                        if (session.elapsedSeconds == null &&
+                            session.itemsCount == null &&
+                            improvement == null &&
+                            session.focusIndex == null &&
+                            session.moodIndex == null)
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF9FAFB),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFE5E7EA)),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.info_outline_rounded,
+                                  size: 32,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  isChinese ? '未记录详细数据' : 'No Detailed Metrics',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  isChinese
+                                      ? '这次整理只保存了照片记录\n下次整理时可以记录更多数据'
+                                      : 'This session only saved photos\nNext time you can record more details',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF9CA3AF),
+                                    height: 1.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMetricRow({
+    required String label,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              '$label:',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF6B7280),
+              ),
+            ),
           ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -84,8 +84,16 @@ BoxDecoration _deepCleaningCardDecoration({Color? color}) {
 }
 
 class DeepCleaningFlowPage extends StatefulWidget {
-  final Function(String area) onStartSession;
-  final VoidCallback onStopSession;
+  final Function(String area, {String? beforePhotoPath}) onStartSession;
+  final void Function({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) onStopSession;
 
   const DeepCleaningFlowPage({
     super.key,
@@ -361,8 +369,16 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
 // Before Photo Page
 class BeforePhotoPage extends StatefulWidget {
   final String area;
-  final Function(String area) onStartSession;
-  final VoidCallback onStopSession;
+  final Function(String area, {String? beforePhotoPath}) onStartSession;
+  final void Function({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) onStopSession;
 
   const BeforePhotoPage({
     super.key,
@@ -415,7 +431,7 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
 
   void _continue() {
     // Start session with before photo - the session start time is managed by parent
-    widget.onStartSession(widget.area);
+    widget.onStartSession(widget.area, beforePhotoPath: _photoPath);
 
     // Navigate to timer - pass the current time as start time for new sessions
     Navigator.of(context).push(
@@ -593,7 +609,15 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
 class DeepCleaningTimerPage extends StatefulWidget {
   final String area;
   final String? beforePhotoPath;
-  final VoidCallback onStopSession;
+  final void Function({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) onStopSession;
   final DateTime? sessionStartTime; // Add start time from active session
 
   const DeepCleaningTimerPage({
@@ -902,7 +926,15 @@ class AfterPhotoPage extends StatefulWidget {
   final String area;
   final String? beforePhotoPath;
   final int elapsedSeconds;
-  final VoidCallback onStopSession;
+  final void Function({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) onStopSession;
 
   const AfterPhotoPage({
     super.key,
@@ -1134,7 +1166,15 @@ class UserInputPage extends StatefulWidget {
   final String? beforePhotoPath;
   final String? afterPhotoPath;
   final int elapsedSeconds;
-  final VoidCallback onStopSession;
+  final void Function({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) onStopSession;
 
   const UserInputPage({
     super.key,
@@ -1362,7 +1402,15 @@ class SummaryPage extends StatefulWidget {
   final int itemsCount;
   final int focusIndex;
   final int moodIndex;
-  final VoidCallback onStopSession;
+  final void Function({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) onStopSession;
 
   const SummaryPage({
     super.key,
@@ -1789,8 +1837,16 @@ class _SummaryPageState extends State<SummaryPage> {
                     height: 56,
                     child: FilledButton(
                       onPressed: () {
-                        // Complete the session (clears active session and creates memory)
-                        widget.onStopSession();
+                        // Complete the session with all metrics
+                        widget.onStopSession(
+                          afterPhotoPath: widget.afterPhotoPath,
+                          elapsedSeconds: widget.elapsedSeconds,
+                          itemsCount: widget.itemsCount,
+                          focusIndex: widget.focusIndex,
+                          moodIndex: widget.moodIndex,
+                          beforeMessinessIndex: _beforeMessiness,
+                          afterMessinessIndex: _afterMessiness,
+                        );
                         // Pop all the way back to home
                         Navigator.of(
                           context,

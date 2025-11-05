@@ -184,36 +184,56 @@ class _MainNavigatorState extends State<MainNavigator> {
     });
   }
 
-  void _startSession(String area) {
+  void _startSession(String area, {String? beforePhotoPath}) {
     setState(() {
       _activeSession = DeepCleaningSession(
         id: const Uuid().v4(),
         userId: _placeholderUserId,
         area: area,
         startTime: DateTime.now(),
+        beforePhotoPath: beforePhotoPath,
       );
     });
   }
 
-  void _stopSession() {
+  void _stopSession({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) {
     final session = _activeSession;
     if (session != null) {
+      // Update session with metrics
+      final updatedSession = session.copyWith(
+        afterPhotoPath: afterPhotoPath,
+        elapsedSeconds: elapsedSeconds,
+        itemsCount: itemsCount,
+        focusIndex: focusIndex,
+        moodIndex: moodIndex,
+        beforeMessinessIndex: beforeMessinessIndex,
+        afterMessinessIndex: afterMessinessIndex,
+        updatedAt: DateTime.now(),
+      );
+
       _recordActivity(
         ActivityType.deepCleaning,
-        description: session.area,
-        itemCount: session.itemsCount,
+        description: updatedSession.area,
+        itemCount: updatedSession.itemsCount,
       );
-    }
-    setState(() {
-      if (session != null) {
-        // Save the completed session
-        _completedSessions.insert(0, session);
+
+      setState(() {
+        // Save the completed session with metrics
+        _completedSessions.insert(0, updatedSession);
 
         // Mark corresponding planned session as completed
         final plannedSessionIndex = _plannedSessions.indexWhere(
           (s) =>
             !s.isCompleted &&
-            s.area == session.area &&
+            s.area == updatedSession.area &&
             s.mode == SessionMode.deepCleaning,
         );
 
@@ -223,9 +243,9 @@ class _MainNavigatorState extends State<MainNavigator> {
             completedAt: DateTime.now(),
           );
         }
-      }
-      _activeSession = null;
-    });
+        _activeSession = null;
+      });
+    }
   }
 
   void _addDeclutteredItem(DeclutterItem item) {
@@ -682,8 +702,16 @@ class _MainNavigatorState extends State<MainNavigator> {
 
 class _HomeScreen extends StatefulWidget {
   final DeepCleaningSession? activeSession;
-  final VoidCallback onStopSession;
-  final Function(String area) onStartSession;
+  final void Function({
+    String? afterPhotoPath,
+    int? elapsedSeconds,
+    int? itemsCount,
+    int? focusIndex,
+    int? moodIndex,
+    double? beforeMessinessIndex,
+    double? afterMessinessIndex,
+  }) onStopSession;
+  final Function(String area, {String? beforePhotoPath}) onStartSession;
   final VoidCallback onOpenQuickDeclutter;
   final VoidCallback onOpenJoyDeclutter;
   final void Function(Locale) onLocaleChange;
