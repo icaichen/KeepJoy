@@ -122,7 +122,7 @@ class _ResellAnalysisReportScreenState
     final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F5F7),
       body: Stack(
         children: [
           // Scrollable content
@@ -133,7 +133,7 @@ class _ResellAnalysisReportScreenState
               children: [
                 // Gradient background that scrolls
                 Container(
-                  height: 500,
+                  height: 800,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
