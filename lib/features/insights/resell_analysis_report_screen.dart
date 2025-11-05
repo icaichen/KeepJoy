@@ -123,65 +123,71 @@ class _ResellAnalysisReportScreenState
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFD93D), // Yellow
-              Color(0xFFFFF9E6), // Light yellow
-              Colors.white,
-            ],
-            stops: [0.0, 0.15, 0.33],
-          ),
-        ),
-        child: Stack(
-          children: [
-            // Scrollable content
-            SingleChildScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  // Top spacing + title
-                  SizedBox(
-                    height: 120,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        left: 24,
-                        right: 16,
-                        top: topPadding + 12,
-                      ),
-                      child: Opacity(
-                        opacity: titleOpacity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Large title on the left
-                            Text(
-                              pageName,
-                              style: const TextStyle(
-                                fontSize: 46,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: -0.6,
-                                height: 1.0,
+      body: Stack(
+        children: [
+          // Scrollable content
+          SingleChildScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            child: Stack(
+              children: [
+                // Gradient background that scrolls
+                Container(
+                  height: 500,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFFFFD93D), // Yellow
+                        Color(0xFFFFF9E6), // Light yellow
+                        Colors.white,
+                      ],
+                      stops: [0.0, 0.15, 0.33],
+                    ),
+                  ),
+                ),
+                // Content on top
+                Column(
+                  children: [
+                    // Top spacing + title
+                    SizedBox(
+                      height: 120,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: 24,
+                          right: 16,
+                          top: topPadding + 12,
+                        ),
+                        child: Opacity(
+                          opacity: titleOpacity,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Large title on the left
+                              Text(
+                                pageName,
+                                style: const TextStyle(
+                                  fontSize: 46,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: -0.6,
+                                  height: 1.0,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // Content
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                    // Content
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                   // Metrics Section
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -511,15 +517,17 @@ class _ResellAnalysisReportScreenState
                   ),
 
                   const SizedBox(height: 32),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
+          ),
 
-            // Real header that appears when scrolling is complete
-            Positioned(
+          // Real header that appears when scrolling is complete
+          Positioned(
               top: 0,
               left: 0,
               right: 0,
@@ -571,7 +579,6 @@ class _ResellAnalysisReportScreenState
             ),
           ],
         ),
-      ),
     );
   }
 

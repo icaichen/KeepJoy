@@ -51,62 +51,68 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFB794F6), // Purple
-              Color(0xFFF3EBFF), // Light purple
-              Colors.white,
-            ],
-            stops: [0.0, 0.15, 0.33],
-          ),
-        ),
-        child: Stack(
-          children: [
-            // Scrollable content
-            SingleChildScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  // Top spacing + title
-                  SizedBox(
-                    height: 120,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        left: 24,
-                        right: 16,
-                        top: topPadding + 12,
-                      ),
-                      child: Opacity(
-                        opacity: titleOpacity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Large title on the left
-                            Text(
-                              pageName,
-                              style: const TextStyle(
-                                fontSize: 46,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: -0.6,
-                                height: 1.0,
+      body: Stack(
+        children: [
+          // Scrollable content
+          SingleChildScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            child: Stack(
+              children: [
+                // Gradient background that scrolls
+                Container(
+                  height: 500,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFFB794F6), // Purple
+                        Color(0xFFF3EBFF), // Light purple
+                        Colors.white,
+                      ],
+                      stops: [0.0, 0.15, 0.33],
+                    ),
+                  ),
+                ),
+                // Content on top
+                Column(
+                  children: [
+                    // Top spacing + title
+                    SizedBox(
+                      height: 120,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: 24,
+                          right: 16,
+                          top: topPadding + 12,
+                        ),
+                        child: Opacity(
+                          opacity: titleOpacity,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Large title on the left
+                              Text(
+                                pageName,
+                                style: const TextStyle(
+                                  fontSize: 46,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: -0.6,
+                                  height: 1.0,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // Content sections
-                  Column(
-                    children: [
+                    // Content sections
+                    Column(
+                      children: [
                       // 1. Emotion Distribution (Vertical Bar Chart)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -138,10 +144,12 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             ),
           ],
         ),
-      ),
+              ],
+            ),
+          ),
 
-      // Real header that appears when scrolling is complete
-            Positioned(
+          // Real header that appears when scrolling is complete
+          Positioned(
               top: 0,
               left: 0,
               right: 0,
@@ -193,7 +201,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 
