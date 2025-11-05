@@ -426,13 +426,14 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
       createdAt: DateTime.now(),
       status: DeclutterStatus.keep,
       photoPath: widget.photoPath,
-      joyLevel: _joyLevel,
+      joyLevel: 8, // Set joy level to 8 for "Yes, it sparks joy"
     );
 
     widget.onItemCreated(item);
 
     setState(() {
       _decision = DeclutterStatus.keep;
+      _joyLevel = 8;
     });
   }
 
@@ -544,13 +545,14 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
       createdAt: DateTime.now(),
       status: status,
       photoPath: widget.photoPath,
-      joyLevel: _joyLevel,
+      joyLevel: 3, // Set joy level to 3 for "No, doesn't spark joy"
     );
 
     widget.onItemCreated(item);
 
     setState(() {
       _decision = status;
+      _joyLevel = 3;
     });
   }
 
@@ -620,7 +622,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
           ),
           const SizedBox(height: 20),
 
-          // Item details
+          // Item details - Compact version
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -632,21 +634,11 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                     decoration: InputDecoration(
                       labelText: l10n.itemName,
                       hintText: l10n.itemName,
-                      suffixIcon: _isIdentifying
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: Padding(
-                                padding: EdgeInsets.all(12.0),
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            )
-                          : _isAISuggested
-                              ? Tooltip(
-                                  message: l10n.aiSuggested,
-                                  child: const Icon(Icons.auto_awesome, size: 20),
-                                )
-                              : null,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     onChanged: (_) {
                       if (_isAISuggested) {
@@ -654,36 +646,31 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                       }
                     },
                   ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: DropdownMenu<DeclutterCategory>(
-                      initialSelection: _selectedCategory,
-                      label: Text(l10n.category),
-                      expandedInsets: EdgeInsets.zero,
-                      dropdownMenuEntries: DeclutterCategory.values
-                          .map(
-                            (category) => DropdownMenuEntry(
-                              value: category,
-                              label: category.label(context),
-                            ),
-                          )
-                          .toList(),
-                      onSelected: (value) {
-                        if (value != null) {
-                          setState(() => _selectedCategory = value);
-                        }
-                      },
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<DeclutterCategory>(
+                    value: _selectedCategory,
+                    decoration: InputDecoration(
+                      labelText: l10n.category,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
+                    items: DeclutterCategory.values
+                        .map(
+                          (category) => DropdownMenuItem(
+                            value: category,
+                            child: Text(category.label(context)),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _selectedCategory = value);
+                      }
+                    },
                   ),
-                  if (_aiResult?.method == 'on-device') ...[
-                    const SizedBox(height: 16),
-                    TextButton.icon(
-                      onPressed: _isIdentifying ? null : _getDetailedInfo,
-                      icon: const Icon(Icons.search, size: 18),
-                      label: Text(l10n.getDetailedInfo),
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -694,92 +681,123 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
           if (_decision == null) ...[
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      isChinese ? '这件物品让你心动吗？' : 'Does it spark joy?',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF111827),
+                    Center(
+                      child: Text(
+                        isChinese ? '这件物品让你心动吗？' : 'Does it spark joy?',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF111827),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 28),
 
-                    // Joy level slider
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              isChinese ? '不心动' : 'No Joy',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: const Color(0xFF6B7280),
-                              ),
-                            ),
-                            Text(
-                              isChinese ? '很心动' : 'Sparks Joy',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: const Color(0xFF6B7280),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Slider(
-                          value: _joyLevel?.toDouble() ?? 5,
-                          min: 0,
-                          max: 10,
-                          divisions: 10,
-                          label: _joyLevel?.toString() ?? '5',
-                          activeColor: const Color(0xFF5ECFB8),
-                          onChanged: (value) {
-                            setState(() => _joyLevel = value.toInt());
-                          },
-                        ),
-                        if (_joyLevel != null)
-                          Center(
-                            child: Text(
-                              '${isChinese ? '心动指数' : 'Joy Level'}: $_joyLevel/10',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF111827),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Keep/Let Go buttons
+                    // Joy Yes/No buttons - directly trigger actions
                     Row(
                       children: [
                         Expanded(
-                          child: FilledButton.icon(
-                            onPressed: _handleKeep,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              minimumSize: const Size.fromHeight(48),
+                          child: GestureDetector(
+                            onTap: _handleLetGo,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [Color(0xFFEF4444), Color(0xFFFCA5A5)],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  const Icon(
+                                    Icons.heart_broken_rounded,
+                                    size: 48,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    isChinese ? '不心动' : 'No',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    isChinese ? '让它离开' : 'Let it go',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            icon: const Icon(Icons.favorite_rounded),
-                            label: Text(isChinese ? '保留' : 'Keep'),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 16),
                         Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _handleLetGo,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFFEF4444),
-                              side: const BorderSide(
-                                color: Color(0xFFEF4444),
+                          child: GestureDetector(
+                            onTap: _handleKeep,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [Color(0xFF10B981), Color(0xFF6EE7B7)],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              minimumSize: const Size.fromHeight(48),
+                              child: Column(
+                                children: [
+                                  const Icon(
+                                    Icons.favorite_rounded,
+                                    size: 48,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    isChinese ? '心动' : 'Yes',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    isChinese ? '留下它' : 'Keep it',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            icon: const Icon(Icons.close_rounded),
-                            label: Text(isChinese ? '放手' : 'Let Go'),
                           ),
                         ),
                       ],
@@ -840,7 +858,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                 ),
                 icon: const Icon(Icons.arrow_forward_rounded),
                 label: Text(
-                  isChinese ? '继续拍照' : 'Continue',
+                  isChinese ? '拍摄下一件' : 'Capture Next Item',
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
@@ -906,7 +924,7 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
             title: Text(isChinese ? '继续整理？' : 'Continue?'),
             content: Text(
               isChinese
-                  ? '还有 ${widget.pendingItems.length} 件物品待整理'
+                  ? '还有 ${widget.pendingItems.length} 件物品需要处理'
                   : '${widget.pendingItems.length} item${widget.pendingItems.length > 1 ? 's' : ''} remaining',
             ),
             actions: [
@@ -1066,7 +1084,7 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
           title: Text(isChinese ? '继续整理？' : 'Continue?'),
           content: Text(
             isChinese
-                ? '还有 ${widget.pendingItems.length} 件物品待整理'
+                ? '还有 ${widget.pendingItems.length} 件物品需要处理'
                 : '${widget.pendingItems.length} item${widget.pendingItems.length > 1 ? 's' : ''} remaining',
           ),
           actions: [

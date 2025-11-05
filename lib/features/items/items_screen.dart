@@ -50,10 +50,10 @@ class _ItemsScreenState extends State<ItemsScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate stats
-    final toDecluterItems = widget.items
+    final keptItems = widget.items
         .where((item) => item.status == DeclutterStatus.keep)
         .toList();
-    final declutteredItems = widget.items
+    final letGoItems = widget.items
         .where((item) => item.status != DeclutterStatus.keep)
         .toList();
 
@@ -76,7 +76,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
             slivers: [
               SliverToBoxAdapter(child: SizedBox(height: topPadding + 80)),
               SliverToBoxAdapter(
-                child: _buildAllItemsTab(toDecluterItems, declutteredItems, isChinese),
+                child: _buildAllItemsTab(keptItems, letGoItems, isChinese),
               ),
             ],
           ),
@@ -154,8 +154,8 @@ class _ItemsScreenState extends State<ItemsScreen> {
   }
 
   Widget _buildAllItemsTab(
-    List<DeclutterItem> toDecluterItems,
-    List<DeclutterItem> declutteredItems,
+    List<DeclutterItem> keptItems,
+    List<DeclutterItem> letGoItems,
     bool isChinese,
   ) {
     final categoryStats = _calculateCategoryStats(widget.items);
@@ -171,21 +171,21 @@ class _ItemsScreenState extends State<ItemsScreen> {
           children: [
             Expanded(
               child: _buildStatCard(
-                icon: Icons.inventory_2_outlined,
-                iconColor: const Color(0xFF5ECFB8),
-                title: isChinese ? '全部' : 'Total',
-                count: widget.items.length,
-                subtitle: isChinese ? '件物品' : 'items',
+                icon: Icons.favorite_rounded,
+                iconColor: const Color(0xFF10B981),
+                title: isChinese ? '保留' : 'Kept',
+                count: keptItems.length,
+                subtitle: isChinese ? '件保留' : 'kept',
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildStatCard(
-                icon: Icons.hourglass_empty_rounded,
-                iconColor: const Color(0xFFFFB74D),
-                title: isChinese ? '待整理' : 'To Do',
-                count: toDecluterItems.length,
-                subtitle: isChinese ? '件待处理' : 'pending',
+                icon: Icons.check_circle_outline_rounded,
+                iconColor: const Color(0xFF5ECFB8),
+                title: isChinese ? '已整理' : 'Let Go',
+                count: letGoItems.length,
+                subtitle: isChinese ? '件放手' : 'let go',
               ),
             ),
           ],
@@ -215,13 +215,13 @@ class _ItemsScreenState extends State<ItemsScreen> {
           itemCount: DeclutterCategory.values.length,
           itemBuilder: (context, index) {
             final category = DeclutterCategory.values[index];
-            final stats = categoryStats[category] ?? {'total': 0, 'remaining': 0};
+            final stats = categoryStats[category] ?? {'total': 0, 'kept': 0};
             return GestureDetector(
               onTap: () => _showCategoryItems(category, isChinese),
               child: _buildCategoryCard(
                 category,
                 stats['total']!,
-                stats['remaining']!,
+                stats['kept']!,
                 isChinese,
               ),
             );
@@ -301,10 +301,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
   Widget _buildCategoryCard(
     DeclutterCategory category,
     int total,
-    int remaining,
+    int kept,
     bool isChinese,
   ) {
-    final isDone = remaining == 0;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -345,21 +344,15 @@ class _ItemsScreenState extends State<ItemsScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: isDone
-                      ? const Color(0xFFE5F5EE)
-                      : const Color(0xFFFEF2E4),
+                  color: const Color(0xFFE5F5EE),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(
-                  isDone
-                      ? (isChinese ? '全部完成' : 'All done!')
-                      : '$remaining ${isChinese ? "剩余" : "left"}',
-                  style: TextStyle(
+                  '$kept ${isChinese ? "保留" : "kept"}',
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isDone
-                        ? const Color(0xFF58B993)
-                        : const Color(0xFFEB9D42),
+                    color: Color(0xFF58B993),
                   ),
                 ),
               ),
@@ -399,11 +392,11 @@ class _ItemsScreenState extends State<ItemsScreen> {
 
       // Only add categories that have items
       if (totalCount > 0) {
-        final remaining = categoryItems
+        final keptCount = categoryItems
             .where((item) => item.status == DeclutterStatus.keep)
             .length;
 
-        stats[category] = {'total': totalCount, 'remaining': remaining};
+        stats[category] = {'total': totalCount, 'kept': keptCount};
       }
     }
 
@@ -860,7 +853,7 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
   }
 }
 
-// Category Bottom Sheet with tabs for 待整理 and 已整理
+// Category Bottom Sheet with tabs for 保留(kept) and 已放手(let go)
 class _CategoryBottomSheet extends StatefulWidget {
   final DeclutterCategory category;
   final List<DeclutterItem> items;
@@ -883,14 +876,14 @@ class _CategoryBottomSheet extends StatefulWidget {
 }
 
 class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
-  int _selectedTab = 0; // 0 = 待整理, 1 = 已整理
+  int _selectedTab = 0; // 0 = 保留(kept), 1 = 已整理(let go)
 
   @override
   Widget build(BuildContext context) {
-    final toDecluterItems = widget.items.where((item) => item.status == DeclutterStatus.keep).toList();
-    final declutteredItems = widget.items.where((item) => item.status != DeclutterStatus.keep).toList();
+    final keptItems = widget.items.where((item) => item.status == DeclutterStatus.keep).toList();
+    final letGoItems = widget.items.where((item) => item.status != DeclutterStatus.keep).toList();
 
-    final displayItems = _selectedTab == 0 ? toDecluterItems : declutteredItems;
+    final displayItems = _selectedTab == 0 ? keptItems : letGoItems;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
@@ -991,7 +984,7 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                               child: Column(
                                 children: [
                                   Text(
-                                    widget.isChinese ? '待整理' : 'To Do',
+                                    widget.isChinese ? '保留' : 'Kept',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -1000,11 +993,11 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '${toDecluterItems.length}',
+                                    '${keptItems.length}',
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: _selectedTab == 0 ? const Color(0xFFFFB74D) : const Color(0xFF9CA3AF),
+                                      color: _selectedTab == 0 ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
                                     ),
                                   ),
                                 ],
@@ -1033,7 +1026,7 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                               child: Column(
                                 children: [
                                   Text(
-                                    widget.isChinese ? '已整理' : 'Done',
+                                    widget.isChinese ? '已放手' : 'Let Go',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -1042,7 +1035,7 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '${declutteredItems.length}',
+                                    '${letGoItems.length}',
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
@@ -1127,7 +1120,7 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                           );
                         }
 
-                        // To-do items - clickable to start joy assessment
+                        // Kept items - clickable to start joy assessment
                         return GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(

@@ -1442,7 +1442,7 @@ class _SummaryPage extends StatelessWidget {
                             child: Row(
                               children: [
                                 const Icon(
-                                  Icons.info_outline,
+                                  Icons.auto_awesome_outlined,
                                   size: 20,
                                   color: Color(0xFF6B7280),
                                 ),
@@ -1450,8 +1450,8 @@ class _SummaryPage extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     isChinese
-                                        ? '记住：你可以为物品拍照留念，然后放手。'
-                                        : 'Remember: You can keep a memory and still let it go.',
+                                        ? '感谢过去的自己选择了它，现在可以怀着感激之心放手了。'
+                                        : 'Thank the item for its service, and let it go with gratitude.',
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: const Color(0xFF6B7280),
                                       height: 1.4,
@@ -1459,30 +1459,6 @@ class _SummaryPage extends StatelessWidget {
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildJoySurface(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isChinese ? '你的决定' : 'Your Decision',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: _joyPrimaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isChinese ? '最终选择权在你手中' : 'The final choice is yours',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              height: 1.5,
                             ),
                           ),
                         ],

@@ -22,7 +22,6 @@ enum DeclutterCategory {
 }
 
 enum DeclutterStatus {
-  pending('To declutter', '待整理'),
   keep('Kept', '保留'),
   discard('Discarded', '丢弃'),
   donate('Donated', '捐赠'),

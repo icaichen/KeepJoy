@@ -83,7 +83,6 @@ class MainNavigator extends StatefulWidget {
 class _MainNavigatorState extends State<MainNavigator> {
   int _selectedIndex = 0;
   DeepCleaningSession? _activeSession;
-  final List<DeclutterItem> _pendingItems = [];
   final List<DeclutterItem> _declutteredItems = [];
   final List<Memory> _memories = [];
   final List<ResellItem> _resellItems = [];
@@ -229,26 +228,15 @@ class _MainNavigatorState extends State<MainNavigator> {
     });
   }
 
-  void _addPendingItem(DeclutterItem item) {
-    _recordActivity(
-      ActivityType.quickDeclutter,
-      description: item.name,
-      itemCount: 1,
-    ); // Record activity for Quick Declutter
-    setState(() {
-      _pendingItems.insert(0, item);
-    });
-  }
-
   void _addDeclutteredItem(DeclutterItem item) {
+    // Record activity based on which flow created the item
     _recordActivity(
       ActivityType.joyDeclutter,
       description: item.name,
       itemCount: 1,
-    ); // Record activity for Joy Declutter
+    );
     setState(() {
       _declutteredItems.insert(0, item);
-      _pendingItems.removeWhere((pending) => pending.id == item.id);
 
       // If item is marked for resell, create a ResellItem
       if (item.status == DeclutterStatus.resell) {
@@ -268,18 +256,28 @@ class _MainNavigatorState extends State<MainNavigator> {
 
   void _onItemCompleted(DeclutterItem item) {
     // Handle item reassessment from Items page
-    if (item.status == DeclutterStatus.keep) {
-      // Item stays as pending, just update it
-      setState(() {
-        final index = _pendingItems.indexWhere((i) => i.id == item.id);
-        if (index != -1) {
-          _pendingItems[index] = item;
+    // All items are now in _declutteredItems, just update in place
+    setState(() {
+      final index = _declutteredItems.indexWhere((i) => i.id == item.id);
+      if (index != -1) {
+        _declutteredItems[index] = item;
+
+        // If status changed to resell, create ResellItem if not exists
+        if (item.status == DeclutterStatus.resell) {
+          final hasResellItem = _resellItems.any((r) => r.declutterItemId == item.id);
+          if (!hasResellItem) {
+            final resellItem = ResellItem(
+              id: 'resell_${DateTime.now().millisecondsSinceEpoch}',
+              userId: _placeholderUserId,
+              declutterItemId: item.id,
+              status: ResellStatus.toSell,
+              createdAt: DateTime.now(),
+            );
+            _resellItems.insert(0, resellItem);
+          }
         }
-      });
-    } else {
-      // Item is being let go, move to decluttered
-      _addDeclutteredItem(item);
-    }
+      }
+    });
   }
 
   void _updateResellItem(ResellItem item) {
@@ -299,7 +297,6 @@ class _MainNavigatorState extends State<MainNavigator> {
 
   void _deleteDeclutterItem(String itemId) {
     setState(() {
-      _pendingItems.removeWhere((item) => item.id == itemId);
       _declutteredItems.removeWhere((item) => item.id == itemId);
       _resellItems.removeWhere((r) => r.declutterItemId == itemId);
     });
@@ -309,8 +306,7 @@ class _MainNavigatorState extends State<MainNavigator> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => QuickDeclutterFlowPage(
-          onItemCreated: _addPendingItem,
-          pendingItems: _pendingItems,
+          onItemCreated: _addDeclutteredItem,
         ),
       ),
     );
@@ -400,7 +396,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         onMemoryCreated: _onMemoryCreated,
       ),
       ItemsScreen(
-        items: List.unmodifiable([..._pendingItems, ..._declutteredItems]),
+        items: List.unmodifiable(_declutteredItems),
         onItemCompleted: _onItemCompleted,
         onMemoryCreated: _onMemoryCreated,
         onDeleteItem: _deleteDeclutterItem,
@@ -414,7 +410,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         onMemoryCreated: _onMemoryCreated,
       ),
       ResellScreen(
-        items: List.unmodifiable([..._pendingItems, ..._declutteredItems]),
+        items: List.unmodifiable(_declutteredItems),
         resellItems: List.unmodifiable(_resellItems),
         onUpdateResellItem: _updateResellItem,
         onDeleteItem: _deleteDeclutterItem,
