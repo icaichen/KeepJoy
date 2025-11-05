@@ -314,22 +314,24 @@ class _TimelineView extends StatelessWidget {
       groupedMemories.putIfAbsent(dateKey, () => []).add(memory);
     }
 
-    return ListView.builder(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      itemCount: groupedMemories.length,
-      itemBuilder: (context, index) {
-        final dateKey = groupedMemories.keys.elementAt(index);
-        final dateMemories = groupedMemories[dateKey]!;
-        final date = DateTime.parse(dateKey);
-        final isLast = index == groupedMemories.length - 1;
+      child: Column(
+        children: groupedMemories.entries.map((entry) {
+          final index = groupedMemories.keys.toList().indexOf(entry.key);
+          final dateKey = entry.key;
+          final dateMemories = entry.value;
+          final date = DateTime.parse(dateKey);
+          final isLast = index == groupedMemories.length - 1;
 
-        return _TimelineDateSection(
-          date: date,
-          memories: dateMemories,
-          isChinese: isChinese,
-          isLast: isLast,
-        );
-      },
+          return _TimelineDateSection(
+            date: date,
+            memories: dateMemories,
+            isChinese: isChinese,
+            isLast: isLast,
+          );
+        }).toList(),
+      ),
     );
   }
 }

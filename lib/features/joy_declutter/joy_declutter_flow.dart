@@ -91,26 +91,6 @@ BoxDecoration _joyCardDecoration({Color? color}) {
   );
 }
 
-Widget _buildJoyProgressIndicator(int activeIndex, {int totalSteps = 3}) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: List.generate(totalSteps, (index) {
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: index == activeIndex ? 28 : 20,
-        height: 4,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: index == activeIndex
-              ? _joyPrimaryColor
-              : const Color(0xFFD1D5DB),
-          borderRadius: BorderRadius.circular(4),
-        ),
-      );
-    }),
-  );
-}
-
 Widget _buildJoySurface({
   required Widget child,
   EdgeInsetsGeometry margin = EdgeInsets.zero,
@@ -196,7 +176,7 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
               _buildJoyTopBar(
                 context,
                 currentStep: 0,
-                totalSteps: 3,
+                totalSteps: 8,
                 title: l10n.joyDeclutterTitle,
               ),
               Expanded(
@@ -271,7 +251,7 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
               Text(
                 isChinese
                     ? '拍攝物品，我們會陪你完成怦然心動檢查。'
-                    : 'Capture one item at a time—we will guide your joy check.',
+                    : 'Capture one item—we will guide you through the decision.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -282,6 +262,15 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
       ),
     );
   }
+}
+
+// Store answers for the 5 questions
+class _JoyAnswers {
+  String? lastUsed; // "< 1 month", "1-6 months", "6-12 months", "> 1 year"
+  bool? hasDuplicate; // true/false
+  bool? wouldBuyAgain; // true/false
+  bool? fitsLifestyle; // true/false
+  bool? sunkCost; // true/false
 }
 
 class _PhotoReviewPage extends StatefulWidget {
@@ -378,174 +367,23 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
     }
   }
 
-  Future<void> _showMemoryPrompt(DeclutterItem item) async {
+  void _startQuestions() {
     final l10n = AppLocalizations.of(context)!;
+    final itemName = _nameController.text.trim().isEmpty
+        ? (_itemName ?? l10n.itemName)
+        : _nameController.text.trim();
 
-    final shouldCreateMemory = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.createMemoryQuestion),
-        content: Text(l10n.createMemoryPrompt),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.skipMemory),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.createMemory),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldCreateMemory == true && mounted) {
-      final memory = await Navigator.of(context).push<Memory>(
-        MaterialPageRoute(
-          builder: (_) => CreateMemoryPage(
-            item: item,
-            photoPath: widget.photoPath,
-            itemName: item.name,
-          ),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _Question1Page(
+          photoPath: widget.photoPath,
+          itemName: itemName,
+          category: _selectedCategory,
+          onItemCompleted: widget.onItemCompleted,
+          onMemoryCreated: widget.onMemoryCreated,
         ),
-      );
-
-      if (memory != null) {
-        widget.onMemoryCreated(memory);
-      }
-    }
-
-    if (mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    }
-  }
-
-  Future<void> _handleKeep() async {
-    final l10n = AppLocalizations.of(context)!;
-    final itemName = _nameController.text.trim().isEmpty
-        ? (_itemName ?? l10n.itemName)
-        : _nameController.text.trim();
-
-    final item = DeclutterItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-      name: itemName,
-      category: _selectedCategory,
-      createdAt: DateTime.now(),
-      status: DeclutterStatus.keep,
-      photoPath: widget.photoPath,
-    );
-
-    widget.onItemCompleted(item);
-
-    if (!mounted) {
-      return;
-    }
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.itemSaved)));
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-
-  Future<void> _handleLetGo() async {
-    final l10n = AppLocalizations.of(context)!;
-    final itemName = _nameController.text.trim().isEmpty
-        ? (_itemName ?? l10n.itemName)
-        : _nameController.text.trim();
-
-    final status = await showModalBottomSheet<DeclutterStatus>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (sheetContext) {
-        final theme = Theme.of(sheetContext);
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.timeToLetGo,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.joyQuestionDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.4,
-                    color: Colors.black.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _LetGoOption(
-                  icon: Icons.delete_outline,
-                  label: l10n.routeDiscard,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
-                ),
-                _LetGoOption(
-                  icon: Icons.volunteer_activism_outlined,
-                  label: l10n.routeDonation,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
-                ),
-                _LetGoOption(
-                  icon: Icons.recycling_outlined,
-                  label: l10n.routeRecycle,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
-                ),
-                _LetGoOption(
-                  icon: Icons.attach_money_outlined,
-                  label: l10n.routeResell,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
-                ),
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(),
-                  child: Text(l10n.cancel),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
-
-    if (status == null || !mounted) {
-      return;
-    }
-
-    final item = DeclutterItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-      name: itemName,
-      category: _selectedCategory,
-      createdAt: DateTime.now(),
-      status: status,
-      photoPath: widget.photoPath,
-    );
-
-    widget.onItemCompleted(item);
-
-    await _showMemoryPrompt(item);
   }
 
   @override
@@ -564,7 +402,7 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
               _buildJoyTopBar(
                 context,
                 currentStep: 1,
-                totalSteps: 3,
+                totalSteps: 8,
                 title: l10n.joyDeclutterTitle,
               ),
               Expanded(
@@ -649,33 +487,6 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildJoySurface(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20,
-                        horizontal: 20,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.doesItSparkJoy,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: _joyPrimaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.joyQuestionDescription,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
                     OutlinedButton(
                       onPressed: _retakePicture,
                       style: OutlinedButton.styleFrom(
@@ -688,22 +499,1012 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                       child: Text(l10n.retakePhoto),
                     ),
                     const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: _startQuestions,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _joyPrimaryColor,
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      child: Text(l10n.continueButton),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Question 1: When did you last use this?
+class _Question1Page extends StatefulWidget {
+  final String photoPath;
+  final String itemName;
+  final DeclutterCategory category;
+  final Function(DeclutterItem) onItemCompleted;
+  final Function(Memory) onMemoryCreated;
+
+  const _Question1Page({
+    required this.photoPath,
+    required this.itemName,
+    required this.category,
+    required this.onItemCompleted,
+    required this.onMemoryCreated,
+  });
+
+  @override
+  State<_Question1Page> createState() => _Question1PageState();
+}
+
+class _Question1PageState extends State<_Question1Page> {
+  String? _selectedAnswer;
+  final _answers = _JoyAnswers();
+
+  @override
+  Widget build(BuildContext context) {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+    final theme = Theme.of(context);
+
+    final options = [
+      {'value': '< 1 month', 'label': isChinese ? '不到1个月' : '< 1 month'},
+      {'value': '1-6 months', 'label': isChinese ? '1-6个月' : '1-6 months'},
+      {'value': '6-12 months', 'label': isChinese ? '6-12个月' : '6-12 months'},
+      {'value': '> 1 year', 'label': isChinese ? '超过1年' : '> 1 year'},
+    ];
+
+    return Scaffold(
+      backgroundColor: _joyBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJoyTopBar(
+                context,
+                currentStep: 2,
+                totalSteps: 8,
+                title: isChinese ? '心动整理' : 'Joy Declutter',
+              ),
+              Expanded(
+                child: _buildJoySurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '问题 1/5' : 'Question 1/5',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        isChinese ? '你上次使用这件物品是什么时候？' : 'When did you last use this item?',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: _joyPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ...options.map((option) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _OptionButton(
+                              label: option['label']!,
+                              isSelected: _selectedAnswer == option['value'],
+                              onTap: () {
+                                setState(() {
+                                  _selectedAnswer = option['value'];
+                                });
+                              },
+                            ),
+                          )),
+                      const Spacer(),
+                      FilledButton(
+                        onPressed: _selectedAnswer == null
+                            ? null
+                            : () {
+                                _answers.lastUsed = _selectedAnswer;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => _Question2Page(
+                                      photoPath: widget.photoPath,
+                                      itemName: widget.itemName,
+                                      category: widget.category,
+                                      answers: _answers,
+                                      onItemCompleted: widget.onItemCompleted,
+                                      onMemoryCreated: widget.onMemoryCreated,
+                                    ),
+                                  ),
+                                );
+                              },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _joyPrimaryColor,
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                        child: Text(isChinese ? '下一步' : 'Next'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Question 2: Do you have a similar item you prefer?
+class _Question2Page extends StatefulWidget {
+  final String photoPath;
+  final String itemName;
+  final DeclutterCategory category;
+  final _JoyAnswers answers;
+  final Function(DeclutterItem) onItemCompleted;
+  final Function(Memory) onMemoryCreated;
+
+  const _Question2Page({
+    required this.photoPath,
+    required this.itemName,
+    required this.category,
+    required this.answers,
+    required this.onItemCompleted,
+    required this.onMemoryCreated,
+  });
+
+  @override
+  State<_Question2Page> createState() => _Question2PageState();
+}
+
+class _Question2PageState extends State<_Question2Page> {
+  bool? _selectedAnswer;
+
+  @override
+  Widget build(BuildContext context) {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: _joyBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJoyTopBar(
+                context,
+                currentStep: 3,
+                totalSteps: 8,
+                title: isChinese ? '心动整理' : 'Joy Declutter',
+              ),
+              Expanded(
+                child: _buildJoySurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '问题 2/5' : 'Question 2/5',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        isChinese ? '你有其他类似但更喜欢的物品吗？' : 'Do you have a similar item you prefer?',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: _joyPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _OptionButton(
+                        label: isChinese ? '是的' : 'Yes',
+                        isSelected: _selectedAnswer == true,
+                        onTap: () {
+                          setState(() {
+                            _selectedAnswer = true;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _OptionButton(
+                        label: isChinese ? '没有' : 'No',
+                        isSelected: _selectedAnswer == false,
+                        onTap: () {
+                          setState(() {
+                            _selectedAnswer = false;
+                          });
+                        },
+                      ),
+                      const Spacer(),
+                      FilledButton(
+                        onPressed: _selectedAnswer == null
+                            ? null
+                            : () {
+                                widget.answers.hasDuplicate = _selectedAnswer;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => _Question3Page(
+                                      photoPath: widget.photoPath,
+                                      itemName: widget.itemName,
+                                      category: widget.category,
+                                      answers: widget.answers,
+                                      onItemCompleted: widget.onItemCompleted,
+                                      onMemoryCreated: widget.onMemoryCreated,
+                                    ),
+                                  ),
+                                );
+                              },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _joyPrimaryColor,
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                        child: Text(isChinese ? '下一步' : 'Next'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Question 3: Would you buy this again today?
+class _Question3Page extends StatefulWidget {
+  final String photoPath;
+  final String itemName;
+  final DeclutterCategory category;
+  final _JoyAnswers answers;
+  final Function(DeclutterItem) onItemCompleted;
+  final Function(Memory) onMemoryCreated;
+
+  const _Question3Page({
+    required this.photoPath,
+    required this.itemName,
+    required this.category,
+    required this.answers,
+    required this.onItemCompleted,
+    required this.onMemoryCreated,
+  });
+
+  @override
+  State<_Question3Page> createState() => _Question3PageState();
+}
+
+class _Question3PageState extends State<_Question3Page> {
+  bool? _selectedAnswer;
+
+  @override
+  Widget build(BuildContext context) {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: _joyBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJoyTopBar(
+                context,
+                currentStep: 4,
+                totalSteps: 8,
+                title: isChinese ? '心动整理' : 'Joy Declutter',
+              ),
+              Expanded(
+                child: _buildJoySurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '问题 3/5' : 'Question 3/5',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        isChinese ? '如果今天重新购买，你还会选择它吗？' : 'Would you buy this item again today?',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: _joyPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _OptionButton(
+                        label: isChinese ? '会的' : 'Yes',
+                        isSelected: _selectedAnswer == true,
+                        onTap: () {
+                          setState(() {
+                            _selectedAnswer = true;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _OptionButton(
+                        label: isChinese ? '不会' : 'No',
+                        isSelected: _selectedAnswer == false,
+                        onTap: () {
+                          setState(() {
+                            _selectedAnswer = false;
+                          });
+                        },
+                      ),
+                      const Spacer(),
+                      FilledButton(
+                        onPressed: _selectedAnswer == null
+                            ? null
+                            : () {
+                                widget.answers.wouldBuyAgain = _selectedAnswer;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => _Question4Page(
+                                      photoPath: widget.photoPath,
+                                      itemName: widget.itemName,
+                                      category: widget.category,
+                                      answers: widget.answers,
+                                      onItemCompleted: widget.onItemCompleted,
+                                      onMemoryCreated: widget.onMemoryCreated,
+                                    ),
+                                  ),
+                                );
+                              },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _joyPrimaryColor,
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                        child: Text(isChinese ? '下一步' : 'Next'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Question 4: Does this fit your current lifestyle/goals?
+class _Question4Page extends StatefulWidget {
+  final String photoPath;
+  final String itemName;
+  final DeclutterCategory category;
+  final _JoyAnswers answers;
+  final Function(DeclutterItem) onItemCompleted;
+  final Function(Memory) onMemoryCreated;
+
+  const _Question4Page({
+    required this.photoPath,
+    required this.itemName,
+    required this.category,
+    required this.answers,
+    required this.onItemCompleted,
+    required this.onMemoryCreated,
+  });
+
+  @override
+  State<_Question4Page> createState() => _Question4PageState();
+}
+
+class _Question4PageState extends State<_Question4Page> {
+  bool? _selectedAnswer;
+
+  @override
+  Widget build(BuildContext context) {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: _joyBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJoyTopBar(
+                context,
+                currentStep: 5,
+                totalSteps: 8,
+                title: isChinese ? '心动整理' : 'Joy Declutter',
+              ),
+              Expanded(
+                child: _buildJoySurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '问题 4/5' : 'Question 4/5',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        isChinese ? '它是否符合你当前的生活方式和目标？' : 'Does this fit your current lifestyle and goals?',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: _joyPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _OptionButton(
+                        label: isChinese ? '符合' : 'Yes',
+                        isSelected: _selectedAnswer == true,
+                        onTap: () {
+                          setState(() {
+                            _selectedAnswer = true;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _OptionButton(
+                        label: isChinese ? '不符合' : 'No',
+                        isSelected: _selectedAnswer == false,
+                        onTap: () {
+                          setState(() {
+                            _selectedAnswer = false;
+                          });
+                        },
+                      ),
+                      const Spacer(),
+                      FilledButton(
+                        onPressed: _selectedAnswer == null
+                            ? null
+                            : () {
+                                widget.answers.fitsLifestyle = _selectedAnswer;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => _Question5Page(
+                                      photoPath: widget.photoPath,
+                                      itemName: widget.itemName,
+                                      category: widget.category,
+                                      answers: widget.answers,
+                                      onItemCompleted: widget.onItemCompleted,
+                                      onMemoryCreated: widget.onMemoryCreated,
+                                    ),
+                                  ),
+                                );
+                              },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _joyPrimaryColor,
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                        child: Text(isChinese ? '下一步' : 'Next'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Question 5: Are you keeping it due to sunk cost (spent too much money)?
+class _Question5Page extends StatefulWidget {
+  final String photoPath;
+  final String itemName;
+  final DeclutterCategory category;
+  final _JoyAnswers answers;
+  final Function(DeclutterItem) onItemCompleted;
+  final Function(Memory) onMemoryCreated;
+
+  const _Question5Page({
+    required this.photoPath,
+    required this.itemName,
+    required this.category,
+    required this.answers,
+    required this.onItemCompleted,
+    required this.onMemoryCreated,
+  });
+
+  @override
+  State<_Question5Page> createState() => _Question5PageState();
+}
+
+class _Question5PageState extends State<_Question5Page> {
+  bool? _selectedAnswer;
+
+  @override
+  Widget build(BuildContext context) {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: _joyBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJoyTopBar(
+                context,
+                currentStep: 6,
+                totalSteps: 8,
+                title: isChinese ? '心动整理' : 'Joy Declutter',
+              ),
+              Expanded(
+                child: _buildJoySurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '问题 5/5' : 'Question 5/5',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        isChinese ? '你是否因为花了太多钱而不舍得放手？' : 'Are you keeping it because you spent too much money?',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: _joyPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _OptionButton(
+                        label: isChinese ? '是的' : 'Yes',
+                        isSelected: _selectedAnswer == true,
+                        onTap: () {
+                          setState(() {
+                            _selectedAnswer = true;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _OptionButton(
+                        label: isChinese ? '不是' : 'No',
+                        isSelected: _selectedAnswer == false,
+                        onTap: () {
+                          setState(() {
+                            _selectedAnswer = false;
+                          });
+                        },
+                      ),
+                      const Spacer(),
+                      FilledButton(
+                        onPressed: _selectedAnswer == null
+                            ? null
+                            : () {
+                                widget.answers.sunkCost = _selectedAnswer;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => _SummaryPage(
+                                      photoPath: widget.photoPath,
+                                      itemName: widget.itemName,
+                                      category: widget.category,
+                                      answers: widget.answers,
+                                      onItemCompleted: widget.onItemCompleted,
+                                      onMemoryCreated: widget.onMemoryCreated,
+                                    ),
+                                  ),
+                                );
+                              },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _joyPrimaryColor,
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                        child: Text(isChinese ? '查看总结' : 'View Summary'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Summary page showing objective insights
+class _SummaryPage extends StatelessWidget {
+  final String photoPath;
+  final String itemName;
+  final DeclutterCategory category;
+  final _JoyAnswers answers;
+  final Function(DeclutterItem) onItemCompleted;
+  final Function(Memory) onMemoryCreated;
+
+  const _SummaryPage({
+    required this.photoPath,
+    required this.itemName,
+    required this.category,
+    required this.answers,
+    required this.onItemCompleted,
+    required this.onMemoryCreated,
+  });
+
+  List<String> _getInsights(bool isChinese) {
+    final insights = <String>[];
+
+    // Last used insight
+    if (answers.lastUsed == '> 1 year') {
+      insights.add(isChinese ? '• 超过一年未使用' : '• Unused for over a year');
+    } else if (answers.lastUsed == '6-12 months') {
+      insights.add(isChinese ? '• 6-12个月未使用' : '• Unused for 6-12 months');
+    }
+
+    // Duplicate insight
+    if (answers.hasDuplicate == true) {
+      insights.add(isChinese ? '• 有其他类似物品可用' : '• Similar items available');
+    }
+
+    // Would buy again insight
+    if (answers.wouldBuyAgain == false) {
+      insights.add(isChinese ? '• 不会再次购买' : '• Would not purchase again');
+    }
+
+    // Lifestyle fit insight
+    if (answers.fitsLifestyle == false) {
+      insights.add(isChinese ? '• 不符合当前生活方式' : '• Does not fit current lifestyle');
+    }
+
+    // Sunk cost insight
+    if (answers.sunkCost == true) {
+      insights.add(isChinese ? '• 因沉没成本而保留' : '• Keeping due to sunk cost');
+    }
+
+    return insights;
+  }
+
+  Future<void> _handleKeep(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final item = DeclutterItem(
+      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      name: itemName,
+      category: category,
+      createdAt: DateTime.now(),
+      status: DeclutterStatus.keep,
+      photoPath: photoPath,
+    );
+
+    onItemCompleted(item);
+
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.itemSaved)),
+    );
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _handleLetGo(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final status = await showModalBottomSheet<DeclutterStatus>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.timeToLetGo,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.joyQuestionDescription,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    height: 1.4,
+                    color: Colors.black.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _LetGoOption(
+                  icon: Icons.delete_outline,
+                  label: l10n.routeDiscard,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                ),
+                _LetGoOption(
+                  icon: Icons.volunteer_activism_outlined,
+                  label: l10n.routeDonation,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                ),
+                _LetGoOption(
+                  icon: Icons.recycling_outlined,
+                  label: l10n.routeRecycle,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                ),
+                _LetGoOption(
+                  icon: Icons.attach_money_outlined,
+                  label: l10n.routeResell,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: Text(l10n.cancel),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (status == null || !context.mounted) {
+      return;
+    }
+
+    final item = DeclutterItem(
+      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      name: itemName,
+      category: category,
+      createdAt: DateTime.now(),
+      status: status,
+      photoPath: photoPath,
+    );
+
+    onItemCompleted(item);
+
+    if (!context.mounted) return;
+
+    // Show memory prompt
+    final shouldCreateMemory = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.createMemoryQuestion),
+        content: Text(l10n.createMemoryPrompt),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.skipMemory),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.createMemory),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldCreateMemory == true && context.mounted) {
+      final memory = await Navigator.of(context).push<Memory>(
+        MaterialPageRoute(
+          builder: (_) => CreateMemoryPage(
+            item: item,
+            photoPath: photoPath,
+            itemName: itemName,
+          ),
+        ),
+      );
+
+      if (memory != null) {
+        onMemoryCreated(memory);
+      }
+    }
+
+    if (context.mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+    final theme = Theme.of(context);
+    final insights = _getInsights(isChinese);
+
+    return Scaffold(
+      backgroundColor: _joyBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJoyTopBar(
+                context,
+                currentStep: 7,
+                totalSteps: 8,
+                title: isChinese ? '心动整理' : 'Joy Declutter',
+              ),
+              Expanded(
+                child: ListView(
+                  children: [
+                    _buildJoySurface(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: AspectRatio(
+                              aspectRatio: 4 / 3,
+                              child: photoPath.isEmpty
+                                  ? Container(
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(
+                                        Icons.photo_camera_outlined,
+                                        size: 60,
+                                        color: Colors.black45,
+                                      ),
+                                    )
+                                  : Image.file(
+                                      File(photoPath),
+                                      fit: BoxFit.cover,
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            itemName,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: _joyPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            isChinese ? '根据你的回答' : 'Based on your answers',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF6B7280),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          if (insights.isEmpty)
+                            Text(
+                              isChinese ? '这件物品似乎对你很有价值' : 'This item seems valuable to you',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: const Color(0xFF374151),
+                                height: 1.5,
+                              ),
+                            )
+                          else
+                            ...insights.map((insight) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Text(
+                                    insight,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: const Color(0xFF374151),
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                )),
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F4F6),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.info_outline,
+                                  size: 20,
+                                  color: Color(0xFF6B7280),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    isChinese
+                                        ? '记住：你可以为物品拍照留念，然后放手。'
+                                        : 'Remember: You can keep a memory and still let it go.',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: const Color(0xFF6B7280),
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildJoySurface(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isChinese ? '你的决定' : 'Your Decision',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: _joyPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isChinese ? '最终选择权在你手中' : 'The final choice is yours',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
                           child: FilledButton(
-                            onPressed: _handleKeep,
+                            onPressed: () => _handleKeep(context),
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFF10B981),
                               minimumSize: const Size.fromHeight(48),
                             ),
-                            child: Text(l10n.yes),
+                            child: Text(isChinese ? '保留' : 'Keep'),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: _handleLetGo,
+                            onPressed: () => _handleLetGo(context),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFFEF4444),
                               side: const BorderSide(
@@ -711,23 +1512,55 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                               ),
                               minimumSize: const Size.fromHeight(48),
                             ),
-                            child: Text(l10n.no),
+                            child: Text(isChinese ? '放手' : 'Let Go'),
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _isAISuggested ? l10n.aiSuggested : l10n.captureItemToStart,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
                     ),
                   ],
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Option button widget
+class _OptionButton extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _OptionButton({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? _joyPrimaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? _joyPrimaryColor : const Color(0xFFE5E7EB),
+            width: 2,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? Colors.white : const Color(0xFF374151),
           ),
         ),
       ),

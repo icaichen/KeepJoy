@@ -308,7 +308,10 @@ class _MainNavigatorState extends State<MainNavigator> {
   void _openQuickDeclutter(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => QuickDeclutterFlowPage(onItemCreated: _addPendingItem),
+        builder: (_) => QuickDeclutterFlowPage(
+          onItemCreated: _addPendingItem,
+          pendingItems: _pendingItems,
+        ),
       ),
     );
   }

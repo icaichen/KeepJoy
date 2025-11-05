@@ -103,9 +103,14 @@ Widget _buildQuickSurface({
 }
 
 class QuickDeclutterFlowPage extends StatefulWidget {
-  const QuickDeclutterFlowPage({super.key, required this.onItemCreated});
+  const QuickDeclutterFlowPage({
+    super.key,
+    required this.onItemCreated,
+    this.pendingItems = const [],
+  });
 
   final void Function(DeclutterItem item) onItemCreated;
+  final List<DeclutterItem> pendingItems;
 
   @override
   State<QuickDeclutterFlowPage> createState() => _QuickDeclutterFlowPageState();
@@ -131,6 +136,7 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
             builder: (_) => _QuickItemReviewPage(
               photoPath: photo.path,
               onItemCreated: widget.onItemCreated,
+              pendingItems: widget.pendingItems,
             ),
           ),
         );
@@ -275,7 +281,7 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
               const SizedBox(height: 16),
               Text(
                 isChinese
-                    ? '快速拍攝多個物品，稍後再決定去留。'
+                    ? '快速拍攝多個物品,稍後再決定去留。'
                     : 'Quickly capture multiple items—decide later.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
@@ -294,10 +300,12 @@ class _QuickItemReviewPage extends StatefulWidget {
   const _QuickItemReviewPage({
     required this.photoPath,
     required this.onItemCreated,
+    this.pendingItems = const [],
   });
 
   final String photoPath;
   final void Function(DeclutterItem item) onItemCreated;
+  final List<DeclutterItem> pendingItems;
 
   @override
   State<_QuickItemReviewPage> createState() => _QuickItemReviewPageState();
@@ -312,6 +320,10 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
   bool _isAISuggested = false;
   AIIdentificationResult? _aiResult;
   bool _hasInitialized = false;
+
+  // Joy decision state
+  int? _joyLevel;
+  DeclutterStatus? _decision; // null = not decided, keep/discard/donate/etc = decided
 
   @override
   void didChangeDependencies() {
@@ -397,53 +409,197 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
     Navigator.of(context).pop(false);
   }
 
-  Future<void> _saveAndReturn({required bool finish}) async {
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
+  Future<void> _handleKeep() async {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
     final name = _nameController.text.trim().isEmpty
         ? (isChinese ? '未命名物品' : 'Unnamed item')
         : _nameController.text.trim();
 
     final item = DeclutterItem(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
-      userId: 'temp-user-id', // TODO: Replace with actual userId from AuthService
+      userId: 'temp-user-id',
       name: name,
       category: _selectedCategory,
       createdAt: DateTime.now(),
-      status: DeclutterStatus.pending,
+      status: DeclutterStatus.keep,
       photoPath: widget.photoPath,
+      joyLevel: _joyLevel,
     );
 
     widget.onItemCreated(item);
 
-    if (!finish) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isChinese ? '已加入待整理清單' : 'Added to To Declutter list'),
-        ),
-      );
-      if (mounted) {
-        Navigator.of(context).pop(true);
-      }
-    } else {
-      if (mounted) {
-        Navigator.of(context).pop(true);
-        Navigator.of(context).pop();
-      }
+    setState(() {
+      _decision = DeclutterStatus.keep;
+    });
+  }
+
+  Future<void> _handleLetGo() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final status = await showModalBottomSheet<DeclutterStatus>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        final isChinese = Localizations.localeOf(sheetContext)
+            .languageCode
+            .toLowerCase()
+            .startsWith('zh');
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.timeToLetGo,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.joyQuestionDescription,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    height: 1.4,
+                    color: Colors.black.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildLetGoOption(
+                  sheetContext,
+                  icon: Icons.delete_outline,
+                  label: l10n.routeDiscard,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                ),
+                _buildLetGoOption(
+                  sheetContext,
+                  icon: Icons.volunteer_activism_outlined,
+                  label: l10n.routeDonation,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                ),
+                _buildLetGoOption(
+                  sheetContext,
+                  icon: Icons.recycling_outlined,
+                  label: l10n.routeRecycle,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                ),
+                _buildLetGoOption(
+                  sheetContext,
+                  icon: Icons.attach_money_outlined,
+                  label: l10n.routeResell,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: Text(l10n.cancel),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (status == null || !mounted) {
+      return;
     }
+
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+    final name = _nameController.text.trim().isEmpty
+        ? (isChinese ? '未命名物品' : 'Unnamed item')
+        : _nameController.text.trim();
+
+    final item = DeclutterItem(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      userId: 'temp-user-id',
+      name: name,
+      category: _selectedCategory,
+      createdAt: DateTime.now(),
+      status: status,
+      photoPath: widget.photoPath,
+      joyLevel: _joyLevel,
+    );
+
+    widget.onItemCreated(item);
+
+    setState(() {
+      _decision = status;
+    });
+  }
+
+  Widget _buildLetGoOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFFF3F4F6),
+        ),
+        child: Icon(icon, color: const Color(0xFF374151)),
+      ),
+      title: Text(
+        label,
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Future<void> _continue() async {
+    // Pop and return to take another photo
+    Navigator.of(context).pop(true);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.quickDeclutterTitle), centerTitle: false),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          // Photo
           Card(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -463,6 +619,8 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
             ),
           ),
           const SizedBox(height: 20),
+
+          // Item details
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -491,29 +649,32 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                               : null,
                     ),
                     onChanged: (_) {
-                      // User edited, no longer AI suggested
                       if (_isAISuggested) {
                         setState(() => _isAISuggested = false);
                       }
                     },
                   ),
                   const SizedBox(height: 20),
-                  DropdownMenu<DeclutterCategory>(
-                    initialSelection: _selectedCategory,
-                    label: Text(l10n.category),
-                    dropdownMenuEntries: DeclutterCategory.values
-                        .map(
-                          (category) => DropdownMenuEntry(
-                            value: category,
-                            label: category.label(context),
-                          ),
-                        )
-                        .toList(),
-                    onSelected: (value) {
-                      if (value != null) {
-                        setState(() => _selectedCategory = value);
-                      }
-                    },
+                  SizedBox(
+                    width: double.infinity,
+                    child: DropdownMenu<DeclutterCategory>(
+                      initialSelection: _selectedCategory,
+                      label: Text(l10n.category),
+                      expandedInsets: EdgeInsets.zero,
+                      dropdownMenuEntries: DeclutterCategory.values
+                          .map(
+                            (category) => DropdownMenuEntry(
+                              value: category,
+                              label: category.label(context),
+                            ),
+                          )
+                          .toList(),
+                      onSelected: (value) {
+                        if (value != null) {
+                          setState(() => _selectedCategory = value);
+                        }
+                      },
+                    ),
                   ),
                   if (_aiResult?.method == 'on-device') ...[
                     const SizedBox(height: 16),
@@ -528,32 +689,625 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _retake,
-                  child: Text(l10n.retakePhoto),
+
+          // Joy Decision Section (only show if not decided yet)
+          if (_decision == null) ...[
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isChinese ? '这件物品让你心动吗？' : 'Does it spark joy?',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Joy level slider
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isChinese ? '不心动' : 'No Joy',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                            Text(
+                              isChinese ? '很心动' : 'Sparks Joy',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Slider(
+                          value: _joyLevel?.toDouble() ?? 5,
+                          min: 0,
+                          max: 10,
+                          divisions: 10,
+                          label: _joyLevel?.toString() ?? '5',
+                          activeColor: const Color(0xFF5ECFB8),
+                          onChanged: (value) {
+                            setState(() => _joyLevel = value.toInt());
+                          },
+                        ),
+                        if (_joyLevel != null)
+                          Center(
+                            child: Text(
+                              '${isChinese ? '心动指数' : 'Joy Level'}: $_joyLevel/10',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF111827),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Keep/Let Go buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: _handleKeep,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              minimumSize: const Size.fromHeight(48),
+                            ),
+                            icon: const Icon(Icons.favorite_rounded),
+                            label: Text(isChinese ? '保留' : 'Keep'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _handleLetGo,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFEF4444),
+                              side: const BorderSide(
+                                color: Color(0xFFEF4444),
+                              ),
+                              minimumSize: const Size.fromHeight(48),
+                            ),
+                            icon: const Icon(Icons.close_rounded),
+                            label: Text(isChinese ? '放手' : 'Let Go'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
+            ),
+            const SizedBox(height: 12),
+            // Retake button (only before decision)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _retake,
+                child: Text(l10n.retakePhoto),
+              ),
+            ),
+          ],
+
+          // After decision: Show Continue button
+          if (_decision != null) ...[
+            Card(
+              color: const Color(0xFFF0FDF4),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Icon(
+                      _decision == DeclutterStatus.keep
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_rounded,
+                      size: 48,
+                      color: _decision == DeclutterStatus.keep
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _decision == DeclutterStatus.keep
+                          ? (isChinese ? '已保留' : 'Kept')
+                          : (isChinese ? '已决定放手' : 'Decided to let go'),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _continue,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF5ECFB8),
+                  minimumSize: const Size.fromHeight(52),
+                ),
+                icon: const Icon(Icons.arrow_forward_rounded),
+                label: Text(
+                  isChinese ? '继续拍照' : 'Continue',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// Quick Decision Page - Shows "Does it spark joy?" for pending items
+class _QuickDecisionPage extends StatefulWidget {
+  const _QuickDecisionPage({
+    required this.item,
+    required this.onItemCompleted,
+    this.pendingItems = const [],
+  });
+
+  final DeclutterItem item;
+  final Function(DeclutterItem) onItemCompleted;
+  final List<DeclutterItem> pendingItems;
+
+  @override
+  State<_QuickDecisionPage> createState() => _QuickDecisionPageState();
+}
+
+class _QuickDecisionPageState extends State<_QuickDecisionPage> {
+  int? _joyLevel;
+
+  Future<void> _handleKeep() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final updatedItem = DeclutterItem(
+      id: widget.item.id,
+      userId: widget.item.userId,
+      name: widget.item.name,
+      category: widget.item.category,
+      createdAt: widget.item.createdAt,
+      status: DeclutterStatus.keep,
+      photoPath: widget.item.photoPath,
+      joyLevel: _joyLevel,
+    );
+
+    widget.onItemCompleted(updatedItem);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.itemSaved)),
+    );
+
+    // If there are more pending items, show continue option
+    if (widget.pendingItems.isNotEmpty) {
+      final shouldContinue = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          final isChinese = Localizations.localeOf(context)
+              .languageCode
+              .toLowerCase()
+              .startsWith('zh');
+          return AlertDialog(
+            title: Text(isChinese ? '继续整理？' : 'Continue?'),
+            content: Text(
+              isChinese
+                  ? '还有 ${widget.pendingItems.length} 件物品待整理'
+                  : '${widget.pendingItems.length} item${widget.pendingItems.length > 1 ? 's' : ''} remaining',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(isChinese ? '完成' : 'Done'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(l10n.continueButton),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (mounted) {
+        if (shouldContinue == true) {
+          // Replace current page with next item
+          final nextItem = widget.pendingItems.first;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => _QuickDecisionPage(
+                item: nextItem,
+                onItemCompleted: widget.onItemCompleted,
+                pendingItems: widget.pendingItems.skip(1).toList(),
+              ),
+            ),
+          );
+        } else {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      }
+    } else {
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    }
+  }
+
+  Future<void> _handleLetGo() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final status = await showModalBottomSheet<DeclutterStatus>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        final isChinese = Localizations.localeOf(sheetContext)
+            .languageCode
+            .toLowerCase()
+            .startsWith('zh');
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.timeToLetGo,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.joyQuestionDescription,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    height: 1.4,
+                    color: Colors.black.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildLetGoOption(
+                  sheetContext,
+                  icon: Icons.delete_outline,
+                  label: l10n.routeDiscard,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                ),
+                _buildLetGoOption(
+                  sheetContext,
+                  icon: Icons.volunteer_activism_outlined,
+                  label: l10n.routeDonation,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                ),
+                _buildLetGoOption(
+                  sheetContext,
+                  icon: Icons.recycling_outlined,
+                  label: l10n.routeRecycle,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                ),
+                _buildLetGoOption(
+                  sheetContext,
+                  icon: Icons.attach_money_outlined,
+                  label: l10n.routeResell,
+                  onTap: () =>
+                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: Text(l10n.cancel),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (status == null || !mounted) {
+      return;
+    }
+
+    final updatedItem = DeclutterItem(
+      id: widget.item.id,
+      userId: widget.item.userId,
+      name: widget.item.name,
+      category: widget.item.category,
+      createdAt: DateTime.now(),
+      status: status,
+      photoPath: widget.item.photoPath,
+      joyLevel: _joyLevel,
+    );
+
+    widget.onItemCompleted(updatedItem);
+
+    if (!mounted) return;
+
+    // If there are more pending items, show continue option
+    if (widget.pendingItems.isNotEmpty) {
+      final isChinese = Localizations.localeOf(context)
+          .languageCode
+          .toLowerCase()
+          .startsWith('zh');
+      final shouldContinue = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(isChinese ? '继续整理？' : 'Continue?'),
+          content: Text(
+            isChinese
+                ? '还有 ${widget.pendingItems.length} 件物品待整理'
+                : '${widget.pendingItems.length} item${widget.pendingItems.length > 1 ? 's' : ''} remaining',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(isChinese ? '完成' : 'Done'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.continueButton),
+            ),
+          ],
+        ),
+      );
+
+      if (mounted) {
+        if (shouldContinue == true) {
+          final nextItem = widget.pendingItems.first;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => _QuickDecisionPage(
+                item: nextItem,
+                onItemCompleted: widget.onItemCompleted,
+                pendingItems: widget.pendingItems.skip(1).toList(),
+              ),
+            ),
+          );
+        } else {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      }
+    } else {
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    }
+  }
+
+  Widget _buildLetGoOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFFF3F4F6),
+        ),
+        child: Icon(icon, color: const Color(0xFF374151)),
+      ),
+      title: Text(
+        label,
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: _quickBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildQuickTopBar(
+                context,
+                currentStep: 1,
+                totalSteps: 2,
+                title: isChinese ? '快速整理' : 'Quick Declutter',
+              ),
               Expanded(
-                child: FilledButton(
-                  onPressed: () => _saveAndReturn(finish: false),
-                  child: Text(l10n.nextItem),
+                child: ListView(
+                  children: [
+                    _buildQuickSurface(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Photo
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: AspectRatio(
+                              aspectRatio: 4 / 3,
+                              child: widget.item.photoPath == null || widget.item.photoPath!.isEmpty
+                                  ? Container(
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(
+                                        Icons.photo_camera_outlined,
+                                        size: 80,
+                                        color: Colors.black45,
+                                      ),
+                                    )
+                                  : Image.file(
+                                      File(widget.item.photoPath!),
+                                      fit: BoxFit.cover,
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Item name
+                          Text(
+                            widget.item.name,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: _quickPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Category
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F4F6),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              widget.item.category.label(context),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: const Color(0xFF6B7280),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // "Does it spark joy?" question
+                          Text(
+                            isChinese ? '这件物品让你心动吗？' : 'Does it spark joy?',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: _quickPrimaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Joy level slider
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    isChinese ? '不心动' : 'No Joy',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: const Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                  Text(
+                                    isChinese ? '很心动' : 'Sparks Joy',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: const Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Slider(
+                                value: _joyLevel?.toDouble() ?? 5,
+                                min: 0,
+                                max: 10,
+                                divisions: 10,
+                                label: _joyLevel?.toString() ?? '5',
+                                activeColor: const Color(0xFF5ECFB8),
+                                onChanged: (value) {
+                                  setState(() => _joyLevel = value.toInt());
+                                },
+                              ),
+                              if (_joyLevel != null)
+                                Center(
+                                  child: Text(
+                                    '${isChinese ? '心动指数' : 'Joy Level'}: $_joyLevel/10',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: _quickPrimaryColor,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Keep/Let Go buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: _handleKeep,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              minimumSize: const Size.fromHeight(48),
+                            ),
+                            icon: const Icon(Icons.favorite_rounded),
+                            label: Text(isChinese ? '保留' : 'Keep'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _handleLetGo,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFEF4444),
+                              side: const BorderSide(
+                                color: Color(0xFFEF4444),
+                              ),
+                              minimumSize: const Size.fromHeight(48),
+                            ),
+                            icon: const Icon(Icons.close_rounded),
+                            label: Text(isChinese ? '放手' : 'Let Go'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => _saveAndReturn(finish: true),
-              child: Text(l10n.finishDeclutter),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
