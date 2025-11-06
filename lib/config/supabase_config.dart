@@ -7,11 +7,7 @@
 // 4. Run the SQL schema from supabase/schema.sql in the SQL Editor
 
 class SupabaseConfig {
-  // Replace these with your actual Supabase credentials
-  static const String supabaseUrl = 'YOUR_SUPABASE_URL_HERE';
-  static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY_HERE';
-
-  // Example:
-  // static const String supabaseUrl = 'https://xyzcompany.supabase.co';
-  // static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+  // Supabase credentials - configured for KeepJoy app
+  static const String supabaseUrl = 'https://yfzcfxfjadtpiebjxgvs.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmemNmeGZqYWR0cGllYmp4Z3ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5NjEyMDAsImV4cCI6MjA3NDUzNzIwMH0.31moMuNdrDXt7FuQP2VOI1U1CD3eULU1oQOMGUKOmGg';
 }

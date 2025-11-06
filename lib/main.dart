@@ -24,8 +24,14 @@ import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
+import 'package:keepjoy_app/services/auth_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase
+  await AuthService.initialize();
+
   runApp(const KeepJoyApp());
 }
 
@@ -38,6 +44,7 @@ class KeepJoyApp extends StatefulWidget {
 
 class _KeepJoyAppState extends State<KeepJoyApp> {
   Locale? _locale;
+  final _authService = AuthService();
 
   void _setLocale(Locale locale) {
     setState(() {
@@ -68,7 +75,8 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
         Locale('en'), // English
         Locale('zh'), // Chinese
       ],
-      initialRoute: '/welcome',
+      // Check if user is already authenticated
+      initialRoute: _authService.isAuthenticated ? '/home' : '/welcome',
       routes: {
         '/welcome': (context) => const WelcomePage(),
         '/login': (context) => const LoginPage(),

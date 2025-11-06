@@ -510,6 +510,9 @@
   "signInSuccess": "Signed in successfully",
   "signUpSuccess": "Account created successfully",
   "welcomeToKeepJoy": "Welcome to KeepJoy",
+  "resetPasswordInstruction": "Enter your email address and we'll send you a link to reset your password.",
+  "sendResetLink": "Send Reset Link",
+  "resetPasswordEmailSent": "Password reset email sent! Please check your inbox.",
 
   "quickTip": "Quick Tip",
   "whatBroughtYouJoy": "What brought you joy today?",

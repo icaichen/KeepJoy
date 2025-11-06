@@ -1112,6 +1112,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeToKeepJoy => 'Welcome to KeepJoy';
 
   @override
+  String get resetPasswordInstruction =>
+      'Enter your email address and we\'ll send you a link to reset your password.';
+
+  @override
+  String get sendResetLink => 'Send Reset Link';
+
+  @override
+  String get resetPasswordEmailSent =>
+      'Password reset email sent! Please check your inbox.';
+
+  @override
   String get quickTip => 'Quick Tip';
 
   @override

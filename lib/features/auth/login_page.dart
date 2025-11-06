@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,6 +18,9 @@ class _LoginPageState extends State<LoginPage> {
   bool _isSignUp = false;
   final _nameController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+
+  final _authService = AuthService();
 
   @override
   void dispose() {
@@ -33,19 +37,68 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement authentication
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isSignUp ? l10n.signUpSuccess : l10n.signInSuccess),
-          backgroundColor: Colors.green,
-        ),
-      );
+      setState(() {
+        _isLoading = true;
+      });
 
-      // For now, just navigate to home
-      Navigator.pushReplacementNamed(context, '/home');
+      final l10n = AppLocalizations.of(context)!;
+
+      try {
+        if (_isSignUp) {
+          // Sign up
+          final response = await _authService.signUp(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
+
+          if (response.user != null && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.signUpSuccess),
+                backgroundColor: Colors.green,
+              ),
+            );
+
+            // Navigate to home after successful sign up
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        } else {
+          // Sign in
+          final response = await _authService.signIn(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
+
+          if (response.user != null && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.signInSuccess),
+                backgroundColor: Colors.green,
+              ),
+            );
+
+            // Navigate to home after successful sign in
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -295,7 +348,7 @@ class _LoginPageState extends State<LoginPage> {
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: () {
-                              // TODO: Implement forgot password
+                              _showForgotPasswordDialog(context);
                             },
                             child: Text(
                               l10n.forgotPassword,
@@ -317,7 +370,7 @@ class _LoginPageState extends State<LoginPage> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: _handleSubmit,
+                          onPressed: _isLoading ? null : _handleSubmit,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF414B5A),
                             foregroundColor: Colors.white,
@@ -325,15 +378,25 @@ class _LoginPageState extends State<LoginPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            disabledBackgroundColor: const Color(0xFF9CA3AF),
                           ),
-                          child: Text(
-                            _isSignUp ? l10n.signUp : l10n.signIn,
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Text',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  _isSignUp ? l10n.signUp : l10n.signIn,
+                                  style: const TextStyle(
+                                    fontFamily: 'SF Pro Text',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
 
@@ -438,6 +501,148 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showForgotPasswordDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final emailController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            l10n.forgotPassword,
+            style: const TextStyle(
+              fontFamily: 'SF Pro Display',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
+            ),
+          ),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.resetPasswordInstruction,
+                  style: const TextStyle(
+                    fontFamily: 'SF Pro Text',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: l10n.email,
+                    labelStyle: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      color: Color(0xFF6B7280),
+                    ),
+                    prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF6B7280)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFFAFAFA),
+                  ),
+                  validator: (value) => _validateEmail(value, l10n),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+              child: Text(
+                l10n.cancel,
+                style: const TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (formKey.currentState!.validate()) {
+                        setState(() {
+                          isLoading = true;
+                        });
+
+                        try {
+                          await _authService.resetPassword(emailController.text.trim());
+
+                          if (mounted) {
+                            Navigator.pop(dialogContext);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(l10n.resetPasswordEmailSent),
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 4),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          setState(() {
+                            isLoading = false;
+                          });
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(e.toString()),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
+              child: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF414B5A)),
+                      ),
+                    )
+                  : Text(
+                      l10n.sendResetLink,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF414B5A),
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
     );

@@ -6,6 +6,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../services/auth_service.dart';
+import '../../services/data_repository.dart';
+import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.onLocaleChange});
@@ -17,6 +20,30 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final _authService = AuthService();
+
+  String get _userEmail => _authService.currentUser?.email ?? 'user@example.com';
+
+  String get _userName {
+    final metadata = _authService.currentUser?.userMetadata;
+    if (metadata != null && metadata['name'] != null) {
+      return metadata['name'] as String;
+    }
+    // Extract name from email if no metadata
+    final email = _userEmail;
+    if (email.contains('@')) {
+      return email.split('@').first;
+    }
+    return 'User';
+  }
+
+  String get _userInitial {
+    if (_userName.isNotEmpty) {
+      return _userName[0].toUpperCase();
+    }
+    return 'U';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -64,9 +91,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     CircleAvatar(
                       radius: 40,
                       backgroundColor: const Color(0xFFB794F6).withValues(alpha: 0.15),
-                      child: const Text(
-                        'U',
-                        style: TextStyle(
+                      child: Text(
+                        _userInitial,
+                        style: const TextStyle(
                           fontFamily: 'SF Pro Display',
                           fontSize: 32,
                           fontWeight: FontWeight.w700,
@@ -81,9 +108,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'User Name',
-                            style: TextStyle(
+                          Text(
+                            _userName,
+                            style: const TextStyle(
                               fontFamily: 'SF Pro Display',
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
@@ -92,9 +119,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'user@example.com',
-                            style: TextStyle(
+                          Text(
+                            _userEmail,
+                            style: const TextStyle(
                               fontFamily: 'SF Pro Text',
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
@@ -108,8 +135,18 @@ class _ProfilePageState extends State<ProfilePage> {
                     // Edit Button
                     IconButton(
                       icon: const Icon(Icons.edit_outlined, color: Color(0xFF6B7280)),
-                      onPressed: () {
-                        // TODO: Implement edit profile
+                      onPressed: () async {
+                        final result = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const EditProfilePage(),
+                          ),
+                        );
+
+                        // Refresh the profile if updated
+                        if (result == true && mounted) {
+                          setState(() {});
+                        }
                       },
                     ),
                   ],
@@ -416,31 +453,79 @@ class _ProfilePageState extends State<ProfilePage> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          l10n.clearAllData,
-          style: const TextStyle(
-            fontFamily: 'SF Pro Display',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF111827),
-          ),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l10n.clearAllData,
+                style: const TextStyle(
+                  fontFamily: 'SF Pro Display',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
+              ),
+            ),
+          ],
         ),
-        content: Text(
-          isChinese
-              ? '确定要清除所有数据吗？此操作无法撤销。'
-              : 'Are you sure you want to clear all data? This cannot be undone.',
-          style: const TextStyle(
-            fontFamily: 'SF Pro Text',
-            fontSize: 15,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF111827),
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isChinese
+                  ? '确定要清除所有数据吗？此操作无法撤销。'
+                  : 'Are you sure you want to clear all data? This cannot be undone.',
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF111827),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isChinese ? '将删除以下数据：' : 'This will delete:',
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isChinese
+                        ? '• 所有物品记录\n• 所有整理记录\n• 所有回忆\n• 所有二手物品追踪\n• 所有照片和数据'
+                        : '• All items\n• All sessions\n• All memories\n• All resell items\n• All photos and data',
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 13,
+                      color: Color(0xFF991B1B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               l10n.cancel,
               style: const TextStyle(
@@ -452,16 +537,73 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement clear data
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    isChinese ? '数据已清除' : 'Data cleared',
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+
+              // Show loading dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        isChinese ? '正在清除数据...' : 'Clearing data...',
+                        style: const TextStyle(
+                          fontFamily: 'SF Pro Text',
+                          fontSize: 15,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
+
+              try {
+                final repository = DataRepository();
+
+                // Clear all data from repository
+                await repository.clearAllData();
+
+                // Close loading dialog
+                if (mounted) {
+                  Navigator.pop(context);
+                }
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isChinese ? '所有数据已清除' : 'All data has been cleared',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                // Close loading dialog
+                if (mounted) {
+                  Navigator.pop(context);
+                }
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isChinese ? '清除失败: $e' : 'Clear failed: $e',
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               isChinese ? '清除' : 'Clear',
@@ -523,16 +665,44 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Implement actual logout logic
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    isChinese ? '已登出' : 'Logged out',
+
+              // Show loading indicator
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isChinese ? '正在登出...' : 'Logging out...',
+                    ),
+                    duration: const Duration(seconds: 1),
                   ),
-                ),
-              );
+                );
+              }
+
+              try {
+                // Perform logout
+                await _authService.signOut();
+
+                // Navigate to welcome screen
+                if (mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/welcome',
+                    (route) => false,
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isChinese ? '登出失败: $e' : 'Logout failed: $e',
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               isChinese ? '登出' : 'Log Out',
@@ -642,46 +812,202 @@ class _ProfilePageState extends State<ProfilePage> {
         .toLowerCase()
         .startsWith('zh');
 
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFB794F6)),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isChinese ? '正在导出数据...' : 'Exporting data...',
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 15,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
     try {
-      // Create sample export data
+      final repository = DataRepository();
+
+      // Get all data from repository
+      final items = await repository.getAllItems();
+      final sessions = await repository.getAllSessions();
+      final memories = await repository.getAllMemories();
+      final resellItems = await repository.getAllResellItems();
+
+      // Create comprehensive export data
       final exportData = {
         'version': '1.0.0',
         'exportDate': DateTime.now().toIso8601String(),
+        'user': {
+          'email': _userEmail,
+          'name': _userName,
+        },
         'data': {
-          'items': [],
-          'memories': [],
-          'sessions': [],
+          'items': items.map((item) => {
+            'id': item.id,
+            'name': item.name,
+            'category': item.category,
+            'createdAt': item.createdAt.toIso8601String(),
+            'imagePath': item.imagePath,
+            'decision': item.decision,
+            'letGoRoute': item.letGoRoute,
+          }).toList(),
+          'sessions': sessions.map((session) => {
+            'id': session.id,
+            'type': session.type,
+            'startTime': session.startTime.toIso8601String(),
+            'endTime': session.endTime?.toIso8601String(),
+            'area': session.area,
+            'itemsCount': session.itemsCount,
+            'beforePhotoPath': session.beforePhotoPath,
+            'afterPhotoPath': session.afterPhotoPath,
+          }).toList(),
+          'memories': memories.map((memory) => {
+            'id': memory.id,
+            'itemId': memory.itemId,
+            'itemName': memory.itemName,
+            'description': memory.description,
+            'sentiment': memory.sentiment,
+            'createdAt': memory.createdAt.toIso8601String(),
+            'imagePath': memory.imagePath,
+          }).toList(),
+          'resellItems': resellItems.map((item) => {
+            'id': item.id,
+            'itemId': item.itemId,
+            'itemName': item.itemName,
+            'status': item.status,
+            'platform': item.platform,
+            'sellingPrice': item.sellingPrice,
+            'soldPrice': item.soldPrice,
+            'soldDate': item.soldDate?.toIso8601String(),
+            'createdAt': item.createdAt.toIso8601String(),
+          }).toList(),
+        },
+        'statistics': {
+          'totalItems': items.length,
+          'totalSessions': sessions.length,
+          'totalMemories': memories.length,
+          'totalResellItems': resellItems.length,
+          'itemsKept': items.where((item) => item.decision == 'keep').length,
+          'itemsLetGo': items.where((item) => item.decision == 'let_go').length,
         },
       };
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
 
-      // Get the downloads directory
+      // Save to documents directory
       final directory = await getApplicationDocumentsDirectory();
       final fileName = 'keepjoy_export_${DateTime.now().millisecondsSinceEpoch}.json';
       final file = File('${directory.path}/$fileName');
 
       await file.writeAsString(jsonString);
 
+      // Close loading dialog
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isChinese
-                  ? '数据已导出到: ${file.path}'
-                  : 'Data exported to: ${file.path}',
+        Navigator.pop(context);
+      }
+
+      if (mounted) {
+        // Show success dialog with file location
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text(
+              isChinese ? '导出成功' : 'Export Successful',
+              style: const TextStyle(
+                fontFamily: 'SF Pro Display',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
             ),
-            duration: const Duration(seconds: 4),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isChinese
+                      ? '你的数据已成功导出到：'
+                      : 'Your data has been exported to:',
+                  style: const TextStyle(
+                    fontFamily: 'SF Pro Text',
+                    fontSize: 15,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SelectableText(
+                    file.path,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  isChinese
+                      ? '包含 ${items.length} 个物品、${sessions.length} 个记录、${memories.length} 个回忆'
+                      : 'Includes ${items.length} items, ${sessions.length} sessions, ${memories.length} memories',
+                  style: const TextStyle(
+                    fontFamily: 'SF Pro Text',
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  l10n.ok,
+                  style: const TextStyle(
+                    fontFamily: 'SF Pro Text',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFB794F6),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       }
     } catch (e) {
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               isChinese ? '导出失败: $e' : 'Export failed: $e',
             ),
+            backgroundColor: Colors.red,
           ),
         );
       }

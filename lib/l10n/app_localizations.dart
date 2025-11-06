@@ -2156,6 +2156,24 @@ abstract class AppLocalizations {
   /// **'Welcome to KeepJoy'**
   String get welcomeToKeepJoy;
 
+  /// No description provided for @resetPasswordInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address and we\'ll send you a link to reset your password.'**
+  String get resetPasswordInstruction;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Reset Link'**
+  String get sendResetLink;
+
+  /// No description provided for @resetPasswordEmailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset email sent! Please check your inbox.'**
+  String get resetPasswordEmailSent;
+
   /// No description provided for @quickTip.
   ///
   /// In en, this message translates to:

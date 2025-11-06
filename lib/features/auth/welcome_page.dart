@@ -23,9 +23,7 @@ class WelcomePage extends StatelessWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: const Color(0xFFE5E7EA)),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x08000000),
@@ -34,11 +32,13 @@ class WelcomePage extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Icon(
-                    Icons.spa_rounded,
-                    size: 64,
-                    color: Color(0xFF414B5A),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: Image.asset(
+                    'assets/images/app_logo.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),

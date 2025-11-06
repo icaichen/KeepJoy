@@ -1083,6 +1083,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get welcomeToKeepJoy => '欢迎来到KeepJoy';
 
   @override
+  String get resetPasswordInstruction => '输入您的邮箱地址，我们将向您发送重置密码的链接。';
+
+  @override
+  String get sendResetLink => '发送重置链接';
+
+  @override
+  String get resetPasswordEmailSent => '密码重置邮件已发送！请检查您的收件箱。';
+
+  @override
   String get quickTip => '快速提示';
 
   @override
