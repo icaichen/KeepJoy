@@ -1464,10 +1464,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           child: Column(
                             children: [
-                              Icon(
-                                Icons.format_quote_rounded,
-                                color: const Color(0xFF9CA3AF),
-                                size: 32,
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                  color: Colors.black,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Transform.scale(
+                                  scaleX: -1,
+                                  child: const Icon(
+                                    Icons.format_quote_rounded,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 12),
                               Text(

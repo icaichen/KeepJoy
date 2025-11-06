@@ -48,7 +48,9 @@ class _MemoriesPageState extends State<MemoriesPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final memories = widget.memories;
     final topPadding = MediaQuery.of(context).padding.top;
 
@@ -61,7 +63,7 @@ class _MemoriesPageState extends State<MemoriesPage> {
     final pageName = l10n.memoriesTitle;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F7),
+      backgroundColor: const Color(0xFFF5F5F7),
       body: Stack(
         children: [
           // Scrollable content
@@ -69,16 +71,21 @@ class _MemoriesPageState extends State<MemoriesPage> {
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
-              SliverToBoxAdapter(child: SizedBox(height: topPadding + 80)),
+              SliverToBoxAdapter(
+                child: SizedBox(height: topPadding + headerHeight),
+              ),
               SliverToBoxAdapter(
                 child: memories.isEmpty
                     ? SizedBox(
-                        height: MediaQuery.of(context).size.height - topPadding - 80,
+                        height:
+                            MediaQuery.of(context).size.height -
+                            topPadding -
+                            headerHeight,
                         child: _EmptyMemoriesState(),
                       )
                     : _viewMode == MemoryViewMode.grid
-                        ? _GridViewWrapper(memories: memories)
-                        : _TimelineView(memories: memories, isChinese: isChinese),
+                    ? _GridViewWrapper(memories: memories)
+                    : _TimelineView(memories: memories, isChinese: isChinese),
               ),
             ],
           ),
@@ -92,27 +99,34 @@ class _MemoriesPageState extends State<MemoriesPage> {
               ignoring: collapsedHeaderOpacity < 0.5,
               child: Opacity(
                 opacity: collapsedHeaderOpacity,
-                child: Container(
-                  height: topPadding + kToolbarHeight,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF5F6F7),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Color(0xFFE5E5EA),
-                        width: 0.5,
+                child: Column(
+                  children: [
+                    Container(
+                      height: topPadding,
+                      color: const Color(0xFFF5F5F7),
+                    ),
+                    Container(
+                      height: kToolbarHeight,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF5F5F7),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xFFE5E5EA),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        pageName,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1C1C1E),
+                        ),
                       ),
                     ),
-                  ),
-                  padding: EdgeInsets.only(top: topPadding),
-                  alignment: Alignment.center,
-                  child: Text(
-                    pageName,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1C1C1E),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -124,7 +138,7 @@ class _MemoriesPageState extends State<MemoriesPage> {
             left: 0,
             right: 0,
             child: SizedBox(
-              height: 120,
+              height: headerHeight,
               child: Padding(
                 padding: EdgeInsets.only(
                   left: 24,
@@ -135,25 +149,46 @@ class _MemoriesPageState extends State<MemoriesPage> {
                   opacity: headerOpacity,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        pageName,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1C1C1E),
-                          letterSpacing: -0.5,
-                          height: 1.0,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            pageName,
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1C1C1E),
+                              letterSpacing: -0.5,
+                              height: 1.0,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.joyfulMemories,
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Display',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF6B7280),
+                              letterSpacing: 0,
+                            ),
+                          ),
+                        ],
                       ),
-                      // View mode toggle
                       Container(
+                        height: 40,
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             _buildViewModeButton(
                               icon: Icons.grid_view_rounded,
@@ -388,10 +423,7 @@ class _TimelineMemoryItem extends StatelessWidget {
   final Memory memory;
   final bool showLine;
 
-  const _TimelineMemoryItem({
-    required this.memory,
-    required this.showLine,
-  });
+  const _TimelineMemoryItem({required this.memory, required this.showLine});
 
   @override
   Widget build(BuildContext context) {
@@ -412,13 +444,12 @@ class _TimelineMemoryItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: _getTypeColor(memory.type),
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2,
-                    ),
+                    border: Border.all(color: Colors.white, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: _getTypeColor(memory.type).withValues(alpha: 0.3),
+                        color: _getTypeColor(
+                          memory.type,
+                        ).withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -491,7 +522,9 @@ class _TimelineMemoryItem extends StatelessWidget {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: _getTypeColor(memory.type).withValues(alpha: 0.15),
+                            color: _getTypeColor(
+                              memory.type,
+                            ).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -532,7 +565,8 @@ class _TimelineMemoryItem extends StatelessWidget {
                     ],
 
                     // Item name if present
-                    if (memory.itemName != null && memory.itemName!.isNotEmpty) ...[
+                    if (memory.itemName != null &&
+                        memory.itemName!.isNotEmpty) ...[
                       Text(
                         memory.itemName!,
                         style: const TextStyle(
@@ -617,7 +651,9 @@ class _EmptyMemoriesState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     return Center(
       child: Padding(
