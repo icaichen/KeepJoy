@@ -7,7 +7,6 @@ import 'package:keepjoy_app/features/deep_cleaning/deep_cleaning_flow.dart';
 import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
 import 'package:keepjoy_app/features/insights/yearly_reports_screen.dart';
-import 'package:keepjoy_app/features/insights/insights_screen.dart';
 import 'package:keepjoy_app/features/profile/profile_page.dart';
 import 'package:keepjoy_app/features/memories/create_memory_page.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
@@ -18,6 +17,7 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/theme/typography.dart';
+import 'package:keepjoy_app/widgets/gradient_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   final DeepCleaningSession? activeSession;
@@ -1384,44 +1384,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 18),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    final memory = await Navigator.of(context).push<Memory>(
-                                      MaterialPageRoute(
-                                        builder: (_) => const CreateMemoryPage(),
-                                      ),
-                                    );
+                              GradientButton(
+                                onPressed: () async {
+                                  final memory = await Navigator.of(context).push<Memory>(
+                                    MaterialPageRoute(
+                                      builder: (_) => const CreateMemoryPage(),
+                                    ),
+                                  );
 
-                                    if (memory != null && context.mounted) {
-                                      widget.onMemoryCreated(memory);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(l10n.memoryCreated)),
-                                      );
-                                    }
-                                  },
-                                  icon: const Icon(
-                                    Icons.sentiment_satisfied_alt,
-                                    size: 18,
-                                  ),
-                                  label: Text(
-                                    l10n.createMemory,
-                                    style: const TextStyle(
-                                      fontFamily: 'SF Pro Text',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400,
-                                      letterSpacing: 0,
+                                  if (memory != null && context.mounted) {
+                                    widget.onMemoryCreated(memory);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(l10n.memoryCreated)),
+                                    );
+                                  }
+                                },
+                                width: double.infinity,
+                                height: 44,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.sentiment_satisfied_alt,
+                                      size: 18,
+                                      color: Colors.white,
                                     ),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF414B5A),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      l10n.createMemory,
+                                      style: const TextStyle(
+                                        fontFamily: 'SF Pro Text',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
+                                        letterSpacing: 0,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -1502,6 +1501,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Row(
                               children: [
                                 Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => DeepCleaningTimerPage(
+                                            area: widget.activeSession!.area,
+                                            beforePhotoPath: widget.activeSession!.beforePhotoPath,
+                                            onStopSession: widget.onStopSession,
+                                            sessionStartTime: widget.activeSession!.startTime, // Pass start time
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.play_arrow, size: 18),
+                                    label: Text(isChinese ? '继续' : 'Resume'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF414B5A),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
                                   child: OutlinedButton(
                                     onPressed: () {
                                       // Show confirmation dialog for stopping
@@ -1545,33 +1571,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     ),
                                     child: Text(isChinese ? '停止' : 'Stop'),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => DeepCleaningTimerPage(
-                                            area: widget.activeSession!.area,
-                                            beforePhotoPath: widget.activeSession!.beforePhotoPath,
-                                            onStopSession: widget.onStopSession,
-                                            sessionStartTime: widget.activeSession!.startTime, // Pass start time
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.play_arrow, size: 18),
-                                    label: Text(isChinese ? '继续' : 'Resume'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF414B5A),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
                                   ),
                                 ),
                               ],
@@ -1767,20 +1766,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           activeColor: const Color(0xFF10B981),
                                         )
                                       else
-                                        ElevatedButton(
+                                        GradientButton(
                                           onPressed: () {
                                             _startSessionFromPlanned(session);
                                           },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF414B5A),
-                                            foregroundColor: Colors.white,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 20,
-                                              vertical: 10,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 10,
                                           ),
                                           child: Text(isChinese ? '开始' : 'Start Now'),
                                         ),

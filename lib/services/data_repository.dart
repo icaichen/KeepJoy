@@ -321,4 +321,18 @@ class DataRepository {
       'plannedSessions': results[4],
     };
   }
+
+  /// Clear all user data from Supabase
+  Future<void> clearAllData() async {
+    if (_userId == null) return;
+
+    // Delete all data for the current user in parallel
+    await Future.wait([
+      _client.from('declutter_items').delete().eq('user_id', _userId!),
+      _client.from('resell_items').delete().eq('user_id', _userId!),
+      _client.from('deep_cleaning_sessions').delete().eq('user_id', _userId!),
+      _client.from('memories').delete().eq('user_id', _userId!),
+      _client.from('planned_sessions').delete().eq('user_id', _userId!),
+    ]);
+  }
 }

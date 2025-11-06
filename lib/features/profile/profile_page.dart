@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
 import '../../services/data_repository.dart';
+import '../../models/declutter_item.dart';
 import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -842,10 +843,10 @@ class _ProfilePageState extends State<ProfilePage> {
       final repository = DataRepository();
 
       // Get all data from repository
-      final items = await repository.getAllItems();
-      final sessions = await repository.getAllSessions();
-      final memories = await repository.getAllMemories();
-      final resellItems = await repository.getAllResellItems();
+      final items = await repository.fetchDeclutterItems();
+      final sessions = await repository.fetchDeepCleaningSessions();
+      final memories = await repository.fetchMemories();
+      final resellItems = await repository.fetchResellItems();
 
       // Create comprehensive export data
       final exportData = {
@@ -859,37 +860,39 @@ class _ProfilePageState extends State<ProfilePage> {
           'items': items.map((item) => {
             'id': item.id,
             'name': item.name,
-            'category': item.category,
+            'category': item.category.name,
             'createdAt': item.createdAt.toIso8601String(),
-            'imagePath': item.imagePath,
-            'decision': item.decision,
-            'letGoRoute': item.letGoRoute,
+            'photoPath': item.photoPath,
+            'status': item.status.name,
+            'notes': item.notes,
+            'joyLevel': item.joyLevel,
           }).toList(),
           'sessions': sessions.map((session) => {
             'id': session.id,
-            'type': session.type,
-            'startTime': session.startTime.toIso8601String(),
-            'endTime': session.endTime?.toIso8601String(),
             'area': session.area,
+            'startTime': session.startTime.toIso8601String(),
+            'elapsedSeconds': session.elapsedSeconds,
             'itemsCount': session.itemsCount,
             'beforePhotoPath': session.beforePhotoPath,
             'afterPhotoPath': session.afterPhotoPath,
+            'focusIndex': session.focusIndex,
+            'moodIndex': session.moodIndex,
           }).toList(),
           'memories': memories.map((memory) => {
             'id': memory.id,
-            'itemId': memory.itemId,
+            'title': memory.title,
             'itemName': memory.itemName,
             'description': memory.description,
-            'sentiment': memory.sentiment,
+            'sentiment': memory.sentiment?.name,
             'createdAt': memory.createdAt.toIso8601String(),
-            'imagePath': memory.imagePath,
+            'photoPath': memory.photoPath,
+            'type': memory.type.name,
           }).toList(),
           'resellItems': resellItems.map((item) => {
             'id': item.id,
-            'itemId': item.itemId,
-            'itemName': item.itemName,
-            'status': item.status,
-            'platform': item.platform,
+            'declutterItemId': item.declutterItemId,
+            'status': item.status.name,
+            'platform': item.platform?.name,
             'sellingPrice': item.sellingPrice,
             'soldPrice': item.soldPrice,
             'soldDate': item.soldDate?.toIso8601String(),
@@ -901,8 +904,11 @@ class _ProfilePageState extends State<ProfilePage> {
           'totalSessions': sessions.length,
           'totalMemories': memories.length,
           'totalResellItems': resellItems.length,
-          'itemsKept': items.where((item) => item.decision == 'keep').length,
-          'itemsLetGo': items.where((item) => item.decision == 'let_go').length,
+          'itemsKept': items.where((item) => item.status == DeclutterStatus.keep).length,
+          'itemsDiscarded': items.where((item) => item.status == DeclutterStatus.discard).length,
+          'itemsDonated': items.where((item) => item.status == DeclutterStatus.donate).length,
+          'itemsRecycled': items.where((item) => item.status == DeclutterStatus.recycle).length,
+          'itemsResell': items.where((item) => item.status == DeclutterStatus.resell).length,
         },
       };
 

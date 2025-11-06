@@ -648,6 +648,11 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
+
+    // Auto-start timer if resuming from an existing session
+    if (widget.sessionStartTime != null) {
+      _startTimer();
+    }
   }
 
   @override

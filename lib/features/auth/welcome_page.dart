@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../widgets/gradient_button.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -75,30 +76,14 @@ class WelcomePage extends StatelessWidget {
               const Spacer(flex: 3),
 
               // Get Started Button
-              SizedBox(
+              GradientButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/login');
+                },
                 width: double.infinity,
                 height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/login');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF414B5A),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    l10n.getStarted,
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Text',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                borderRadius: BorderRadius.circular(16),
+                child: Text(l10n.getStarted),
               ),
 
               const SizedBox(height: 16),
