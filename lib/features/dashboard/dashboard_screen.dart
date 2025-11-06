@@ -1885,14 +1885,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
-
-                // Insights Summary Card
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                  child: _buildInsightsSummaryCard(isChinese),
-                ),
-
                 const SizedBox(height: 24),
 
                 // Monthly Report Card
@@ -2137,144 +2129,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildInsightsSummaryCard(bool isChinese) {
-    // Calculate THIS MONTH's metrics
-    final now = DateTime.now();
-    final monthStart = DateTime(now.year, now.month, 1);
-    final nextMonthStart = DateTime(now.year, now.month + 1, 1);
-
-    // Count decluttered items this month
-    final declutteredThisMonth = widget.declutteredItems
-        .where((item) =>
-            !item.createdAt.isBefore(monthStart) &&
-            item.createdAt.isBefore(nextMonthStart))
-        .length;
-
-    // Estimate space freed (assume each item = 0.5 cubic feet on average)
-    final spaceCubicFeet = (declutteredThisMonth * 0.5).toStringAsFixed(1);
-
-    // Count resold items this month
-    final resoldThisMonth = widget.resellItems
-        .where((item) =>
-            item.status == ResellStatus.sold &&
-            item.soldDate != null &&
-            !item.soldDate!.isBefore(monthStart) &&
-            item.soldDate!.isBefore(nextMonthStart))
-        .length;
-
-    // Estimate CO2 saved (assume each resold item saves 5kg CO2)
-    final co2SavedKg = (resoldThisMonth * 5).toStringAsFixed(0);
-
-    // Count deep cleaning sessions this month
-    final sessionsThisMonth = widget.deepCleaningSessions
-        .where((session) =>
-            !session.startTime.isBefore(monthStart) &&
-            session.startTime.isBefore(nextMonthStart))
-        .length;
-
-    // Calculate total time spent cleaning (in hours)
-    final totalMinutes = widget.deepCleaningSessions
-        .where((session) =>
-            !session.startTime.isBefore(monthStart) &&
-            session.startTime.isBefore(nextMonthStart))
-        .fold(0, (sum, session) => sum + (session.elapsedSeconds ?? 0)) ~/ 60;
-    final totalHours = (totalMinutes / 60).toStringAsFixed(1);
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFF0E6FF), Color(0xFFE6F4F9)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFB794F6).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.insights_rounded,
-                  color: Color(0xFFB794F6),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                isChinese ? '本月影响力' : 'Monthly Impact',
-                style: const TextStyle(
-                  fontFamily: 'SF Pro Display',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildInsightRow(
-            icon: Icons.inventory_2_rounded,
-            iconColor: const Color(0xFF5ECFB8),
-            text: isChinese
-                ? '整理了 $declutteredThisMonth 件物品，释放约 $spaceCubicFeet 立方英尺空间'
-                : 'Decluttered $declutteredThisMonth items, freeing up ~$spaceCubicFeet cubic feet',
-          ),
-          const SizedBox(height: 12),
-          _buildInsightRow(
-            icon: Icons.eco_rounded,
-            iconColor: const Color(0xFF10B981),
-            text: isChinese
-                ? '转售 $resoldThisMonth 件物品，减少约 $co2SavedKg kg CO₂排放'
-                : 'Resold $resoldThisMonth items, reducing ~$co2SavedKg kg CO₂ emissions',
-          ),
-          const SizedBox(height: 12),
-          _buildInsightRow(
-            icon: Icons.cleaning_services_rounded,
-            iconColor: const Color(0xFFB794F6),
-            text: isChinese
-                ? '完成 $sessionsThisMonth 次深度整理，投入 $totalHours 小时'
-                : 'Completed $sessionsThisMonth cleaning sessions, $totalHours hours invested',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInsightRow({
-    required IconData icon,
-    required Color iconColor,
-    required String text,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: iconColor, size: 20),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontFamily: 'SF Pro Text',
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF374151),
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildReportCard(
     BuildContext context, {
     required IconData icon,
@@ -2501,37 +2355,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _buildReportSection(
             context,
             title: isChinese ? '整理区域' : 'Cleaning Areas',
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: allAreas.map((area) {
-                final count = areaCounts[area] ?? 0;
-                final intensity = count == 0 ? 0.0 : count / maxAreaCount;
-                final color = count == 0
-                    ? const Color(0xFFE0E0E0)
-                    : Color.lerp(
-                        const Color(0xFFE0E0E0),
-                        const Color(0xFF5ECFB8),
-                        intensity,
-                      )!;
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '$area ($count)',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: intensity > 0.5 ? Colors.white : Colors.black87,
-                      fontWeight: FontWeight.w500,
+            child: SizedBox(
+              height: 40,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: allAreas.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final area = allAreas[index];
+                  final count = areaCounts[area] ?? 0;
+                  final intensity = count == 0 ? 0.0 : count / maxAreaCount;
+                  final color = count == 0
+                      ? const Color(0xFFE0E0E0)
+                      : Color.lerp(
+                          const Color(0xFFE0E0E0),
+                          const Color(0xFF5ECFB8),
+                          intensity,
+                        )!;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
                     ),
-                  ),
-                );
-              }).toList(),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$area ($count)',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: intensity > 0.5 ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
 
