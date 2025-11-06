@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
@@ -34,6 +38,594 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     });
   }
 
+  void _showSessionDetail(
+    BuildContext context,
+    DeepCleaningSession session,
+    bool isChinese,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (builderContext, scrollController) {
+            final improvement =
+                session.beforeMessinessIndex != null &&
+                    session.afterMessinessIndex != null
+                ? ((session.beforeMessinessIndex! -
+                              session.afterMessinessIndex!) /
+                          session.beforeMessinessIndex! *
+                          100)
+                      .toStringAsFixed(0)
+                : null;
+
+            final dateStr = DateFormat(
+              isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+            ).format(session.startTime);
+
+            final hasPhotos =
+                session.beforePhotoPath != null &&
+                session.afterPhotoPath != null;
+
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    session.area,
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF111827),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dateStr,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(sheetContext),
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          isChinese ? '整理数据' : 'Session Data',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (hasPhotos) ...[
+                          Container(
+                            height: 240,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              color: Colors.grey[200],
+                            ),
+                            child: PageView(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.file(
+                                        File(session.beforePhotoPath!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      Positioned(
+                                        top: 12,
+                                        left: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            isChinese ? '整理前' : 'Before',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.file(
+                                        File(session.afterPhotoPath!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      Positioned(
+                                        top: 12,
+                                        left: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            isChinese ? '整理后' : 'After',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                        if (improvement != null)
+                          _buildMetricRow(
+                            label: isChinese ? '整理改善' : 'Improvement',
+                            value: '$improvement%',
+                          ),
+                        if (session.elapsedSeconds != null)
+                          _buildMetricRow(
+                            label: isChinese ? '整理时长' : 'Duration',
+                            value: '${session.elapsedSeconds! ~/ 60} min',
+                          ),
+                        if (session.itemsCount != null)
+                          _buildMetricRow(
+                            label: isChinese ? '清理物品' : 'Items Cleaned',
+                            value: session.itemsCount.toString(),
+                          ),
+                        if (session.focusIndex != null)
+                          _buildMetricRow(
+                            label: isChinese ? '专注度' : 'Focus',
+                            value: '${session.focusIndex}/5',
+                          ),
+                        if (session.moodIndex != null)
+                          _buildMetricRow(
+                            label: isChinese ? '愉悦度' : 'Joy',
+                            value: '${session.moodIndex}/5',
+                          ),
+                        if (session.beforeMessinessIndex != null &&
+                            session.afterMessinessIndex != null) ...[
+                          _buildMetricRow(
+                            label: isChinese ? '整理前凌乱度' : 'Before Messiness',
+                            value: session.beforeMessinessIndex!
+                                .toStringAsFixed(1),
+                          ),
+                          _buildMetricRow(
+                            label: isChinese ? '整理后整洁度' : 'After Tidiness',
+                            value: session.afterMessinessIndex!.toStringAsFixed(
+                              1,
+                            ),
+                          ),
+                        ],
+                        if (!hasPhotos &&
+                            session.elapsedSeconds == null &&
+                            session.itemsCount == null &&
+                            session.focusIndex == null &&
+                            session.moodIndex == null)
+                          Container(
+                            margin: const EdgeInsets.only(top: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF9FAFB),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  isChinese ? '未记录详细数据' : 'No Detailed Metrics',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  isChinese
+                                      ? '这次整理只保存了照片记录\n下次整理时可以记录更多数据'
+                                      : 'This session only saved photos\nNext time you can record more details',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF9CA3AF),
+                                    height: 1.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMetricRow({required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              '$label:',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportSection(
+    BuildContext context, {
+    required String title,
+    String? subtitle,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+          ),
+        ],
+        const SizedBox(height: 12),
+        child,
+      ],
+    );
+  }
+
+  Widget _buildDeepCleaningMetricItem(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+              fontSize: 22,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.black54,
+              fontSize: 11,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAreaDeepCleaningReport(
+    BuildContext context,
+    String area,
+    bool isChinese,
+  ) {
+    final areaSessions =
+        widget.deepCleaningSessions
+            .where((session) => session.area == area)
+            .toList()
+          ..sort((a, b) => b.startTime.compareTo(a.startTime));
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.7,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (builderContext, scrollController) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '$area ${isChinese ? '整理记录' : 'Cleaning History'}',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${areaSessions.length} ${isChinese ? '次整理' : 'sessions'}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: areaSessions.length,
+                      itemBuilder: (context, index) {
+                        final session = areaSessions[index];
+                        final dateStr = DateFormat(
+                          isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                        ).format(session.startTime);
+
+                        final improvement =
+                            session.beforeMessinessIndex != null &&
+                                session.afterMessinessIndex != null
+                            ? ((session.beforeMessinessIndex! -
+                                          session.afterMessinessIndex!) /
+                                      session.beforeMessinessIndex! *
+                                      100)
+                                  .toStringAsFixed(0)
+                            : null;
+
+                        return GestureDetector(
+                          onTap: () {
+                            _showSessionDetail(context, session, isChinese);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFE5E7EA),
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x0A000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      dateStr,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF111827),
+                                      ),
+                                    ),
+                                    if (improvement != null)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFF10B981,
+                                          ).withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          isChinese
+                                              ? '改善 $improvement%'
+                                              : '$improvement% better',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF10B981),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    if (session.focusIndex != null) ...[
+                                      Icon(
+                                        Icons.spa_rounded,
+                                        size: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${isChinese ? '专注度' : 'Focus'}: ${session.focusIndex}/5',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                    ],
+                                    if (session.moodIndex != null) ...[
+                                      Icon(
+                                        Icons.sentiment_satisfied_rounded,
+                                        size: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${isChinese ? '愉悦度' : 'Joy'}: ${session.moodIndex}/5',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                if (session.itemsCount != null) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${isChinese ? '清理物品' : 'Items cleaned'}: ${session.itemsCount}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -42,10 +634,13 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     final now = DateTime.now();
     final yearStart = DateTime(now.year, 1, 1);
+    final nextYearStart = DateTime(now.year + 1, 1, 1);
     final topPadding = MediaQuery.of(context).padding.top;
     final pageName = isChinese ? '年度报告' : 'Yearly Reports';
 
@@ -62,13 +657,25 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           ? DateTime(monthDate.year + 1, 1, 1)
           : DateTime(monthDate.year, monthDate.month + 1, 1);
 
-      final count = widget.declutteredItems.where((item) =>
-        item.createdAt.isAfter(monthStart.subtract(const Duration(days: 1))) &&
-        item.createdAt.isBefore(monthEnd)
-      ).length + widget.deepCleaningSessions.where((session) =>
-        session.startTime.isAfter(monthStart.subtract(const Duration(days: 1))) &&
-        session.startTime.isBefore(monthEnd)
-      ).length;
+      final count =
+          widget.declutteredItems
+              .where(
+                (item) =>
+                    item.createdAt.isAfter(
+                      monthStart.subtract(const Duration(days: 1)),
+                    ) &&
+                    item.createdAt.isBefore(monthEnd),
+              )
+              .length +
+          widget.deepCleaningSessions
+              .where(
+                (session) =>
+                    session.startTime.isAfter(
+                      monthStart.subtract(const Duration(days: 1)),
+                    ) &&
+                    session.startTime.isBefore(monthEnd),
+              )
+              .length;
 
       final monthKey = '${monthDate.year}-${monthDate.month}';
       past12MonthsActivity[monthKey] = count;
@@ -107,24 +714,58 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
     // Calculate yearly stats
     final yearlyItems = widget.declutteredItems
-        .where((item) => item.createdAt.isAfter(yearStart))
+        .where(
+          (item) =>
+              !item.createdAt.isBefore(yearStart) &&
+              item.createdAt.isBefore(nextYearStart),
+        )
         .toList();
 
     final yearlySessions = widget.deepCleaningSessions
-        .where((session) => session.startTime.isAfter(yearStart))
+        .where(
+          (session) =>
+              !session.startTime.isBefore(yearStart) &&
+              session.startTime.isBefore(nextYearStart),
+        )
         .toList();
 
-    // Calculate area counts
-    final areaCounts = <String, int>{};
-    for (final session in yearlySessions) {
-      areaCounts.update(session.area, (value) => value + 1, ifAbsent: () => 1);
-    }
+    final yearlySoldItems = widget.resellItems
+        .where(
+          (item) =>
+              item.soldPrice != null &&
+              item.soldDate != null &&
+              !item.soldDate!.isBefore(yearStart) &&
+              item.soldDate!.isBefore(nextYearStart),
+        )
+        .toList();
+    final yearlyResellValue = yearlySoldItems.fold<double>(
+      0.0,
+      (sum, item) => sum + (item.soldPrice ?? 0.0),
+    );
+    final localeName = Localizations.localeOf(context).toString();
+    final currencySymbol = isChinese ? '¥' : '\$';
+    final currencyFormatter = NumberFormat.compactCurrency(
+      locale: localeName,
+      symbol: currencySymbol,
+      decimalDigits: 0,
+    );
+    final yearlyResellValueDisplay = currencyFormatter.format(
+      yearlyResellValue,
+    );
 
     // Disposal method counts
-    final resellCount = yearlyItems.where((item) => item.status == DeclutterStatus.resell).length;
-    final recycleCount = yearlyItems.where((item) => item.status == DeclutterStatus.recycle).length;
-    final donateCount = yearlyItems.where((item) => item.status == DeclutterStatus.donate).length;
-    final discardCount = yearlyItems.where((item) => item.status == DeclutterStatus.discard).length;
+    final resellCount = yearlyItems
+        .where((item) => item.status == DeclutterStatus.resell)
+        .length;
+    final recycleCount = yearlyItems
+        .where((item) => item.status == DeclutterStatus.recycle)
+        .length;
+    final donateCount = yearlyItems
+        .where((item) => item.status == DeclutterStatus.donate)
+        .length;
+    final discardCount = yearlyItems
+        .where((item) => item.status == DeclutterStatus.discard)
+        .length;
 
     // Calculate scroll-based animations
     const titleAreaHeight = 120.0;
@@ -202,400 +843,643 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-            // Declutter Heatmap (Past 12 months)
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isChinese ? '整理热力图' : 'Declutter Heatmap',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF111827),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    isChinese ? '过去12个月的活动' : 'Activity in past 12 months',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF6B7280),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 2 rows of 6 months each
-                  Column(
-                    children: [
-                      // First row
-                      Row(
-                        children: List.generate(6, (index) {
-                          final monthDate = DateTime(now.year, now.month - (11 - index), 1);
-                          final monthKey = '${monthDate.year}-${monthDate.month}';
-                          final activity = past12MonthsActivity[monthKey] ?? 0;
-                          final intensity = maxActivityPast12 > 0 ? (activity / maxActivityPast12) : 0.0;
-
-                          return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: double.infinity,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: _getHeatmapColor(intensity),
-                                      borderRadius: BorderRadius.circular(12),
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Achievement cards (Yearly)
+                                Text(
+                                  isChinese ? '年度成就' : 'Yearly Achievements',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF111827),
+                                      ),
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildAchievementCard(
+                                        icon: Icons.cleaning_services_rounded,
+                                        iconColor: const Color(0xFFB794F6),
+                                        value: yearlySessions.length.toString(),
+                                        label: isChinese
+                                            ? '深度整理'
+                                            : 'Deep Cleaning',
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _getMonthAbbrev(monthDate.month, isChinese),
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: const Color(0xFF6B7280),
-                                      fontSize: 11,
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildAchievementCard(
+                                        icon: Icons.inventory_2_rounded,
+                                        iconColor: const Color(0xFF5ECFB8),
+                                        value: yearlyItems.length.toString(),
+                                        label: isChinese
+                                            ? '已整理物品'
+                                            : 'Decluttered Items',
+                                      ),
                                     ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildAchievementCard(
+                                        icon: Icons.attach_money_rounded,
+                                        iconColor: const Color(0xFFFFD93D),
+                                        value: yearlyResellValueDisplay,
+                                        label: isChinese
+                                            ? '转售收入'
+                                            : 'Resell Value',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Your Joyful Journey (Yearly Insights)
+                                if (_hasYearlyActivity())
+                                  _buildYearlyInsightsCard(isChinese),
+                                if (_hasYearlyActivity())
+                                  const SizedBox(height: 20),
+
+                                // Declutter Heatmap (Past 12 months)
+                                Container(
+                                  padding: const EdgeInsets.all(24),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                ],
-                              ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        isChinese
+                                            ? '整理热力图'
+                                            : 'Declutter Heatmap',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF111827),
+                                            ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        isChinese
+                                            ? '过去12个月的活动'
+                                            : 'Activity in past 12 months',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: const Color(0xFF6B7280),
+                                            ),
+                                      ),
+                                      const SizedBox(height: 24),
+
+                                      // 2 rows of 6 months each
+                                      Column(
+                                        children: [
+                                          // First row
+                                          Row(
+                                            children: List.generate(6, (index) {
+                                              final monthDate = DateTime(
+                                                now.year,
+                                                now.month - (11 - index),
+                                                1,
+                                              );
+                                              final monthKey =
+                                                  '${monthDate.year}-${monthDate.month}';
+                                              final activity =
+                                                  past12MonthsActivity[monthKey] ??
+                                                  0;
+                                              final intensity =
+                                                  maxActivityPast12 > 0
+                                                  ? (activity /
+                                                        maxActivityPast12)
+                                                  : 0.0;
+
+                                              return Expanded(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    4,
+                                                  ),
+                                                  child: Column(
+                                                    children: [
+                                                      Container(
+                                                        width: double.infinity,
+                                                        height: 48,
+                                                        decoration: BoxDecoration(
+                                                          color:
+                                                              _getHeatmapColor(
+                                                                intensity,
+                                                              ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      Text(
+                                                        _getMonthAbbrev(
+                                                          monthDate.month,
+                                                          isChinese,
+                                                        ),
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodySmall
+                                                            ?.copyWith(
+                                                              color:
+                                                                  const Color(
+                                                                    0xFF6B7280,
+                                                                  ),
+                                                              fontSize: 11,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            }),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          // Second row
+                                          Row(
+                                            children: List.generate(6, (index) {
+                                              final monthDate = DateTime(
+                                                now.year,
+                                                now.month - (5 - index),
+                                                1,
+                                              );
+                                              final monthKey =
+                                                  '${monthDate.year}-${monthDate.month}';
+                                              final activity =
+                                                  past12MonthsActivity[monthKey] ??
+                                                  0;
+                                              final intensity =
+                                                  maxActivityPast12 > 0
+                                                  ? (activity /
+                                                        maxActivityPast12)
+                                                  : 0.0;
+
+                                              return Expanded(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    4,
+                                                  ),
+                                                  child: Column(
+                                                    children: [
+                                                      Container(
+                                                        width: double.infinity,
+                                                        height: 48,
+                                                        decoration: BoxDecoration(
+                                                          color:
+                                                              _getHeatmapColor(
+                                                                intensity,
+                                                              ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      Text(
+                                                        _getMonthAbbrev(
+                                                          monthDate.month,
+                                                          isChinese,
+                                                        ),
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodySmall
+                                                            ?.copyWith(
+                                                              color:
+                                                                  const Color(
+                                                                    0xFF6B7280,
+                                                                  ),
+                                                              fontSize: 11,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            }),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 20),
+
+                                      // Color legend
+                                      Row(
+                                        children: [
+                                          Text(
+                                            isChinese ? '较少' : 'Less',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: const Color(
+                                                    0xFF9CA3AF,
+                                                  ),
+                                                  fontSize: 12,
+                                                ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          ...List.generate(5, (index) {
+                                            return Container(
+                                              width: 16,
+                                              height: 16,
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 2,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: _getHeatmapColor(
+                                                  index / 4,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                            );
+                                          }),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            isChinese ? '较多' : 'More',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: const Color(
+                                                    0xFF9CA3AF,
+                                                  ),
+                                                  fontSize: 12,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 24),
+
+                                      // Statistics - All in one row
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF9FAFB),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    isChinese
+                                                        ? '最活跃'
+                                                        : 'Most Active',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.copyWith(
+                                                          color: const Color(
+                                                            0xFF6B7280,
+                                                          ),
+                                                          fontSize: 11,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    mostActiveMonth ?? 'N/A',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleMedium
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: const Color(
+                                                            0xFF111827,
+                                                          ),
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF9FAFB),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    isChinese
+                                                        ? '最长连续'
+                                                        : 'Longest Streak',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.copyWith(
+                                                          color: const Color(
+                                                            0xFF6B7280,
+                                                          ),
+                                                          fontSize: 11,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    isChinese
+                                                        ? '$longestStreak 个月'
+                                                        : '$longestStreak months',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleMedium
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: const Color(
+                                                            0xFF111827,
+                                                          ),
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF9FAFB),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    isChinese
+                                                        ? '峰值活动'
+                                                        : 'Peak Activity',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.copyWith(
+                                                          color: const Color(
+                                                            0xFF6B7280,
+                                                          ),
+                                                          fontSize: 11,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    isChinese
+                                                        ? '$peakActivity 项'
+                                                        : '$peakActivity items',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleMedium
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: const Color(
+                                                            0xFF111827,
+                                                          ),
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Letting Go Details (Disposal Methods) with Pie Chart
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        isChinese
+                                            ? '放手详情'
+                                            : 'Letting Go Details',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.black87,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 20),
+
+                                      // Pie Chart
+                                      Center(
+                                        child: SizedBox(
+                                          width: 200,
+                                          height: 200,
+                                          child: CustomPaint(
+                                            painter: _PieChartPainter(
+                                              resellCount: resellCount,
+                                              recycleCount: recycleCount,
+                                              donateCount: donateCount,
+                                              discardCount: discardCount,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 20),
+
+                                      // Legend
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          _buildDisposalItem(
+                                            context,
+                                            label: isChinese ? '出售' : 'Sell',
+                                            count: resellCount,
+                                            color: const Color(0xFFFFD93D),
+                                          ),
+                                          _buildDisposalItem(
+                                            context,
+                                            label: isChinese ? '回收' : 'Recycle',
+                                            count: recycleCount,
+                                            color: const Color(0xFF5ECFB8),
+                                          ),
+                                          _buildDisposalItem(
+                                            context,
+                                            label: isChinese ? '捐赠' : 'Donate',
+                                            count: donateCount,
+                                            color: const Color(0xFFFF9AA2),
+                                          ),
+                                          _buildDisposalItem(
+                                            context,
+                                            label: isChinese ? '丢弃' : 'Discard',
+                                            count: discardCount,
+                                            color: const Color(0xFF9E9E9E),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Joy Index Trend
+                                _buildJoyIndexCard(context, isChinese),
+                                const SizedBox(height: 20),
+
+                                // Deep Cleaning Analysis (Yearly)
+                                if (yearlySessions.isNotEmpty)
+                                  _buildDeepCleaningAnalysis(
+                                    context,
+                                    isChinese,
+                                    yearlySessions,
+                                    widget.deepCleaningSessions,
+                                  ),
+                                if (yearlySessions.isNotEmpty)
+                                  const SizedBox(height: 20),
+                                const SizedBox(height: 32),
+                              ],
                             ),
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 4),
-                      // Second row
-                      Row(
-                        children: List.generate(6, (index) {
-                          final monthDate = DateTime(now.year, now.month - (5 - index), 1);
-                          final monthKey = '${monthDate.year}-${monthDate.month}';
-                          final activity = past12MonthsActivity[monthKey] ?? 0;
-                          final intensity = maxActivityPast12 > 0 ? (activity / maxActivityPast12) : 0.0;
-
-                          return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: double.infinity,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: _getHeatmapColor(intensity),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _getMonthAbbrev(monthDate.month, isChinese),
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: const Color(0xFF6B7280),
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Color legend
-                  Row(
-                    children: [
-                      Text(
-                        isChinese ? '较少' : 'Less',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ...List.generate(5, (index) {
-                        return Container(
-                          width: 16,
-                          height: 16,
-                          margin: const EdgeInsets.symmetric(horizontal: 2),
-                          decoration: BoxDecoration(
-                            color: _getHeatmapColor(index / 4),
-                            borderRadius: BorderRadius.circular(4),
                           ),
-                        );
-                      }),
-                      const SizedBox(width: 8),
-                      Text(
-                        isChinese ? '较多' : 'More',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Statistics - All in one row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9FAFB),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isChinese ? '最活跃' : 'Most Active',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFF6B7280),
-                                  fontSize: 11,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                mostActiveMonth ?? 'N/A',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF111827),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9FAFB),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isChinese ? '最长连续' : 'Longest Streak',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFF6B7280),
-                                  fontSize: 11,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                isChinese ? '$longestStreak 个月' : '$longestStreak months',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF111827),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9FAFB),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isChinese ? '峰值活动' : 'Peak Activity',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFF6B7280),
-                                  fontSize: 11,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                isChinese ? '$peakActivity 项' : '$peakActivity items',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF111827),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Joy Index Trend
-            _buildJoyIndexCard(context, isChinese),
-            const SizedBox(height: 20),
-
-            // Your Joyful Journey (Yearly Insights)
-            if (_hasYearlyActivity())
-              _buildYearlyInsightsCard(isChinese),
-            if (_hasYearlyActivity())
-              const SizedBox(height: 20),
-
-            // Deep Cleaning Analysis (Yearly)
-            if (yearlySessions.isNotEmpty)
-              _buildDeepCleaningAnalysis(context, isChinese, yearlySessions, areaCounts),
-            if (yearlySessions.isNotEmpty)
-              const SizedBox(height: 20),
-
-            // Letting Go Details (Disposal Methods) with Pie Chart
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isChinese ? '放手详情' : 'Letting Go Details',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Pie Chart
-                  Center(
-                    child: SizedBox(
-                      width: 200,
-                      height: 200,
-                      child: CustomPaint(
-                        painter: _PieChartPainter(
-                          resellCount: resellCount,
-                          recycleCount: recycleCount,
-                          donateCount: donateCount,
-                          discardCount: discardCount,
-                        ),
+                        ],
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Legend
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildDisposalItem(
-                        context,
-                        label: isChinese ? '出售' : 'Sell',
-                        count: resellCount,
-                        color: const Color(0xFFFFD93D),
-                      ),
-                      _buildDisposalItem(
-                        context,
-                        label: isChinese ? '回收' : 'Recycle',
-                        count: recycleCount,
-                        color: const Color(0xFF5ECFB8),
-                      ),
-                      _buildDisposalItem(
-                        context,
-                        label: isChinese ? '捐赠' : 'Donate',
-                        count: donateCount,
-                        color: const Color(0xFFFF9AA2),
-                      ),
-                      _buildDisposalItem(
-                        context,
-                        label: isChinese ? '丢弃' : 'Discard',
-                        count: discardCount,
-                        color: const Color(0xFF9E9E9E),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-          ],
-        ),
-        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               ],
             ),
           ),
 
           // Real header that appears when scrolling is complete
           Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: IgnorePointer(
-                ignoring: realHeaderOpacity < 0.5,
-                child: Opacity(
-                  opacity: realHeaderOpacity,
-                  child: Container(
-                    height: topPadding + kToolbarHeight,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Color(0xFFE5E5EA),
-                          width: 0.5,
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: realHeaderOpacity < 0.5,
+              child: Opacity(
+                opacity: realHeaderOpacity,
+                child: Container(
+                  height: topPadding + kToolbarHeight,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Back button
+                      Positioned(
+                        left: 0,
+                        top: topPadding,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_rounded),
+                          onPressed: () => Navigator.pop(context),
                         ),
                       ),
-                    ),
-                    child: Stack(
-                      children: [
-                        // Back button
-                        Positioned(
-                          left: 0,
-                          top: topPadding,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_rounded),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ),
-                        // Centered title
-                        Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: topPadding),
-                            child: Text(
-                              pageName,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87,
-                              ),
+                      // Centered title
+                      Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: topPadding),
+                          child: Text(
+                            pageName,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAchievementCard({
+    required IconData icon,
+    required Color iconColor,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: iconColor.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -615,7 +1499,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black87),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.black87),
         ),
         Text(
           count.toString(),
@@ -648,8 +1534,20 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     if (isChinese) {
       return '$month月';
     }
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[month - 1];
   }
 
@@ -657,8 +1555,20 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     if (isChinese) {
       return '$month月';
     }
-    const months = ['January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'];
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
     return months[month - 1];
   }
 
@@ -758,9 +1668,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           const SizedBox(height: 4),
           Text(
             isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: const Color(0xFF6B7280),
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
 
@@ -947,9 +1857,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: const Color(0xFF6B7280),
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
         ),
         const SizedBox(height: 4),
         Text(
@@ -967,16 +1877,23 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     final now = DateTime.now();
     final yearStart = DateTime(now.year, 1, 1);
 
-    final hasDecluttered = widget.declutteredItems.any((item) =>
-        item.createdAt.isAfter(yearStart.subtract(const Duration(days: 1))));
+    final hasDecluttered = widget.declutteredItems.any(
+      (item) =>
+          item.createdAt.isAfter(yearStart.subtract(const Duration(days: 1))),
+    );
 
-    final hasResold = widget.resellItems.any((item) =>
-        item.status == ResellStatus.sold &&
-        item.soldDate != null &&
-        item.soldDate!.isAfter(yearStart.subtract(const Duration(days: 1))));
+    final hasResold = widget.resellItems.any(
+      (item) =>
+          item.status == ResellStatus.sold &&
+          item.soldDate != null &&
+          item.soldDate!.isAfter(yearStart.subtract(const Duration(days: 1))),
+    );
 
-    final hasSessions = widget.deepCleaningSessions.any((session) =>
-        session.startTime.isAfter(yearStart.subtract(const Duration(days: 1))));
+    final hasSessions = widget.deepCleaningSessions.any(
+      (session) => session.startTime.isAfter(
+        yearStart.subtract(const Duration(days: 1)),
+      ),
+    );
 
     return hasDecluttered || hasResold || hasSessions;
   }
@@ -988,26 +1905,44 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
     // Count decluttered items this year
     final declutteredThisYear = widget.declutteredItems
-        .where((item) => item.createdAt.isAfter(yearStart.subtract(const Duration(days: 1))))
+        .where(
+          (item) => item.createdAt.isAfter(
+            yearStart.subtract(const Duration(days: 1)),
+          ),
+        )
         .length;
 
     // Count resold items this year
     final resoldThisYear = widget.resellItems
-        .where((item) =>
-            item.status == ResellStatus.sold &&
-            item.soldDate != null &&
-            item.soldDate!.isAfter(yearStart.subtract(const Duration(days: 1))))
+        .where(
+          (item) =>
+              item.status == ResellStatus.sold &&
+              item.soldDate != null &&
+              item.soldDate!.isAfter(
+                yearStart.subtract(const Duration(days: 1)),
+              ),
+        )
         .length;
 
     // Count deep cleaning sessions this year
     final sessionsThisYear = widget.deepCleaningSessions
-        .where((session) => session.startTime.isAfter(yearStart.subtract(const Duration(days: 1))))
+        .where(
+          (session) => session.startTime.isAfter(
+            yearStart.subtract(const Duration(days: 1)),
+          ),
+        )
         .length;
 
     // Calculate total time spent cleaning (in hours)
-    final totalMinutes = widget.deepCleaningSessions
-        .where((session) => session.startTime.isAfter(yearStart.subtract(const Duration(days: 1))))
-        .fold(0, (sum, session) => sum + (session.elapsedSeconds ?? 0)) ~/ 60;
+    final totalMinutes =
+        widget.deepCleaningSessions
+            .where(
+              (session) => session.startTime.isAfter(
+                yearStart.subtract(const Duration(days: 1)),
+              ),
+            )
+            .fold(0, (sum, session) => sum + (session.elapsedSeconds ?? 0)) ~/
+        60;
 
     // Build list of insights to display
     final insights = <Widget>[];
@@ -1015,37 +1950,43 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     // Add decluttered items insight if there are any
     if (declutteredThisYear > 0) {
       final spaceCubicFeet = (declutteredThisYear * 0.5).toStringAsFixed(1);
-      insights.add(_buildInsightRow(
-        icon: Icons.inventory_2_rounded,
-        iconColor: const Color(0xFF5ECFB8),
-        text: isChinese
-            ? '你为 $declutteredThisYear 件物品找到了新的归宿，为生活腾出了约 $spaceCubicFeet 立方英尺的空间，感受到更多呼吸的自由！'
-            : 'You found new homes for $declutteredThisYear items, creating ~$spaceCubicFeet cubic feet of breathing room in your space!',
-      ));
+      insights.add(
+        _buildInsightRow(
+          icon: Icons.inventory_2_rounded,
+          iconColor: const Color(0xFF5ECFB8),
+          text: isChinese
+              ? '你为 $declutteredThisYear 件物品找到了新的归宿，为生活腾出了约 $spaceCubicFeet 立方英尺的空间，感受到更多呼吸的自由！'
+              : 'You found new homes for $declutteredThisYear items, creating ~$spaceCubicFeet cubic feet of breathing room in your space!',
+        ),
+      );
     }
 
     // Add resold items insight if there are any
     if (resoldThisYear > 0) {
       final co2SavedKg = (resoldThisYear * 5).toStringAsFixed(0);
-      insights.add(_buildInsightRow(
-        icon: Icons.eco_rounded,
-        iconColor: const Color(0xFF10B981),
-        text: isChinese
-            ? '通过转售 $resoldThisYear 件物品，你让它们继续带来快乐，同时减少了约 $co2SavedKg kg 的碳排放。真是美好的循环！'
-            : 'By reselling $resoldThisYear items, you extended their joy to others while saving ~$co2SavedKg kg of CO₂. What a beautiful cycle!',
-      ));
+      insights.add(
+        _buildInsightRow(
+          icon: Icons.eco_rounded,
+          iconColor: const Color(0xFF10B981),
+          text: isChinese
+              ? '通过转售 $resoldThisYear 件物品，你让它们继续带来快乐，同时减少了约 $co2SavedKg kg 的碳排放。真是美好的循环！'
+              : 'By reselling $resoldThisYear items, you extended their joy to others while saving ~$co2SavedKg kg of CO₂. What a beautiful cycle!',
+        ),
+      );
     }
 
     // Add cleaning sessions insight if there are any
     if (sessionsThisYear > 0) {
       final totalHours = (totalMinutes / 60).toStringAsFixed(1);
-      insights.add(_buildInsightRow(
-        icon: Icons.cleaning_services_rounded,
-        iconColor: const Color(0xFFB794F6),
-        text: isChinese
-            ? '完成了 $sessionsThisYear 次深度整理，投入了 $totalHours 小时的时间。每一次整理都是对自己的温柔对待。'
-            : 'You completed $sessionsThisYear tidying sessions, investing $totalHours hours in caring for your space and yourself.',
-      ));
+      insights.add(
+        _buildInsightRow(
+          icon: Icons.cleaning_services_rounded,
+          iconColor: const Color(0xFFB794F6),
+          text: isChinese
+              ? '完成了 $sessionsThisYear 次深度整理，投入了 $totalHours 小时的时间。每一次整理都是对自己的温柔对待。'
+              : 'You completed $sessionsThisYear tidying sessions, investing $totalHours hours in caring for your space and yourself.',
+        ),
+      );
     }
 
     if (insights.isEmpty) {
@@ -1095,10 +2036,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          ...insights.map((insight) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: insight,
-              )),
+          ...insights.map(
+            (insight) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: insight,
+            ),
+          ),
         ],
       ),
     );
@@ -1133,48 +2076,150 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   Widget _buildDeepCleaningAnalysis(
     BuildContext context,
     bool isChinese,
-    List<DeepCleaningSession> sessions,
-    Map<String, int> areaCounts,
+    List<DeepCleaningSession> yearlySessions,
+    List<DeepCleaningSession> allSessions,
   ) {
-    if (sessions.isEmpty) return const SizedBox.shrink();
+    if (yearlySessions.isEmpty) return const SizedBox.shrink();
 
-    // Get all unique areas
-    final allAreas = areaCounts.keys.toList()..sort();
-    final maxAreaCount = areaCounts.values.isEmpty ? 1 : areaCounts.values.reduce((a, b) => a > b ? a : b);
+    final deepCleaningCount = yearlySessions.length;
+    final cleanedItemsCount = yearlySessions
+        .where((session) => session.itemsCount != null)
+        .fold<int>(0, (sum, session) => sum + session.itemsCount!);
+
+    final sessionsWithFocus = yearlySessions
+        .where((session) => session.focusIndex != null)
+        .toList();
+    final averageFocus = sessionsWithFocus.isEmpty
+        ? 0.0
+        : sessionsWithFocus
+                  .map((session) => session.focusIndex!)
+                  .reduce((a, b) => a + b) /
+              sessionsWithFocus.length;
+
+    final sessionsWithJoy = yearlySessions
+        .where((session) => session.moodIndex != null)
+        .toList();
+    final averageJoy = sessionsWithJoy.isEmpty
+        ? 0.0
+        : sessionsWithJoy
+                  .map((session) => session.moodIndex!)
+                  .reduce((a, b) => a + b) /
+              sessionsWithJoy.length;
+
+    final sessionsByArea = <String, List<DeepCleaningSession>>{};
+    for (final session in allSessions) {
+      sessionsByArea.update(
+        session.area,
+        (list) => list..add(session),
+        ifAbsent: () => [session],
+      );
+    }
+
+    final commonAreas = [
+      isChinese ? '厨房' : 'Kitchen',
+      isChinese ? '卧室' : 'Bedroom',
+      isChinese ? '客厅' : 'Living Room',
+      isChinese ? '浴室' : 'Bathroom',
+      isChinese ? '书房' : 'Study',
+      isChinese ? '衣柜' : 'Closet',
+    ];
+
+    final allAreas = <String>{...commonAreas, ...sessionsByArea.keys}.toList();
+    final areaCounts = <String, int>{};
+    for (final area in allAreas) {
+      areaCounts[area] = sessionsByArea[area]?.length ?? 0;
+    }
+
+    final maxAreaCount = areaCounts.values.isEmpty
+        ? 1
+        : areaCounts.values
+              .reduce((a, b) => a > b ? a : b)
+              .clamp(1, double.infinity)
+              .toInt();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             isChinese ? '深度整理分析' : 'Deep Cleaning Analysis',
-            style: const TextStyle(
-              fontFamily: 'SF Pro Display',
-              fontSize: 18,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
-              color: Color(0xFF111827),
+              color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 16),
-          // Cleaning areas in horizontal scrollable line
-          if (allAreas.isNotEmpty) ...[
-            Text(
-              isChinese ? '整理区域' : 'Cleaning Areas',
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF6B7280),
+          const SizedBox(height: 20),
+
+          // Metrics Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildDeepCleaningMetricItem(
+                  context,
+                  icon: Icons.cleaning_services_rounded,
+                  color: const Color(0xFFB794F6),
+                  value: deepCleaningCount.toString(),
+                  label: isChinese ? '整理次数' : 'Sessions',
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDeepCleaningMetricItem(
+                  context,
+                  icon: Icons.inventory_2_rounded,
+                  color: const Color(0xFF5ECFB8),
+                  value: cleanedItemsCount.toString(),
+                  label: isChinese ? '清理物品' : 'Items',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDeepCleaningMetricItem(
+                  context,
+                  icon: Icons.spa_rounded,
+                  color: const Color(0xFF89CFF0),
+                  value: averageFocus.toStringAsFixed(1),
+                  label: isChinese ? '平均专注度' : 'Avg Focus',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDeepCleaningMetricItem(
+                  context,
+                  icon: Icons.sentiment_satisfied_rounded,
+                  color: const Color(0xFFFFD93D),
+                  value: averageJoy.toStringAsFixed(1),
+                  label: isChinese ? '平均愉悦度' : 'Avg Joy',
+                ),
+              ),
+            ],
+          ),
+
+          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
+
+          // Cleaning Areas with heatmap (ALL areas)
+          _buildReportSection(
+            context,
+            title: isChinese ? '整理区域' : 'Cleaning Areas',
+            child: SizedBox(
               height: 40,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
@@ -1192,7 +2237,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           intensity,
                         )!;
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: color,
                       borderRadius: BorderRadius.circular(12),
@@ -1201,7 +2249,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                       child: Text(
                         '$area ($count)',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: intensity > 0.5 ? Colors.white : Colors.black87,
+                          color: intensity > 0.5
+                              ? Colors.white
+                              : Colors.black87,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1210,7 +2260,73 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                 },
               ),
             ),
-          ],
+          ),
+
+          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
+
+          // Before & After - Area-based sessions (clickable)
+          _buildReportSection(
+            context,
+            title: isChinese ? '整理前后对比' : 'Before & After',
+            child: sessionsByArea.isEmpty
+                ? Text(
+                    isChinese
+                        ? '还没有深度整理记录，开始第一次整理吧。'
+                        : 'No deep cleaning records yet. Start your first session.',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: sessionsByArea.entries.map((entry) {
+                      final area = entry.key;
+                      final sessions = entry.value;
+                      final sessionCount = sessions.length;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: InkWell(
+                          onTap: () {
+                            _showAreaDeepCleaningReport(
+                              context,
+                              area,
+                              isChinese,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '$area ($sessionCount ${isChinese ? '次' : 'sessions'})',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 14,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+          ),
         ],
       ),
     );
@@ -1247,8 +2363,7 @@ class _PieChartPainter extends CustomPainter {
       return;
     }
 
-    final paint = Paint()
-      ..style = PaintingStyle.fill;
+    final paint = Paint()..style = PaintingStyle.fill;
 
     double startAngle = -90 * (3.14159 / 180); // Start from top
 
@@ -1349,7 +2464,7 @@ class _JoyTrendChartPainter extends CustomPainter {
       ..color = const Color(0xFFE0E0E0)
       ..strokeWidth = 1;
 
-    final textPaint = TextPainter(textDirection: TextDirection.ltr);
+    final textPaint = TextPainter(textDirection: ui.TextDirection.ltr);
 
     // Calculate dimensions
     final padding = 30.0;
