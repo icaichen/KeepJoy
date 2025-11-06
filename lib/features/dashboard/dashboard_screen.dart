@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:keepjoy_app/features/deep_cleaning/deep_cleaning_flow.dart';
 import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
+import 'package:keepjoy_app/features/dashboard/widgets/cleaning_area_legend.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
 import 'package:keepjoy_app/features/insights/yearly_reports_screen.dart';
 import 'package:keepjoy_app/features/profile/profile_page.dart';
@@ -2622,88 +2623,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _buildReportSection(
             context,
             title: isChinese ? '整理区域' : 'Cleaning Areas',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 40,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: allAreas.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final area = allAreas[index];
-                      final count = areaCounts[area] ?? 0;
-                      final intensity = count == 0 ? 0.0 : count / maxAreaCount;
-                      final color = count == 0
-                          ? const Color(0xFFE0E0E0)
-                          : Color.lerp(
-                              const Color(0xFFE0E0E0),
-                              const Color(0xFF5ECFB8),
-                              intensity,
-                            )!;
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '$area ($count)',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: intensity > 0.5
-                                      ? Colors.white
-                                      : Colors.black87,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                        ),
-                      );
-                    },
+            trailing: CleaningAreaLegend.badge(
+              context: context,
+              isChinese: isChinese,
+              onTap: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (dialogContext) => CleaningAreaLegend.dialog(
+                    context: dialogContext,
+                    isChinese: isChinese,
                   ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Text(
-                      isChinese ? '较少' : 'Less',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF9CA3AF),
-                      ),
+                );
+              },
+            ),
+            child: SizedBox(
+              height: 40,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: allAreas.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final area = allAreas[index];
+                  final count = areaCounts[area] ?? 0;
+                  final entry = CleaningAreaLegend.forCount(count);
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
                     ),
-                    const SizedBox(width: 8),
-                    ...List.generate(5, (index) {
-                      final color = Color.lerp(
-                        const Color(0xFFE0E0E0),
-                        const Color(0xFF5ECFB8),
-                        index / 4,
-                      )!;
-                      return Container(
-                        width: 16,
-                        height: 16,
-                        margin: const EdgeInsets.symmetric(horizontal: 2),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(4),
+                    decoration: BoxDecoration(
+                      color: entry.color,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$area ($count)',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: entry.textColor,
+                          fontWeight: FontWeight.w500,
                         ),
-                      );
-                    }),
-                    const SizedBox(width: 8),
-                    Text(
-                      isChinese ? '较多' : 'More',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF9CA3AF),
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  );
+                },
+              ),
             ),
           ),
 
@@ -2781,18 +2745,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
     BuildContext context, {
     required String title,
     String? subtitle,
+    Widget? trailing,
     required Widget child,
   }) {
+    final titleRow = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        if (trailing != null) ...[const SizedBox(width: 12), trailing],
+      ],
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
+        titleRow,
         if (subtitle != null) ...[
           const SizedBox(height: 4),
           Text(
