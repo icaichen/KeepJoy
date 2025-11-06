@@ -1585,7 +1585,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 12),
 
                 // Active Session (if exists)
                 if (widget.activeSession != null) ...[

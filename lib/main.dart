@@ -487,85 +487,139 @@ class _MainNavigatorState extends State<MainNavigator> {
               showModalBottomSheet<void>(
                 context: context,
                 backgroundColor: Colors.transparent,
+                isScrollControlled: true,
                 builder: (sheetContext) {
-                  return Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(24),
+                  final bottomPadding =
+                      MediaQuery.of(sheetContext).viewPadding.bottom;
+                  final isChinese = Localizations.localeOf(sheetContext)
+                      .languageCode
+                      .toLowerCase()
+                      .startsWith('zh');
+                  return FractionallySizedBox(
+                    heightFactor: 0.55,
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: bottomPadding),
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(28),
+                        ),
+                        color: Colors.white,
                       ),
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Handle bar
-                            Center(
-                              child: Container(
-                                width: 40,
+                      child: SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Container(
+                                width: 44,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE5E7EB),
+                                  color: const Color(0xFFE5E7EA),
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 32),
-
-                            // Joy Declutter
-                            _buildCleaningModeButton(
-                              icon: Icons.auto_awesome_rounded,
-                              title: l10n.joyDeclutterTitle,
-                              colors: [
-                                const Color(0xFF3570FF),
-                                const Color(0xFF1BCBFF),
-                              ],
-                              onTap: () {
-                                Navigator.pop(sheetContext);
-                                _openJoyDeclutter(context);
-                              },
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Quick Declutter
-                            _buildCleaningModeButton(
-                              icon: Icons.bolt_rounded,
-                              title: l10n.quickDeclutterTitle,
-                              colors: [
-                                const Color(0xFFFF6CAB),
-                                const Color(0xFFFF8F61),
-                              ],
-                              onTap: () {
-                                Navigator.pop(sheetContext);
-                                _openQuickDeclutter(context);
-                              },
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Deep Cleaning
-                            _buildCleaningModeButton(
-                              icon: Icons.spa_rounded,
-                              title: l10n.deepCleaningTitle,
-                              colors: [
-                                const Color(0xFF34E27A),
-                                const Color(0xFF00B86B),
-                              ],
-                              onTap: () {
-                                Navigator.pop(sheetContext);
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => DeepCleaningFlowPage(
-                                      onStartSession: _startSession,
-                                      onStopSession: _stopSession,
-                                    ),
+                              const SizedBox(height: 20),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  isChinese ? '选择整理方式' : 'Choose a flow',
+                                  style: const TextStyle(
+                                    fontFamily: 'SF Pro Display',
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF1C1C1E),
                                   ),
-                                );
-                              },
-                            ),
-                          ],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  isChinese
+                                      ? '根据当前状态选择最合适的整理体验。'
+                                      : 'Pick the experience that fits your current energy.',
+                                  style: const TextStyle(
+                                    fontFamily: 'SF Pro Text',
+                                    fontSize: 14,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Expanded(
+                                child: ListView.separated(
+                                  padding: EdgeInsets.zero,
+                                  physics: const BouncingScrollPhysics(),
+                                  itemBuilder: (_, index) {
+                                    switch (index) {
+                                      case 0:
+                                        return _buildCleaningModeButton(
+                                          icon: Icons.auto_awesome_rounded,
+                                          title: l10n.joyDeclutterTitle,
+                                          subtitle: isChinese
+                                              ? '从情感出发整理物品'
+                                              : 'Lead with joy when letting go',
+                                          colors: const [
+                                            Color(0xFF5B8CFF),
+                                            Color(0xFF61D1FF),
+                                          ],
+                                          onTap: () {
+                                            Navigator.pop(sheetContext);
+                                            _openJoyDeclutter(context);
+                                          },
+                                        );
+                                      case 1:
+                                        return _buildCleaningModeButton(
+                                          icon: Icons.flash_on_rounded,
+                                          title: l10n.quickDeclutterTitle,
+                                          subtitle: isChinese
+                                              ? '10 分钟快速清理'
+                                              : 'Clear spaces in under 10 minutes',
+                                          colors: const [
+                                            Color(0xFFFF8A65),
+                                            Color(0xFFFFB74D),
+                                          ],
+                                          onTap: () {
+                                            Navigator.pop(sheetContext);
+                                            _openQuickDeclutter(context);
+                                          },
+                                        );
+                                      default:
+                                        return _buildCleaningModeButton(
+                                          icon: Icons.cleaning_services_rounded,
+                                          title: l10n.deepCleaningTitle,
+                                          subtitle: isChinese
+                                              ? '系统化、深度的整理流程'
+                                              : 'Structured sessions for thorough results',
+                                          colors: const [
+                                            Color(0xFF34E27A),
+                                            Color(0xFF0BBF75),
+                                          ],
+                                          onTap: () {
+                                            Navigator.pop(sheetContext);
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    DeepCleaningFlowPage(
+                                                  onStartSession:
+                                                      _startSession,
+                                                  onStopSession: _stopSession,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                    }
+                                  },
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(height: 16),
+                                  itemCount: 3,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -672,6 +726,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   Widget _buildCleaningModeButton({
     required IconData icon,
     required String title,
+    required String subtitle,
     required List<Color> colors,
     required VoidCallback onTap,
   }) {
@@ -697,31 +752,72 @@ class _MainNavigatorState extends State<MainNavigator> {
             child: Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white.withValues(alpha: 0.22),
                   ),
                   child: Icon(icon, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 20),
                 Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Display',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: -0.3,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontFamily: 'SF Pro Display',
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontFamily: 'SF Pro Text',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white70,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
-                  size: 18,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Start',
+                        style: TextStyle(
+                          fontFamily: 'SF Pro Text',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
