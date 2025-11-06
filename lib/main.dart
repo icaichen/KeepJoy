@@ -247,16 +247,17 @@ class _MainNavigatorState extends State<MainNavigator> {
         // Mark corresponding planned session as completed
         final plannedSessionIndex = _plannedSessions.indexWhere(
           (s) =>
-            !s.isCompleted &&
-            s.area == updatedSession.area &&
-            s.mode == SessionMode.deepCleaning,
+              !s.isCompleted &&
+              s.area == updatedSession.area &&
+              s.mode == SessionMode.deepCleaning,
         );
 
         if (plannedSessionIndex != -1) {
-          _plannedSessions[plannedSessionIndex] = _plannedSessions[plannedSessionIndex].copyWith(
-            isCompleted: true,
-            completedAt: DateTime.now(),
-          );
+          _plannedSessions[plannedSessionIndex] =
+              _plannedSessions[plannedSessionIndex].copyWith(
+                isCompleted: true,
+                completedAt: DateTime.now(),
+              );
         }
         _activeSession = null;
       });
@@ -299,7 +300,9 @@ class _MainNavigatorState extends State<MainNavigator> {
 
         // If status changed to resell, create ResellItem if not exists
         if (item.status == DeclutterStatus.resell) {
-          final hasResellItem = _resellItems.any((r) => r.declutterItemId == item.id);
+          final hasResellItem = _resellItems.any(
+            (r) => r.declutterItemId == item.id,
+          );
           if (!hasResellItem) {
             final resellItem = ResellItem(
               id: 'resell_${DateTime.now().millisecondsSinceEpoch}',
@@ -340,9 +343,8 @@ class _MainNavigatorState extends State<MainNavigator> {
   void _openQuickDeclutter(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => QuickDeclutterFlowPage(
-          onItemCreated: _addDeclutteredItem,
-        ),
+        builder: (_) =>
+            QuickDeclutterFlowPage(onItemCreated: _addDeclutteredItem),
       ),
     );
   }
@@ -381,7 +383,10 @@ class _MainNavigatorState extends State<MainNavigator> {
 
   void _addPlannedSession(PlannedSession session) {
     setState(() {
-      _plannedSessions.insert(0, session); // Add to beginning so it shows up first
+      _plannedSessions.insert(
+        0,
+        session,
+      ); // Add to beginning so it shows up first
     });
   }
 
@@ -406,7 +411,9 @@ class _MainNavigatorState extends State<MainNavigator> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     final pages = [
       DashboardScreen(
@@ -484,7 +491,9 @@ class _MainNavigatorState extends State<MainNavigator> {
                   return Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                     ),
                     child: SafeArea(
                       top: false,
@@ -510,7 +519,10 @@ class _MainNavigatorState extends State<MainNavigator> {
                             _buildCleaningModeButton(
                               icon: Icons.auto_awesome_rounded,
                               title: l10n.joyDeclutterTitle,
-                              colors: [const Color(0xFF3570FF), const Color(0xFF1BCBFF)],
+                              colors: [
+                                const Color(0xFF3570FF),
+                                const Color(0xFF1BCBFF),
+                              ],
                               onTap: () {
                                 Navigator.pop(sheetContext);
                                 _openJoyDeclutter(context);
@@ -522,7 +534,10 @@ class _MainNavigatorState extends State<MainNavigator> {
                             _buildCleaningModeButton(
                               icon: Icons.bolt_rounded,
                               title: l10n.quickDeclutterTitle,
-                              colors: [const Color(0xFFFF6CAB), const Color(0xFFFF8F61)],
+                              colors: [
+                                const Color(0xFFFF6CAB),
+                                const Color(0xFFFF8F61),
+                              ],
                               onTap: () {
                                 Navigator.pop(sheetContext);
                                 _openQuickDeclutter(context);
@@ -534,7 +549,10 @@ class _MainNavigatorState extends State<MainNavigator> {
                             _buildCleaningModeButton(
                               icon: Icons.spa_rounded,
                               title: l10n.deepCleaningTitle,
-                              colors: [const Color(0xFF34E27A), const Color(0xFF00B86B)],
+                              colors: [
+                                const Color(0xFF34E27A),
+                                const Color(0xFF00B86B),
+                              ],
                               onTap: () {
                                 Navigator.pop(sheetContext);
                                 Navigator.of(context).push(
@@ -556,11 +574,7 @@ class _MainNavigatorState extends State<MainNavigator> {
               );
             },
             customBorder: const CircleBorder(),
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 32,
-            ),
+            child: const Icon(Icons.add, color: Colors.white, size: 32),
           ),
         ),
       ),
@@ -572,40 +586,47 @@ class _MainNavigatorState extends State<MainNavigator> {
         child: SizedBox(
           height: 60,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavBarItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: l10n.home,
-                index: 0,
-                isActive: _selectedIndex == 0,
-                onTap: () => setState(() => _selectedIndex = 0),
+              Expanded(
+                child: _buildNavBarItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home,
+                  label: l10n.home,
+                  index: 0,
+                  isActive: _selectedIndex == 0,
+                  onTap: () => setState(() => _selectedIndex = 0),
+                ),
               ),
-              _buildNavBarItem(
-                icon: Icons.grid_view_outlined,
-                activeIcon: Icons.grid_view,
-                label: l10n.items,
-                index: 1,
-                isActive: _selectedIndex == 1,
-                onTap: () => setState(() => _selectedIndex = 1),
+              Expanded(
+                child: _buildNavBarItem(
+                  icon: Icons.grid_view_outlined,
+                  activeIcon: Icons.grid_view,
+                  label: l10n.items,
+                  index: 1,
+                  isActive: _selectedIndex == 1,
+                  onTap: () => setState(() => _selectedIndex = 1),
+                ),
               ),
               const SizedBox(width: 80), // Space for FAB
-              _buildNavBarItem(
-                icon: Icons.bookmark_border,
-                activeIcon: Icons.bookmark,
-                label: l10n.memories,
-                index: 3,
-                isActive: _selectedIndex == 3,
-                onTap: () => setState(() => _selectedIndex = 3),
+              Expanded(
+                child: _buildNavBarItem(
+                  icon: Icons.bookmark_border,
+                  activeIcon: Icons.bookmark,
+                  label: l10n.memories,
+                  index: 3,
+                  isActive: _selectedIndex == 3,
+                  onTap: () => setState(() => _selectedIndex = 3),
+                ),
               ),
-              _buildNavBarItem(
-                icon: Icons.sell_outlined,
-                activeIcon: Icons.sell,
-                label: isChinese ? '转售' : 'Resell',
-                index: 4,
-                isActive: _selectedIndex == 4,
-                onTap: () => setState(() => _selectedIndex = 4),
+              Expanded(
+                child: _buildNavBarItem(
+                  icon: Icons.sell_outlined,
+                  activeIcon: Icons.sell,
+                  label: isChinese ? '转售' : 'Resell',
+                  index: 4,
+                  isActive: _selectedIndex == 4,
+                  onTap: () => setState(() => _selectedIndex = 4),
+                ),
               ),
             ],
           ),
@@ -622,28 +643,28 @@ class _MainNavigatorState extends State<MainNavigator> {
     required bool isActive,
     required VoidCallback onTap,
   }) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isActive ? activeIcon : icon,
-              color: isActive ? const Color(0xFF5ECFB8) : const Color(0xFF9CA3AF),
-              size: 24,
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            isActive ? activeIcon : icon,
+            color: isActive ? const Color(0xFF5ECFB8) : const Color(0xFF9CA3AF),
+            size: 24,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isActive
+                  ? const Color(0xFF5ECFB8)
+                  : const Color(0xFF9CA3AF),
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: isActive ? const Color(0xFF5ECFB8) : const Color(0xFF9CA3AF),
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -682,11 +703,7 @@ class _MainNavigatorState extends State<MainNavigator> {
                     color: Colors.white.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                  child: Icon(icon, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 20),
                 Expanded(
@@ -725,7 +742,8 @@ class _HomeScreen extends StatefulWidget {
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) onStopSession;
+  })
+  onStopSession;
   final Function(String area, {String? beforePhotoPath}) onStartSession;
   final VoidCallback onOpenQuickDeclutter;
   final VoidCallback onOpenJoyDeclutter;
@@ -1263,10 +1281,9 @@ class _HomeScreenState extends State<_HomeScreen> {
   }
 
   void _showCleaningModeSelection(BuildContext context, AppLocalizations l10n) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -1315,7 +1332,9 @@ class _HomeScreenState extends State<_HomeScreen> {
                   _buildModeButton(
                     icon: Icons.auto_awesome_rounded,
                     title: l10n.joyDeclutterTitle,
-                    subtitle: isChinese ? '一次一件，用心感受' : 'One item at a time, feel the joy',
+                    subtitle: isChinese
+                        ? '一次一件，用心感受'
+                        : 'One item at a time, feel the joy',
                     iconColor: const Color(0xFF8B5CF6),
                     onTap: () {
                       Navigator.pop(sheetContext);
@@ -1328,7 +1347,9 @@ class _HomeScreenState extends State<_HomeScreen> {
                   _buildModeButton(
                     icon: Icons.bolt_rounded,
                     title: l10n.quickDeclutterTitle,
-                    subtitle: isChinese ? '快速拍照，批量处理' : 'Quick capture, batch process',
+                    subtitle: isChinese
+                        ? '快速拍照，批量处理'
+                        : 'Quick capture, batch process',
                     iconColor: const Color(0xFFEC4899),
                     onTap: () {
                       Navigator.pop(sheetContext);
@@ -1341,7 +1362,9 @@ class _HomeScreenState extends State<_HomeScreen> {
                   _buildModeButton(
                     icon: Icons.spa_rounded,
                     title: l10n.deepCleaningTitle,
-                    subtitle: isChinese ? '专注整理，焕然一新' : 'Focused cleaning session',
+                    subtitle: isChinese
+                        ? '专注整理，焕然一新'
+                        : 'Focused cleaning session',
                     iconColor: const Color(0xFF10B981),
                     onTap: () {
                       Navigator.pop(sheetContext);
@@ -1379,10 +1402,7 @@ class _HomeScreenState extends State<_HomeScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: const Color(0xFFE5E7EB),
-              width: 1,
-            ),
+            border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
@@ -1394,11 +1414,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                   color: iconColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 24,
-                ),
+                child: Icon(icon, color: iconColor, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -1500,677 +1516,720 @@ class _HomeScreenState extends State<_HomeScreen> {
                 const SizedBox(height: 120),
 
                 // Purple Section - FULL WIDTH
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(color: Color(0xFFF5F5F7)),
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.05,
-                vertical: 24,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Streak Achievement (only show if there's a streak)
-                  if (widget.streak > 0) ...[
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => _showActivityHistory(context, l10n),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFFFDB022).withValues(alpha: 0.1),
-                              const Color(0xFFFFD700).withValues(alpha: 0.05),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: const Color(0xFFFDB022).withValues(alpha: 0.2),
-                            width: 1.5,
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          children: [
-                            Row(
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(color: Color(0xFFF5F5F7)),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.05,
+                    vertical: 24,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Streak Achievement (only show if there's a streak)
+                      if (widget.streak > 0) ...[
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => _showActivityHistory(context, l10n),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(
+                                    0xFFFDB022,
+                                  ).withValues(alpha: 0.1),
+                                  const Color(
+                                    0xFFFFD700,
+                                  ).withValues(alpha: 0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(
+                                  0xFFFDB022,
+                                ).withValues(alpha: 0.2),
+                                width: 1.5,
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
                               children: [
-                                Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [Color(0xFFFDB022), Color(0xFFFFD700)],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Color(0x40FDB022),
-                                        blurRadius: 12,
-                                        offset: Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.local_fire_department_rounded,
-                                    color: Colors.white,
-                                    size: 28,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        l10n.streakAchievement,
-                                        style: const TextStyle(
-                                          fontFamily: 'SF Pro Display',
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF111827),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: '${widget.streak}',
-                                              style: const TextStyle(
-                                                fontFamily: 'SF Pro Display',
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.w800,
-                                                color: Color(0xFFFDB022),
-                                                height: 1.0,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: ' ${widget.streak == 1 ? (Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh') ? '天' : 'day') : (Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh') ? '天' : 'days')}',
-                                              style: const TextStyle(
-                                                fontFamily: 'SF Pro Text',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500,
-                                                color: Color(0xFF6B7280),
-                                              ),
-                                            ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFFFDB022),
+                                            Color(0xFFFFD700),
                                           ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
                                         ),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Color(0x40FDB022),
+                                            blurRadius: 12,
+                                            offset: Offset(0, 4),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                      child: const Icon(
+                                        Icons.local_fire_department_rounded,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            l10n.streakAchievement,
+                                            style: const TextStyle(
+                                              fontFamily: 'SF Pro Display',
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF111827),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: '${widget.streak}',
+                                                  style: const TextStyle(
+                                                    fontFamily:
+                                                        'SF Pro Display',
+                                                    fontSize: 24,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: Color(0xFFFDB022),
+                                                    height: 1.0,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text:
+                                                      ' ${widget.streak == 1 ? (Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh') ? '天' : 'day') : (Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh') ? '天' : 'days')}',
+                                                  style: const TextStyle(
+                                                    fontFamily: 'SF Pro Text',
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color(0xFF6B7280),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.chevron_right,
+                                      color: Color(0xFFD1D5DB),
+                                      size: 24,
+                                    ),
+                                  ],
                                 ),
-                                const Icon(
-                                  Icons.chevron_right,
-                                  color: Color(0xFFD1D5DB),
-                                  size: 24,
+                                const SizedBox(height: 20),
+                                // Day indicators
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children:
+                                      List.generate(
+                                        widget.streak > 14 ? 14 : widget.streak,
+                                        (index) => Container(
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                          ),
+                                          width: widget.streak > 14 ? 6 : 8,
+                                          height: widget.streak > 14 ? 6 : 8,
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color(0xFFFDB022),
+                                                Color(0xFFFFD700),
+                                              ],
+                                            ),
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(
+                                                  0xFFFDB022,
+                                                ).withValues(alpha: 0.3),
+                                                blurRadius: 4,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      )..addAll(
+                                        widget.streak > 14
+                                            ? [
+                                                const SizedBox(width: 8),
+                                                const Text(
+                                                  '+',
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        'SF Pro Display',
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFFFDB022),
+                                                  ),
+                                                ),
+                                              ]
+                                            : [],
+                                      ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 20),
-                            // Day indicators
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                widget.streak > 14 ? 14 : widget.streak,
-                                (index) => Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                                  width: widget.streak > 14 ? 6 : 8,
-                                  height: widget.streak > 14 ? 6 : 8,
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFFFDB022), Color(0xFFFFD700)],
-                                    ),
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFFFDB022).withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )..addAll(
-                                widget.streak > 14
-                                    ? [
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          '+',
-                                          style: TextStyle(
-                                            fontFamily: 'SF Pro Display',
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700,
-                                            color: Color(0xFFFDB022),
-                                          ),
-                                        ),
-                                      ]
-                                    : [],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                        const SizedBox(height: 20),
+                      ],
 
-                  // Quote Card
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 600),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE4E8EF)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 20,
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.format_quote_rounded,
-                            color: const Color(0xFF9CA3AF),
-                            size: 32,
+                      // Quote Card
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFE4E8EF)),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 20,
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _formatQuote(quoteOfDay),
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Text',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xDE000000), // black87
-                              letterSpacing: 0,
-                              height: 1.5,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '- ${_getQuoteAttribution(quoteOfDay)}',
-                            style: AppTypography.quoteAttribution.copyWith(
-                              color: const Color(0xFF757575), // grey600
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Joy Check Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE4E8EF)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 22,
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            l10n.joyCheck,
-                            style: AppTypography.cardTitle.black87,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            l10n.whatBroughtYouJoy,
-                            style: AppTypography.subtitle,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 18),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                final memory = await Navigator.of(context)
-                                    .push<Memory>(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const CreateMemoryPage(),
-                                      ),
-                                    );
-
-                                if (memory != null && context.mounted) {
-                                  // Call the onMemoryCreated callback from parent
-                                  final mainState = context
-                                      .findAncestorStateOfType<
-                                        _MainNavigatorState
-                                      >();
-                                  mainState?._onMemoryCreated(memory);
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(l10n.memoryCreated)),
-                                  );
-                                }
-                              },
-                              icon: const Icon(
-                                Icons.sentiment_satisfied_alt,
-                                size: 18,
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.format_quote_rounded,
+                                color: const Color(0xFF9CA3AF),
+                                size: 32,
                               ),
-                              label: Text(
-                                l10n.createMemory,
+                              const SizedBox(height: 12),
+                              Text(
+                                _formatQuote(quoteOfDay),
                                 style: const TextStyle(
                                   fontFamily: 'SF Pro Text',
                                   fontSize: 16,
                                   fontWeight: FontWeight.w400,
-                                  letterSpacing: 0,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF414B5A),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                textStyle: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Quick Tip Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE4E8EF)),
-                    ),
-                    child: InkWell(
-                      onTap: () => _showQuickTips(context, l10n),
-                      borderRadius: BorderRadius.circular(18),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 18,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEFF4FB),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Icon(
-                                Icons.lightbulb_outline,
-                                color: Color(0xFF1F6FEB),
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                _getTodaysTipPreview(l10n),
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
                                   color: Color(0xDE000000), // black87
                                   letterSpacing: 0,
-                                  height: 1.0,
+                                  height: 1.5,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 12),
+                              Text(
+                                '- ${_getQuoteAttribution(quoteOfDay)}',
+                                style: AppTypography.quoteAttribution.copyWith(
+                                  color: const Color(0xFF757575), // grey600
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                      const SizedBox(height: 12),
 
-            SizedBox(height: screenHeight * 0.03),
-
-            // Continue Your Session section (only show if active session exists)
-            if (widget.activeSession != null)
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: screenHeight * 0.015),
-                    Card(
-                      color: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: Color(0xFFE1E7EF)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
+                      // Joy Check Card
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFE4E8EF)),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Top row: "Active Session" and "Deep Cleaning"
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Active Session',
-                                  style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0,
-                                        color: const Color(0xFF111827),
-                                      ),
-                                ),
-                                Text(
-                                  'Deep Cleaning',
-                                  style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w400,
-                                        letterSpacing: 0,
-                                        color: const Color(0xFF6B7280),
-                                      ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            // Timer and location row
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Left side: Timer and location
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Large timer display - single line
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          _getElapsedTime(
-                                            widget.activeSession!.startTime,
-                                          ),
-                                          style: const TextStyle(
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF111827),
-                                            height: 1.05,
-                                            letterSpacing: -0.2,
-                                            fontFeatures: [
-                                              FontFeature.tabularFigures(),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      // Location and status
-                                      Text(
-                                        '${widget.activeSession!.area} - ${l10n.inProgress}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF6B7280),
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            // Buttons side by side
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF414B5A),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          // Navigate back to timer
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  DeepCleaningTimerPage(
-                                                    area: widget.activeSession!.area,
-                                                    beforePhotoPath:
-                                                        widget.activeSession!
-                                                            .beforePhotoPath,
-                                                    onStopSession:
-                                                        widget.onStopSession,
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 14,
-                                            vertical: 10,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.play_arrow,
-                                                color: Colors.white,
-                                                size: 18,
-                                              ),
-                                              SizedBox(width: 6),
-                                              Text(
-                                                'Resume',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                // Stop button
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFEF4444),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () {
-                                        // Navigate to timer page (finish cleaning flow)
-                                        Navigator.of(context).push(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 22,
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                l10n.joyCheck,
+                                style: AppTypography.cardTitle.black87,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                l10n.whatBroughtYouJoy,
+                                style: AppTypography.subtitle,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 18),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    final memory = await Navigator.of(context)
+                                        .push<Memory>(
                                           MaterialPageRoute(
                                             builder: (_) =>
-                                                DeepCleaningTimerPage(
-                                                  area: widget.activeSession!.area,
-                                                  beforePhotoPath:
-                                                      widget.activeSession!
-                                                          .beforePhotoPath,
-                                                  onStopSession:
-                                                      widget.onStopSession,
-                                                ),
+                                                const CreateMemoryPage(),
                                           ),
                                         );
-                                      },
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 10,
+
+                                    if (memory != null && context.mounted) {
+                                      // Call the onMemoryCreated callback from parent
+                                      final mainState = context
+                                          .findAncestorStateOfType<
+                                            _MainNavigatorState
+                                          >();
+                                      mainState?._onMemoryCreated(memory);
+
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(l10n.memoryCreated),
                                         ),
-                                        child: Icon(
-                                          Icons.stop_rounded,
-                                          color: Colors.white,
-                                          size: 18,
-                                        ),
-                                      ),
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.sentiment_satisfied_alt,
+                                    size: 18,
+                                  ),
+                                  label: Text(
+                                    l10n.createMemory,
+                                    style: const TextStyle(
+                                      fontFamily: 'SF Pro Text',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      letterSpacing: 0,
                                     ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF414B5A),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Quick Tip Card
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFE4E8EF)),
+                        ),
+                        child: InkWell(
+                          onTap: () => _showQuickTips(context, l10n),
+                          borderRadius: BorderRadius.circular(18),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEFF4FB),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.lightbulb_outline,
+                                    color: Color(0xFF1F6FEB),
+                                    size: 18,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    _getTodaysTipPreview(l10n),
+                                    style: const TextStyle(
+                                      fontFamily: 'SF Pro Text',
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xDE000000), // black87
+                                      letterSpacing: 0,
+                                      height: 1.0,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-                  ],
-                ),
-              ),
-
-            SizedBox(height: screenHeight * 0.03),
-          ],
-        ),
-      ),
-
-      // Collapsed header (appears when scrolling)
-      Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        child: IgnorePointer(
-          ignoring: collapsedHeaderOpacity < 0.5,
-          child: Opacity(
-            opacity: collapsedHeaderOpacity,
-            child: Container(
-              height: topPadding + kToolbarHeight,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5F5F7),
-                border: Border(
-                  bottom: BorderSide(
-                    color: Color(0xFFE5E5EA),
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              padding: EdgeInsets.only(top: topPadding),
-              alignment: Alignment.center,
-              child: const Text(
-                'KeepJoy',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-
-      // Original header (fades out when scrolling)
-      Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        child: SizedBox(
-          height: 120,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 24,
-              right: 16,
-              top: topPadding + 12,
-            ),
-            child: Opacity(
-              opacity: headerOpacity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Large greeting on the left
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _getGreeting(l10n),
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          letterSpacing: -0.5,
-                          height: 1.0,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'ready to start your declutter joy',
-                        style: TextStyle(
-                          fontFamily: 'SF Pro Display',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF6B7280),
-                          letterSpacing: 0,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  // Profile Icon on the right
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ProfilePage(onLocaleChange: widget.onLocaleChange),
+                ),
+
+                SizedBox(height: screenHeight * 0.03),
+
+                // Continue Your Session section (only show if active session exists)
+                if (widget.activeSession != null)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.05,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: screenHeight * 0.015),
+                        Card(
+                          color: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: const BorderSide(color: Color(0xFFE1E7EF)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 14,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Top row: "Active Session" and "Deep Cleaning"
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Active Session',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0,
+                                            color: const Color(0xFF111827),
+                                          ),
+                                    ),
+                                    Text(
+                                      'Deep Cleaning',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w400,
+                                            letterSpacing: 0,
+                                            color: const Color(0xFF6B7280),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                // Timer and location row
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Left side: Timer and location
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Large timer display - single line
+                                          FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              _getElapsedTime(
+                                                widget.activeSession!.startTime,
+                                              ),
+                                              style: const TextStyle(
+                                                fontSize: 32,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF111827),
+                                                height: 1.05,
+                                                letterSpacing: -0.2,
+                                                fontFeatures: [
+                                                  FontFeature.tabularFigures(),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          // Location and status
+                                          Text(
+                                            '${widget.activeSession!.area} - ${l10n.inProgress}',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Color(0xFF6B7280),
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                // Buttons side by side
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF414B5A),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () {
+                                              // Navigate back to timer
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      DeepCleaningTimerPage(
+                                                        area: widget
+                                                            .activeSession!
+                                                            .area,
+                                                        beforePhotoPath: widget
+                                                            .activeSession!
+                                                            .beforePhotoPath,
+                                                        onStopSession: widget
+                                                            .onStopSession,
+                                                      ),
+                                                ),
+                                              );
+                                            },
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 14,
+                                                vertical: 10,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    Icons.play_arrow,
+                                                    color: Colors.white,
+                                                    size: 18,
+                                                  ),
+                                                  SizedBox(width: 6),
+                                                  Text(
+                                                    'Resume',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    // Stop button
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {
+                                            // Navigate to timer page (finish cleaning flow)
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    DeepCleaningTimerPage(
+                                                      area: widget
+                                                          .activeSession!
+                                                          .area,
+                                                      beforePhotoPath: widget
+                                                          .activeSession!
+                                                          .beforePhotoPath,
+                                                      onStopSession:
+                                                          widget.onStopSession,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 10,
+                                            ),
+                                            child: Icon(
+                                              Icons.stop_rounded,
+                                              color: Colors.white,
+                                              size: 18,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFB794F6),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: 22,
-                      ),
+                        SizedBox(height: screenHeight * 0.03),
+                      ],
                     ),
                   ),
-                ],
+
+                SizedBox(height: screenHeight * 0.03),
+              ],
+            ),
+          ),
+
+          // Collapsed header (appears when scrolling)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: collapsedHeaderOpacity < 0.5,
+              child: Opacity(
+                opacity: collapsedHeaderOpacity,
+                child: Container(
+                  height: topPadding + kToolbarHeight,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F5F7),
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
+                    ),
+                  ),
+                  padding: EdgeInsets.only(top: topPadding),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'KeepJoy',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+
+          // Original header (fades out when scrolling)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 120,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 16,
+                  top: topPadding + 12,
+                ),
+                child: Opacity(
+                  opacity: headerOpacity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Large greeting on the left
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _getGreeting(l10n),
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                              letterSpacing: -0.5,
+                              height: 1.0,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'ready to start your declutter joy',
+                            style: TextStyle(
+                              fontFamily: 'SF Pro Display',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF6B7280),
+                              letterSpacing: 0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Profile Icon on the right
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ProfilePage(
+                                onLocaleChange: widget.onLocaleChange,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFB794F6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-    ],
-  ),
     );
   }
 }

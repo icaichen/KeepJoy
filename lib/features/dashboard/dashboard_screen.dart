@@ -29,7 +29,8 @@ class DashboardScreen extends StatefulWidget {
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) onStopSession;
+  })
+  onStopSession;
   final Function(String area, {String? beforePhotoPath}) onStartSession;
   final VoidCallback onOpenQuickDeclutter;
   final VoidCallback onOpenJoyDeclutter;
@@ -125,22 +126,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final quoteIndex = (dayOfYear % 15) + 1;
 
     switch (quoteIndex) {
-      case 1: return l10n.quote1;
-      case 2: return l10n.quote2;
-      case 3: return l10n.quote3;
-      case 4: return l10n.quote4;
-      case 5: return l10n.quote5;
-      case 6: return l10n.quote6;
-      case 7: return l10n.quote7;
-      case 8: return l10n.quote8;
-      case 9: return l10n.quote9;
-      case 10: return l10n.quote10;
-      case 11: return l10n.quote11;
-      case 12: return l10n.quote12;
-      case 13: return l10n.quote13;
-      case 14: return l10n.quote14;
-      case 15: return l10n.quote15;
-      default: return l10n.quote1;
+      case 1:
+        return l10n.quote1;
+      case 2:
+        return l10n.quote2;
+      case 3:
+        return l10n.quote3;
+      case 4:
+        return l10n.quote4;
+      case 5:
+        return l10n.quote5;
+      case 6:
+        return l10n.quote6;
+      case 7:
+        return l10n.quote7;
+      case 8:
+        return l10n.quote8;
+      case 9:
+        return l10n.quote9;
+      case 10:
+        return l10n.quote10;
+      case 11:
+        return l10n.quote11;
+      case 12:
+        return l10n.quote12;
+      case 13:
+        return l10n.quote13;
+      case 14:
+        return l10n.quote14;
+      case 15:
+        return l10n.quote15;
+      default:
+        return l10n.quote1;
     }
   }
 
@@ -245,7 +262,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                     // Optional date
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: const BorderSide(color: Color(0xFFE5E7EA)),
@@ -254,7 +273,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       title: Text(isChinese ? '日期（可选）' : 'Date (Optional)'),
                       subtitle: Text(
                         selectedDate != null
-                            ? DateFormat(isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy').format(selectedDate!)
+                            ? DateFormat(
+                                isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                              ).format(selectedDate!)
                             : (isChinese ? '点击选择日期' : 'Tap to select date'),
                       ),
                       trailing: selectedDate != null
@@ -272,7 +293,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           context: builderContext,
                           initialDate: selectedDate ?? DateTime.now(),
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
                         );
                         if (picked != null) {
                           setModalState(() {
@@ -304,14 +327,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               if (goalController.text.trim().isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(isChinese ? '请输入目标' : 'Please enter a goal'),
+                                    content: Text(
+                                      isChinese
+                                          ? '请输入目标'
+                                          : 'Please enter a goal',
+                                    ),
                                   ),
                                 );
                                 return;
                               }
 
                               final newSession = PlannedSession(
-                                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                id: DateTime.now().millisecondsSinceEpoch
+                                    .toString(),
                                 title: goalController.text.trim(),
                                 area: 'General',
                                 scheduledDate: selectedDate,
@@ -327,7 +355,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(isChinese ? '目标已创建' : 'Goal created'),
+                                  content: Text(
+                                    isChinese ? '目标已创建' : 'Goal created',
+                                  ),
                                 ),
                               );
                             },
@@ -428,11 +458,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   });
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFF414B5A) : Colors.white,
+                                    color: isSelected
+                                        ? const Color(0xFF414B5A)
+                                        : Colors.white,
                                     border: Border.all(
-                                      color: isSelected ? const Color(0xFF414B5A) : const Color(0xFFE5E7EA),
+                                      color: isSelected
+                                          ? const Color(0xFF414B5A)
+                                          : const Color(0xFFE5E7EA),
                                     ),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -441,7 +477,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: isSelected ? Colors.white : const Color(0xFF6B7280),
+                                      color: isSelected
+                                          ? Colors.white
+                                          : const Color(0xFF6B7280),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -457,7 +495,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         controller: areaController,
                         decoration: InputDecoration(
                           labelText: isChinese ? '区域' : 'Area',
-                          hintText: isChinese ? '例如：厨房、卧室' : 'e.g., Kitchen, Bedroom',
+                          hintText: isChinese
+                              ? '例如：厨房、卧室'
+                              : 'e.g., Kitchen, Bedroom',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -466,7 +506,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 16),
 
                       ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: const BorderSide(color: Color(0xFFE5E7EA)),
@@ -475,7 +517,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         title: Text(isChinese ? '日期' : 'Date'),
                         subtitle: Text(
                           selectedDate != null
-                              ? DateFormat(isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy').format(selectedDate!)
+                              ? DateFormat(
+                                  isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                                ).format(selectedDate!)
                               : (isChinese ? '选择日期' : 'Select date'),
                         ),
                         onTap: () async {
@@ -483,7 +527,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             context: builderContext,
                             initialDate: selectedDate ?? DateTime.now(),
                             firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
+                            ),
                           );
                           if (picked != null) {
                             setModalState(() {
@@ -494,7 +540,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 12),
                       ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: const BorderSide(color: Color(0xFFE5E7EA)),
@@ -504,7 +552,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         subtitle: Text(
                           selectedTime != null
                               ? selectedTime!.format(builderContext)
-                              : (isChinese ? '选择时间（可选）' : 'Select time (optional)'),
+                              : (isChinese
+                                    ? '选择时间（可选）'
+                                    : 'Select time (optional)'),
                         ),
                         onTap: () async {
                           final picked = await showTimePicker(
@@ -525,8 +575,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: OutlinedButton(
                               onPressed: () => Navigator.pop(sheetContext),
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                side: const BorderSide(color: Color(0xFFE5E7EA)),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                side: const BorderSide(
+                                  color: Color(0xFFE5E7EA),
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -541,18 +595,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 if (areaController.text.trim().isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(isChinese ? '请输入区域名称' : 'Please enter an area name'),
+                                      content: Text(
+                                        isChinese
+                                            ? '请输入区域名称'
+                                            : 'Please enter an area name',
+                                      ),
                                     ),
                                   );
                                   return;
                                 }
 
                                 final newSession = PlannedSession(
-                                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                                  title: '${areaController.text} ${selectedMode.displayName(isChinese)}',
+                                  id: DateTime.now().millisecondsSinceEpoch
+                                      .toString(),
+                                  title:
+                                      '${areaController.text} ${selectedMode.displayName(isChinese)}',
                                   area: areaController.text.trim(),
                                   scheduledDate: selectedDate,
-                                  scheduledTime: selectedTime?.format(builderContext),
+                                  scheduledTime: selectedTime?.format(
+                                    builderContext,
+                                  ),
                                   createdAt: DateTime.now(),
                                   priority: TaskPriority.thisWeek,
                                   mode: selectedMode,
@@ -564,14 +626,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(isChinese ? '任务已创建' : 'Session created'),
+                                    content: Text(
+                                      isChinese ? '任务已创建' : 'Session created',
+                                    ),
                                   ),
                                 );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF414B5A),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -683,9 +749,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         child: TableCalendar(
                           firstDay: DateTime.now(),
-                          lastDay: DateTime.now().add(const Duration(days: 365)),
+                          lastDay: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
                           focusedDay: focusedDay,
-                          selectedDayPredicate: (day) => isSameDay(selectedDay, day),
+                          selectedDayPredicate: (day) =>
+                              isSameDay(selectedDay, day),
                           eventLoader: getEventsForDay,
                           calendarFormat: CalendarFormat.month,
                           startingDayOfWeek: StartingDayOfWeek.monday,
@@ -696,12 +765,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
                             ),
-                            leftChevronIcon: const Icon(Icons.chevron_left, color: Color(0xFF414B5A)),
-                            rightChevronIcon: const Icon(Icons.chevron_right, color: Color(0xFF414B5A)),
+                            leftChevronIcon: const Icon(
+                              Icons.chevron_left,
+                              color: Color(0xFF414B5A),
+                            ),
+                            rightChevronIcon: const Icon(
+                              Icons.chevron_right,
+                              color: Color(0xFF414B5A),
+                            ),
                           ),
                           calendarStyle: CalendarStyle(
                             todayDecoration: BoxDecoration(
-                              color: const Color(0xFF414B5A).withValues(alpha: 0.2),
+                              color: const Color(
+                                0xFF414B5A,
+                              ).withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             selectedDecoration: const BoxDecoration(
@@ -715,7 +792,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             markersMaxCount: 3,
                             markersAlignment: Alignment.bottomCenter,
                             markerSize: 6,
-                            markerMargin: const EdgeInsets.symmetric(horizontal: 1),
+                            markerMargin: const EdgeInsets.symmetric(
+                              horizontal: 1,
+                            ),
                           ),
                           onDaySelected: (selected, focused) {
                             setModalState(() {
@@ -750,7 +829,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
-                                      isChinese ? '这天没有计划任务' : 'No sessions on this day',
+                                      isChinese
+                                          ? '这天没有计划任务'
+                                          : 'No sessions on this day',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey[600],
@@ -787,11 +868,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     setModalState(() {});
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(isChinese ? '任务已删除' : 'Session deleted'),
+                                        content: Text(
+                                          isChinese
+                                              ? '任务已删除'
+                                              : 'Session deleted',
+                                        ),
                                       ),
                                     );
                                   },
-                                  child: _buildSessionCard(session, isChinese, context),
+                                  child: _buildSessionCard(
+                                    session,
+                                    isChinese,
+                                    context,
+                                  ),
                                 );
                               },
                             );
@@ -809,7 +898,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSessionCard(PlannedSession session, bool isChinese, BuildContext context) {
+  Widget _buildSessionCard(
+    PlannedSession session,
+    bool isChinese,
+    BuildContext context,
+  ) {
     // Get color based on session mode
     Color getModeColor() {
       switch (session.mode) {
@@ -931,7 +1024,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          _formatSessionDate(session.scheduledDate, session.scheduledTime, isChinese),
+                          _formatSessionDate(
+                            session.scheduledDate,
+                            session.scheduledTime,
+                            isChinese,
+                          ),
                           style: const TextStyle(
                             fontSize: 13,
                             color: Color(0xFF6B7280),
@@ -1026,7 +1123,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showActivityHistory(BuildContext context, AppLocalizations l10n) {
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final activities = widget.activityHistory.take(5).toList();
 
     showModalBottomSheet<void>(
@@ -1067,11 +1166,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Text(
-                      isChinese ? '近期还没有活动记录，继续加油！' : 'No recent activity yet—keep going!',
-                      style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF6B7280),
-                        height: 1.4,
-                      ),
+                      isChinese
+                          ? '近期还没有活动记录，继续加油！'
+                          : 'No recent activity yet—keep going!',
+                      style: Theme.of(sheetContext).textTheme.bodyMedium
+                          ?.copyWith(
+                            color: const Color(0xFF6B7280),
+                            height: 1.4,
+                          ),
                     ),
                   )
                 else
@@ -1079,7 +1181,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: activities.length,
-                    separatorBuilder: (_, __) => const Divider(height: 24, color: Color(0xFFE5E7EB)),
+                    separatorBuilder: (_, __) =>
+                        const Divider(height: 24, color: Color(0xFFE5E7EB)),
                     itemBuilder: (_, index) {
                       final entry = activities[index];
                       return Row(
@@ -1104,18 +1207,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 Text(
                                   _activityTitle(entry, l10n),
-                                  style: Theme.of(sheetContext).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF111827),
-                                  ),
+                                  style: Theme.of(sheetContext)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF111827),
+                                      ),
                                 ),
                                 if (entry.description != null) ...[
                                   const SizedBox(height: 4),
                                   Text(
                                     entry.description!,
-                                    style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
-                                      color: const Color(0xFF4B5563),
-                                    ),
+                                    style: Theme.of(sheetContext)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: const Color(0xFF4B5563),
+                                        ),
                                   ),
                                 ],
                               ],
@@ -1135,24 +1244,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   IconData _iconForActivity(ActivityType type) {
     switch (type) {
-      case ActivityType.deepCleaning: return Icons.cleaning_services_rounded;
-      case ActivityType.joyDeclutter: return Icons.favorite_border_rounded;
-      case ActivityType.quickDeclutter: return Icons.flash_on_rounded;
+      case ActivityType.deepCleaning:
+        return Icons.cleaning_services_rounded;
+      case ActivityType.joyDeclutter:
+        return Icons.favorite_border_rounded;
+      case ActivityType.quickDeclutter:
+        return Icons.flash_on_rounded;
     }
   }
 
   String _activityTitle(ActivityEntry entry, AppLocalizations l10n) {
     switch (entry.type) {
-      case ActivityType.deepCleaning: return l10n.deepCleaning;
-      case ActivityType.joyDeclutter: return l10n.joyDeclutterTitle;
-      case ActivityType.quickDeclutter: return l10n.quickDeclutterTitle;
+      case ActivityType.deepCleaning:
+        return l10n.deepCleaning;
+      case ActivityType.joyDeclutter:
+        return l10n.joyDeclutterTitle;
+      case ActivityType.quickDeclutter:
+        return l10n.quickDeclutterTitle;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final screenWidth = MediaQuery.of(context).size.width;
     final topPadding = MediaQuery.of(context).padding.top;
 
@@ -1164,12 +1281,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final nextMonthStart = DateTime(now.year, now.month + 1, 1);
 
     final sessionsThisMonth = widget.deepCleaningSessions
-        .where((session) =>
-            !session.startTime.isBefore(monthStart) &&
-            session.startTime.isBefore(nextMonthStart))
+        .where(
+          (session) =>
+              !session.startTime.isBefore(monthStart) &&
+              session.startTime.isBefore(nextMonthStart),
+        )
         .length;
 
-    final soldItems = widget.resellItems.where((item) => item.soldPrice != null);
+    final soldItems = widget.resellItems.where(
+      (item) => item.soldPrice != null,
+    );
     final totalValue = soldItems.isEmpty
         ? 0.0
         : soldItems.map((item) => item.soldPrice!).reduce((a, b) => a + b);
@@ -1213,7 +1334,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFFE4E8EF)),
+                              border: Border.all(
+                                color: const Color(0xFFE4E8EF),
+                              ),
                               boxShadow: const [
                                 BoxShadow(
                                   color: Color(0x08000000),
@@ -1222,12 +1345,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 20,
+                            ),
                             child: Column(
                               children: [
                                 // Header with title and fire icon
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       isChinese ? '当前连击' : 'Current Streak',
@@ -1283,33 +1410,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 // Dots visualization (max 7 dots)
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(
-                                    widget.streak > 7 ? 7 : widget.streak,
-                                    (index) => Container(
-                                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                                      width: 8,
-                                      height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF6B7280),
-                                        shape: BoxShape.circle,
+                                  children:
+                                      List.generate(
+                                        widget.streak > 7 ? 7 : widget.streak,
+                                        (index) => Container(
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                          ),
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF6B7280),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      )..addAll(
+                                        widget.streak > 7
+                                            ? [
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  '+${widget.streak - 7}',
+                                                  style: const TextStyle(
+                                                    fontFamily:
+                                                        'SF Pro Display',
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Color(0xFF6B7280),
+                                                  ),
+                                                ),
+                                              ]
+                                            : [],
                                       ),
-                                    ),
-                                  )..addAll(
-                                    widget.streak > 7
-                                        ? [
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              '+${widget.streak - 7}',
-                                              style: const TextStyle(
-                                                fontFamily: 'SF Pro Display',
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF6B7280),
-                                              ),
-                                            ),
-                                          ]
-                                        : [],
-                                  ),
                                 ),
                               ],
                             ),
@@ -1327,7 +1458,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           border: Border.all(color: const Color(0xFFE4E8EF)),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 20,
+                          ),
                           child: Column(
                             children: [
                               Icon(
@@ -1370,7 +1504,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           border: Border.all(color: const Color(0xFFE4E8EF)),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 22,
+                          ),
                           child: Column(
                             children: [
                               Text(
@@ -1386,16 +1523,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 18),
                               GradientButton(
                                 onPressed: () async {
-                                  final memory = await Navigator.of(context).push<Memory>(
-                                    MaterialPageRoute(
-                                      builder: (_) => const CreateMemoryPage(),
-                                    ),
-                                  );
+                                  final memory = await Navigator.of(context)
+                                      .push<Memory>(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const CreateMemoryPage(),
+                                        ),
+                                      );
 
                                   if (memory != null && context.mounted) {
                                     widget.onMemoryCreated(memory);
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(l10n.memoryCreated)),
+                                      SnackBar(
+                                        content: Text(l10n.memoryCreated),
+                                      ),
                                     );
                                   }
                                 },
@@ -1436,7 +1577,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Active Session (if exists)
                 if (widget.activeSession != null) ...[
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.05,
+                    ),
                     child: Card(
                       color: Colors.white,
                       elevation: 0,
@@ -1445,7 +1588,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         side: const BorderSide(color: Color(0xFFE1E7EF)),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 14,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1454,17 +1600,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 Text(
                                   isChinese ? '进行中的任务' : 'Active Session',
-                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF111827),
-                                  ),
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF111827),
+                                      ),
                                 ),
                                 Text(
                                   isChinese ? '深度整理' : 'Deep Cleaning',
-                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    fontWeight: FontWeight.w400,
-                                    color: const Color(0xFF6B7280),
-                                  ),
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF6B7280),
+                                      ),
                                 ),
                               ],
                             ),
@@ -1473,10 +1621,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        _getElapsedTime(widget.activeSession!.startTime),
+                                        _getElapsedTime(
+                                          widget.activeSession!.startTime,
+                                        ),
                                         style: const TextStyle(
                                           fontSize: 32,
                                           fontWeight: FontWeight.w600,
@@ -1507,19 +1658,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         MaterialPageRoute(
                                           builder: (_) => DeepCleaningTimerPage(
                                             area: widget.activeSession!.area,
-                                            beforePhotoPath: widget.activeSession!.beforePhotoPath,
+                                            beforePhotoPath: widget
+                                                .activeSession!
+                                                .beforePhotoPath,
                                             onStopSession: widget.onStopSession,
-                                            sessionStartTime: widget.activeSession!.startTime, // Pass start time
+                                            sessionStartTime: widget
+                                                .activeSession!
+                                                .startTime, // Pass start time
                                           ),
                                         ),
                                       );
                                     },
-                                    icon: const Icon(Icons.play_arrow, size: 18),
+                                    icon: const Icon(
+                                      Icons.play_arrow,
+                                      size: 18,
+                                    ),
                                     label: Text(isChinese ? '继续' : 'Resume'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF414B5A),
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -1535,10 +1695,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         context: context,
                                         builder: (context) => AlertDialog(
                                           title: Text(l10n.finishCleaning),
-                                          content: Text(l10n.finishCleaningConfirm),
+                                          content: Text(
+                                            l10n.finishCleaningConfirm,
+                                          ),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(context),
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
                                               child: Text(l10n.cancel),
                                             ),
                                             TextButton(
@@ -1548,10 +1711,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                 Navigator.of(context).push(
                                                   MaterialPageRoute(
                                                     builder: (_) => AfterPhotoPage(
-                                                      area: widget.activeSession!.area,
-                                                      beforePhotoPath: widget.activeSession!.beforePhotoPath,
-                                                      elapsedSeconds: DateTime.now().difference(widget.activeSession!.startTime).inSeconds,
-                                                      onStopSession: widget.onStopSession,
+                                                      area: widget
+                                                          .activeSession!
+                                                          .area,
+                                                      beforePhotoPath: widget
+                                                          .activeSession!
+                                                          .beforePhotoPath,
+                                                      elapsedSeconds:
+                                                          DateTime.now()
+                                                              .difference(
+                                                                widget
+                                                                    .activeSession!
+                                                                    .startTime,
+                                                              )
+                                                              .inSeconds,
+                                                      onStopSession:
+                                                          widget.onStopSession,
                                                     ),
                                                   ),
                                                 );
@@ -1565,7 +1740,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: Colors.red,
                                       side: const BorderSide(color: Colors.red),
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -1620,8 +1797,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Builder(
                         builder: (context) {
                           final todoSessions = widget.plannedSessions
-                              .where((session) =>
-                                  session.area == 'General' || !session.isCompleted)
+                              .where(
+                                (session) =>
+                                    session.area == 'General' ||
+                                    !session.isCompleted,
+                              )
                               .toList();
                           final displaySessions = todoSessions.take(3).toList();
 
@@ -1630,7 +1810,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE5E7EA)),
+                                border: Border.all(
+                                  color: const Color(0xFFE5E7EA),
+                                ),
                               ),
                               padding: const EdgeInsets.all(32),
                               child: Center(
@@ -1671,7 +1853,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFE5E7EA)),
+                              border: Border.all(
+                                color: const Color(0xFFE5E7EA),
+                              ),
                             ),
                             child: Column(
                               children: displaySessions.map((session) {
@@ -1694,7 +1878,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          isChinese ? '任务已删除' : 'Session deleted',
+                                          isChinese
+                                              ? '任务已删除'
+                                              : 'Session deleted',
                                         ),
                                       ),
                                     );
@@ -1706,8 +1892,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       border: Border(
                                         bottom: BorderSide(
                                           color: const Color(0xFFE5E7EA),
-                                          width:
-                                              displaySessions.last == session ? 0 : 1,
+                                          width: displaySessions.last == session
+                                              ? 0
+                                              : 1,
                                         ),
                                       ),
                                     ),
@@ -1717,25 +1904,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           width: 48,
                                           height: 48,
                                           decoration: BoxDecoration(
-                                            color: session.area == 'General' &&
+                                            color:
+                                                session.area == 'General' &&
                                                     session.isCompleted
                                                 ? const Color(0xFF10B981)
                                                 : const Color(0xFFF3F4F6),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: session.area == 'General' &&
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border:
+                                                session.area == 'General' &&
                                                     session.isCompleted
                                                 ? null
                                                 : Border.all(
-                                                    color: const Color(0xFFE5E7EA),
+                                                    color: const Color(
+                                                      0xFFE5E7EA,
+                                                    ),
                                                   ),
                                           ),
                                           child: Icon(
                                             session.area == 'General'
                                                 ? (session.isCompleted
-                                                    ? Icons.check_rounded
-                                                    : Icons.flag_outlined)
+                                                      ? Icons.check_rounded
+                                                      : Icons.flag_outlined)
                                                 : Icons.calendar_month_rounded,
-                                            color: session.area == 'General' &&
+                                            color:
+                                                session.area == 'General' &&
                                                     session.isCompleted
                                                 ? Colors.white
                                                 : const Color(0xFF6B7280),
@@ -1745,19 +1939,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         const SizedBox(width: 16),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 session.goal ?? session.area,
                                                 style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
-                                                  color: const Color(0xFF1C1C1E),
+                                                  color: const Color(
+                                                    0xFF1C1C1E,
+                                                  ),
                                                   decoration:
-                                                      session.area == 'General' &&
-                                                              session.isCompleted
-                                                          ? TextDecoration.lineThrough
-                                                          : null,
+                                                      session.area ==
+                                                              'General' &&
+                                                          session.isCompleted
+                                                      ? TextDecoration
+                                                            .lineThrough
+                                                      : null,
                                                 ),
                                               ),
                                               const SizedBox(height: 4),
@@ -1779,12 +1978,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           Checkbox(
                                             value: session.isCompleted,
                                             onChanged: (value) {
-                                              widget.onTogglePlannedSession(session);
+                                              widget.onTogglePlannedSession(
+                                                session,
+                                              );
                                             },
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(4),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                             ),
-                                            activeColor: const Color(0xFF10B981),
+                                            activeColor: const Color(
+                                              0xFF10B981,
+                                            ),
                                           )
                                         else
                                           GradientButton(
@@ -1796,7 +2000,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               horizontal: 16,
                                               vertical: 6,
                                             ),
-                                            child: Text(isChinese ? '开始' : 'Start Now'),
+                                            child: Text(
+                                              isChinese ? '开始' : 'Start Now',
+                                            ),
                                           ),
                                       ],
                                     ),
@@ -1808,51 +2014,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         },
                       ),
 
-                        // Create Goal and Create Session buttons
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  _showAddGoalDialog(context, isChinese);
-                                },
-                                icon: const Icon(Icons.flag_outlined, size: 20),
-                                label: Text(isChinese ? '创建目标' : 'Create Goal'),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  side: const BorderSide(color: Color(0xFFE5E7EA)),
-                                  foregroundColor: const Color(0xFF6B7280),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                      // Create Goal and Create Session buttons
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                _showAddGoalDialog(context, isChinese);
+                              },
+                              icon: const Icon(Icons.flag_outlined, size: 20),
+                              label: Text(isChinese ? '创建目标' : 'Create Goal'),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                side: const BorderSide(
+                                  color: Color(0xFFE5E7EA),
+                                ),
+                                foregroundColor: const Color(0xFF6B7280),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  _showAddSessionDialog(context, isChinese);
-                                },
-                                icon: const Icon(Icons.add_circle_outline, size: 20),
-                                label: Text(isChinese ? '创建任务' : 'Create Session'),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  side: const BorderSide(color: Color(0xFFE5E7EA)),
-                                  foregroundColor: const Color(0xFF6B7280),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                _showAddSessionDialog(context, isChinese);
+                              },
+                              icon: const Icon(
+                                Icons.add_circle_outline,
+                                size: 20,
+                              ),
+                              label: Text(
+                                isChinese ? '创建任务' : 'Create Session',
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                side: const BorderSide(
+                                  color: Color(0xFFE5E7EA),
+                                ),
+                                foregroundColor: const Color(0xFF6B7280),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 32),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                    ],
                   ),
+                ),
 
                 // Monthly Progress Section
                 Padding(
@@ -1910,18 +2129,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 24),
 
-                // Monthly Report Card
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                  child: _buildMonthlyReportCard(context, isChinese),
-                ),
-
-                const SizedBox(height: 24),
-
                 // Letting Go Details Card
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                   child: _buildLetGoDetailsCard(context, isChinese),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Monthly Report Card
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  child: _buildMonthlyReportCard(context, isChinese),
                 ),
 
                 const SizedBox(height: 24),
@@ -1935,7 +2154,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context,
                         icon: Icons.trending_up_rounded,
                         iconColor: const Color(0xFFFFD93D),
-                        bgColors: [const Color(0xFFFFF9E6), const Color(0xFFFFECB3)],
+                        bgColors: [
+                          const Color(0xFFFFF9E6),
+                          const Color(0xFFFFECB3),
+                        ],
                         title: isChinese ? '转卖分析' : 'Resell Analysis',
                         subtitle: isChinese ? '查看完整报告' : 'View full report',
                         onTap: () {
@@ -1955,7 +2177,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context,
                         icon: Icons.calendar_today_rounded,
                         iconColor: const Color(0xFF89CFF0),
-                        bgColors: [const Color(0xFFE6F4F9), const Color(0xFFD4E9F3)],
+                        bgColors: [
+                          const Color(0xFFE6F4F9),
+                          const Color(0xFFD4E9F3),
+                        ],
                         title: isChinese ? '年度报告' : 'Yearly Reports',
                         subtitle: isChinese ? '查看年度总结' : 'View annual summary',
                         onTap: () {
@@ -1965,7 +2190,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               builder: (context) => YearlyReportsScreen(
                                 declutteredItems: widget.declutteredItems,
                                 resellItems: widget.resellItems,
-                                deepCleaningSessions: widget.deepCleaningSessions,
+                                deepCleaningSessions:
+                                    widget.deepCleaningSessions,
                               ),
                             ),
                           );
@@ -1976,9 +2202,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context,
                         icon: Icons.photo_library_rounded,
                         iconColor: const Color(0xFFFF9AA2),
-                        bgColors: [const Color(0xFFFFEEF0), const Color(0xFFFFDDE0)],
+                        bgColors: [
+                          const Color(0xFFFFEEF0),
+                          const Color(0xFFFFDDE0),
+                        ],
                         title: isChinese ? '记忆长廊' : 'Memory Lane',
-                        subtitle: isChinese ? '重温你的整理旅程' : 'Revisit your journey',
+                        subtitle: isChinese
+                            ? '重温你的整理旅程'
+                            : 'Revisit your journey',
                         onTap: () {
                           Navigator.push(
                             context,
@@ -2013,10 +2244,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   decoration: const BoxDecoration(
                     color: Color(0xFFF5F5F7),
                     border: Border(
-                      bottom: BorderSide(
-                        color: Color(0xFFE5E5EA),
-                        width: 0.5,
-                      ),
+                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
                     ),
                   ),
                   padding: EdgeInsets.only(top: topPadding),
@@ -2084,7 +2312,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => ProfilePage(onLocaleChange: widget.onLocaleChange),
+                              builder: (_) => ProfilePage(
+                                onLocaleChange: widget.onLocaleChange,
+                              ),
                             ),
                           );
                         },
@@ -2141,10 +2371,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF6B7280),
-            ),
+            style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -2226,9 +2453,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final nextMonthStart = DateTime(now.year, now.month + 1, 1);
 
     final sessionsThisMonth = widget.deepCleaningSessions
-        .where((session) =>
-            !session.startTime.isBefore(monthStart) &&
-            session.startTime.isBefore(nextMonthStart))
+        .where(
+          (session) =>
+              !session.startTime.isBefore(monthStart) &&
+              session.startTime.isBefore(nextMonthStart),
+        )
         .toList();
 
     // 1. Deep cleaning sessions count
@@ -2246,9 +2475,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final averageFocus = sessionsWithFocus.isEmpty
         ? 0.0
         : sessionsWithFocus
-                .map((session) => session.focusIndex!)
-                .reduce((a, b) => a + b) /
-            sessionsWithFocus.length;
+                  .map((session) => session.focusIndex!)
+                  .reduce((a, b) => a + b) /
+              sessionsWithFocus.length;
 
     // 4. Average joy
     final sessionsWithMood = sessionsThisMonth
@@ -2257,9 +2486,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final averageJoy = sessionsWithMood.isEmpty
         ? 0.0
         : sessionsWithMood
-                .map((session) => session.moodIndex!)
-                .reduce((a, b) => a + b) /
-            sessionsWithMood.length;
+                  .map((session) => session.moodIndex!)
+                  .reduce((a, b) => a + b) /
+              sessionsWithMood.length;
 
     // Group ALL sessions by area (not just this month)
     final sessionsByArea = <String, List<DeepCleaningSession>>{};
@@ -2293,7 +2522,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Get max count for heatmap
     final maxAreaCount = areaCounts.values.isEmpty
         ? 1
-        : areaCounts.values.reduce((a, b) => a > b ? a : b).clamp(1, double.infinity).toInt();
+        : areaCounts.values
+              .reduce((a, b) => a > b ? a : b)
+              .clamp(1, double.infinity)
+              .toInt();
 
     return Container(
       width: double.infinity,
@@ -2386,7 +2618,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: allAreas.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 8),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final area = allAreas[index];
                       final count = areaCounts[area] ?? 0;
@@ -2410,8 +2643,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Center(
                           child: Text(
                             '$area ($count)',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: intensity > 0.5 ? Colors.white : Colors.black87,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: intensity > 0.5
+                                      ? Colors.white
+                                      : Colors.black87,
                                   fontWeight: FontWeight.w500,
                                 ),
                           ),
@@ -2426,8 +2662,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       isChinese ? '较少' : 'Less',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF9CA3AF),
-                          ),
+                        color: const Color(0xFF9CA3AF),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     ...List.generate(5, (index) {
@@ -2450,8 +2686,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       isChinese ? '较多' : 'More',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF9CA3AF),
-                          ),
+                        color: const Color(0xFF9CA3AF),
+                      ),
                     ),
                   ],
                 ),
@@ -2470,9 +2706,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     isChinese
                         ? '还没有深度整理记录，开始第一次整理吧。'
                         : 'No deep cleaning records yet. Start your first session.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.black54,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                   )
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2485,7 +2721,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: InkWell(
                           onTap: () {
-                            _showAreaDeepCleaningReport(context, area, isChinese);
+                            _showAreaDeepCleaningReport(
+                              context,
+                              area,
+                              isChinese,
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -2501,10 +2741,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 Text(
                                   '$area ($sessionCount ${isChinese ? '次' : 'sessions'})',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                 ),
                                 const Icon(
                                   Icons.arrow_forward_ios_rounded,
@@ -2544,9 +2785,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.black54,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
         ],
         const SizedBox(height: 12),
@@ -2597,12 +2838,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showAreaDeepCleaningReport(BuildContext context, String area, bool isChinese) {
+  void _showAreaDeepCleaningReport(
+    BuildContext context,
+    String area,
+    bool isChinese,
+  ) {
     // Get all sessions for this area, sorted by date (most recent first)
-    final areaSessions = widget.deepCleaningSessions
-        .where((session) => session.area == area)
-        .toList()
-      ..sort((a, b) => b.startTime.compareTo(a.startTime));
+    final areaSessions =
+        widget.deepCleaningSessions
+            .where((session) => session.area == area)
+            .toList()
+          ..sort((a, b) => b.startTime.compareTo(a.startTime));
 
     showModalBottomSheet<void>(
       context: context,
@@ -2660,13 +2906,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
                         ).format(session.startTime);
 
-                        final improvement = session.beforeMessinessIndex != null &&
+                        final improvement =
+                            session.beforeMessinessIndex != null &&
                                 session.afterMessinessIndex != null
                             ? ((session.beforeMessinessIndex! -
-                                        session.afterMessinessIndex!) /
-                                    session.beforeMessinessIndex! *
-                                    100)
-                                .toStringAsFixed(0)
+                                          session.afterMessinessIndex!) /
+                                      session.beforeMessinessIndex! *
+                                      100)
+                                  .toStringAsFixed(0)
                             : null;
 
                         return GestureDetector(
@@ -2679,7 +2926,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFE5E7EA)),
+                              border: Border.all(
+                                color: const Color(0xFFE5E7EA),
+                              ),
                               boxShadow: const [
                                 BoxShadow(
                                   color: Color(0x0A000000),
@@ -2692,7 +2941,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       dateStr,
@@ -2709,11 +2959,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           vertical: 4,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(8),
+                                          color: const Color(
+                                            0xFF10B981,
+                                          ).withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                         child: Text(
-                                          isChinese ? '改善 $improvement%' : '$improvement% better',
+                                          isChinese
+                                              ? '改善 $improvement%'
+                                              : '$improvement% better',
                                           style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -2802,20 +3058,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           expand: false,
           builder: (builderContext, scrollController) {
             // Calculate metrics
-            final improvement = session.beforeMessinessIndex != null &&
+            final improvement =
+                session.beforeMessinessIndex != null &&
                     session.afterMessinessIndex != null
                 ? ((session.beforeMessinessIndex! -
-                            session.afterMessinessIndex!) /
-                        session.beforeMessinessIndex! *
-                        100)
-                    .toStringAsFixed(0)
+                              session.afterMessinessIndex!) /
+                          session.beforeMessinessIndex! *
+                          100)
+                      .toStringAsFixed(0)
                 : null;
 
             final dateStr = DateFormat(
               isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
             ).format(session.startTime);
 
-            final hasPhotos = session.beforePhotoPath != null &&
+            final hasPhotos =
+                session.beforePhotoPath != null &&
                 session.afterPhotoPath != null;
 
             return Container(
@@ -2921,8 +3179,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             vertical: 6,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withValues(alpha: 0.6),
-                                            borderRadius: BorderRadius.circular(8),
+                                            color: Colors.black.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                           child: Text(
                                             isChinese ? '整理前' : 'Before',
@@ -2956,8 +3218,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             vertical: 6,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withValues(alpha: 0.6),
-                                            borderRadius: BorderRadius.circular(8),
+                                            color: Colors.black.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                           child: Text(
                                             isChinese ? '整理后' : 'After',
@@ -3000,7 +3266,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
 
                         // Divider
-                        const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EA)),
+                        const Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Color(0xFFE5E7EA),
+                        ),
                         const SizedBox(height: 24),
 
                         // Metrics in simple list format
@@ -3008,7 +3278,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         if (session.elapsedSeconds != null)
                           _buildMetricRow(
                             label: isChinese ? '时长' : 'Duration',
-                            value: '${(session.elapsedSeconds! / 60).toStringAsFixed(0)} ${isChinese ? '分钟' : 'min'}',
+                            value:
+                                '${(session.elapsedSeconds! / 60).toStringAsFixed(0)} ${isChinese ? '分钟' : 'min'}',
                           ),
 
                         // Items decluttered
@@ -3019,10 +3290,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
 
                         // Messiness reduction
-                        if (improvement != null && session.beforeMessinessIndex != null && session.afterMessinessIndex != null)
+                        if (improvement != null &&
+                            session.beforeMessinessIndex != null &&
+                            session.afterMessinessIndex != null)
                           _buildMetricRow(
                             label: isChinese ? '整洁度提升' : 'Messiness reduced',
-                            value: '$improvement% (${isChinese ? '从' : 'from'} ${session.beforeMessinessIndex!.toStringAsFixed(0)} ${isChinese ? '到' : 'to'} ${session.afterMessinessIndex!.toStringAsFixed(0)})',
+                            value:
+                                '$improvement% (${isChinese ? '从' : 'from'} ${session.beforeMessinessIndex!.toStringAsFixed(0)} ${isChinese ? '到' : 'to'} ${session.afterMessinessIndex!.toStringAsFixed(0)})',
                           ),
 
                         // Focus
@@ -3050,7 +3324,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFF9FAFB),
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFE5E7EA)),
+                              border: Border.all(
+                                color: const Color(0xFFE5E7EA),
+                              ),
                             ),
                             child: Column(
                               children: [
@@ -3095,10 +3371,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildMetricRow({
-    required String label,
-    required String value,
-  }) {
+  Widget _buildMetricRow({required String label, required String value}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -3155,7 +3428,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const resellColor = Color(0xFFFFD93D); // Yellow
     const recycleColor = Color(0xFF5ECFB8); // Teal
     const donateColor = Color(0xFFFF9AA2); // Pink
-    const discardColor = Color(0xFF9E9E9E); // Gray
+    const discardColor = Color(0xFFC7A2FF); // Lavender
 
     return Container(
       width: double.infinity,
@@ -3213,37 +3486,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 24),
           // Legend
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildLegendItem(
                 color: resellColor,
                 label: isChinese ? '出售' : 'Sell',
                 count: resellCount,
                 theme: theme,
+                isChinese: isChinese,
               ),
               _buildLegendItem(
                 color: recycleColor,
                 label: isChinese ? '回收' : 'Recycle',
                 count: recycleCount,
                 theme: theme,
+                isChinese: isChinese,
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
               _buildLegendItem(
                 color: donateColor,
                 label: isChinese ? '捐赠' : 'Donate',
                 count: donateCount,
                 theme: theme,
+                isChinese: isChinese,
               ),
               _buildLegendItem(
                 color: discardColor,
-                label: isChinese ? '🗑️' : 'Discard',
+                label: isChinese ? '丢弃' : 'Discard',
                 count: discardCount,
                 theme: theme,
+                isChinese: isChinese,
               ),
             ],
           ),
@@ -3257,28 +3528,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String label,
     required int count,
     required ThemeData theme,
+    required bool isChinese,
   }) {
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 12,
-          height: 12,
+          width: 16,
+          height: 16,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(height: 8),
         Text(
           label,
           style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black87),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(height: 4),
         Text(
-          '$count 件',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: Colors.black54,
-            fontWeight: FontWeight.w600,
+          '$count',
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: const Color(0xFF6B7280),
           ),
         ),
+        if (isChinese)
+          Text(
+            '件',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
       ],
     );
   }
