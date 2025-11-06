@@ -11,16 +11,16 @@ class AppTypography {
   // ============================================================================
 
   /// Primary font family for English text
-  /// SF Pro provides excellent readability and a modern, clean aesthetic
-  static const String primaryFont = 'SF Pro';
+  /// Using system fonts for better web compatibility
+  static const String primaryFont = 'Roboto';
 
   /// Display-specific font for large titles
-  /// SF Pro Display is optimized for larger sizes (≥20pt)
-  static const String displayFont = 'SF Pro Display';
+  /// Using Roboto for cross-platform consistency
+  static const String displayFont = 'Roboto';
 
   /// Text-specific font for body content
-  /// SF Pro Text is optimized for smaller sizes (<20pt)
-  static const String textFont = 'SF Pro Text';
+  /// Using Roboto for cross-platform consistency
+  static const String textFont = 'Roboto';
 
   /// Fallback fonts for Chinese characters
   /// Ordered by preference and availability

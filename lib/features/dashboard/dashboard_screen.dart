@@ -2188,6 +2188,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 12),
                       _buildReportCard(
                         context,
+                        icon: Icons.photo_library_rounded,
+                        iconColor: const Color(0xFFFF9AA2),
+                        bgColors: [
+                          const Color(0xFFFFEEF0),
+                          const Color(0xFFFFDDE0),
+                        ],
+                        title: isChinese ? '记忆长廊' : 'Memory Lane',
+                        subtitle: isChinese
+                            ? '重温你的整理旅程'
+                            : 'Revisit your journey',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MemoryLaneReportScreen(
+                                memories: widget.memories,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildReportCard(
+                        context,
                         icon: Icons.calendar_today_rounded,
                         iconColor: const Color(0xFF89CFF0),
                         bgColors: [
@@ -2205,30 +2229,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 resellItems: widget.resellItems,
                                 deepCleaningSessions:
                                     widget.deepCleaningSessions,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildReportCard(
-                        context,
-                        icon: Icons.photo_library_rounded,
-                        iconColor: const Color(0xFFFF9AA2),
-                        bgColors: [
-                          const Color(0xFFFFEEF0),
-                          const Color(0xFFFFDDE0),
-                        ],
-                        title: isChinese ? '记忆长廊' : 'Memory Lane',
-                        subtitle: isChinese
-                            ? '重温你的整理旅程'
-                            : 'Revisit your journey',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MemoryLaneReportScreen(
-                                memories: widget.memories,
                               ),
                             ),
                           );

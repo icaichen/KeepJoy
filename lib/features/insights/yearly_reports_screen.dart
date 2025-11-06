@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:keepjoy_app/features/dashboard/widgets/cleaning_area_legend.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
@@ -356,16 +357,25 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     required String title,
     String? subtitle,
     required Widget child,
+    Widget? trailing,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
         ),
         if (subtitle != null) ...[
           const SizedBox(height: 4),
@@ -845,18 +855,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Achievement cards (Yearly)
-                                Text(
-                                  isChinese ? '年度成就' : 'Yearly Achievements',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF111827),
-                                      ),
-                                ),
-                                const SizedBox(height: 16),
+                                // Year-to-date metrics summary
+                                const SizedBox(height: 12),
                                 Row(
                                   children: [
                                     Expanded(
@@ -1129,6 +1129,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                         children: [
                                           Expanded(
                                             child: Container(
+                                              constraints:
+                                                  const BoxConstraints(minHeight: 96),
                                               padding: const EdgeInsets.all(16),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFFF9FAFB),
@@ -1174,6 +1176,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Container(
+                                              constraints:
+                                                  const BoxConstraints(minHeight: 96),
                                               padding: const EdgeInsets.all(16),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFFF9FAFB),
@@ -1221,6 +1225,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Container(
+                                              constraints:
+                                                  const BoxConstraints(minHeight: 96),
                                               padding: const EdgeInsets.all(16),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFFF9FAFB),
@@ -1352,20 +1358,25 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 ),
                                 const SizedBox(height: 20),
 
-                                // Joy Index Trend
-                                _buildJoyIndexCard(context, isChinese),
+                                // Declutter outcomes bar chart
+                                _buildDeclutterOutcomeCard(
+                                  context,
+                                  isChinese,
+                                  yearlyItems,
+                                ),
                                 const SizedBox(height: 20),
 
                                 // Deep Cleaning Analysis (Yearly)
-                                if (yearlySessions.isNotEmpty)
-                                  _buildDeepCleaningAnalysis(
-                                    context,
-                                    isChinese,
-                                    yearlySessions,
-                                    widget.deepCleaningSessions,
-                                  ),
-                                if (yearlySessions.isNotEmpty)
-                                  const SizedBox(height: 20),
+                                _buildDeepCleaningAnalysis(
+                                  context,
+                                  isChinese,
+                                  yearlySessions,
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Joy Index Trend
+                                _buildJoyIndexCard(context, isChinese),
+                                const SizedBox(height: 20),
                                 const SizedBox(height: 32),
                               ],
                             ),
@@ -1439,6 +1450,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     required String label,
   }) {
     return Container(
+      constraints: const BoxConstraints(minHeight: 140),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2077,10 +2089,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     BuildContext context,
     bool isChinese,
     List<DeepCleaningSession> yearlySessions,
-    List<DeepCleaningSession> allSessions,
   ) {
-    if (yearlySessions.isEmpty) return const SizedBox.shrink();
-
     final deepCleaningCount = yearlySessions.length;
     final cleanedItemsCount = yearlySessions
         .where((session) => session.itemsCount != null)
@@ -2107,7 +2116,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               sessionsWithJoy.length;
 
     final sessionsByArea = <String, List<DeepCleaningSession>>{};
-    for (final session in allSessions) {
+    for (final session in yearlySessions) {
       sessionsByArea.update(
         session.area,
         (list) => list..add(session),
@@ -2129,13 +2138,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     for (final area in allAreas) {
       areaCounts[area] = sessionsByArea[area]?.length ?? 0;
     }
-
-    final maxAreaCount = areaCounts.values.isEmpty
-        ? 1
-        : areaCounts.values
-              .reduce((a, b) => a > b ? a : b)
-              .clamp(1, double.infinity)
-              .toInt();
 
     return Container(
       width: double.infinity,
@@ -2163,169 +2165,261 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             ),
           ),
           const SizedBox(height: 20),
+          if (yearlySessions.isEmpty) ...[
+            Text(
+              isChinese
+                  ? '今年还没有深度整理记录，开始一次专注的整理吧。'
+                  : 'No deep cleaning records yet this year. Start your first focused session.',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Colors.black54),
+            ),
+          ] else ...[
+            // Metrics Row
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDeepCleaningMetricItem(
+                    context,
+                    icon: Icons.cleaning_services_rounded,
+                    color: const Color(0xFFB794F6),
+                    value: deepCleaningCount.toString(),
+                    label: isChinese ? '整理次数' : 'Sessions',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildDeepCleaningMetricItem(
+                    context,
+                    icon: Icons.inventory_2_rounded,
+                    color: const Color(0xFF5ECFB8),
+                    value: cleanedItemsCount.toString(),
+                    label: isChinese ? '清理物品' : 'Items',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDeepCleaningMetricItem(
+                    context,
+                    icon: Icons.spa_rounded,
+                    color: const Color(0xFF89CFF0),
+                    value: averageFocus.toStringAsFixed(1),
+                    label: isChinese ? '平均专注度' : 'Avg Focus',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildDeepCleaningMetricItem(
+                    context,
+                    icon: Icons.sentiment_satisfied_rounded,
+                    color: const Color(0xFFFFD93D),
+                    value: averageJoy.toStringAsFixed(1),
+                    label: isChinese ? '平均愉悦度' : 'Avg Joy',
+                  ),
+                ),
+              ],
+            ),
 
-          // Metrics Row
-          Row(
-            children: [
-              Expanded(
-                child: _buildDeepCleaningMetricItem(
-                  context,
-                  icon: Icons.cleaning_services_rounded,
-                  color: const Color(0xFFB794F6),
-                  value: deepCleaningCount.toString(),
-                  label: isChinese ? '整理次数' : 'Sessions',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildDeepCleaningMetricItem(
-                  context,
-                  icon: Icons.inventory_2_rounded,
-                  color: const Color(0xFF5ECFB8),
-                  value: cleanedItemsCount.toString(),
-                  label: isChinese ? '清理物品' : 'Items',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildDeepCleaningMetricItem(
-                  context,
-                  icon: Icons.spa_rounded,
-                  color: const Color(0xFF89CFF0),
-                  value: averageFocus.toStringAsFixed(1),
-                  label: isChinese ? '平均专注度' : 'Avg Focus',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildDeepCleaningMetricItem(
-                  context,
-                  icon: Icons.sentiment_satisfied_rounded,
-                  color: const Color(0xFFFFD93D),
-                  value: averageJoy.toStringAsFixed(1),
-                  label: isChinese ? '平均愉悦度' : 'Avg Joy',
-                ),
-              ),
-            ],
-          ),
+            const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
-          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
-
-          // Cleaning Areas with heatmap (ALL areas)
-          _buildReportSection(
-            context,
-            title: isChinese ? '整理区域' : 'Cleaning Areas',
-            child: SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: allAreas.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final area = allAreas[index];
-                  final count = areaCounts[area] ?? 0;
-                  final intensity = count == 0 ? 0.0 : count / maxAreaCount;
-                  final color = count == 0
-                      ? const Color(0xFFE0E0E0)
-                      : Color.lerp(
-                          const Color(0xFFE0E0E0),
-                          const Color(0xFF5ECFB8),
-                          intensity,
-                        )!;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$area ($count)',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: intensity > 0.5
-                              ? Colors.white
-                              : Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+            // Cleaning Areas with heatmap (ALL areas)
+            _buildReportSection(
+              context,
+              title: isChinese ? '整理区域' : 'Cleaning Areas',
+              trailing: CleaningAreaLegend.badge(
+                context: context,
+                isChinese: isChinese,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (dialogContext) => CleaningAreaLegend.dialog(
+                      context: dialogContext,
+                      isChinese: isChinese,
                     ),
                   );
                 },
               ),
+              child: SizedBox(
+                height: 40,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: allAreas.length,
+                  separatorBuilder: (context, index) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final area = allAreas[index];
+                    final count = areaCounts[area] ?? 0;
+                    final entry = CleaningAreaLegend.forCount(count);
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: entry.color,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$area ($count)',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: entry.textColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
 
-          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
+            const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
-          // Before & After - Area-based sessions (clickable)
-          _buildReportSection(
-            context,
-            title: isChinese ? '整理前后对比' : 'Before & After',
-            child: sessionsByArea.isEmpty
-                ? Text(
-                    isChinese
-                        ? '还没有深度整理记录，开始第一次整理吧。'
-                        : 'No deep cleaning records yet. Start your first session.',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: sessionsByArea.entries.map((entry) {
-                      final area = entry.key;
-                      final sessions = entry.value;
-                      final sessionCount = sessions.length;
+            // Before & After - Area-based sessions (clickable)
+            _buildReportSection(
+              context,
+              title: isChinese ? '整理前后对比' : 'Before & After',
+              child: sessionsByArea.isEmpty
+                  ? Text(
+                      isChinese
+                          ? '还没有深度整理记录，开始第一次整理吧。'
+                          : 'No deep cleaning records yet. Start your first session.',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: sessionsByArea.entries.map((entry) {
+                        final area = entry.key;
+                        final sessions = entry.value;
+                        final sessionCount = sessions.length;
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: InkWell(
-                          onTap: () {
-                            _showAreaDeepCleaningReport(
-                              context,
-                              area,
-                              isChinese,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F5),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '$area ($sessionCount ${isChinese ? '次' : 'sessions'})',
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                                const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 14,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ],
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: InkWell(
+                            onTap: () {
+                              _showAreaDeepCleaningReport(
+                                context,
+                                area,
+                                isChinese,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F5F5),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '$area ($sessionCount ${isChinese ? '次' : 'sessions'})',
+                                    style: Theme.of(context).textTheme.bodyMedium
+                                        ?.copyWith(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 14,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                        );
+                      }).toList(),
+                    ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeclutterOutcomeCard(
+    BuildContext context,
+    bool isChinese,
+    List<DeclutterItem> yearlyItems,
+  ) {
+    final statusOrder = [
+      DeclutterStatus.keep,
+      DeclutterStatus.donate,
+      DeclutterStatus.recycle,
+      DeclutterStatus.resell,
+      DeclutterStatus.discard,
+    ];
+
+    final statusCounts = {
+      for (final status in statusOrder)
+        status: yearlyItems
+            .where((item) => item.status == status)
+            .length,
+    };
+
+    final totalItems = yearlyItems.length;
+    final kept = statusCounts[DeclutterStatus.keep] ?? 0;
+    final letGo = totalItems - kept;
+
+    final summaryText = isChinese
+        ? '今年共整理 $totalItems 件物品，其中 $kept 件保留，$letGo 件成功放手。'
+        : 'You handled $totalItems items this year — kept $kept and gave $letGo a new path.';
+
+    final categories = statusOrder
+        .map((status) => status.label(context))
+        .toList();
+    final counts = {
+      for (final status in statusOrder)
+        status.label(context): statusCounts[status] ?? 0,
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isChinese ? '整理去向分析' : 'Declutter Outcomes',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            summaryText,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF6B7280),
+                  height: 1.4,
+                ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 220,
+            child: CustomPaint(
+              painter: _DeclutterOutcomeBarPainter(
+                categories: categories,
+                counts: counts,
+              ),
+            ),
           ),
         ],
       ),
@@ -2601,6 +2695,120 @@ class _JoyTrendChartPainter extends CustomPainter {
           size.height - bottomPadding + 10,
         ),
       );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _DeclutterOutcomeBarPainter extends CustomPainter {
+  _DeclutterOutcomeBarPainter({
+    required this.categories,
+    required this.counts,
+  });
+
+  final List<String> categories;
+  final Map<String, int> counts;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const padding = 16.0;
+    const labelWidth = 110.0;
+    final chartWidth = size.width - labelWidth - padding * 2;
+    final barHeight = (size.height - padding * 2) / categories.length;
+    final actualBarHeight = barHeight * 0.55;
+
+    final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
+    final colors = [
+      const Color(0xFF5ECFB8),
+      const Color(0xFFFF9AA2),
+      const Color(0xFF89CFF0),
+      const Color(0xFFFFD93D),
+      const Color(0xFF9CA3AF),
+    ];
+
+    final maxCount = counts.values.isEmpty
+        ? 0
+        : counts.values.reduce((a, b) => a > b ? a : b);
+
+    for (int i = 0; i < categories.length; i++) {
+      final category = categories[i];
+      final count = counts[category] ?? 0;
+      final y = padding + (i * barHeight);
+
+      // Draw label
+      textPainter.text = TextSpan(
+        text: category,
+        style: const TextStyle(
+          color: Color(0xFF4B5563),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      );
+      textPainter.layout(maxWidth: labelWidth - 8);
+      textPainter.paint(
+        canvas,
+        Offset(padding, y + (barHeight - textPainter.height) / 2),
+      );
+
+      // Draw background bar
+      final barX = padding + labelWidth;
+      final bgPaint = Paint()..color = const Color(0xFFF5F5F5);
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            barX,
+            y + (barHeight - actualBarHeight) / 2,
+            chartWidth,
+            actualBarHeight,
+          ),
+          const Radius.circular(8),
+        ),
+        bgPaint,
+      );
+
+      if (maxCount == 0) {
+        continue;
+      }
+
+      // Draw value bar
+      final barWidth = maxCount == 0 ? 0.0 : (count / maxCount) * chartWidth;
+      final valuePaint = Paint()..color = colors[i % colors.length];
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            barX,
+            y + (barHeight - actualBarHeight) / 2,
+            barWidth,
+            actualBarHeight,
+          ),
+          const Radius.circular(8),
+        ),
+        valuePaint,
+      );
+
+      // Draw count text
+      textPainter.text = TextSpan(
+        text: count.toString(),
+        style: TextStyle(
+          color: barWidth > 40 ? Colors.white : const Color(0xFF1F2937),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      );
+      textPainter.layout();
+      final textY = y + barHeight / 2 - textPainter.height / 2;
+      final textX = barWidth > 40
+          ? barX + barWidth - textPainter.width - 8
+          : barX + barWidth + 8;
+      canvas.drawRect(
+        Rect.fromLTWH(barX, textY, 0, 0),
+        Paint(),
+      );
+      textPainter.paint(canvas, Offset(textX, textY));
     }
   }
 
