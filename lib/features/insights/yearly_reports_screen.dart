@@ -193,10 +193,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               Text(
                                 pageName,
                                 style: const TextStyle(
-                                  fontSize: 46,
-                                  fontWeight: FontWeight.w800,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.white,
-                                  letterSpacing: -0.6,
+                                  letterSpacing: -0.5,
                                   height: 1.0,
                                 ),
                               ),

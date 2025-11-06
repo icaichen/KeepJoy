@@ -690,6 +690,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearAllData => 'Clear All Data';
 
   @override
+  String get logout => 'Log Out';
+
+  @override
   String get version => 'Version';
 
   @override

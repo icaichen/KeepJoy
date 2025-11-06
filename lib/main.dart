@@ -14,6 +14,8 @@ import 'features/dashboard/dashboard_screen.dart';
 import 'features/items/items_screen.dart';
 import 'features/resell/resell_screen.dart';
 import 'features/memories/create_memory_page.dart';
+import 'features/auth/welcome_page.dart';
+import 'features/auth/login_page.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/typography.dart';
 import 'package:keepjoy_app/models/activity_entry.dart';
@@ -66,7 +68,12 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
         Locale('en'), // English
         Locale('zh'), // Chinese
       ],
-      home: MainNavigator(onLocaleChange: _setLocale),
+      initialRoute: '/welcome',
+      routes: {
+        '/welcome': (context) => const WelcomePage(),
+        '/login': (context) => const LoginPage(),
+        '/home': (context) => MainNavigator(onLocaleChange: _setLocale),
+      },
     );
   }
 }

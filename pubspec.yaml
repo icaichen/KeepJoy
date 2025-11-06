@@ -40,6 +40,9 @@ dependencies:
   supabase_flutter: ^2.9.1  # Supabase client with authentication
   flutter_secure_storage: ^9.2.2  # Secure token storage
   table_calendar: ^3.1.2  # Calendar view with event markers
+  url_launcher: ^6.3.0  # Open URLs and email links
+  share_plus: ^10.0.3  # Native sharing functionality
+  path_provider: ^2.1.4  # Access to file system paths
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

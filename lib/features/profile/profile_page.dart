@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 import '../../l10n/app_localizations.dart';
 
@@ -145,14 +150,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       // TODO: Implement notifications settings
                     },
                   ),
-                  const Divider(height: 1, indent: 56),
-                  _SettingsTile(
-                    icon: Icons.palette_outlined,
-                    title: l10n.theme,
-                    onTap: () {
-                      _showThemeDialog(context);
-                    },
-                  ),
                 ],
               ),
             ),
@@ -179,7 +176,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.help_outline,
                     title: l10n.helpAndSupport,
                     onTap: () {
-                      // TODO: Implement help
+                      _openHelpSupport();
                     },
                   ),
                   const Divider(height: 1, indent: 56),
@@ -195,7 +192,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.privacy_tip_outlined,
                     title: l10n.privacyPolicy,
                     onTap: () {
-                      // TODO: Implement privacy policy
+                      _openPrivacyPolicy();
                     },
                   ),
                   const Divider(height: 1, indent: 56),
@@ -203,7 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.description_outlined,
                     title: l10n.termsOfService,
                     onTap: () {
-                      // TODO: Implement terms
+                      _openTermsOfService();
                     },
                   ),
                   const Divider(height: 1, indent: 56),
@@ -211,7 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.star_outline,
                     title: l10n.rateApp,
                     onTap: () {
-                      // TODO: Implement rate app
+                      _rateApp();
                     },
                   ),
                   const Divider(height: 1, indent: 56),
@@ -219,7 +216,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.share_outlined,
                     title: l10n.shareApp,
                     onTap: () {
-                      // TODO: Implement share
+                      _shareApp();
                     },
                   ),
                 ],
@@ -248,7 +245,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.download_outlined,
                     title: l10n.exportData,
                     onTap: () {
-                      // TODO: Implement export
+                      _exportData(context);
                     },
                   ),
                   const Divider(height: 1, indent: 56),
@@ -261,6 +258,30 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Logout Section
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _SettingsTile(
+                icon: Icons.logout,
+                title: l10n.logout,
+                textColor: Colors.red,
+                onTap: () {
+                  _showLogoutDialog(context);
+                },
               ),
             ),
             const SizedBox(height: 32),
@@ -335,57 +356,6 @@ class _ProfilePageState extends State<ProfilePage> {
               onTap: () {
                 Navigator.pop(context);
                 widget.onLocaleChange(const Locale('zh'));
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showThemeDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Theme',
-          style: TextStyle(
-            fontFamily: 'SF Pro Display',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF111827),
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _ThemeOption(
-              title: l10n.lightMode,
-              isSelected: false,
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement theme switching
-              },
-            ),
-            const SizedBox(height: 8),
-            _ThemeOption(
-              title: l10n.darkMode,
-              isSelected: true,
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement theme switching
-              },
-            ),
-            const SizedBox(height: 8),
-            _ThemeOption(
-              title: l10n.systemDefault,
-              isSelected: false,
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement theme switching
               },
             ),
           ],
@@ -507,6 +477,216 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
+  void _showLogoutDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          l10n.logout,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
+        content: Text(
+          isChinese
+              ? '确定要登出吗？'
+              : 'Are you sure you want to log out?',
+          style: const TextStyle(
+            fontFamily: 'SF Pro Text',
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF111827),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Implement actual logout logic
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    isChinese ? '已登出' : 'Logged out',
+                  ),
+                ),
+              );
+            },
+            child: Text(
+              isChinese ? '登出' : 'Log Out',
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openHelpSupport() async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: 'support@keepjoy.app',
+      query: 'subject=Help & Support',
+    );
+
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open email client'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final Uri url = Uri.parse('https://keepjoy.app/privacy');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open privacy policy'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _openTermsOfService() async {
+    final Uri url = Uri.parse('https://keepjoy.app/terms');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open terms of service'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _rateApp() async {
+    // For iOS
+    final Uri iosUrl = Uri.parse('https://apps.apple.com/app/idYOUR_APP_ID');
+    // For Android
+    final Uri androidUrl = Uri.parse('https://play.google.com/store/apps/details?id=com.keepjoy.app');
+
+    final Uri url = Platform.isIOS ? iosUrl : androidUrl;
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open app store'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareApp() async {
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+
+    final String shareText = isChinese
+        ? '快来试试 KeepJoy - 用心动整理法让生活更美好！\n\nhttps://keepjoy.app'
+        : 'Check out KeepJoy - Declutter your life with joy!\n\nhttps://keepjoy.app';
+
+    await Share.share(shareText);
+  }
+
+  Future<void> _exportData(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isChinese = Localizations.localeOf(context)
+        .languageCode
+        .toLowerCase()
+        .startsWith('zh');
+
+    try {
+      // Create sample export data
+      final exportData = {
+        'version': '1.0.0',
+        'exportDate': DateTime.now().toIso8601String(),
+        'data': {
+          'items': [],
+          'memories': [],
+          'sessions': [],
+        },
+      };
+
+      final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
+
+      // Get the downloads directory
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = 'keepjoy_export_${DateTime.now().millisecondsSinceEpoch}.json';
+      final file = File('${directory.path}/$fileName');
+
+      await file.writeAsString(jsonString);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isChinese
+                  ? '数据已导出到: ${file.path}'
+                  : 'Data exported to: ${file.path}',
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isChinese ? '导出失败: $e' : 'Export failed: $e',
+            ),
+          ),
+        );
+      }
+    }
+  }
 }
 
 class _SettingsTile extends StatelessWidget {
@@ -566,58 +746,6 @@ class _LanguageOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const _LanguageOption({
-    required this.title,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFB794F6).withValues(alpha: 0.1) : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? const Color(0xFFB794F6) : const Color(0xFFE5E7EB),
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontFamily: 'SF Pro Text',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? const Color(0xFFB794F6) : const Color(0xFF111827),
-                ),
-              ),
-            ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFFB794F6),
-                size: 22,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeOption extends StatelessWidget {
-  final String title;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ThemeOption({
     required this.title,
     required this.isSelected,
     required this.onTap,

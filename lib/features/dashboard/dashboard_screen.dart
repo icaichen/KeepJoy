@@ -1974,29 +1974,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           );
                         },
                       ),
-                      const SizedBox(height: 12),
-                      _buildReportCard(
-                        context,
-                        icon: Icons.insights_rounded,
-                        iconColor: const Color(0xFF5ECFB8),
-                        bgColors: [const Color(0xFFE6F9F5), const Color(0xFFD4EAE4)],
-                        title: isChinese ? '每月整理报告' : 'Monthly Report',
-                        subtitle: isChinese ? '查看本月详细统计' : 'View monthly statistics',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => InsightsScreen(
-                                declutteredItems: widget.declutteredItems,
-                                resellItems: widget.resellItems,
-                                deepCleaningSessions: widget.deepCleaningSessions,
-                                streak: widget.streak,
-                                memories: widget.memories,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
                     ],
                   ),
                 ),

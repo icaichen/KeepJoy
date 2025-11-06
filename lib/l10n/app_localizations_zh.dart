@@ -670,6 +670,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clearAllData => '清除所有数据';
 
   @override
+  String get logout => '登出';
+
+  @override
   String get version => '版本';
 
   @override

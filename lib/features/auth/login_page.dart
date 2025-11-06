@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       // For now, just navigate to home
-      Navigator.pushReplacementNamed(context, '/');
+      Navigator.pushReplacementNamed(context, '/home');
     }
   }
 
@@ -84,296 +84,359 @@ class _LoginPageState extends State<LoginPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF6B5CE7), // Purple
-              Color(0xFF5ECFB8), // Mint green
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              children: [
-                const SizedBox(height: 40),
+      backgroundColor: const Color(0xFFF5F5F7),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Back button
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
 
-                // App Logo
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      'assets/images/app_logo.png',
-                      width: 70,
-                      height: 70,
+              const SizedBox(height: 32),
+
+              // Title
+              Text(
+                _isSignUp ? l10n.signUp : l10n.signIn,
+                style: const TextStyle(
+                  fontFamily: 'SF Pro Display',
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.5,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                l10n.welcomeToKeepJoy,
+                style: const TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Form Card
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE5E7EA)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x08000000),
+                      blurRadius: 16,
+                      offset: Offset(0, 4),
                     ),
-                  ),
+                  ],
                 ),
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      // Name field (only for sign up)
+                      if (_isSignUp) ...[
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: l10n.name,
+                            labelStyle: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              color: Color(0xFF6B7280),
+                            ),
+                            prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF6B7280)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFFAFAFA),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.nameRequired;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
-                const SizedBox(height: 24),
+                      // Email field
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          labelText: l10n.email,
+                          labelStyle: const TextStyle(
+                            fontFamily: 'SF Pro Text',
+                            color: Color(0xFF6B7280),
+                          ),
+                          prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF6B7280)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFFAFAFA),
+                        ),
+                        validator: (value) => _validateEmail(value, l10n),
+                      ),
 
-                // Title
-                Text(
-                  _isSignUp ? l10n.signUp : l10n.signIn,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                      const SizedBox(height: 16),
 
-                const SizedBox(height: 8),
+                      // Password field
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: !_isPasswordVisible,
+                        decoration: InputDecoration(
+                          labelText: l10n.password,
+                          labelStyle: const TextStyle(
+                            fontFamily: 'SF Pro Text',
+                            color: Color(0xFF6B7280),
+                          ),
+                          prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF6B7280)),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: const Color(0xFF6B7280),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFFAFAFA),
+                        ),
+                        validator: (value) => _validatePassword(value, l10n),
+                      ),
 
-                Text(
-                  l10n.welcomeToKeepJoy,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
+                      // Confirm password field (only for sign up)
+                      if (_isSignUp) ...[
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          obscureText: !_isPasswordVisible,
+                          decoration: InputDecoration(
+                            labelText: l10n.confirmPassword,
+                            labelStyle: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              color: Color(0xFF6B7280),
+                            ),
+                            prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF6B7280)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFFAFAFA),
+                          ),
+                          validator: (value) => _validateConfirmPassword(value, l10n),
+                        ),
+                      ],
 
-                const SizedBox(height: 40),
+                      // Forgot password (only for sign in)
+                      if (!_isSignUp) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              // TODO: Implement forgot password
+                            },
+                            child: Text(
+                              l10n.forgotPassword,
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Text',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF414B5A),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
 
-                // Form Card
-                Card(
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
+                      const SizedBox(height: 24),
+
+                      // Submit button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _handleSubmit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF414B5A),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            _isSignUp ? l10n.signUp : l10n.signIn,
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Divider
+                      Row(
                         children: [
-                          // Name field (only for sign up)
-                          if (_isSignUp) ...[
-                            TextFormField(
-                              controller: _nameController,
-                              decoration: InputDecoration(
-                                labelText: l10n.name,
-                                prefixIcon: const Icon(Icons.person_outline),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey.shade50,
+                          const Expanded(child: Divider(color: Color(0xFFE5E7EA))),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              l10n.orContinueWith,
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Text',
+                                color: Color(0xFF9CA3AF),
+                                fontSize: 13,
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return l10n.nameRequired;
-                                }
-                                return null;
+                            ),
+                          ),
+                          const Expanded(child: Divider(color: Color(0xFFE5E7EA))),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Social login buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                // TODO: Implement Google sign in
                               },
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-
-                          // Email field
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              labelText: l10n.email,
-                              prefixIcon: const Icon(Icons.email_outlined),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
-                            ),
-                            validator: (value) => _validateEmail(value, l10n),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Password field
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: !_isPasswordVisible,
-                            decoration: InputDecoration(
-                              labelText: l10n.password,
-                              prefixIcon: const Icon(Icons.lock_outline),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _isPasswordVisible
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
+                              icon: const Icon(Icons.g_mobiledata, size: 28, color: Color(0xFF414B5A)),
+                              label: Text(
+                                l10n.google,
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF414B5A),
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    _isPasswordVisible = !_isPasswordVisible;
-                                  });
-                                },
                               ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
-                            ),
-                            validator: (value) => _validatePassword(value, l10n),
-                          ),
-
-                          // Confirm password field (only for sign up)
-                          if (_isSignUp) ...[
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _confirmPasswordController,
-                              obscureText: !_isPasswordVisible,
-                              decoration: InputDecoration(
-                                labelText: l10n.confirmPassword,
-                                prefixIcon: const Icon(Icons.lock_outline),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey.shade50,
-                              ),
-                              validator: (value) =>
-                                  _validateConfirmPassword(value, l10n),
-                            ),
-                          ],
-
-                          // Forgot password (only for sign in)
-                          if (!_isSignUp) ...[
-                            const SizedBox(height: 8),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {
-                                  // TODO: Implement forgot password
-                                },
-                                child: Text(l10n.forgotPassword),
-                              ),
-                            ),
-                          ],
-
-                          const SizedBox(height: 24),
-
-                          // Submit button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: _handleSubmit,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6B5CE7),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: const BorderSide(color: Color(0xFFE5E7EA)),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: Text(
-                                _isSignUp ? l10n.signUp : l10n.signIn,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                // TODO: Implement Apple sign in
+                              },
+                              icon: const Icon(Icons.apple, size: 24, color: Color(0xFF414B5A)),
+                              label: Text(
+                                l10n.apple,
                                 style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'SF Pro Text',
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF414B5A),
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: const BorderSide(color: Color(0xFFE5E7EA)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
                           ),
-
-                          const SizedBox(height: 16),
-
-                          // Divider
-                          Row(
-                            children: [
-                              const Expanded(child: Divider()),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  l10n.orContinueWith,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              const Expanded(child: Divider()),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Social login buttons
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    // TODO: Implement Google sign in
-                                  },
-                                  icon: const Icon(Icons.g_mobiledata, size: 28),
-                                  label: Text(l10n.google),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    // TODO: Implement Apple sign in
-                                  },
-                                  icon: const Icon(Icons.apple, size: 24),
-                                  label: Text(l10n.apple),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-                // Toggle mode button
-                TextButton(
+              // Toggle mode button
+              Center(
+                child: TextButton(
                   onPressed: _toggleMode,
                   child: Text(
                     _isSignUp ? l10n.alreadyHaveAccount : l10n.dontHaveAccount,
                     style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 15,
                       fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
                     ),
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 20),
-              ],
-            ),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
       ),

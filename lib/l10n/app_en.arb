@@ -353,6 +353,7 @@
   "data": "Data Management",
   "exportData": "Export Data",
   "clearAllData": "Clear All Data",
+  "logout": "Log Out",
   "version": "Version",
 
   "takeBeforePhoto": "Take Before Photo",

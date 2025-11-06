@@ -1364,6 +1364,12 @@ abstract class AppLocalizations {
   /// **'Clear All Data'**
   String get clearAllData;
 
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get logout;
+
   /// No description provided for @version.
   ///
   /// In en, this message translates to:

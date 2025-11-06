@@ -10,123 +10,117 @@ class WelcomePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF6B5CE7), // Purple
-              Color(0xFF5ECFB8), // Mint green
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(flex: 2),
+      backgroundColor: const Color(0xFFF5F5F7),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
 
-                // App Logo
-                Container(
-                  width: 160,
-                  height: 160,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(40),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      'assets/images/app_logo.png',
-                      width: 120,
-                      height: 120,
+              // App Logo
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: const Color(0xFFE5E7EA)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x08000000),
+                      blurRadius: 16,
+                      offset: Offset(0, 4),
                     ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.spa_rounded,
+                    size: 64,
+                    color: Color(0xFF414B5A),
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
-                // App Title
-                Text(
-                  l10n.appTitle,
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
-                  ),
+              // App Title
+              Text(
+                l10n.appTitle,
+                style: const TextStyle(
+                  fontFamily: 'SF Pro Display',
+                  fontSize: 40,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.5,
                 ),
+              ),
 
-                const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-                // Tagline
-                Text(
-                  l10n.welcomeTagline,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white.withValues(alpha: 0.9),
-                    height: 1.5,
-                  ),
+              // Tagline
+              Text(
+                l10n.welcomeTagline,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF6B7280),
+                  height: 1.5,
                 ),
+              ),
 
-                const Spacer(flex: 3),
+              const Spacer(flex: 3),
 
-                // Get Started Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/login');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF6B5CE7),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.getStarted,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Already have account
-                TextButton(
+              // Get Started Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/login');
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF414B5A),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                   child: Text(
-                    l10n.alreadyHaveAccount,
-                    style: TextStyle(
+                    l10n.getStarted,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
                       fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.9),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
+              ),
 
-                const Spacer(flex: 1),
-              ],
-            ),
+              const SizedBox(height: 16),
+
+              // Already have account
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/login');
+                },
+                child: Text(
+                  l10n.alreadyHaveAccount,
+                  style: const TextStyle(
+                    fontFamily: 'SF Pro Text',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ),
+
+              const Spacer(flex: 1),
+            ],
           ),
         ),
       ),
