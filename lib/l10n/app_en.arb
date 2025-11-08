@@ -4,6 +4,13 @@
   "goodMorning": "Good Morning",
   "goodAfternoon": "Good Afternoon",
   "readyToSparkJoy": "Ready to spark joy today?",
+  "startYourDeclutterJourney": "Start your declutter journey",
+  "chooseFlowTitle": "Choose a flow",
+  "chooseFlowSubtitle": "Pick the experience that fits your current energy.",
+  "joyDeclutterFlowDescription": "Lead with joy when letting go",
+  "quickDeclutterFlowDescription": "Clear spaces in under 10 minutes",
+  "deepCleaningFlowDescription": "Structured sessions for thorough results",
+  "startAction": "Start",
 
   "dailyInspiration": "Daily Inspiration",
   "welcomeBack": "Welcome back to your joy journey",
@@ -25,6 +32,103 @@
     }
   },
   "keepGoing": "Keep going!",
+
+  "dashboardCreateGoalTitle": "Create New Goal",
+  "dashboardGoalLabel": "Goal",
+  "dashboardGoalHint": "e.g., Declutter 50 items by end of December\nor Clean kitchen and take photos",
+  "dashboardDateOptional": "Date (Optional)",
+  "dashboardTapToSelectDate": "Tap to select date",
+  "dashboardEnterGoalPrompt": "Please enter a goal",
+  "dashboardGoalCreated": "Goal created",
+  "dashboardCreateAction": "Create",
+  "dashboardCreateSessionTitle": "Create New Session",
+  "dashboardModeLabel": "Mode",
+  "dashboardAreaHint": "e.g., Kitchen, Bedroom",
+  "dashboardSelectDate": "Select date",
+  "dashboardSelectTimeOptional": "Select time (optional)",
+  "dashboardEnterAreaPrompt": "Please enter an area name",
+  "dashboardSessionCreated": "Session created",
+  "dashboardMonthlyProgress": "Monthly Progress",
+  "dashboardDeclutteredLabel": "Decluttered Items",
+  "dashboardResellLabel": "Resell Value",
+  "dashboardResellReportTitle": "Resell Analysis",
+  "dashboardResellReportSubtitle": "View full report",
+  "dashboardMemoryLaneTitle": "Memory Lane",
+  "dashboardMemoryLaneSubtitle": "Revisit your journey",
+  "dashboardYearlyReportsTitle": "Yearly Reports",
+  "dashboardYearlyReportsSubtitle": "View annual summary",
+  "dashboardCurrentStreakTitle": "Current Streak",
+  "dashboardStreakSubtitle": "Days in a row",
+  "dashboardActiveSessionTitle": "Active Session",
+  "dashboardTodoTitle": "To Do",
+  "dashboardViewCalendar": "View Calendar",
+  "dashboardNoTodosTitle": "No items yet",
+  "dashboardNoTodosSubtitle": "Tap below to create a goal or session",
+  "dashboardCalendarTitle": "Calendar",
+  "dashboardNoSessionsForDay": "No sessions on this day",
+  "deepCleaningAnalysisTitle": "Deep Cleaning Analysis",
+  "dashboardSessionsLabel": "Sessions",
+  "dashboardItemsLabel": "Items",
+  "dashboardAverageFocusLabel": "Avg Focus",
+  "dashboardAverageJoyLabel": "Avg Joy",
+  "dashboardSessionCount": "({count, plural, =0{0 sessions} =1{1 session} other{{count} sessions}})",
+  "@dashboardSessionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardCleaningHistory": "Cleaning History",
+  "dashboardSessionTotal": "{count, plural, =0{No sessions} =1{1 session} other{{count} sessions}}",
+  "@dashboardSessionTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardFocusLabel": "Focus",
+  "dashboardJoyLabel": "Joy",
+  "dashboardItemsCleanedLabel": "Items cleaned",
+  "dashboardSessionData": "Session Data",
+  "dashboardBefore": "Before",
+  "dashboardAfter": "After",
+  "dashboardSwipeToCompare": "Swipe to compare",
+  "dashboardDurationLabel": "Duration",
+  "dashboardDurationMinutes": "{minutes} min",
+  "@dashboardDurationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardItemsDeclutteredLabel": "Items decluttered",
+  "dashboardMessinessReducedLabel": "Messiness reduced",
+  "dashboardMessinessImprovement": "{improvement}% (from {before} to {after})",
+  "@dashboardMessinessImprovement": {
+    "placeholders": {
+      "improvement": {
+        "type": "int"
+      },
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardNoDetailedMetrics": "No detailed metrics recorded yet",
+  "dashboardNoDetailsSaved": "Add photos or session metrics to unlock detailed insights here.",
+  "dashboardLettingGoDetailsTitle": "Letting Go Details",
+  "dashboardLettingGoDetailsSubtitle": "See how items found their next home",
+  "dashboardSessionDeleted": "Session deleted",
+  "dashboardNotScheduled": "Not scheduled",
+  "dashboardToday": "Today",
+  "dashboardTomorrow": "Tomorrow",
+  "dashboardStartNow": "Start Now",
 
   "appTitle": "KeepJoy",
   "@appTitle": {
@@ -129,6 +233,9 @@
   "kitchen": "Kitchen",
   "homeOffice": "Home Office",
   "garage": "Garage",
+  "closet": "Closet",
+  "bathroom": "Bathroom",
+  "study": "Study",
   "customArea": "Custom area…",
   "nameYourArea": "Name your area",
   "cancel": "Cancel",
@@ -151,6 +258,12 @@
   "insightsDashboardComingSoon": "Insights dashboard coming soon",
   "ok": "OK",
   "startDeclutter": "Start Declutter",
+  "startOrganizing": "Start Organizing",
+  "joyDeclutterModeSubtitle": "One item at a time, feel the joy",
+  "quickDeclutterModeSubtitle": "Quick capture, batch process",
+  "deepCleaningModeSubtitle": "Focused cleaning session",
+  "activitySeparator": " • ",
+  "noRecentActivity": "No recent activity yet—keep going!",
   "justNow": "just now",
   "minsAgo": "{count} mins ago",
   "@minsAgo": {
@@ -203,12 +316,48 @@
 
   "secondHandTracker": "Second-hand Tracker",
   "viewDetails": "View Details",
+  "cleaningLegendButton": "Legend",
+  "cleaningLegendTitle": "Cleaning Areas Legend",
+  "cleaningLegendNone": "0 sessions • not started",
+  "cleaningLegendLight": "1-2 sessions • light touch",
+  "cleaningLegendMomentum": "3-4 sessions • getting momentum",
+  "cleaningLegendSteady": "5-7 sessions • steady groove",
+  "cleaningLegendHighFocus": "8-10 sessions • high focus",
+  "cleaningLegendMaintenance": "11+ sessions • maintenance mode",
 
   "joyDeclutterTitle": "Joy Declutter",
   "joyDeclutterCaptureTitle": "Capture Item",
   "nextStep": "Next Step",
   "doesItSparkJoy": "Does this item spark joy?",
   "joyQuestionDescription": "Hold the item in your hands and ask yourself: Does this bring joy to my life?",
+  "joyQuestionProgress": "Question {current}/{total}",
+  "@joyQuestionProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "joyQuestion1Prompt": "When did you last use this item?",
+  "joyQuestion2Prompt": "Do you have a similar item you prefer?",
+  "joyQuestion3Prompt": "Would you buy this item again today?",
+  "joyQuestion4Prompt": "Does this fit your current lifestyle and goals?",
+  "joyQuestion5Prompt": "Are you keeping it because you spent too much money?",
+  "joyQuestionOptionLessThanMonth": "< 1 month",
+  "joyQuestionOption1To6Months": "1-6 months",
+  "joyQuestionOption6To12Months": "6-12 months",
+  "joyQuestionOptionMoreThanYear": "> 1 year",
+  "joyQuestion2Yes": "Yes",
+  "joyQuestion2No": "No",
+  "joyQuestion3Yes": "Yes",
+  "joyQuestion3No": "No",
+  "joyQuestion4Yes": "Yes",
+  "joyQuestion4No": "No",
+  "joyQuestion5Yes": "Yes",
+  "joyQuestion5No": "No",
   "keepItem": "Yes, Keep It",
   "letGoItem": "No, Let It Go",
   "itemKept": "Item kept! This completes your Joy Declutter session.",
@@ -279,6 +428,12 @@
   "memoryTypeDecluttering": "Decluttering",
   "memoryTypeCleaning": "Cleaning",
   "memoryTypeCustom": "Custom",
+  "memoryTypeGrateful": "Grateful",
+  "memoryTypeLesson": "Lesson",
+  "memoryTypeCelebrate": "Celebrate",
+  "priorityToday": "Today",
+  "priorityThisWeek": "This Week",
+  "prioritySomeday": "Someday",
   "memoryAddNote": "Add a note",
   "memoryEditNote": "Edit note",
   "memorySaveNote": "Save note",
@@ -425,6 +580,20 @@
   "createMemory": "Create Memory",
   "createMemoryTitle": "Create a Memory",
   "whatDidThisItemBring": "What did this item bring you?",
+  "chooseFromGallery": "Choose from Gallery",
+  "addPhoto": "Add Photo",
+  "captureSpecialMoment": "Capture this special moment",
+  "enterItemName": "Enter item name",
+  "selectCategory": "Select a category",
+  "pleaseSelectCategory": "Please select a category",
+  "failedToPickImage": "Failed to pick image: {error}",
+  "@failedToPickImage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "sentimentLove": "Love",
   "sentimentNostalgia": "Nostalgia",
   "sentimentAdventure": "Adventure",
@@ -449,8 +618,16 @@
   "viewFull": "View Full",
   "addNew": "Add New",
   "startPlanningDeclutter": "Start planning your declutter",
+  "calendarTitle": "Declutter Calendar",
+  "calendarAddNewPlan": "Add New Plan",
+  "calendarPlanTitleLabel": "Plan Title",
+  "calendarPlanTitleHint": "e.g., Clean bedroom",
+  "calendarPlanAreaLabel": "Declutter Area",
+  "calendarPlanAreaHint": "e.g., Bedroom",
+  "calendarUnscheduled": "Unscheduled",
   "noPlannedSessions": "No planned declutter sessions",
   "planNewSession": "Plan New Session",
+  "add": "Add",
   "area": "Area",
   "areaHint": "e.g., Kitchen, Bedroom, Closet",
   "pleaseEnterArea": "Please enter an area",
@@ -504,6 +681,18 @@
   "emailRequired": "Email is required",
   "passwordRequired": "Password is required",
   "nameRequired": "Name is required",
+  "editProfile": "Edit Profile",
+  "enterYourName": "Enter your name",
+  "emailNotEditable": "Email cannot be changed",
+  "profileUpdateSuccess": "Profile updated successfully",
+  "profileUpdateFailed": "Update failed: {error}",
+  "@profileUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "invalidEmail": "Invalid email address",
   "passwordTooShort": "Password must be at least 6 characters",
   "passwordsDoNotMatch": "Passwords do not match",

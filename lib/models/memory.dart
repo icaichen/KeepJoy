@@ -1,26 +1,33 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:keepjoy_app/l10n/app_localizations.dart';
 
 /// Sentiment/meaning associated with a memory
 enum MemorySentiment {
-  love('Love', '爱'),
-  nostalgia('Nostalgia', '怀念'),
-  adventure('Adventure', '冒险'),
-  happy('Happy', '快乐'),
-  grateful('Grateful', '感激'),
-  peaceful('Peaceful', '平静');
-
-  const MemorySentiment(this.english, this.chinese);
-  final String english;
-  final String chinese;
+  love,
+  nostalgia,
+  adventure,
+  happy,
+  grateful,
+  peaceful;
 
   String label(BuildContext context) {
-    final locale = Localizations.localeOf(context);
-    if (locale.languageCode.toLowerCase().startsWith('zh')) {
-      return chinese;
+    final l10n = AppLocalizations.of(context)!;
+    switch (this) {
+      case MemorySentiment.love:
+        return l10n.sentimentLove;
+      case MemorySentiment.nostalgia:
+        return l10n.sentimentNostalgia;
+      case MemorySentiment.adventure:
+        return l10n.sentimentAdventure;
+      case MemorySentiment.happy:
+        return l10n.sentimentHappy;
+      case MemorySentiment.grateful:
+        return l10n.sentimentGrateful;
+      case MemorySentiment.peaceful:
+        return l10n.sentimentPeaceful;
     }
-    return english;
   }
 }
 
@@ -69,8 +76,8 @@ class Memory {
     return Memory(
       id: id,
       userId: userId,
-      title: 'Letting go of $itemName',
-      description: description ?? 'A meaningful moment of decluttering',
+      title: itemName,
+      description: description,
       photoPath: photoPath,
       createdAt: createdAt,
       type: MemoryType.decluttering,
@@ -257,22 +264,21 @@ extension MemoryTypeExtension on MemoryType {
   }
 
   String label(BuildContext context) {
-    final locale = Localizations.localeOf(context);
-    final isChinese = locale.languageCode.toLowerCase().startsWith('zh');
+    final l10n = AppLocalizations.of(context)!;
 
     switch (this) {
       case MemoryType.decluttering:
-        return isChinese ? '整理' : 'Decluttering';
+        return l10n.memoryTypeDecluttering;
       case MemoryType.cleaning:
-        return isChinese ? '清洁' : 'Cleaning';
+        return l10n.memoryTypeCleaning;
       case MemoryType.custom:
-        return isChinese ? '自定义' : 'Custom';
+        return l10n.memoryTypeCustom;
       case MemoryType.grateful:
-        return isChinese ? '感恩' : 'Grateful';
+        return l10n.memoryTypeGrateful;
       case MemoryType.lesson:
-        return isChinese ? '教训' : 'Lesson';
+        return l10n.memoryTypeLesson;
       case MemoryType.celebrate:
-        return isChinese ? '庆祝' : 'Celebrate';
+        return l10n.memoryTypeCelebrate;
     }
   }
 

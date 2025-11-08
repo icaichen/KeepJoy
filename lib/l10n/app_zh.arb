@@ -4,6 +4,13 @@
   "goodMorning": "早上好",
   "goodAfternoon": "下午好",
   "readyToSparkJoy": "准备好开启怦然心动之旅了吗？",
+  "startYourDeclutterJourney": "开始你的断舍离旅程",
+  "chooseFlowTitle": "选择整理方式",
+  "chooseFlowSubtitle": "根据当前状态选择最合适的整理体验。",
+  "joyDeclutterFlowDescription": "从情感出发整理物品",
+  "quickDeclutterFlowDescription": "10 分钟快速清理",
+  "deepCleaningFlowDescription": "系统化、深度的整理流程",
+  "startAction": "开始",
 
   "dailyInspiration": "每日灵感",
   "welcomeBack": "欢迎回到你的怦然心动之旅",
@@ -18,6 +25,103 @@
   "streakAchievement": "连续成就",
   "daysStreak": "连续 {count} 天！",
   "keepGoing": "继续加油！",
+
+  "dashboardCreateGoalTitle": "创建新目标",
+  "dashboardGoalLabel": "目标",
+  "dashboardGoalHint": "例如：12 月底前整理 50 件物品\n或：清理厨房并拍照记录",
+  "dashboardDateOptional": "日期（可选）",
+  "dashboardTapToSelectDate": "点击选择日期",
+  "dashboardEnterGoalPrompt": "请输入目标",
+  "dashboardGoalCreated": "目标已创建",
+  "dashboardCreateAction": "创建",
+  "dashboardCreateSessionTitle": "创建新计划",
+  "dashboardModeLabel": "模式",
+  "dashboardAreaHint": "例如：厨房、卧室",
+  "dashboardSelectDate": "选择日期",
+  "dashboardSelectTimeOptional": "选择时间（可选）",
+  "dashboardEnterAreaPrompt": "请输入区域名称",
+  "dashboardSessionCreated": "计划已创建",
+  "dashboardMonthlyProgress": "本月进度",
+  "dashboardDeclutteredLabel": "已整理物品",
+  "dashboardResellLabel": "转售价值",
+  "dashboardResellReportTitle": "转卖分析",
+  "dashboardResellReportSubtitle": "查看完整报告",
+  "dashboardMemoryLaneTitle": "记忆长廊",
+  "dashboardMemoryLaneSubtitle": "重温你的整理旅程",
+  "dashboardYearlyReportsTitle": "年度报告",
+  "dashboardYearlyReportsSubtitle": "查看年度总结",
+  "dashboardCurrentStreakTitle": "当前连击",
+  "dashboardStreakSubtitle": "天连续记录",
+  "dashboardActiveSessionTitle": "进行中的任务",
+  "dashboardTodoTitle": "待办事项",
+  "dashboardViewCalendar": "查看日历",
+  "dashboardNoTodosTitle": "暂无待办事项",
+  "dashboardNoTodosSubtitle": "点击下方按钮创建目标或任务",
+  "dashboardCalendarTitle": "计划日历",
+  "dashboardNoSessionsForDay": "这天没有计划任务",
+  "deepCleaningAnalysisTitle": "深度整理分析",
+  "dashboardSessionsLabel": "整理次数",
+  "dashboardItemsLabel": "清理物品",
+  "dashboardAverageFocusLabel": "平均专注度",
+  "dashboardAverageJoyLabel": "平均愉悦度",
+  "dashboardSessionCount": "({count, plural, =0{0 次} =1{1 次} other{{count} 次}})",
+  "@dashboardSessionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardCleaningHistory": "整理记录",
+  "dashboardSessionTotal": "{count, plural, =0{暂无整理} =1{1 次整理} other{{count} 次整理}}",
+  "@dashboardSessionTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardFocusLabel": "专注度",
+  "dashboardJoyLabel": "愉悦度",
+  "dashboardItemsCleanedLabel": "清理物品",
+  "dashboardSessionData": "整理数据",
+  "dashboardBefore": "整理前",
+  "dashboardAfter": "整理后",
+  "dashboardSwipeToCompare": "左右滑动查看",
+  "dashboardDurationLabel": "时长",
+  "dashboardDurationMinutes": "{minutes} 分钟",
+  "@dashboardDurationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardItemsDeclutteredLabel": "整理物品数量",
+  "dashboardMessinessReducedLabel": "整洁度提升",
+  "dashboardMessinessImprovement": "{improvement}%（从 {before} 到 {after}）",
+  "@dashboardMessinessImprovement": {
+    "placeholders": {
+      "improvement": {
+        "type": "int"
+      },
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardNoDetailedMetrics": "未记录详细数据",
+  "dashboardNoDetailsSaved": "添加整理照片或指标，以获得更深入的洞察。",
+  "dashboardLettingGoDetailsTitle": "放手详情",
+  "dashboardLettingGoDetailsSubtitle": "了解不同去向的放手占比",
+  "dashboardSessionDeleted": "计划已删除",
+  "dashboardNotScheduled": "未设定时间",
+  "dashboardToday": "今天",
+  "dashboardTomorrow": "明天",
+  "dashboardStartNow": "开始",
 
   "appTitle": "KeepJoy",
 
@@ -111,6 +215,9 @@
   "kitchen": "厨房",
   "homeOffice": "书房",
   "garage": "车库",
+  "closet": "衣橱",
+  "bathroom": "浴室",
+  "study": "书房",
   "customArea": "自定义区域…",
   "nameYourArea": "命名您的区域",
   "cancel": "取消",
@@ -133,6 +240,12 @@
   "insightsDashboardComingSoon": "洞察仪表板即将推出",
   "ok": "好的",
   "startDeclutter": "开始整理",
+  "startOrganizing": "开始整理",
+  "joyDeclutterModeSubtitle": "一次一件，用心感受",
+  "quickDeclutterModeSubtitle": "快速拍照，批量处理",
+  "deepCleaningModeSubtitle": "专注整理，焕然一新",
+  "activitySeparator": " · ",
+  "noRecentActivity": "近期还没有活动记录，继续加油！",
   "justNow": "刚刚",
   "minsAgo": "{count}分钟前",
   "hoursAgo": "{count}小时前",
@@ -143,12 +256,48 @@
 
   "secondHandTracker": "二手物品追踪",
   "viewDetails": "查看详情",
+  "cleaningLegendButton": "颜色说明",
+  "cleaningLegendTitle": "整理区域颜色说明",
+  "cleaningLegendNone": "0 次：尚未开始",
+  "cleaningLegendLight": "1-2 次：轻度整理",
+  "cleaningLegendMomentum": "3-4 次：逐步推进",
+  "cleaningLegendSteady": "5-7 次：稳步推进",
+  "cleaningLegendHighFocus": "8-10 次：高频整理",
+  "cleaningLegendMaintenance": "11 次以上：持续维护",
 
   "joyDeclutterTitle": "喜悦整理",
   "joyDeclutterCaptureTitle": "拍摄物品",
   "nextStep": "下一步",
   "doesItSparkJoy": "这件物品能带给你喜悦吗？",
   "joyQuestionDescription": "把物品拿在手中，问问自己：它能为我的生活带来喜悦吗？",
+  "joyQuestionProgress": "问题 {current}/{total}",
+  "@joyQuestionProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "joyQuestion1Prompt": "你上次使用这件物品是什么时候？",
+  "joyQuestion2Prompt": "你有其他类似但更喜欢的物品吗？",
+  "joyQuestion3Prompt": "如果今天重新购买，你还会选择它吗？",
+  "joyQuestion4Prompt": "它是否符合你当前的生活方式和目标？",
+  "joyQuestion5Prompt": "你是否因为花了太多钱而不舍得放手？",
+  "joyQuestionOptionLessThanMonth": "不到1个月",
+  "joyQuestionOption1To6Months": "1-6个月",
+  "joyQuestionOption6To12Months": "6-12个月",
+  "joyQuestionOptionMoreThanYear": "超过1年",
+  "joyQuestion2Yes": "是的",
+  "joyQuestion2No": "没有",
+  "joyQuestion3Yes": "会的",
+  "joyQuestion3No": "不会",
+  "joyQuestion4Yes": "符合",
+  "joyQuestion4No": "不符合",
+  "joyQuestion5Yes": "是的",
+  "joyQuestion5No": "不是",
   "keepItem": "是的，保留",
   "letGoItem": "不，放手",
   "itemKept": "已保留物品！喜悦整理完成。",
@@ -198,6 +347,12 @@
   "memoryTypeDecluttering": "整理",
   "memoryTypeCleaning": "清洁",
   "memoryTypeCustom": "自定义",
+  "memoryTypeGrateful": "感恩",
+  "memoryTypeLesson": "教训",
+  "memoryTypeCelebrate": "庆祝",
+  "priorityToday": "今天",
+  "priorityThisWeek": "本周",
+  "prioritySomeday": "未来",
   "memoryAddNote": "添加备注",
   "memoryEditNote": "编辑备注",
   "memorySaveNote": "保存备注",
@@ -316,6 +471,20 @@
   "createMemory": "创建回忆",
   "createMemoryTitle": "创建回忆",
   "whatDidThisItemBring": "这件物品给你带来了什么？",
+  "chooseFromGallery": "从相册选择",
+  "addPhoto": "添加照片",
+  "captureSpecialMoment": "捕捉这个特别的时刻",
+  "enterItemName": "输入物品名称",
+  "selectCategory": "选择分类",
+  "pleaseSelectCategory": "请选择一个分类",
+  "failedToPickImage": "选取图片失败：{error}",
+  "@failedToPickImage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "sentimentLove": "爱",
   "sentimentNostalgia": "怀念",
   "sentimentAdventure": "冒险",
@@ -340,8 +509,16 @@
   "viewFull": "查看全部",
   "addNew": "添加新计划",
   "startPlanningDeclutter": "开始规划你的整理计划",
+  "calendarTitle": "整理日历",
+  "calendarAddNewPlan": "添加新计划",
+  "calendarPlanTitleLabel": "计划标题",
+  "calendarPlanTitleHint": "例如：整理卧室",
+  "calendarPlanAreaLabel": "整理区域",
+  "calendarPlanAreaHint": "例如：卧室",
+  "calendarUnscheduled": "待安排",
   "noPlannedSessions": "暂无计划的整理任务",
   "planNewSession": "计划新任务",
+  "add": "添加",
   "area": "区域",
   "areaHint": "例如：厨房、卧室、衣柜",
   "pleaseEnterArea": "请输入区域",
@@ -395,6 +572,18 @@
   "emailRequired": "请输入邮箱",
   "passwordRequired": "请输入密码",
   "nameRequired": "请输入姓名",
+  "editProfile": "编辑资料",
+  "enterYourName": "输入你的名字",
+  "emailNotEditable": "邮箱无法修改",
+  "profileUpdateSuccess": "资料已更新",
+  "profileUpdateFailed": "更新失败：{error}",
+  "@profileUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "invalidEmail": "邮箱格式不正确",
   "passwordTooShort": "密码至少需要6个字符",
   "passwordsDoNotMatch": "密码不匹配",

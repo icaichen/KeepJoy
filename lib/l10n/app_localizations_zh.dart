@@ -18,6 +18,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get readyToSparkJoy => '准备好开启怦然心动之旅了吗？';
 
   @override
+  String get startYourDeclutterJourney => '开始你的断舍离旅程';
+
+  @override
+  String get chooseFlowTitle => '选择整理方式';
+
+  @override
+  String get chooseFlowSubtitle => '根据当前状态选择最合适的整理体验。';
+
+  @override
+  String get joyDeclutterFlowDescription => '从情感出发整理物品';
+
+  @override
+  String get quickDeclutterFlowDescription => '10 分钟快速清理';
+
+  @override
+  String get deepCleaningFlowDescription => '系统化、深度的整理流程';
+
+  @override
+  String get startAction => '开始';
+
+  @override
   String get dailyInspiration => '每日灵感';
 
   @override
@@ -57,6 +78,218 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get keepGoing => '继续加油！';
+
+  @override
+  String get dashboardCreateGoalTitle => '创建新目标';
+
+  @override
+  String get dashboardGoalLabel => '目标';
+
+  @override
+  String get dashboardGoalHint => '例如：12 月底前整理 50 件物品\n或：清理厨房并拍照记录';
+
+  @override
+  String get dashboardDateOptional => '日期（可选）';
+
+  @override
+  String get dashboardTapToSelectDate => '点击选择日期';
+
+  @override
+  String get dashboardEnterGoalPrompt => '请输入目标';
+
+  @override
+  String get dashboardGoalCreated => '目标已创建';
+
+  @override
+  String get dashboardCreateAction => '创建';
+
+  @override
+  String get dashboardCreateSessionTitle => '创建新计划';
+
+  @override
+  String get dashboardModeLabel => '模式';
+
+  @override
+  String get dashboardAreaHint => '例如：厨房、卧室';
+
+  @override
+  String get dashboardSelectDate => '选择日期';
+
+  @override
+  String get dashboardSelectTimeOptional => '选择时间（可选）';
+
+  @override
+  String get dashboardEnterAreaPrompt => '请输入区域名称';
+
+  @override
+  String get dashboardSessionCreated => '计划已创建';
+
+  @override
+  String get dashboardMonthlyProgress => '本月进度';
+
+  @override
+  String get dashboardDeclutteredLabel => '已整理物品';
+
+  @override
+  String get dashboardResellLabel => '转售价值';
+
+  @override
+  String get dashboardResellReportTitle => '转卖分析';
+
+  @override
+  String get dashboardResellReportSubtitle => '查看完整报告';
+
+  @override
+  String get dashboardMemoryLaneTitle => '记忆长廊';
+
+  @override
+  String get dashboardMemoryLaneSubtitle => '重温你的整理旅程';
+
+  @override
+  String get dashboardYearlyReportsTitle => '年度报告';
+
+  @override
+  String get dashboardYearlyReportsSubtitle => '查看年度总结';
+
+  @override
+  String get dashboardCurrentStreakTitle => '当前连击';
+
+  @override
+  String get dashboardStreakSubtitle => '天连续记录';
+
+  @override
+  String get dashboardActiveSessionTitle => '进行中的任务';
+
+  @override
+  String get dashboardTodoTitle => '待办事项';
+
+  @override
+  String get dashboardViewCalendar => '查看日历';
+
+  @override
+  String get dashboardNoTodosTitle => '暂无待办事项';
+
+  @override
+  String get dashboardNoTodosSubtitle => '点击下方按钮创建目标或任务';
+
+  @override
+  String get dashboardCalendarTitle => '计划日历';
+
+  @override
+  String get dashboardNoSessionsForDay => '这天没有计划任务';
+
+  @override
+  String get dashboardStartNow => '开始';
+
+  @override
+  String get deepCleaningAnalysisTitle => '深度整理分析';
+
+  @override
+  String get dashboardSessionsLabel => '整理次数';
+
+  @override
+  String get dashboardItemsLabel => '清理物品';
+
+  @override
+  String get dashboardAverageFocusLabel => '平均专注度';
+
+  @override
+  String get dashboardAverageJoyLabel => '平均愉悦度';
+
+  @override
+  String dashboardSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 次',
+      one: '1 次',
+      zero: '0 次',
+    );
+    return '($_temp0)';
+  }
+
+  @override
+  String get dashboardCleaningHistory => '整理记录';
+
+  @override
+  String dashboardSessionTotal(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 次整理',
+      one: '1 次整理',
+      zero: '暂无整理',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardFocusLabel => '专注度';
+
+  @override
+  String get dashboardJoyLabel => '愉悦度';
+
+  @override
+  String get dashboardItemsCleanedLabel => '清理物品';
+
+  @override
+  String get dashboardSessionData => '整理数据';
+
+  @override
+  String get dashboardBefore => '整理前';
+
+  @override
+  String get dashboardAfter => '整理后';
+
+  @override
+  String get dashboardSwipeToCompare => '左右滑动查看';
+
+  @override
+  String get dashboardDurationLabel => '时长';
+
+  @override
+  String dashboardDurationMinutes(String minutes) {
+    return '$minutes 分钟';
+  }
+
+  @override
+  String get dashboardItemsDeclutteredLabel => '整理物品数量';
+
+  @override
+  String get dashboardMessinessReducedLabel => '整洁度提升';
+
+  @override
+  String dashboardMessinessImprovement(
+    int improvement,
+    String before,
+    String after,
+  ) {
+    return '$improvement%（从 $before 到 $after）';
+  }
+
+  @override
+  String get dashboardNoDetailedMetrics => '未记录详细数据';
+
+  @override
+  String get dashboardNoDetailsSaved => '添加整理照片或指标，以获得更深入的洞察。';
+
+  @override
+  String get dashboardLettingGoDetailsTitle => '放手详情';
+
+  @override
+  String get dashboardLettingGoDetailsSubtitle => '了解不同去向的放手占比';
+
+  @override
+  String get dashboardSessionDeleted => '计划已删除';
+
+  @override
+  String get dashboardNotScheduled => '未设定时间';
+
+  @override
+  String get dashboardToday => '今天';
+
+  @override
+  String get dashboardTomorrow => '明天';
 
   @override
   String get appTitle => 'KeepJoy';
@@ -301,6 +534,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get garage => '车库';
 
   @override
+  String get closet => '衣橱';
+
+  @override
+  String get bathroom => '浴室';
+
+  @override
+  String get study => '书房';
+
+  @override
   String get customArea => '自定义区域…';
 
   @override
@@ -358,6 +600,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get startDeclutter => '开始整理';
 
   @override
+  String get startOrganizing => '开始整理';
+
+  @override
+  String get joyDeclutterModeSubtitle => '一次一件，用心感受';
+
+  @override
+  String get quickDeclutterModeSubtitle => '快速拍照，批量处理';
+
+  @override
+  String get deepCleaningModeSubtitle => '专注整理，焕然一新';
+
+  @override
+  String get activitySeparator => ' · ';
+
+  @override
+  String get noRecentActivity => '近期还没有活动记录，继续加油！';
+
+  @override
   String get justNow => '刚刚';
 
   @override
@@ -397,6 +657,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewDetails => '查看详情';
 
   @override
+  String get cleaningLegendButton => '颜色说明';
+
+  @override
+  String get cleaningLegendTitle => '整理区域颜色说明';
+
+  @override
+  String get cleaningLegendNone => '0 次：尚未开始';
+
+  @override
+  String get cleaningLegendLight => '1-2 次：轻度整理';
+
+  @override
+  String get cleaningLegendMomentum => '3-4 次：逐步推进';
+
+  @override
+  String get cleaningLegendSteady => '5-7 次：稳步推进';
+
+  @override
+  String get cleaningLegendHighFocus => '8-10 次：高频整理';
+
+  @override
+  String get cleaningLegendMaintenance => '11 次以上：持续维护';
+
+  @override
   String get joyDeclutterCaptureTitle => '拍摄物品';
 
   @override
@@ -404,6 +688,62 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get joyQuestionDescription => '把物品拿在手中，问问自己：它能为我的生活带来喜悦吗？';
+
+  @override
+  String joyQuestionProgress(int current, int total) {
+    return '问题 $current/$total';
+  }
+
+  @override
+  String get joyQuestion1Prompt => '你上次使用这件物品是什么时候？';
+
+  @override
+  String get joyQuestion2Prompt => '你有其他类似但更喜欢的物品吗？';
+
+  @override
+  String get joyQuestion3Prompt => '如果今天重新购买，你还会选择它吗？';
+
+  @override
+  String get joyQuestion4Prompt => '它是否符合你当前的生活方式和目标？';
+
+  @override
+  String get joyQuestion5Prompt => '你是否因为花了太多钱而不舍得放手？';
+
+  @override
+  String get joyQuestionOptionLessThanMonth => '不到1个月';
+
+  @override
+  String get joyQuestionOption1To6Months => '1-6个月';
+
+  @override
+  String get joyQuestionOption6To12Months => '6-12个月';
+
+  @override
+  String get joyQuestionOptionMoreThanYear => '超过1年';
+
+  @override
+  String get joyQuestion2Yes => '是的';
+
+  @override
+  String get joyQuestion2No => '没有';
+
+  @override
+  String get joyQuestion3Yes => '会的';
+
+  @override
+  String get joyQuestion3No => '不会';
+
+  @override
+  String get joyQuestion4Yes => '符合';
+
+  @override
+  String get joyQuestion4No => '不符合';
+
+  @override
+  String get joyQuestion5Yes => '是的';
+
+  @override
+  String get joyQuestion5No => '不是';
 
   @override
   String get keepItem => '是的，保留';
@@ -518,6 +858,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get memoryTypeCustom => '自定义';
+
+  @override
+  String get memoryTypeGrateful => '感恩';
+
+  @override
+  String get memoryTypeLesson => '教训';
+
+  @override
+  String get memoryTypeCelebrate => '庆祝';
+
+  @override
+  String get priorityToday => '今天';
+
+  @override
+  String get priorityThisWeek => '本周';
+
+  @override
+  String get prioritySomeday => '未来';
 
   @override
   String get memoryAddNote => '添加备注';
@@ -855,6 +1213,29 @@ class AppLocalizationsZh extends AppLocalizations {
   String get whatDidThisItemBring => '这件物品给你带来了什么？';
 
   @override
+  String get chooseFromGallery => '从相册选择';
+
+  @override
+  String get addPhoto => '添加照片';
+
+  @override
+  String get captureSpecialMoment => '捕捉这个特别的时刻';
+
+  @override
+  String get enterItemName => '输入物品名称';
+
+  @override
+  String get selectCategory => '选择分类';
+
+  @override
+  String get pleaseSelectCategory => '请选择一个分类';
+
+  @override
+  String failedToPickImage(String error) {
+    return '选取图片失败：$error';
+  }
+
+  @override
   String get sentimentLove => '爱';
 
   @override
@@ -918,10 +1299,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get startPlanningDeclutter => '开始规划你的整理计划';
 
   @override
+  String get calendarTitle => '整理日历';
+
+  @override
+  String get calendarAddNewPlan => '添加新计划';
+
+  @override
+  String get calendarPlanTitleLabel => '计划标题';
+
+  @override
+  String get calendarPlanTitleHint => '例如：整理卧室';
+
+  @override
+  String get calendarPlanAreaLabel => '整理区域';
+
+  @override
+  String get calendarPlanAreaHint => '例如：卧室';
+
+  @override
+  String get calendarUnscheduled => '待安排';
+
+  @override
   String get noPlannedSessions => '暂无计划的整理任务';
 
   @override
   String get planNewSession => '计划新任务';
+
+  @override
+  String get add => '添加';
 
   @override
   String get area => '区域';
@@ -1063,6 +1468,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get nameRequired => '请输入姓名';
+
+  @override
+  String get editProfile => '编辑资料';
+
+  @override
+  String get enterYourName => '输入你的名字';
+
+  @override
+  String get emailNotEditable => '邮箱无法修改';
+
+  @override
+  String get profileUpdateSuccess => '资料已更新';
+
+  @override
+  String profileUpdateFailed(String error) {
+    return '更新失败：$error';
+  }
 
   @override
   String get invalidEmail => '邮箱格式不正确';

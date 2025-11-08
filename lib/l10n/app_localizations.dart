@@ -116,6 +116,48 @@ abstract class AppLocalizations {
   /// **'Ready to spark joy today?'**
   String get readyToSparkJoy;
 
+  /// No description provided for @startYourDeclutterJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your declutter journey'**
+  String get startYourDeclutterJourney;
+
+  /// No description provided for @chooseFlowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a flow'**
+  String get chooseFlowTitle;
+
+  /// No description provided for @chooseFlowSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the experience that fits your current energy.'**
+  String get chooseFlowSubtitle;
+
+  /// No description provided for @joyDeclutterFlowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Lead with joy when letting go'**
+  String get joyDeclutterFlowDescription;
+
+  /// No description provided for @quickDeclutterFlowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear spaces in under 10 minutes'**
+  String get quickDeclutterFlowDescription;
+
+  /// No description provided for @deepCleaningFlowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Structured sessions for thorough results'**
+  String get deepCleaningFlowDescription;
+
+  /// No description provided for @startAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get startAction;
+
   /// No description provided for @dailyInspiration.
   ///
   /// In en, this message translates to:
@@ -193,6 +235,382 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep going!'**
   String get keepGoing;
+
+  /// No description provided for @dashboardCreateGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Goal'**
+  String get dashboardCreateGoalTitle;
+
+  /// No description provided for @dashboardGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get dashboardGoalLabel;
+
+  /// No description provided for @dashboardGoalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Declutter 50 items by end of December\nor Clean kitchen and take photos'**
+  String get dashboardGoalHint;
+
+  /// No description provided for @dashboardDateOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Date (Optional)'**
+  String get dashboardDateOptional;
+
+  /// No description provided for @dashboardTapToSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select date'**
+  String get dashboardTapToSelectDate;
+
+  /// No description provided for @dashboardEnterGoalPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a goal'**
+  String get dashboardEnterGoalPrompt;
+
+  /// No description provided for @dashboardGoalCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal created'**
+  String get dashboardGoalCreated;
+
+  /// No description provided for @dashboardCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get dashboardCreateAction;
+
+  /// No description provided for @dashboardCreateSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Session'**
+  String get dashboardCreateSessionTitle;
+
+  /// No description provided for @dashboardModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get dashboardModeLabel;
+
+  /// No description provided for @dashboardAreaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Kitchen, Bedroom'**
+  String get dashboardAreaHint;
+
+  /// No description provided for @dashboardSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get dashboardSelectDate;
+
+  /// No description provided for @dashboardSelectTimeOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Select time (optional)'**
+  String get dashboardSelectTimeOptional;
+
+  /// No description provided for @dashboardEnterAreaPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an area name'**
+  String get dashboardEnterAreaPrompt;
+
+  /// No description provided for @dashboardSessionCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Session created'**
+  String get dashboardSessionCreated;
+
+  /// No description provided for @dashboardMonthlyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Progress'**
+  String get dashboardMonthlyProgress;
+
+  /// No description provided for @dashboardDeclutteredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Decluttered Items'**
+  String get dashboardDeclutteredLabel;
+
+  /// No description provided for @dashboardResellLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Resell Value'**
+  String get dashboardResellLabel;
+
+  /// No description provided for @dashboardResellReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Resell Analysis'**
+  String get dashboardResellReportTitle;
+
+  /// No description provided for @dashboardResellReportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View full report'**
+  String get dashboardResellReportSubtitle;
+
+  /// No description provided for @dashboardMemoryLaneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Lane'**
+  String get dashboardMemoryLaneTitle;
+
+  /// No description provided for @dashboardMemoryLaneSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Revisit your journey'**
+  String get dashboardMemoryLaneSubtitle;
+
+  /// No description provided for @dashboardYearlyReportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly Reports'**
+  String get dashboardYearlyReportsTitle;
+
+  /// No description provided for @dashboardYearlyReportsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View annual summary'**
+  String get dashboardYearlyReportsSubtitle;
+
+  /// No description provided for @dashboardCurrentStreakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Streak'**
+  String get dashboardCurrentStreakTitle;
+
+  /// No description provided for @dashboardStreakSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Days in a row'**
+  String get dashboardStreakSubtitle;
+
+  /// No description provided for @dashboardActiveSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Session'**
+  String get dashboardActiveSessionTitle;
+
+  /// No description provided for @dashboardTodoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'To Do'**
+  String get dashboardTodoTitle;
+
+  /// No description provided for @dashboardViewCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'View Calendar'**
+  String get dashboardViewCalendar;
+
+  /// No description provided for @dashboardNoTodosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No items yet'**
+  String get dashboardNoTodosTitle;
+
+  /// No description provided for @dashboardNoTodosSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap below to create a goal or session'**
+  String get dashboardNoTodosSubtitle;
+
+  /// No description provided for @dashboardCalendarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get dashboardCalendarTitle;
+
+  /// No description provided for @dashboardNoSessionsForDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions on this day'**
+  String get dashboardNoSessionsForDay;
+
+  /// No description provided for @deepCleaningAnalysisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Cleaning Analysis'**
+  String get deepCleaningAnalysisTitle;
+
+  /// No description provided for @dashboardSessionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get dashboardSessionsLabel;
+
+  /// No description provided for @dashboardItemsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get dashboardItemsLabel;
+
+  /// No description provided for @dashboardAverageFocusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Focus'**
+  String get dashboardAverageFocusLabel;
+
+  /// No description provided for @dashboardAverageJoyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Joy'**
+  String get dashboardAverageJoyLabel;
+
+  /// No description provided for @dashboardSessionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'({count, plural, =0{0 sessions} =1{1 session} other{{count} sessions}})'**
+  String dashboardSessionCount(int count);
+
+  /// No description provided for @dashboardCleaningHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning History'**
+  String get dashboardCleaningHistory;
+
+  /// No description provided for @dashboardSessionTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No sessions} =1{1 session} other{{count} sessions}}'**
+  String dashboardSessionTotal(int count);
+
+  /// No description provided for @dashboardFocusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get dashboardFocusLabel;
+
+  /// No description provided for @dashboardJoyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Joy'**
+  String get dashboardJoyLabel;
+
+  /// No description provided for @dashboardItemsCleanedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Items cleaned'**
+  String get dashboardItemsCleanedLabel;
+
+  /// No description provided for @dashboardSessionData.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Data'**
+  String get dashboardSessionData;
+
+  /// No description provided for @dashboardBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Before'**
+  String get dashboardBefore;
+
+  /// No description provided for @dashboardAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'After'**
+  String get dashboardAfter;
+
+  /// No description provided for @dashboardSwipeToCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to compare'**
+  String get dashboardSwipeToCompare;
+
+  /// No description provided for @dashboardDurationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get dashboardDurationLabel;
+
+  /// No description provided for @dashboardDurationMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String dashboardDurationMinutes(String minutes);
+
+  /// No description provided for @dashboardItemsDeclutteredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Items decluttered'**
+  String get dashboardItemsDeclutteredLabel;
+
+  /// No description provided for @dashboardMessinessReducedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Messiness reduced'**
+  String get dashboardMessinessReducedLabel;
+
+  /// No description provided for @dashboardMessinessImprovement.
+  ///
+  /// In en, this message translates to:
+  /// **'{improvement}% (from {before} to {after})'**
+  String dashboardMessinessImprovement(
+    int improvement,
+    String before,
+    String after,
+  );
+
+  /// No description provided for @dashboardNoDetailedMetrics.
+  ///
+  /// In en, this message translates to:
+  /// **'No detailed metrics recorded yet'**
+  String get dashboardNoDetailedMetrics;
+
+  /// No description provided for @dashboardNoDetailsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos or session metrics to unlock detailed insights here.'**
+  String get dashboardNoDetailsSaved;
+
+  /// No description provided for @dashboardLettingGoDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Letting Go Details'**
+  String get dashboardLettingGoDetailsTitle;
+
+  /// No description provided for @dashboardLettingGoDetailsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See how items found their next home'**
+  String get dashboardLettingGoDetailsSubtitle;
+
+  /// No description provided for @dashboardSessionDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Session deleted'**
+  String get dashboardSessionDeleted;
+
+  /// No description provided for @dashboardNotScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Not scheduled'**
+  String get dashboardNotScheduled;
+
+  /// No description provided for @dashboardToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get dashboardToday;
+
+  /// No description provided for @dashboardTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get dashboardTomorrow;
+
+  /// No description provided for @dashboardStartNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Now'**
+  String get dashboardStartNow;
 
   /// The application title
   ///
@@ -674,6 +1092,24 @@ abstract class AppLocalizations {
   /// **'Garage'**
   String get garage;
 
+  /// No description provided for @closet.
+  ///
+  /// In en, this message translates to:
+  /// **'Closet'**
+  String get closet;
+
+  /// No description provided for @bathroom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bathroom'**
+  String get bathroom;
+
+  /// No description provided for @study.
+  ///
+  /// In en, this message translates to:
+  /// **'Study'**
+  String get study;
+
   /// No description provided for @customArea.
   ///
   /// In en, this message translates to:
@@ -788,6 +1224,42 @@ abstract class AppLocalizations {
   /// **'Start Declutter'**
   String get startDeclutter;
 
+  /// No description provided for @startOrganizing.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Organizing'**
+  String get startOrganizing;
+
+  /// No description provided for @joyDeclutterModeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One item at a time, feel the joy'**
+  String get joyDeclutterModeSubtitle;
+
+  /// No description provided for @quickDeclutterModeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick capture, batch process'**
+  String get quickDeclutterModeSubtitle;
+
+  /// No description provided for @deepCleaningModeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Focused cleaning session'**
+  String get deepCleaningModeSubtitle;
+
+  /// No description provided for @activitySeparator.
+  ///
+  /// In en, this message translates to:
+  /// **' • '**
+  String get activitySeparator;
+
+  /// No description provided for @noRecentActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent activity yet—keep going!'**
+  String get noRecentActivity;
+
   /// No description provided for @justNow.
   ///
   /// In en, this message translates to:
@@ -842,6 +1314,54 @@ abstract class AppLocalizations {
   /// **'View Details'**
   String get viewDetails;
 
+  /// No description provided for @cleaningLegendButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend'**
+  String get cleaningLegendButton;
+
+  /// No description provided for @cleaningLegendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning Areas Legend'**
+  String get cleaningLegendTitle;
+
+  /// No description provided for @cleaningLegendNone.
+  ///
+  /// In en, this message translates to:
+  /// **'0 sessions • not started'**
+  String get cleaningLegendNone;
+
+  /// No description provided for @cleaningLegendLight.
+  ///
+  /// In en, this message translates to:
+  /// **'1-2 sessions • light touch'**
+  String get cleaningLegendLight;
+
+  /// No description provided for @cleaningLegendMomentum.
+  ///
+  /// In en, this message translates to:
+  /// **'3-4 sessions • getting momentum'**
+  String get cleaningLegendMomentum;
+
+  /// No description provided for @cleaningLegendSteady.
+  ///
+  /// In en, this message translates to:
+  /// **'5-7 sessions • steady groove'**
+  String get cleaningLegendSteady;
+
+  /// No description provided for @cleaningLegendHighFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'8-10 sessions • high focus'**
+  String get cleaningLegendHighFocus;
+
+  /// No description provided for @cleaningLegendMaintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'11+ sessions • maintenance mode'**
+  String get cleaningLegendMaintenance;
+
   /// No description provided for @joyDeclutterCaptureTitle.
   ///
   /// In en, this message translates to:
@@ -859,6 +1379,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hold the item in your hands and ask yourself: Does this bring joy to my life?'**
   String get joyQuestionDescription;
+
+  /// No description provided for @joyQuestionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current}/{total}'**
+  String joyQuestionProgress(int current, int total);
+
+  /// No description provided for @joyQuestion1Prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'When did you last use this item?'**
+  String get joyQuestion1Prompt;
+
+  /// No description provided for @joyQuestion2Prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you have a similar item you prefer?'**
+  String get joyQuestion2Prompt;
+
+  /// No description provided for @joyQuestion3Prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Would you buy this item again today?'**
+  String get joyQuestion3Prompt;
+
+  /// No description provided for @joyQuestion4Prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Does this fit your current lifestyle and goals?'**
+  String get joyQuestion4Prompt;
+
+  /// No description provided for @joyQuestion5Prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you keeping it because you spent too much money?'**
+  String get joyQuestion5Prompt;
+
+  /// No description provided for @joyQuestionOptionLessThanMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'< 1 month'**
+  String get joyQuestionOptionLessThanMonth;
+
+  /// No description provided for @joyQuestionOption1To6Months.
+  ///
+  /// In en, this message translates to:
+  /// **'1-6 months'**
+  String get joyQuestionOption1To6Months;
+
+  /// No description provided for @joyQuestionOption6To12Months.
+  ///
+  /// In en, this message translates to:
+  /// **'6-12 months'**
+  String get joyQuestionOption6To12Months;
+
+  /// No description provided for @joyQuestionOptionMoreThanYear.
+  ///
+  /// In en, this message translates to:
+  /// **'> 1 year'**
+  String get joyQuestionOptionMoreThanYear;
+
+  /// No description provided for @joyQuestion2Yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get joyQuestion2Yes;
+
+  /// No description provided for @joyQuestion2No.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get joyQuestion2No;
+
+  /// No description provided for @joyQuestion3Yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get joyQuestion3Yes;
+
+  /// No description provided for @joyQuestion3No.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get joyQuestion3No;
+
+  /// No description provided for @joyQuestion4Yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get joyQuestion4Yes;
+
+  /// No description provided for @joyQuestion4No.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get joyQuestion4No;
+
+  /// No description provided for @joyQuestion5Yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get joyQuestion5Yes;
+
+  /// No description provided for @joyQuestion5No.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get joyQuestion5No;
 
   /// No description provided for @keepItem.
   ///
@@ -1075,6 +1703,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom'**
   String get memoryTypeCustom;
+
+  /// No description provided for @memoryTypeGrateful.
+  ///
+  /// In en, this message translates to:
+  /// **'Grateful'**
+  String get memoryTypeGrateful;
+
+  /// No description provided for @memoryTypeLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson'**
+  String get memoryTypeLesson;
+
+  /// No description provided for @memoryTypeCelebrate.
+  ///
+  /// In en, this message translates to:
+  /// **'Celebrate'**
+  String get memoryTypeCelebrate;
+
+  /// No description provided for @priorityToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get priorityToday;
+
+  /// No description provided for @priorityThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get priorityThisWeek;
+
+  /// No description provided for @prioritySomeday.
+  ///
+  /// In en, this message translates to:
+  /// **'Someday'**
+  String get prioritySomeday;
 
   /// No description provided for @memoryAddNote.
   ///
@@ -1730,6 +2394,48 @@ abstract class AppLocalizations {
   /// **'What did this item bring you?'**
   String get whatDidThisItemBring;
 
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get chooseFromGallery;
+
+  /// No description provided for @addPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Photo'**
+  String get addPhoto;
+
+  /// No description provided for @captureSpecialMoment.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture this special moment'**
+  String get captureSpecialMoment;
+
+  /// No description provided for @enterItemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter item name'**
+  String get enterItemName;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a category'**
+  String get selectCategory;
+
+  /// No description provided for @pleaseSelectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category'**
+  String get pleaseSelectCategory;
+
+  /// No description provided for @failedToPickImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to pick image: {error}'**
+  String failedToPickImage(String error);
+
   /// No description provided for @sentimentLove.
   ///
   /// In en, this message translates to:
@@ -1856,6 +2562,48 @@ abstract class AppLocalizations {
   /// **'Start planning your declutter'**
   String get startPlanningDeclutter;
 
+  /// No description provided for @calendarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Declutter Calendar'**
+  String get calendarTitle;
+
+  /// No description provided for @calendarAddNewPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Plan'**
+  String get calendarAddNewPlan;
+
+  /// No description provided for @calendarPlanTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan Title'**
+  String get calendarPlanTitleLabel;
+
+  /// No description provided for @calendarPlanTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Clean bedroom'**
+  String get calendarPlanTitleHint;
+
+  /// No description provided for @calendarPlanAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Declutter Area'**
+  String get calendarPlanAreaLabel;
+
+  /// No description provided for @calendarPlanAreaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Bedroom'**
+  String get calendarPlanAreaHint;
+
+  /// No description provided for @calendarUnscheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Unscheduled'**
+  String get calendarUnscheduled;
+
   /// No description provided for @noPlannedSessions.
   ///
   /// In en, this message translates to:
@@ -1867,6 +2615,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Plan New Session'**
   String get planNewSession;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
 
   /// No description provided for @area.
   ///
@@ -2119,6 +2873,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name is required'**
   String get nameRequired;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @enterYourName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name'**
+  String get enterYourName;
+
+  /// No description provided for @emailNotEditable.
+  ///
+  /// In en, this message translates to:
+  /// **'Email cannot be changed'**
+  String get emailNotEditable;
+
+  /// No description provided for @profileUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get profileUpdateSuccess;
+
+  /// No description provided for @profileUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed: {error}'**
+  String profileUpdateFailed(String error);
 
   /// No description provided for @invalidEmail.
   ///

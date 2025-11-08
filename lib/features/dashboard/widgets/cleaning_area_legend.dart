@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CleaningAreaLegend {
   CleaningAreaLegend._();
@@ -15,43 +16,37 @@ class CleaningAreaLegend {
       min: 0,
       max: 0,
       color: none,
-      labelEn: '0 sessions • not started',
-      labelZh: '0 次：尚未开始',
+      label: CleaningLegendLabel.none,
     ),
     _CleaningLegendEntry(
       min: 1,
       max: 2,
       color: level1,
-      labelEn: '1-2 sessions • light touch',
-      labelZh: '1-2 次：轻度整理',
+      label: CleaningLegendLabel.light,
     ),
     _CleaningLegendEntry(
       min: 3,
       max: 4,
       color: level2,
-      labelEn: '3-4 sessions • getting momentum',
-      labelZh: '3-4 次：逐步推进',
+      label: CleaningLegendLabel.momentum,
     ),
     _CleaningLegendEntry(
       min: 5,
       max: 7,
       color: level3,
-      labelEn: '5-7 sessions • steady groove',
-      labelZh: '5-7 次：稳步推进',
+      label: CleaningLegendLabel.steady,
     ),
     _CleaningLegendEntry(
       min: 8,
       max: 10,
       color: level4,
-      labelEn: '8-10 sessions • high focus',
-      labelZh: '8-10 次：高频整理',
+      label: CleaningLegendLabel.highFocus,
     ),
     _CleaningLegendEntry(
       min: 11,
       max: null,
       color: level5,
-      labelEn: '11+ sessions • maintenance mode',
-      labelZh: '11 次以上：持续维护',
+      label: CleaningLegendLabel.maintenance,
     ),
   ];
 
@@ -66,9 +61,9 @@ class CleaningAreaLegend {
 
   static Widget badge({
     required BuildContext context,
-    required bool isChinese,
     required VoidCallback onTap,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
@@ -89,7 +84,7 @@ class CleaningAreaLegend {
             ),
             const SizedBox(width: 6),
             Text(
-              isChinese ? '颜色说明' : 'Legend',
+              l10n.cleaningLegendButton,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF4B5563),
@@ -103,8 +98,8 @@ class CleaningAreaLegend {
 
   static Widget dialog({
     required BuildContext context,
-    required bool isChinese,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
     final labelStyle = textTheme.bodyMedium?.copyWith(
@@ -130,7 +125,7 @@ class CleaningAreaLegend {
             Row(
               children: [
                 Text(
-                  isChinese ? '整理区域颜色说明' : 'Cleaning Areas Legend',
+                  l10n.cleaningLegendTitle,
                   style: labelStyle,
                 ),
                 const Spacer(),
@@ -145,7 +140,7 @@ class CleaningAreaLegend {
             ),
             const SizedBox(height: 12),
             ...entries.map((entry) {
-              final label = isChinese ? entry.labelZh : entry.labelEn;
+              final label = entry.localizedLabel(l10n);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Row(
@@ -178,16 +173,40 @@ class _CleaningLegendEntry {
     required this.min,
     required this.max,
     required this.color,
-    required this.labelEn,
-    required this.labelZh,
+    required this.label,
   });
 
   final int min;
   final int? max;
   final Color color;
-  final String labelEn;
-  final String labelZh;
+  final CleaningLegendLabel label;
+
+  String localizedLabel(AppLocalizations l10n) {
+    switch (label) {
+      case CleaningLegendLabel.none:
+        return l10n.cleaningLegendNone;
+      case CleaningLegendLabel.light:
+        return l10n.cleaningLegendLight;
+      case CleaningLegendLabel.momentum:
+        return l10n.cleaningLegendMomentum;
+      case CleaningLegendLabel.steady:
+        return l10n.cleaningLegendSteady;
+      case CleaningLegendLabel.highFocus:
+        return l10n.cleaningLegendHighFocus;
+      case CleaningLegendLabel.maintenance:
+        return l10n.cleaningLegendMaintenance;
+    }
+  }
 
   Color get textColor =>
       color.computeLuminance() < 0.45 ? Colors.white : const Color(0xFF111827);
+}
+
+enum CleaningLegendLabel {
+  none,
+  light,
+  momentum,
+  steady,
+  highFocus,
+  maintenance,
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:keepjoy_app/models/planned_session.dart';
@@ -64,30 +65,30 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
   }
 
   Future<void> _addNewPlan() async {
-    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+    final l10n = AppLocalizations.of(context)!;
     final titleController = TextEditingController();
     final areaController = TextEditingController();
 
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isChinese ? '添加新计划' : 'Add New Plan'),
+        title: Text(l10n.calendarAddNewPlan),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: titleController,
               decoration: InputDecoration(
-                labelText: isChinese ? '计划标题' : 'Plan Title',
-                hintText: isChinese ? '例如：整理卧室' : 'e.g., Clean bedroom',
+                labelText: l10n.calendarPlanTitleLabel,
+                hintText: l10n.calendarPlanTitleHint,
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: areaController,
               decoration: InputDecoration(
-                labelText: isChinese ? '整理区域' : 'Area',
-                hintText: isChinese ? '例如：卧室' : 'e.g., Bedroom',
+                labelText: l10n.calendarPlanAreaLabel,
+                hintText: l10n.calendarPlanAreaHint,
               ),
             ),
           ],
@@ -95,11 +96,11 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isChinese ? '取消' : 'Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(isChinese ? '添加' : 'Add'),
+            child: Text(l10n.add),
           ),
         ],
       ),
@@ -137,7 +138,8 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+    final l10n = AppLocalizations.of(context)!;
+    final localeName = l10n.localeName;
     final topPadding = MediaQuery.of(context).padding.top;
 
     final scheduledSessions = widget.plannedSessions.where((s) => s.isScheduled).toList();
@@ -179,7 +181,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                         children: [
                           Expanded(
                             child: Text(
-                              isChinese ? '开始规划你的整理计划' : 'Start planning your declutter plan',
+                              l10n.startPlanningDeclutter,
                               style: const TextStyle(
                                 fontFamily: 'SF Pro Display',
                                 fontSize: 18,
@@ -240,6 +242,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                               });
                             },
                             getSessionsForDay: _getSessionsForDay,
+                            localeName: localeName,
                           ),
                         ),
                       ),
@@ -251,7 +254,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              DateFormat.MMMEd().format(_selectedDay!),
+                              DateFormat.MMMEd(localeName).format(_selectedDay!),
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -273,7 +276,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                           child: Row(
                             children: [
                               Text(
-                                isChinese ? '待安排' : 'Unscheduled',
+                                l10n.calendarUnscheduled,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
@@ -332,7 +335,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                   padding: EdgeInsets.only(top: topPadding),
                   alignment: Alignment.center,
                   child: Text(
-                    isChinese ? '整理日历' : 'Declutter Calendar',
+                    l10n.calendarTitle,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -360,7 +363,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        isChinese ? '整理日历' : 'Declutter Calendar',
+                        l10n.calendarTitle,
                         style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w700,
@@ -382,7 +385,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                               const Icon(Icons.add, color: Colors.white, size: 20),
                               const SizedBox(width: 4),
                               Text(
-                                isChinese ? '添加新计划' : 'Add Plan',
+                                l10n.calendarAddNewPlan,
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
@@ -491,6 +494,7 @@ class _SimpleCalendar extends StatelessWidget {
   final Function(DateTime) onDaySelected;
   final Function(DateTime) onMonthChanged;
   final List<PlannedSession> Function(DateTime) getSessionsForDay;
+  final String localeName;
 
   const _SimpleCalendar({
     required this.focusedDay,
@@ -498,6 +502,7 @@ class _SimpleCalendar extends StatelessWidget {
     required this.onDaySelected,
     required this.onMonthChanged,
     required this.getSessionsForDay,
+    required this.localeName,
   });
 
   @override
@@ -508,6 +513,10 @@ class _SimpleCalendar extends StatelessWidget {
     final daysInMonth = lastDayOfMonth.day;
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
+    final weekdayLabels = List.generate(7, (index) {
+      final referenceDate = DateTime(2020, 1, 5 + index);
+      return DateFormat.E(localeName).format(referenceDate);
+    });
 
     return Column(
       children: [
@@ -522,7 +531,7 @@ class _SimpleCalendar extends StatelessWidget {
               },
             ),
             Text(
-              DateFormat.yMMMM().format(focusedDay),
+              DateFormat.yMMMM(localeName).format(focusedDay),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -541,7 +550,7 @@ class _SimpleCalendar extends StatelessWidget {
 
         // Weekday headers
         Row(
-          children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) {
+          children: weekdayLabels.map((day) {
             return Expanded(
               child: Center(
                 child: Text(

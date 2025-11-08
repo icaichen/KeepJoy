@@ -1,17 +1,19 @@
+import 'package:keepjoy_app/l10n/app_localizations.dart';
+
 /// Priority level for tasks
 enum TaskPriority {
   today,
   thisWeek,
   someday;
 
-  String get displayName {
+  String displayName(AppLocalizations l10n) {
     switch (this) {
       case TaskPriority.today:
-        return 'Today';
+        return l10n.priorityToday;
       case TaskPriority.thisWeek:
-        return 'This Week';
+        return l10n.priorityThisWeek;
       case TaskPriority.someday:
-        return 'Someday';
+        return l10n.prioritySomeday;
     }
   }
 }
@@ -22,14 +24,14 @@ enum SessionMode {
   joyDeclutter,
   quickDeclutter;
 
-  String displayName(bool isChinese) {
+  String displayName(AppLocalizations l10n) {
     switch (this) {
       case SessionMode.deepCleaning:
-        return isChinese ? '深度整理' : 'Deep Cleaning';
+        return l10n.deepCleaningTitle;
       case SessionMode.joyDeclutter:
-        return isChinese ? '心动整理' : 'Joy Declutter';
+        return l10n.joyDeclutterTitle;
       case SessionMode.quickDeclutter:
-        return isChinese ? '快速整理' : 'Quick Declutter';
+        return l10n.quickDeclutterTitle;
     }
   }
 }
@@ -183,4 +185,3 @@ class PlannedSession {
     );
   }
 }
-

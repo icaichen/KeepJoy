@@ -48,9 +48,6 @@ class _MemoriesPageState extends State<MemoriesPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
     final memories = widget.memories;
     final topPadding = MediaQuery.of(context).padding.top;
 
@@ -85,7 +82,7 @@ class _MemoriesPageState extends State<MemoriesPage> {
                       )
                     : _viewMode == MemoryViewMode.grid
                     ? _GridViewWrapper(memories: memories)
-                    : _TimelineView(memories: memories, isChinese: isChinese),
+                    : _TimelineView(memories: memories, l10n: l10n),
               ),
             ],
           ),
@@ -332,9 +329,9 @@ class _MemoryGridItem extends StatelessWidget {
 // Timeline View with Dotted Line
 class _TimelineView extends StatelessWidget {
   final List<Memory> memories;
-  final bool isChinese;
+  final AppLocalizations l10n;
 
-  const _TimelineView({required this.memories, required this.isChinese});
+  const _TimelineView({required this.memories, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -362,7 +359,7 @@ class _TimelineView extends StatelessWidget {
           return _TimelineDateSection(
             date: date,
             memories: dateMemories,
-            isChinese: isChinese,
+            l10n: l10n,
             isLast: isLast,
           );
         }).toList(),
@@ -374,21 +371,19 @@ class _TimelineView extends StatelessWidget {
 class _TimelineDateSection extends StatelessWidget {
   final DateTime date;
   final List<Memory> memories;
-  final bool isChinese;
+  final AppLocalizations l10n;
   final bool isLast;
 
   const _TimelineDateSection({
     required this.date,
     required this.memories,
-    required this.isChinese,
+    required this.l10n,
     required this.isLast,
   });
 
   @override
   Widget build(BuildContext context) {
-    final dateLabel = isChinese
-        ? DateFormat('yyyy年M月d日', 'zh_CN').format(date)
-        : DateFormat('MMMM d, yyyy').format(date);
+    final dateLabel = DateFormat.yMMMMd(l10n.localeName).format(date);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,9 +646,6 @@ class _EmptyMemoriesState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
 
     return Center(
       child: Padding(
@@ -686,9 +678,7 @@ class _EmptyMemoriesState extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              isChinese
-                  ? '开始整理你的物品，\n创建美好的回忆吧'
-                  : 'Start decluttering to create\nbeautiful memories',
+              l10n.memoriesEmptySubtitle,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 15,

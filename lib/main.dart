@@ -411,9 +411,6 @@ class _MainNavigatorState extends State<MainNavigator> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
 
     final pages = [
       DashboardScreen(
@@ -444,7 +441,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         onDeleteItem: _deleteDeclutterItem,
       ),
       // Placeholder for center button (not used)
-      const Center(child: Text('Add')),
+      Center(child: Text(l10n.add)),
       MemoriesPage(
         memories: List.unmodifiable(_memories),
         onMemoryDeleted: _onMemoryDeleted,
@@ -491,10 +488,6 @@ class _MainNavigatorState extends State<MainNavigator> {
                 builder: (sheetContext) {
                   final bottomPadding =
                       MediaQuery.of(sheetContext).viewPadding.bottom;
-                  final isChinese = Localizations.localeOf(sheetContext)
-                      .languageCode
-                      .toLowerCase()
-                      .startsWith('zh');
                   return FractionallySizedBox(
                     heightFactor: 0.55,
                     child: Container(
@@ -524,7 +517,7 @@ class _MainNavigatorState extends State<MainNavigator> {
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  isChinese ? '选择整理方式' : 'Choose a flow',
+                                  l10n.chooseFlowTitle,
                                   style: const TextStyle(
                                     fontFamily: 'SF Pro Display',
                                     fontSize: 22,
@@ -537,9 +530,7 @@ class _MainNavigatorState extends State<MainNavigator> {
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  isChinese
-                                      ? '根据当前状态选择最合适的整理体验。'
-                                      : 'Pick the experience that fits your current energy.',
+                                  l10n.chooseFlowSubtitle,
                                   style: const TextStyle(
                                     fontFamily: 'SF Pro Text',
                                     fontSize: 14,
@@ -558,9 +549,9 @@ class _MainNavigatorState extends State<MainNavigator> {
                                         return _buildCleaningModeButton(
                                           icon: Icons.auto_awesome_rounded,
                                           title: l10n.joyDeclutterTitle,
-                                          subtitle: isChinese
-                                              ? '从情感出发整理物品'
-                                              : 'Lead with joy when letting go',
+                                          subtitle:
+                                              l10n.joyDeclutterFlowDescription,
+                                          buttonLabel: l10n.startAction,
                                           colors: const [
                                             Color(0xFF5B8CFF),
                                             Color(0xFF61D1FF),
@@ -574,9 +565,9 @@ class _MainNavigatorState extends State<MainNavigator> {
                                         return _buildCleaningModeButton(
                                           icon: Icons.flash_on_rounded,
                                           title: l10n.quickDeclutterTitle,
-                                          subtitle: isChinese
-                                              ? '10 分钟快速清理'
-                                              : 'Clear spaces in under 10 minutes',
+                                          subtitle:
+                                              l10n.quickDeclutterFlowDescription,
+                                          buttonLabel: l10n.startAction,
                                           colors: const [
                                             Color(0xFFFF8A65),
                                             Color(0xFFFFB74D),
@@ -590,9 +581,9 @@ class _MainNavigatorState extends State<MainNavigator> {
                                         return _buildCleaningModeButton(
                                           icon: Icons.cleaning_services_rounded,
                                           title: l10n.deepCleaningTitle,
-                                          subtitle: isChinese
-                                              ? '系统化、深度的整理流程'
-                                              : 'Structured sessions for thorough results',
+                                          subtitle:
+                                              l10n.deepCleaningFlowDescription,
+                                          buttonLabel: l10n.startAction,
                                           colors: const [
                                             Color(0xFF34E27A),
                                             Color(0xFF0BBF75),
@@ -676,7 +667,7 @@ class _MainNavigatorState extends State<MainNavigator> {
                 child: _buildNavBarItem(
                   icon: Icons.sell_outlined,
                   activeIcon: Icons.sell,
-                  label: isChinese ? '转售' : 'Resell',
+                  label: l10n.routeResell,
                   index: 4,
                   isActive: _selectedIndex == 4,
                   onTap: () => setState(() => _selectedIndex = 4),
@@ -729,6 +720,7 @@ class _MainNavigatorState extends State<MainNavigator> {
     required String subtitle,
     required List<Color> colors,
     required VoidCallback onTap,
+    required String buttonLabel,
   }) {
     return Material(
       color: Colors.transparent,
@@ -798,20 +790,20 @@ class _MainNavigatorState extends State<MainNavigator> {
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Start',
-                        style: TextStyle(
+                        buttonLabel,
+                        style: const TextStyle(
                           fontFamily: 'SF Pro Text',
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(width: 6),
-                      Icon(
+                      const SizedBox(width: 6),
+                      const Icon(
                         Icons.arrow_forward_rounded,
                         color: Colors.white,
                         size: 16,
@@ -1065,7 +1057,6 @@ class _HomeScreenState extends State<_HomeScreen> {
   String? _activitySubtitle(
     ActivityEntry entry,
     AppLocalizations l10n,
-    bool isChinese,
   ) {
     final parts = <String>[];
     final description = entry.description?.trim();
@@ -1078,19 +1069,15 @@ class _HomeScreenState extends State<_HomeScreen> {
     if (parts.isEmpty) {
       return null;
     }
-    return parts.join(isChinese ? ' · ' : ' • ');
+    return parts.join(l10n.activitySeparator);
   }
 
-  String _formatActivityTime(DateTime timestamp, bool isChinese) {
-    final localeCode = isChinese ? 'zh_CN' : 'en_US';
-    final pattern = isChinese ? 'M月d日 HH:mm' : 'MMM d, h:mm a';
-    return DateFormat(pattern, localeCode).format(timestamp);
+  String _formatActivityTime(DateTime timestamp, AppLocalizations l10n) {
+    final formatter = DateFormat.yMMMd(l10n.localeName).add_jm();
+    return formatter.format(timestamp);
   }
 
   void _showActivityHistory(BuildContext context, AppLocalizations l10n) {
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
     final activities = widget.activityHistory.take(5).toList();
 
     showModalBottomSheet<void>(
@@ -1132,9 +1119,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Text(
-                      isChinese
-                          ? '近期还没有活动记录，继续加油！'
-                          : 'No recent activity yet—keep going!',
+                      l10n.noRecentActivity,
                       style: sheetTheme.textTheme.bodyMedium?.copyWith(
                         color: const Color(0xFF6B7280),
                         height: 1.4,
@@ -1153,7 +1138,6 @@ class _HomeScreenState extends State<_HomeScreen> {
                       final subtitle = _activitySubtitle(
                         entry,
                         l10n,
-                        isChinese,
                       );
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1198,7 +1182,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            _formatActivityTime(entry.timestamp, isChinese),
+                            _formatActivityTime(entry.timestamp, l10n),
                             style: sheetTheme.textTheme.bodySmall?.copyWith(
                               color: const Color(0xFF6B7280),
                             ),
@@ -1377,9 +1361,6 @@ class _HomeScreenState extends State<_HomeScreen> {
   }
 
   void _showCleaningModeSelection(BuildContext context, AppLocalizations l10n) {
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -1413,7 +1394,7 @@ class _HomeScreenState extends State<_HomeScreen> {
 
                   // Title
                   Text(
-                    isChinese ? '开始整理' : 'Start Organizing',
+                    l10n.startOrganizing,
                     style: const TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 22,
@@ -1428,9 +1409,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                   _buildModeButton(
                     icon: Icons.auto_awesome_rounded,
                     title: l10n.joyDeclutterTitle,
-                    subtitle: isChinese
-                        ? '一次一件，用心感受'
-                        : 'One item at a time, feel the joy',
+                    subtitle: l10n.joyDeclutterModeSubtitle,
                     iconColor: const Color(0xFF8B5CF6),
                     onTap: () {
                       Navigator.pop(sheetContext);
@@ -1443,9 +1422,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                   _buildModeButton(
                     icon: Icons.bolt_rounded,
                     title: l10n.quickDeclutterTitle,
-                    subtitle: isChinese
-                        ? '快速拍照，批量处理'
-                        : 'Quick capture, batch process',
+                    subtitle: l10n.quickDeclutterModeSubtitle,
                     iconColor: const Color(0xFFEC4899),
                     onTap: () {
                       Navigator.pop(sheetContext);
@@ -1458,9 +1435,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                   _buildModeButton(
                     icon: Icons.spa_rounded,
                     title: l10n.deepCleaningTitle,
-                    subtitle: isChinese
-                        ? '专注整理，焕然一新'
-                        : 'Focused cleaning session',
+                    subtitle: l10n.deepCleaningModeSubtitle,
                     iconColor: const Color(0xFF10B981),
                     onTap: () {
                       Navigator.pop(sheetContext);
@@ -2281,9 +2256,9 @@ class _HomeScreenState extends State<_HomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'ready to start your declutter joy',
-                            style: TextStyle(
+                          Text(
+                            l10n.startYourDeclutterJourney,
+                            style: const TextStyle(
                               fontFamily: 'SF Pro Display',
                               fontSize: 15,
                               fontWeight: FontWeight.w400,

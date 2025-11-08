@@ -82,6 +82,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
 
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   @override
   void initState() {
     super.initState();
@@ -197,9 +199,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return '${hours.toString()}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
-  void _showAddGoalDialog(BuildContext context, bool isChinese) {
+  void _showAddGoalDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController goalController = TextEditingController();
     DateTime? selectedDate;
+    final isChineseLocale =
+        l10n.localeName.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -235,7 +239,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      isChinese ? '创建新目标' : 'Create New Goal',
+                      l10n.dashboardCreateGoalTitle,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -249,10 +253,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       controller: goalController,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        labelText: isChinese ? '目标' : 'Goal',
-                        hintText: isChinese
-                            ? '例如：12月底前整理50件物品\n或：清理厨房并拍照记录'
-                            : 'e.g., Declutter 50 items by end of December\nor Clean kitchen and take photos',
+                        labelText: l10n.dashboardGoalLabel,
+                        hintText: l10n.dashboardGoalHint,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -271,13 +273,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         side: const BorderSide(color: Color(0xFFE5E7EA)),
                       ),
                       leading: const Icon(Icons.calendar_today),
-                      title: Text(isChinese ? '日期（可选）' : 'Date (Optional)'),
+                      title: Text(l10n.dashboardDateOptional),
                       subtitle: Text(
                         selectedDate != null
                             ? DateFormat(
-                                isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
-                              ).format(selectedDate!)
-                            : (isChinese ? '点击选择日期' : 'Tap to select date'),
+                                isChineseLocale ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                               ).format(selectedDate!)
+                            : l10n.dashboardTapToSelectDate,
                       ),
                       trailing: selectedDate != null
                           ? IconButton(
@@ -318,7 +320,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: Text(isChinese ? '取消' : 'Cancel'),
+                            child: Text(l10n.cancel),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -329,9 +331,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      isChinese
-                                          ? '请输入目标'
-                                          : 'Please enter a goal',
+                                      l10n.dashboardEnterGoalPrompt,
                                     ),
                                   ),
                                 );
@@ -357,7 +357,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    isChinese ? '目标已创建' : 'Goal created',
+                                    l10n.dashboardGoalCreated,
                                   ),
                                 ),
                               );
@@ -370,7 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: Text(isChinese ? '创建' : 'Create'),
+                            child: Text(l10n.dashboardCreateAction),
                           ),
                         ),
                       ],
@@ -386,11 +386,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showAddSessionDialog(BuildContext context, bool isChinese) {
+  void _showAddSessionDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController areaController = TextEditingController();
     DateTime? selectedDate = DateTime.now();
     TimeOfDay? selectedTime;
     SessionMode selectedMode = SessionMode.deepCleaning;
+    final isChineseLocale =
+        l10n.localeName.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -427,7 +429,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        isChinese ? '创建新任务' : 'Create New Session',
+                        l10n.dashboardCreateSessionTitle,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -438,7 +440,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                       // Mode Selection
                       Text(
-                        isChinese ? '模式' : 'Mode',
+                        l10n.dashboardModeLabel,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -474,7 +476,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
-                                    mode.displayName(isChinese),
+                                    mode.displayName(l10n),
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
@@ -495,10 +497,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       TextField(
                         controller: areaController,
                         decoration: InputDecoration(
-                          labelText: isChinese ? '区域' : 'Area',
-                          hintText: isChinese
-                              ? '例如：厨房、卧室'
-                              : 'e.g., Kitchen, Bedroom',
+                          labelText: l10n.area,
+                          hintText: l10n.dashboardAreaHint,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -515,13 +515,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           side: const BorderSide(color: Color(0xFFE5E7EA)),
                         ),
                         leading: const Icon(Icons.calendar_today),
-                        title: Text(isChinese ? '日期' : 'Date'),
+                        title: Text(l10n.date),
                         subtitle: Text(
                           selectedDate != null
                               ? DateFormat(
-                                  isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                                  isChineseLocale
+                                      ? 'yyyy年M月d日'
+                                      : 'MMM d, yyyy',
                                 ).format(selectedDate!)
-                              : (isChinese ? '选择日期' : 'Select date'),
+                              : l10n.dashboardSelectDate,
                         ),
                         onTap: () async {
                           final picked = await showDatePicker(
@@ -549,13 +551,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           side: const BorderSide(color: Color(0xFFE5E7EA)),
                         ),
                         leading: const Icon(Icons.access_time),
-                        title: Text(isChinese ? '时间' : 'Time'),
+                        title: Text(l10n.time),
                         subtitle: Text(
                           selectedTime != null
                               ? selectedTime!.format(builderContext)
-                              : (isChinese
-                                    ? '选择时间（可选）'
-                                    : 'Select time (optional)'),
+                              : l10n.dashboardSelectTimeOptional,
                         ),
                         onTap: () async {
                           final picked = await showTimePicker(
@@ -586,7 +586,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: Text(isChinese ? '取消' : 'Cancel'),
+                              child: Text(l10n.cancel),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -597,9 +597,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        isChinese
-                                            ? '请输入区域名称'
-                                            : 'Please enter an area name',
+                                        l10n.dashboardEnterAreaPrompt,
                                       ),
                                     ),
                                   );
@@ -610,7 +608,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   id: DateTime.now().millisecondsSinceEpoch
                                       .toString(),
                                   title:
-                                      '${areaController.text} ${selectedMode.displayName(isChinese)}',
+                                      '${areaController.text} ${selectedMode.displayName(l10n)}',
                                   area: areaController.text.trim(),
                                   scheduledDate: selectedDate,
                                   scheduledTime: selectedTime?.format(
@@ -628,7 +626,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      isChinese ? '任务已创建' : 'Session created',
+                                      l10n.dashboardSessionCreated,
                                     ),
                                   ),
                                 );
@@ -643,7 +641,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: Text(isChinese ? '创建' : 'Create'),
+                              child: Text(l10n.dashboardCreateAction),
                             ),
                           ),
                         ],
@@ -660,7 +658,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showAllSessionsCalendar(BuildContext context, bool isChinese) {
+  void _showAllSessionsCalendar(BuildContext context, AppLocalizations l10n) {
+    final isChineseLocale =
+        l10n.localeName.toLowerCase().startsWith('zh');
+
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
@@ -724,7 +725,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            isChinese ? '计划日历' : 'Calendar',
+                            l10n.dashboardCalendarTitle,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
@@ -735,7 +736,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             icon: const Icon(Icons.add_circle_outline),
                             onPressed: () {
                               Navigator.pop(sheetContext);
-                              _showAddSessionDialog(context, isChinese);
+                              _showAddSessionDialog(context, l10n);
                             },
                           ),
                         ],
@@ -830,9 +831,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
-                                      isChinese
-                                          ? '这天没有计划任务'
-                                          : 'No sessions on this day',
+                                      l10n.dashboardNoSessionsForDay,
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey[600],
@@ -870,16 +869,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          isChinese
-                                              ? '任务已删除'
-                                              : 'Session deleted',
+                                          l10n.dashboardSessionDeleted,
                                         ),
                                       ),
                                     );
                                   },
                                   child: _buildSessionCard(
                                     session,
-                                    isChinese,
+                                    l10n,
                                     context,
                                   ),
                                 );
@@ -901,7 +898,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildSessionCard(
     PlannedSession session,
-    bool isChinese,
+    AppLocalizations l10n,
     BuildContext context,
   ) {
     // Get color based on session mode
@@ -974,7 +971,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${session.mode.displayName(isChinese)} - ${session.area}',
+                  '${session.mode.displayName(l10n)} - ${session.area}',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -998,7 +995,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          isChinese ? '已完成' : 'Done',
+                          l10n.completed,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -1028,7 +1025,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           _formatSessionDate(
                             session.scheduledDate,
                             session.scheduledTime,
-                            isChinese,
+                            l10n,
                           ),
                           style: const TextStyle(
                             fontSize: 13,
@@ -1071,10 +1068,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  String _formatSessionDate(DateTime? date, String? time, bool isChinese) {
+  String _formatSessionDate(DateTime? date, String? time, AppLocalizations l10n) {
     if (date == null) {
-      return isChinese ? '未设定时间' : 'Not scheduled';
+      return l10n.dashboardNotScheduled;
     }
+
+    final isChineseLocale =
+        l10n.localeName.toLowerCase().startsWith('zh');
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -1082,17 +1082,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     String dateStr;
     if (sessionDate == today) {
-      dateStr = isChinese ? '今天' : 'Today';
+      dateStr = l10n.dashboardToday;
     } else if (sessionDate == today.add(const Duration(days: 1))) {
-      dateStr = isChinese ? '明天' : 'Tomorrow';
+      dateStr = l10n.dashboardTomorrow;
     } else {
-      dateStr = isChinese
+      dateStr = isChineseLocale
           ? DateFormat('M月d日', 'zh_CN').format(date)
           : DateFormat('MMM d').format(date);
     }
 
     if (time != null && time.isNotEmpty) {
-      return isChinese ? '$dateStr $time' : '$dateStr at $time';
+      return '$dateStr $time';
     } else {
       return dateStr;
     }
@@ -1267,7 +1267,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
@@ -1358,7 +1357,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      isChinese ? '当前连击' : 'Current Streak',
+                                      l10n.dashboardCurrentStreakTitle,
                                       style: const TextStyle(
                                         fontFamily: 'SF Pro Display',
                                         fontSize: 16,
@@ -1398,7 +1397,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                                 // Subtitle
                                 Text(
-                                  isChinese ? '天连续记录' : 'Days in a row',
+                                  l10n.dashboardStreakSubtitle,
                                   style: const TextStyle(
                                     fontFamily: 'SF Pro Text',
                                     fontSize: 14,
@@ -1612,7 +1611,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  isChinese ? '进行中的任务' : 'Active Session',
+                                  l10n.dashboardActiveSessionTitle,
                                   style: Theme.of(context).textTheme.labelLarge
                                       ?.copyWith(
                                         fontWeight: FontWeight.w600,
@@ -1620,7 +1619,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                 ),
                                 Text(
-                                  isChinese ? '深度整理' : 'Deep Cleaning',
+                                  l10n.deepCleaningTitle,
                                   style: Theme.of(context).textTheme.labelLarge
                                       ?.copyWith(
                                         fontWeight: FontWeight.w400,
@@ -1686,7 +1685,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Icons.play_arrow,
                                       size: 18,
                                     ),
-                                    label: Text(isChinese ? '继续' : 'Resume'),
+                                    label: Text(l10n.resume),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF414B5A),
                                       foregroundColor: Colors.white,
@@ -1744,7 +1743,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                   ),
                                                 );
                                               },
-                                              child: Text(l10n.finish),
+                                              child: Text(l10n.stop),
                                             ),
                                           ],
                                         ),
@@ -1760,7 +1759,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
-                                    child: Text(isChinese ? '停止' : 'Stop'),
+                                    child: Text(l10n.stop),
                                   ),
                                 ),
                               ],
@@ -1783,7 +1782,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            isChinese ? '待办事项' : 'To Do',
+                            l10n.dashboardTodoTitle,
                             style: const TextStyle(
                               fontFamily: 'SF Pro Display',
                               fontSize: 22,
@@ -1795,10 +1794,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           TextButton.icon(
                             onPressed: () {
-                              _showAllSessionsCalendar(context, isChinese);
+                              _showAllSessionsCalendar(context, l10n);
                             },
                             icon: const Icon(Icons.calendar_today, size: 18),
-                            label: Text(isChinese ? '查看日历' : 'View Calendar'),
+                            label: Text(l10n.dashboardViewCalendar),
                             style: TextButton.styleFrom(
                               foregroundColor: const Color(0xFF6B5CE7),
                             ),
@@ -1838,7 +1837,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
-                                      isChinese ? '暂无待办事项' : 'No items yet',
+                                      l10n.dashboardNoTodosTitle,
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -1847,9 +1846,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      isChinese
-                                          ? '点击下方按钮创建目标或任务'
-                                          : 'Tap below to create a goal or session',
+                                      l10n.dashboardNoTodosSubtitle,
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Color(0xFF9CA3AF),
@@ -1891,9 +1888,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          isChinese
-                                              ? '任务已删除'
-                                              : 'Session deleted',
+                                          l10n.dashboardSessionDeleted,
                                         ),
                                       ),
                                     );
@@ -1977,7 +1972,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                 _formatSessionDate(
                                                   session.scheduledDate,
                                                   session.scheduledTime,
-                                                  isChinese,
+                                                  l10n,
                                                 ),
                                                 style: const TextStyle(
                                                   fontSize: 14,
@@ -2014,7 +2009,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               vertical: 6,
                                             ),
                                             child: Text(
-                                              isChinese ? '开始' : 'Start Now',
+                                              l10n.dashboardStartNow,
                                             ),
                                           ),
                                       ],
@@ -2034,10 +2029,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
-                                _showAddGoalDialog(context, isChinese);
+                                _showAddGoalDialog(context, l10n);
                               },
                               icon: const Icon(Icons.flag_outlined, size: 20),
-                              label: Text(isChinese ? '创建目标' : 'Create Goal'),
+                              label: Text(l10n.dashboardCreateGoalTitle),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 14,
@@ -2056,15 +2051,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
-                                _showAddSessionDialog(context, isChinese);
+                                _showAddSessionDialog(context, l10n);
                               },
                               icon: const Icon(
                                 Icons.add_circle_outline,
                                 size: 20,
                               ),
-                              label: Text(
-                                isChinese ? '创建任务' : 'Create Session',
-                              ),
+                              label: Text(l10n.dashboardCreateSessionTitle),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 14,
@@ -2093,7 +2086,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isChinese ? '本月进度' : 'Monthly Progress',
+                        l10n.dashboardMonthlyProgress,
                         style: const TextStyle(
                           fontFamily: 'SF Pro Display',
                           fontSize: 22,
@@ -2113,7 +2106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icon: Icons.cleaning_services_rounded,
                               iconColor: const Color(0xFFB794F6),
                               value: sessionsThisMonth.toString(),
-                              label: isChinese ? '深度整理' : 'Deep Cleaning',
+                              label: l10n.deepCleaning,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -2122,7 +2115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icon: Icons.inventory_2_rounded,
                               iconColor: const Color(0xFF5ECFB8),
                               value: widget.declutteredItems.length.toString(),
-                              label: isChinese ? '已整理' : 'Decluttered',
+                              label: l10n.dashboardDeclutteredLabel,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -2131,7 +2124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icon: Icons.attach_money_rounded,
                               iconColor: const Color(0xFFFFD93D),
                               value: totalValue.toStringAsFixed(0),
-                              label: isChinese ? '转售' : 'Resell',
+                              label: l10n.dashboardResellLabel,
                             ),
                           ),
                         ],
@@ -2171,8 +2164,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const Color(0xFFFFF9E6),
                           const Color(0xFFFFECB3),
                         ],
-                        title: isChinese ? '转卖分析' : 'Resell Analysis',
-                        subtitle: isChinese ? '查看完整报告' : 'View full report',
+                        title: l10n.dashboardResellReportTitle,
+                        subtitle: l10n.dashboardResellReportSubtitle,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -2194,10 +2187,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const Color(0xFFFFEEF0),
                           const Color(0xFFFFDDE0),
                         ],
-                        title: isChinese ? '记忆长廊' : 'Memory Lane',
-                        subtitle: isChinese
-                            ? '重温你的整理旅程'
-                            : 'Revisit your journey',
+                        title: l10n.dashboardMemoryLaneTitle,
+                        subtitle: l10n.dashboardMemoryLaneSubtitle,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -2218,8 +2209,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const Color(0xFFE6F4F9),
                           const Color(0xFFD4E9F3),
                         ],
-                        title: isChinese ? '年度报告' : 'Yearly Reports',
-                        subtitle: isChinese ? '查看年度总结' : 'View annual summary',
+                        title: l10n.dashboardYearlyReportsTitle,
+                        subtitle: l10n.dashboardYearlyReportsSubtitle,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -2309,9 +2300,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'ready to start your declutter joy',
-                            style: TextStyle(
+                          Text(
+                            l10n.startYourDeclutterJourney,
+                            style: const TextStyle(
                               fontFamily: 'SF Pro Display',
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
@@ -2515,12 +2506,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // Define common predefined areas
     final commonAreas = [
-      isChinese ? '厨房' : 'Kitchen',
-      isChinese ? '卧室' : 'Bedroom',
-      isChinese ? '客厅' : 'Living Room',
-      isChinese ? '浴室' : 'Bathroom',
-      isChinese ? '书房' : 'Study',
-      isChinese ? '衣柜' : 'Closet',
+      l10n.kitchen,
+      l10n.bedroom,
+      l10n.livingRoom,
+      l10n.bathroom,
+      l10n.study,
+      l10n.closet,
     ];
 
     // Combine common areas with custom areas
@@ -2560,7 +2551,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           // Title
           Text(
-            isChinese ? '深度整理分析' : 'Deep Cleaning Analysis',
+            l10n.deepCleaningAnalysisTitle,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.black87,
@@ -2576,8 +2567,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   icon: Icons.cleaning_services_rounded,
                   color: const Color(0xFFB794F6),
-                  value: deepCleaningCount.toString(),
-                  label: isChinese ? '整理次数' : 'Sessions',
+                  value: l10n.dashboardSessionsLabel,
+                  label: l10n.dashboardSessionsLabel,
                 ),
               ),
               const SizedBox(width: 12),
@@ -2586,8 +2577,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   icon: Icons.inventory_2_rounded,
                   color: const Color(0xFF5ECFB8),
-                  value: cleanedItemsCount.toString(),
-                  label: isChinese ? '清理物品' : 'Items',
+                  value: l10n.dashboardItemsLabel,
+                  label: l10n.dashboardItemsLabel,
                 ),
               ),
             ],
@@ -2600,8 +2591,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   icon: Icons.spa_rounded,
                   color: const Color(0xFF89CFF0),
-                  value: averageFocus.toStringAsFixed(1),
-                  label: isChinese ? '平均专注度' : 'Avg Focus',
+                  value: l10n.dashboardAverageFocusLabel,
+                  label: l10n.dashboardAverageFocusLabel,
                 ),
               ),
               const SizedBox(width: 12),
@@ -2610,8 +2601,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   context,
                   icon: Icons.sentiment_satisfied_rounded,
                   color: const Color(0xFFFFD93D),
-                  value: averageJoy.toStringAsFixed(1),
-                  label: isChinese ? '平均愉悦度' : 'Avg Joy',
+                  value: l10n.dashboardAverageJoyLabel,
+                  label: l10n.dashboardAverageJoyLabel,
                 ),
               ),
             ],
@@ -2622,18 +2613,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Cleaning Areas with heatmap (ALL areas)
           _buildReportSection(
             context,
-            title: isChinese ? '整理区域' : 'Cleaning Areas',
+            title: l10n.cleaningAreas,
             trailing: CleaningAreaLegend.badge(
               context: context,
-              isChinese: isChinese,
               onTap: () {
                 showDialog(
                   context: context,
                   barrierDismissible: true,
-                  builder: (dialogContext) => CleaningAreaLegend.dialog(
-                    context: dialogContext,
-                    isChinese: isChinese,
-                  ),
+                  builder: (dialogContext) =>
+                      CleaningAreaLegend.dialog(context: dialogContext),
                 );
               },
             ),
@@ -2676,7 +2664,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Before & After - Area-based sessions (clickable)
           _buildReportSection(
             context,
-            title: isChinese ? '整理前后对比' : 'Before & After',
+            title: l10n.beforeAfterComparison,
             child: sessionsByArea.isEmpty
                 ? Text(
                     isChinese
@@ -2700,7 +2688,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _showAreaDeepCleaningReport(
                               context,
                               area,
-                              isChinese,
+                              l10n,
                             );
                           },
                           child: Container(
@@ -2716,7 +2704,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '$area ($sessionCount ${isChinese ? '次' : 'sessions'})',
+                                  '$area ${l10n.dashboardSessionCount(sessionCount)}',
                                   style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         color: Colors.black87,
@@ -2828,8 +2816,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _showAreaDeepCleaningReport(
     BuildContext context,
     String area,
-    bool isChinese,
+    AppLocalizations l10n,
   ) {
+    final isChineseLocale =
+        l10n.localeName.toLowerCase().startsWith('zh');
     // Get all sessions for this area, sorted by date (most recent first)
     final areaSessions =
         widget.deepCleaningSessions
@@ -2867,7 +2857,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '$area ${isChinese ? '整理记录' : 'Cleaning History'}',
+                    '$area ${l10n.dashboardCleaningHistory}',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -2876,7 +2866,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${areaSessions.length} ${isChinese ? '次整理' : 'sessions'}',
+                    l10n.dashboardSessionTotal(areaSessions.length),
                     style: const TextStyle(
                       fontSize: 14,
                       color: Color(0xFF6B7280),
@@ -2890,22 +2880,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       itemBuilder: (context, index) {
                         final session = areaSessions[index];
                         final dateStr = DateFormat(
-                          isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                          isChineseLocale ? 'yyyy年M月d日' : 'MMM d, yyyy',
                         ).format(session.startTime);
 
                         final improvement =
                             session.beforeMessinessIndex != null &&
-                                session.afterMessinessIndex != null
-                            ? ((session.beforeMessinessIndex! -
-                                          session.afterMessinessIndex!) /
-                                      session.beforeMessinessIndex! *
-                                      100)
-                                  .toStringAsFixed(0)
-                            : null;
+                                    session.afterMessinessIndex != null
+                                ? (((session.beforeMessinessIndex! -
+                                            session.afterMessinessIndex!) /
+                                        session.beforeMessinessIndex! *
+                                        100))
+                                    .round()
+                                : null;
 
                         return GestureDetector(
                           onTap: () {
-                            _showSessionDetail(context, session, isChinese);
+                            _showSessionDetail(
+                              context,
+                              session,
+                              l10n,
+                            );
                           },
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -2954,9 +2948,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           ),
                                         ),
                                         child: Text(
-                                          isChinese
-                                              ? '改善 $improvement%'
-                                              : '$improvement% better',
+                                          l10n.dashboardMessinessImprovement(
+                                            improvement,
+                                            session.beforeMessinessIndex!
+                                                .toStringAsFixed(0),
+                                            session.afterMessinessIndex!
+                                                .toStringAsFixed(0),
+                                          ),
                                           style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -2977,7 +2975,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${isChinese ? '专注度' : 'Focus'}: ${session.focusIndex}/5',
+                                        '${l10n.dashboardFocusLabel}: ${session.focusIndex}/5',
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.grey[600],
@@ -2993,7 +2991,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${isChinese ? '愉悦度' : 'Joy'}: ${session.moodIndex}/5',
+                                        '${l10n.dashboardJoyLabel}: ${session.moodIndex}/5',
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.grey[600],
@@ -3005,7 +3003,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 if (session.itemsCount != null) ...[
                                   const SizedBox(height: 8),
                                   Text(
-                                    '${isChinese ? '清理物品' : 'Items cleaned'}: ${session.itemsCount}',
+                                    '${l10n.dashboardItemsCleanedLabel}: ${session.itemsCount}',
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.grey[600],
@@ -3031,8 +3029,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _showSessionDetail(
     BuildContext context,
     DeepCleaningSession session,
-    bool isChinese,
+    AppLocalizations l10n,
   ) {
+    final isChineseLocale =
+        l10n.localeName.toLowerCase().startsWith('zh');
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -3047,16 +3047,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // Calculate metrics
             final improvement =
                 session.beforeMessinessIndex != null &&
-                    session.afterMessinessIndex != null
-                ? ((session.beforeMessinessIndex! -
-                              session.afterMessinessIndex!) /
-                          session.beforeMessinessIndex! *
-                          100)
-                      .toStringAsFixed(0)
-                : null;
+                        session.afterMessinessIndex != null
+                    ? ((session.beforeMessinessIndex! -
+                                session.afterMessinessIndex!) /
+                            session.beforeMessinessIndex! *
+                            100)
+                        .round()
+                    : null;
 
             final dateStr = DateFormat(
-              isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+              l10n.localeName.toLowerCase().startsWith('zh')
+                  ? 'yyyy年M月d日'
+                  : 'MMM d, yyyy',
             ).format(session.startTime);
 
             final hasPhotos =
@@ -3128,7 +3130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                         // Section title
                         Text(
-                          isChinese ? '整理数据' : 'Session Data',
+                          l10n.dashboardSessionData,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -3174,7 +3176,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             ),
                                           ),
                                           child: Text(
-                                            isChinese ? '整理前' : 'Before',
+                                            l10n.dashboardBefore,
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 13,
@@ -3213,7 +3215,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             ),
                                           ),
                                           child: Text(
-                                            isChinese ? '整理后' : 'After',
+                                            l10n.dashboardAfter,
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 13,
@@ -3240,7 +3242,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  isChinese ? '左右滑动查看' : 'Swipe to compare',
+                                  l10n.dashboardSwipeToCompare,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey[600],
@@ -3264,15 +3266,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         // Duration
                         if (session.elapsedSeconds != null)
                           _buildMetricRow(
-                            label: isChinese ? '时长' : 'Duration',
+                            label: l10n.dashboardDurationLabel,
                             value:
-                                '${(session.elapsedSeconds! / 60).toStringAsFixed(0)} ${isChinese ? '分钟' : 'min'}',
+                                l10n.dashboardDurationMinutes(
+                                  (session.elapsedSeconds! / 60).toStringAsFixed(0),
+                                ),
                           ),
 
                         // Items decluttered
                         if (session.itemsCount != null)
                           _buildMetricRow(
-                            label: isChinese ? '清理物品' : 'Items decluttered',
+                            label: l10n.dashboardItemsDeclutteredLabel,
                             value: '${session.itemsCount}',
                           ),
 
@@ -3281,22 +3285,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             session.beforeMessinessIndex != null &&
                             session.afterMessinessIndex != null)
                           _buildMetricRow(
-                            label: isChinese ? '整洁度提升' : 'Messiness reduced',
+                            label: l10n.dashboardMessinessReducedLabel,
                             value:
-                                '$improvement% (${isChinese ? '从' : 'from'} ${session.beforeMessinessIndex!.toStringAsFixed(0)} ${isChinese ? '到' : 'to'} ${session.afterMessinessIndex!.toStringAsFixed(0)})',
+                                l10n.dashboardMessinessImprovement(
+                                  improvement,
+                                  session.beforeMessinessIndex!
+                                      .toStringAsFixed(0),
+                                  session.afterMessinessIndex!
+                                      .toStringAsFixed(0),
+                                ),
                           ),
 
                         // Focus
                         if (session.focusIndex != null)
                           _buildMetricRow(
-                            label: isChinese ? '专注度' : 'Focus',
+                            label: l10n.dashboardFocusLabel,
                             value: '${session.focusIndex}/5',
                           ),
 
                         // Joy
                         if (session.moodIndex != null)
                           _buildMetricRow(
-                            label: isChinese ? '愉悦度' : 'Joy',
+                            label: l10n.dashboardJoyLabel,
                             value: '${session.moodIndex}/5',
                           ),
 
@@ -3324,7 +3334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  isChinese ? '未记录详细数据' : 'No Detailed Metrics',
+                                  l10n.dashboardNoDetailedMetrics,
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
@@ -3333,9 +3343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  isChinese
-                                      ? '这次整理只保存了照片记录\n下次整理时可以记录更多数据'
-                                      : 'This session only saved photos\nNext time you can record more details',
+                                  l10n.dashboardNoDetailsSaved,
                                   style: const TextStyle(
                                     fontSize: 13,
                                     color: Color(0xFF9CA3AF),
@@ -3436,7 +3444,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isChinese ? '放手详情' : 'Letting Go Details',
+            l10n.dashboardLettingGoDetailsTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.black87,
@@ -3444,7 +3452,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isChinese ? '了解不同去向的放手占比' : 'See how items found their next home',
+            l10n.dashboardLettingGoDetailsSubtitle,
             style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 24),
@@ -3477,28 +3485,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               _buildLegendItem(
                 color: resellColor,
-                label: isChinese ? '出售' : 'Sell',
+                label: l10n.routeResell,
                 count: resellCount,
                 theme: theme,
                 isChinese: isChinese,
               ),
               _buildLegendItem(
                 color: recycleColor,
-                label: isChinese ? '回收' : 'Recycle',
+                label: l10n.routeRecycle,
                 count: recycleCount,
                 theme: theme,
                 isChinese: isChinese,
               ),
               _buildLegendItem(
                 color: donateColor,
-                label: isChinese ? '捐赠' : 'Donate',
+                label: l10n.routeDonation,
                 count: donateCount,
                 theme: theme,
                 isChinese: isChinese,
               ),
               _buildLegendItem(
                 color: discardColor,
-                label: isChinese ? '丢弃' : 'Discard',
+                label: l10n.routeDiscard,
                 count: discardCount,
                 theme: theme,
                 isChinese: isChinese,

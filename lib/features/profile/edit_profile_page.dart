@@ -85,10 +85,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
 
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
 
     try {
       // Update user metadata
@@ -104,9 +100,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              isChinese ? '资料已更新' : 'Profile updated successfully',
-            ),
+            content: Text(l10n.profileUpdateSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -116,9 +110,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              isChinese ? '更新失败: $e' : 'Update failed: $e',
-            ),
+            content: Text(l10n.profileUpdateFailed('$e')),
             backgroundColor: Colors.red,
           ),
         );
@@ -135,10 +127,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
@@ -150,7 +138,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          isChinese ? '编辑资料' : 'Edit Profile',
+          l10n.editProfile,
           style: const TextStyle(
             fontFamily: 'SF Pro Display',
             fontSize: 20,
@@ -261,7 +249,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       TextFormField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          hintText: isChinese ? '输入你的名字' : 'Enter your name',
+                          hintText: l10n.enterYourName,
                           hintStyle: const TextStyle(
                             fontFamily: 'SF Pro Text',
                             color: Color(0xFF9CA3AF),
@@ -348,7 +336,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        isChinese ? '邮箱无法修改' : 'Email cannot be changed',
+                        l10n.emailNotEditable,
                         style: const TextStyle(
                           fontFamily: 'SF Pro Text',
                           fontSize: 12,

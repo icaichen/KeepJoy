@@ -2233,15 +2233,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               title: isChinese ? '整理区域' : 'Cleaning Areas',
               trailing: CleaningAreaLegend.badge(
                 context: context,
-                isChinese: isChinese,
                 onTap: () {
                   showDialog(
                     context: context,
                     barrierDismissible: true,
-                    builder: (dialogContext) => CleaningAreaLegend.dialog(
-                      context: dialogContext,
-                      isChinese: isChinese,
-                    ),
+                    builder: (dialogContext) =>
+                        CleaningAreaLegend.dialog(context: dialogContext),
                   );
                 },
               ),

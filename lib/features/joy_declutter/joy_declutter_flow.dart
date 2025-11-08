@@ -273,6 +273,31 @@ class _JoyAnswers {
   bool? sunkCost; // true/false
 }
 
+const int _joyQuestionCount = 5;
+
+class _JoyQuestionDefinition {
+  final int questionNumber;
+  final int currentStep;
+  final String Function(AppLocalizations) promptBuilder;
+  final List<_JoyQuestionOption> options;
+  final void Function(_JoyAnswers, Object value) saveAnswer;
+
+  const _JoyQuestionDefinition({
+    required this.questionNumber,
+    required this.currentStep,
+    required this.promptBuilder,
+    required this.options,
+    required this.saveAnswer,
+  });
+}
+
+class _JoyQuestionOption {
+  final Object value;
+  final String Function(AppLocalizations) labelBuilder;
+
+  const _JoyQuestionOption(this.value, this.labelBuilder);
+}
+
 class _PhotoReviewPage extends StatefulWidget {
   final String photoPath;
   final Function(DeclutterItem) onItemCompleted;
@@ -375,7 +400,9 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => _Question1Page(
+        builder: (_) => _createJoyQuestionPage(
+          questionIndex: 0,
+          answers: _JoyAnswers(),
           photoPath: widget.photoPath,
           itemName: itemName,
           category: _selectedCategory,
@@ -518,44 +545,75 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
   }
 }
 
-// Question 1: When did you last use this?
-class _Question1Page extends StatefulWidget {
-  final String photoPath;
-  final String itemName;
-  final DeclutterCategory category;
-  final Function(DeclutterItem) onItemCompleted;
-  final Function(Memory) onMemoryCreated;
+Widget _createJoyQuestionPage({
+  required int questionIndex,
+  required _JoyAnswers answers,
+  required String photoPath,
+  required String itemName,
+  required DeclutterCategory category,
+  required Function(DeclutterItem) onItemCompleted,
+  required Function(Memory) onMemoryCreated,
+}) {
+  final definition = _joyQuestionDefinition(questionIndex);
+  return _JoyQuestionPage(
+    definition: definition,
+    totalQuestions: _joyQuestionCount,
+    onNext: (context, value) {
+      definition.saveAnswer(answers, value);
+      if (questionIndex + 1 < _joyQuestionCount) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => _createJoyQuestionPage(
+              questionIndex: questionIndex + 1,
+              answers: answers,
+              photoPath: photoPath,
+              itemName: itemName,
+              category: category,
+              onItemCompleted: onItemCompleted,
+              onMemoryCreated: onMemoryCreated,
+            ),
+          ),
+        );
+      } else {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => _SummaryPage(
+              photoPath: photoPath,
+              itemName: itemName,
+              category: category,
+              answers: answers,
+              onItemCompleted: onItemCompleted,
+              onMemoryCreated: onMemoryCreated,
+            ),
+          ),
+        );
+      }
+    },
+  );
+}
 
-  const _Question1Page({
-    required this.photoPath,
-    required this.itemName,
-    required this.category,
-    required this.onItemCompleted,
-    required this.onMemoryCreated,
+class _JoyQuestionPage extends StatefulWidget {
+  final _JoyQuestionDefinition definition;
+  final int totalQuestions;
+  final void Function(BuildContext context, Object value) onNext;
+
+  const _JoyQuestionPage({
+    required this.definition,
+    required this.totalQuestions,
+    required this.onNext,
   });
 
   @override
-  State<_Question1Page> createState() => _Question1PageState();
+  State<_JoyQuestionPage> createState() => _JoyQuestionPageState();
 }
 
-class _Question1PageState extends State<_Question1Page> {
-  String? _selectedAnswer;
-  final _answers = _JoyAnswers();
+class _JoyQuestionPageState extends State<_JoyQuestionPage> {
+  Object? _selectedValue;
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-
-    final options = [
-      {'value': '< 1 month', 'label': isChinese ? '不到1个月' : '< 1 month'},
-      {'value': '1-6 months', 'label': isChinese ? '1-6个月' : '1-6 months'},
-      {'value': '6-12 months', 'label': isChinese ? '6-12个月' : '6-12 months'},
-      {'value': '> 1 year', 'label': isChinese ? '超过1年' : '> 1 year'},
-    ];
 
     return Scaffold(
       backgroundColor: _joyBackgroundColor,
@@ -567,9 +625,9 @@ class _Question1PageState extends State<_Question1Page> {
             children: [
               _buildJoyTopBar(
                 context,
-                currentStep: 2,
+                currentStep: widget.definition.currentStep,
                 totalSteps: 8,
-                title: isChinese ? '心动整理' : 'Joy Declutter',
+                title: l10n.joyDeclutterTitle,
               ),
               Expanded(
                 child: _buildJoySurface(
@@ -577,7 +635,10 @@ class _Question1PageState extends State<_Question1Page> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isChinese ? '问题 1/5' : 'Question 1/5',
+                        l10n.joyQuestionProgress(
+                          widget.definition.questionNumber,
+                          widget.totalQuestions,
+                        ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: const Color(0xFF6B7280),
                           fontWeight: FontWeight.w600,
@@ -585,49 +646,37 @@ class _Question1PageState extends State<_Question1Page> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        isChinese ? '你上次使用这件物品是什么时候？' : 'When did you last use this item?',
+                        widget.definition.promptBuilder(l10n),
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: _joyPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 24),
-                      ...options.map((option) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _OptionButton(
-                              label: option['label']!,
-                              isSelected: _selectedAnswer == option['value'],
-                              onTap: () {
-                                setState(() {
-                                  _selectedAnswer = option['value'];
-                                });
-                              },
-                            ),
-                          )),
+                      ...widget.definition.options.map(
+                        (option) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _OptionButton(
+                            label: option.labelBuilder(l10n),
+                            isSelected: option.value == _selectedValue,
+                            onTap: () {
+                              setState(() {
+                                _selectedValue = option.value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
                       const Spacer(),
                       FilledButton(
-                        onPressed: _selectedAnswer == null
+                        onPressed: _selectedValue == null
                             ? null
-                            : () {
-                                _answers.lastUsed = _selectedAnswer;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => _Question2Page(
-                                      photoPath: widget.photoPath,
-                                      itemName: widget.itemName,
-                                      category: widget.category,
-                                      answers: _answers,
-                                      onItemCompleted: widget.onItemCompleted,
-                                      onMemoryCreated: widget.onMemoryCreated,
-                                    ),
-                                  ),
-                                );
-                              },
+                            : () => widget.onNext(context, _selectedValue!),
                         style: FilledButton.styleFrom(
                           backgroundColor: _joyPrimaryColor,
                           minimumSize: const Size.fromHeight(48),
                         ),
-                        child: Text(isChinese ? '下一步' : 'Next'),
+                        child: Text(l10n.next),
                       ),
                     ],
                   ),
@@ -641,501 +690,96 @@ class _Question1PageState extends State<_Question1Page> {
   }
 }
 
-// Question 2: Do you have a similar item you prefer?
-class _Question2Page extends StatefulWidget {
-  final String photoPath;
-  final String itemName;
-  final DeclutterCategory category;
-  final _JoyAnswers answers;
-  final Function(DeclutterItem) onItemCompleted;
-  final Function(Memory) onMemoryCreated;
-
-  const _Question2Page({
-    required this.photoPath,
-    required this.itemName,
-    required this.category,
-    required this.answers,
-    required this.onItemCompleted,
-    required this.onMemoryCreated,
-  });
-
-  @override
-  State<_Question2Page> createState() => _Question2PageState();
-}
-
-class _Question2PageState extends State<_Question2Page> {
-  bool? _selectedAnswer;
-
-  @override
-  Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: _joyBackgroundColor,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildJoyTopBar(
-                context,
-                currentStep: 3,
-                totalSteps: 8,
-                title: isChinese ? '心动整理' : 'Joy Declutter',
-              ),
-              Expanded(
-                child: _buildJoySurface(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '问题 2/5' : 'Question 2/5',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        isChinese ? '你有其他类似但更喜欢的物品吗？' : 'Do you have a similar item you prefer?',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: _joyPrimaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _OptionButton(
-                        label: isChinese ? '是的' : 'Yes',
-                        isSelected: _selectedAnswer == true,
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswer = true;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _OptionButton(
-                        label: isChinese ? '没有' : 'No',
-                        isSelected: _selectedAnswer == false,
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswer = false;
-                          });
-                        },
-                      ),
-                      const Spacer(),
-                      FilledButton(
-                        onPressed: _selectedAnswer == null
-                            ? null
-                            : () {
-                                widget.answers.hasDuplicate = _selectedAnswer;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => _Question3Page(
-                                      photoPath: widget.photoPath,
-                                      itemName: widget.itemName,
-                                      category: widget.category,
-                                      answers: widget.answers,
-                                      onItemCompleted: widget.onItemCompleted,
-                                      onMemoryCreated: widget.onMemoryCreated,
-                                    ),
-                                  ),
-                                );
-                              },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _joyPrimaryColor,
-                          minimumSize: const Size.fromHeight(48),
-                        ),
-                        child: Text(isChinese ? '下一步' : 'Next'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+_JoyQuestionDefinition _joyQuestionDefinition(int questionIndex) {
+  switch (questionIndex) {
+    case 0:
+      return _JoyQuestionDefinition(
+        questionNumber: 1,
+        currentStep: 2,
+        promptBuilder: (l10n) => l10n.joyQuestion1Prompt,
+        options: [
+          _JoyQuestionOption(
+            '< 1 month',
+            (l10n) => l10n.joyQuestionOptionLessThanMonth,
           ),
-        ),
-      ),
-    );
+          _JoyQuestionOption(
+            '1-6 months',
+            (l10n) => l10n.joyQuestionOption1To6Months,
+          ),
+          _JoyQuestionOption(
+            '6-12 months',
+            (l10n) => l10n.joyQuestionOption6To12Months,
+          ),
+          _JoyQuestionOption(
+            '> 1 year',
+            (l10n) => l10n.joyQuestionOptionMoreThanYear,
+          ),
+        ],
+        saveAnswer: (answers, value) {
+          answers.lastUsed = value as String;
+        },
+      );
+    case 1:
+      return _JoyQuestionDefinition(
+        questionNumber: 2,
+        currentStep: 3,
+        promptBuilder: (l10n) => l10n.joyQuestion2Prompt,
+        options: [
+          _JoyQuestionOption(true, (l10n) => l10n.joyQuestion2Yes),
+          _JoyQuestionOption(false, (l10n) => l10n.joyQuestion2No),
+        ],
+        saveAnswer: (answers, value) {
+          answers.hasDuplicate = value as bool;
+        },
+      );
+    case 2:
+      return _JoyQuestionDefinition(
+        questionNumber: 3,
+        currentStep: 4,
+        promptBuilder: (l10n) => l10n.joyQuestion3Prompt,
+        options: [
+          _JoyQuestionOption(true, (l10n) => l10n.joyQuestion3Yes),
+          _JoyQuestionOption(false, (l10n) => l10n.joyQuestion3No),
+        ],
+        saveAnswer: (answers, value) {
+          answers.wouldBuyAgain = value as bool;
+        },
+      );
+    case 3:
+      return _JoyQuestionDefinition(
+        questionNumber: 4,
+        currentStep: 5,
+        promptBuilder: (l10n) => l10n.joyQuestion4Prompt,
+        options: [
+          _JoyQuestionOption(true, (l10n) => l10n.joyQuestion4Yes),
+          _JoyQuestionOption(false, (l10n) => l10n.joyQuestion4No),
+        ],
+        saveAnswer: (answers, value) {
+          answers.fitsLifestyle = value as bool;
+        },
+      );
+    case 4:
+      return _JoyQuestionDefinition(
+        questionNumber: 5,
+        currentStep: 6,
+        promptBuilder: (l10n) => l10n.joyQuestion5Prompt,
+        options: [
+          _JoyQuestionOption(true, (l10n) => l10n.joyQuestion5Yes),
+          _JoyQuestionOption(false, (l10n) => l10n.joyQuestion5No),
+        ],
+        saveAnswer: (answers, value) {
+          answers.sunkCost = value as bool;
+        },
+      );
+    default:
+      throw ArgumentError('Unsupported joy question index: $questionIndex');
   }
 }
 
-// Question 3: Would you buy this again today?
-class _Question3Page extends StatefulWidget {
-  final String photoPath;
-  final String itemName;
-  final DeclutterCategory category;
-  final _JoyAnswers answers;
-  final Function(DeclutterItem) onItemCompleted;
-  final Function(Memory) onMemoryCreated;
 
-  const _Question3Page({
-    required this.photoPath,
-    required this.itemName,
-    required this.category,
-    required this.answers,
-    required this.onItemCompleted,
-    required this.onMemoryCreated,
-  });
 
-  @override
-  State<_Question3Page> createState() => _Question3PageState();
-}
 
-class _Question3PageState extends State<_Question3Page> {
-  bool? _selectedAnswer;
 
-  @override
-  Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: _joyBackgroundColor,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildJoyTopBar(
-                context,
-                currentStep: 4,
-                totalSteps: 8,
-                title: isChinese ? '心动整理' : 'Joy Declutter',
-              ),
-              Expanded(
-                child: _buildJoySurface(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '问题 3/5' : 'Question 3/5',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        isChinese ? '如果今天重新购买，你还会选择它吗？' : 'Would you buy this item again today?',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: _joyPrimaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _OptionButton(
-                        label: isChinese ? '会的' : 'Yes',
-                        isSelected: _selectedAnswer == true,
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswer = true;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _OptionButton(
-                        label: isChinese ? '不会' : 'No',
-                        isSelected: _selectedAnswer == false,
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswer = false;
-                          });
-                        },
-                      ),
-                      const Spacer(),
-                      FilledButton(
-                        onPressed: _selectedAnswer == null
-                            ? null
-                            : () {
-                                widget.answers.wouldBuyAgain = _selectedAnswer;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => _Question4Page(
-                                      photoPath: widget.photoPath,
-                                      itemName: widget.itemName,
-                                      category: widget.category,
-                                      answers: widget.answers,
-                                      onItemCompleted: widget.onItemCompleted,
-                                      onMemoryCreated: widget.onMemoryCreated,
-                                    ),
-                                  ),
-                                );
-                              },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _joyPrimaryColor,
-                          minimumSize: const Size.fromHeight(48),
-                        ),
-                        child: Text(isChinese ? '下一步' : 'Next'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Question 4: Does this fit your current lifestyle/goals?
-class _Question4Page extends StatefulWidget {
-  final String photoPath;
-  final String itemName;
-  final DeclutterCategory category;
-  final _JoyAnswers answers;
-  final Function(DeclutterItem) onItemCompleted;
-  final Function(Memory) onMemoryCreated;
-
-  const _Question4Page({
-    required this.photoPath,
-    required this.itemName,
-    required this.category,
-    required this.answers,
-    required this.onItemCompleted,
-    required this.onMemoryCreated,
-  });
-
-  @override
-  State<_Question4Page> createState() => _Question4PageState();
-}
-
-class _Question4PageState extends State<_Question4Page> {
-  bool? _selectedAnswer;
-
-  @override
-  Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: _joyBackgroundColor,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildJoyTopBar(
-                context,
-                currentStep: 5,
-                totalSteps: 8,
-                title: isChinese ? '心动整理' : 'Joy Declutter',
-              ),
-              Expanded(
-                child: _buildJoySurface(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '问题 4/5' : 'Question 4/5',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        isChinese ? '它是否符合你当前的生活方式和目标？' : 'Does this fit your current lifestyle and goals?',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: _joyPrimaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _OptionButton(
-                        label: isChinese ? '符合' : 'Yes',
-                        isSelected: _selectedAnswer == true,
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswer = true;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _OptionButton(
-                        label: isChinese ? '不符合' : 'No',
-                        isSelected: _selectedAnswer == false,
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswer = false;
-                          });
-                        },
-                      ),
-                      const Spacer(),
-                      FilledButton(
-                        onPressed: _selectedAnswer == null
-                            ? null
-                            : () {
-                                widget.answers.fitsLifestyle = _selectedAnswer;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => _Question5Page(
-                                      photoPath: widget.photoPath,
-                                      itemName: widget.itemName,
-                                      category: widget.category,
-                                      answers: widget.answers,
-                                      onItemCompleted: widget.onItemCompleted,
-                                      onMemoryCreated: widget.onMemoryCreated,
-                                    ),
-                                  ),
-                                );
-                              },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _joyPrimaryColor,
-                          minimumSize: const Size.fromHeight(48),
-                        ),
-                        child: Text(isChinese ? '下一步' : 'Next'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Question 5: Are you keeping it due to sunk cost (spent too much money)?
-class _Question5Page extends StatefulWidget {
-  final String photoPath;
-  final String itemName;
-  final DeclutterCategory category;
-  final _JoyAnswers answers;
-  final Function(DeclutterItem) onItemCompleted;
-  final Function(Memory) onMemoryCreated;
-
-  const _Question5Page({
-    required this.photoPath,
-    required this.itemName,
-    required this.category,
-    required this.answers,
-    required this.onItemCompleted,
-    required this.onMemoryCreated,
-  });
-
-  @override
-  State<_Question5Page> createState() => _Question5PageState();
-}
-
-class _Question5PageState extends State<_Question5Page> {
-  bool? _selectedAnswer;
-
-  @override
-  Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: _joyBackgroundColor,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildJoyTopBar(
-                context,
-                currentStep: 6,
-                totalSteps: 8,
-                title: isChinese ? '心动整理' : 'Joy Declutter',
-              ),
-              Expanded(
-                child: _buildJoySurface(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '问题 5/5' : 'Question 5/5',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        isChinese ? '你是否因为花了太多钱而不舍得放手？' : 'Are you keeping it because you spent too much money?',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: _joyPrimaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _OptionButton(
-                        label: isChinese ? '是的' : 'Yes',
-                        isSelected: _selectedAnswer == true,
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswer = true;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _OptionButton(
-                        label: isChinese ? '不是' : 'No',
-                        isSelected: _selectedAnswer == false,
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswer = false;
-                          });
-                        },
-                      ),
-                      const Spacer(),
-                      FilledButton(
-                        onPressed: _selectedAnswer == null
-                            ? null
-                            : () {
-                                widget.answers.sunkCost = _selectedAnswer;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => _SummaryPage(
-                                      photoPath: widget.photoPath,
-                                      itemName: widget.itemName,
-                                      category: widget.category,
-                                      answers: widget.answers,
-                                      onItemCompleted: widget.onItemCompleted,
-                                      onMemoryCreated: widget.onMemoryCreated,
-                                    ),
-                                  ),
-                                );
-                              },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _joyPrimaryColor,
-                          minimumSize: const Size.fromHeight(48),
-                        ),
-                        child: Text(isChinese ? '查看总结' : 'View Summary'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 // Summary page showing objective insights
 class _SummaryPage extends StatelessWidget {

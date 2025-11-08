@@ -72,18 +72,16 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
+          SnackBar(content: Text(l10n.failedToPickImage('$e'))),
         );
       }
     }
   }
 
   void _showImageSourceDialog() {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
@@ -101,7 +99,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                 ListTile(
                   leading: const Icon(Icons.camera_alt, color: Color(0xFFB794F6)),
                   title: Text(
-                    isChinese ? '拍照' : 'Take Photo',
+                    l10n.takePhoto,
                     style: const TextStyle(
                       fontFamily: 'SF Pro Text',
                       fontSize: 16,
@@ -116,7 +114,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                 ListTile(
                   leading: const Icon(Icons.photo_library, color: Color(0xFFB794F6)),
                   title: Text(
-                    isChinese ? '从相册选择' : 'Choose from Gallery',
+                    l10n.chooseFromGallery,
                     style: const TextStyle(
                       fontFamily: 'SF Pro Text',
                       fontSize: 16,
@@ -141,7 +139,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
 
     if (_itemNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an item name')),
+        SnackBar(content: Text(l10n.pleaseEnterItemName)),
       );
       return;
     }
@@ -149,7 +147,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a category')));
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseSelectCategory)));
       return;
     }
 
@@ -183,10 +181,6 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -279,7 +273,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              isChinese ? '添加照片' : 'Add Photo',
+                              l10n.addPhoto,
                               style: const TextStyle(
                                 fontFamily: 'SF Pro Text',
                                 fontSize: 16,
@@ -289,7 +283,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              isChinese ? '捕捉这个特别的时刻' : 'Capture this special moment',
+                              l10n.captureSpecialMoment,
                               style: const TextStyle(
                                 fontFamily: 'SF Pro Text',
                                 fontSize: 14,
@@ -316,7 +310,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                   children: [
                     // Item Name
                     Text(
-                      isChinese ? '物品名称' : 'Item Name',
+                      l10n.itemName,
                       style: const TextStyle(
                         fontFamily: 'SF Pro Text',
                         fontSize: 14,
@@ -328,7 +322,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                     TextField(
                       controller: _itemNameController,
                       decoration: InputDecoration(
-                        hintText: isChinese ? '输入物品名称' : 'Enter item name',
+                        hintText: l10n.enterItemName,
                         hintStyle: const TextStyle(
                           fontFamily: 'SF Pro Text',
                           color: Color(0xFF9CA3AF),
@@ -363,7 +357,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
 
                     // Category
                     Text(
-                      isChinese ? '分类' : 'Category',
+                      l10n.category,
                       style: const TextStyle(
                         fontFamily: 'SF Pro Text',
                         fontSize: 14,
@@ -384,7 +378,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                           hint: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
-                              isChinese ? '选择分类' : 'Select a category',
+                              l10n.selectCategory,
                               style: const TextStyle(
                                 fontFamily: 'SF Pro Text',
                                 color: Color(0xFF9CA3AF),

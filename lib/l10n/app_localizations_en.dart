@@ -18,6 +18,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readyToSparkJoy => 'Ready to spark joy today?';
 
   @override
+  String get startYourDeclutterJourney => 'Start your declutter journey';
+
+  @override
+  String get chooseFlowTitle => 'Choose a flow';
+
+  @override
+  String get chooseFlowSubtitle =>
+      'Pick the experience that fits your current energy.';
+
+  @override
+  String get joyDeclutterFlowDescription => 'Lead with joy when letting go';
+
+  @override
+  String get quickDeclutterFlowDescription =>
+      'Clear spaces in under 10 minutes';
+
+  @override
+  String get deepCleaningFlowDescription =>
+      'Structured sessions for thorough results';
+
+  @override
+  String get startAction => 'Start';
+
+  @override
   String get dailyInspiration => 'Daily Inspiration';
 
   @override
@@ -57,6 +81,222 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keepGoing => 'Keep going!';
+
+  @override
+  String get dashboardCreateGoalTitle => 'Create New Goal';
+
+  @override
+  String get dashboardGoalLabel => 'Goal';
+
+  @override
+  String get dashboardGoalHint =>
+      'e.g., Declutter 50 items by end of December\nor Clean kitchen and take photos';
+
+  @override
+  String get dashboardDateOptional => 'Date (Optional)';
+
+  @override
+  String get dashboardTapToSelectDate => 'Tap to select date';
+
+  @override
+  String get dashboardEnterGoalPrompt => 'Please enter a goal';
+
+  @override
+  String get dashboardGoalCreated => 'Goal created';
+
+  @override
+  String get dashboardCreateAction => 'Create';
+
+  @override
+  String get dashboardCreateSessionTitle => 'Create New Session';
+
+  @override
+  String get dashboardModeLabel => 'Mode';
+
+  @override
+  String get dashboardAreaHint => 'e.g., Kitchen, Bedroom';
+
+  @override
+  String get dashboardSelectDate => 'Select date';
+
+  @override
+  String get dashboardSelectTimeOptional => 'Select time (optional)';
+
+  @override
+  String get dashboardEnterAreaPrompt => 'Please enter an area name';
+
+  @override
+  String get dashboardSessionCreated => 'Session created';
+
+  @override
+  String get dashboardMonthlyProgress => 'Monthly Progress';
+
+  @override
+  String get dashboardDeclutteredLabel => 'Decluttered Items';
+
+  @override
+  String get dashboardResellLabel => 'Resell Value';
+
+  @override
+  String get dashboardResellReportTitle => 'Resell Analysis';
+
+  @override
+  String get dashboardResellReportSubtitle => 'View full report';
+
+  @override
+  String get dashboardMemoryLaneTitle => 'Memory Lane';
+
+  @override
+  String get dashboardMemoryLaneSubtitle => 'Revisit your journey';
+
+  @override
+  String get dashboardYearlyReportsTitle => 'Yearly Reports';
+
+  @override
+  String get dashboardYearlyReportsSubtitle => 'View annual summary';
+
+  @override
+  String get dashboardCurrentStreakTitle => 'Current Streak';
+
+  @override
+  String get dashboardStreakSubtitle => 'Days in a row';
+
+  @override
+  String get dashboardActiveSessionTitle => 'Active Session';
+
+  @override
+  String get dashboardTodoTitle => 'To Do';
+
+  @override
+  String get dashboardViewCalendar => 'View Calendar';
+
+  @override
+  String get dashboardNoTodosTitle => 'No items yet';
+
+  @override
+  String get dashboardNoTodosSubtitle =>
+      'Tap below to create a goal or session';
+
+  @override
+  String get dashboardCalendarTitle => 'Calendar';
+
+  @override
+  String get dashboardNoSessionsForDay => 'No sessions on this day';
+
+  @override
+  String get dashboardStartNow => 'Start Now';
+
+  @override
+  String get deepCleaningAnalysisTitle => 'Deep Cleaning Analysis';
+
+  @override
+  String get dashboardSessionsLabel => 'Sessions';
+
+  @override
+  String get dashboardItemsLabel => 'Items';
+
+  @override
+  String get dashboardAverageFocusLabel => 'Avg Focus';
+
+  @override
+  String get dashboardAverageJoyLabel => 'Avg Joy';
+
+  @override
+  String dashboardSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+      zero: '0 sessions',
+    );
+    return '($_temp0)';
+  }
+
+  @override
+  String get dashboardCleaningHistory => 'Cleaning History';
+
+  @override
+  String dashboardSessionTotal(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+      zero: 'No sessions',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardFocusLabel => 'Focus';
+
+  @override
+  String get dashboardJoyLabel => 'Joy';
+
+  @override
+  String get dashboardItemsCleanedLabel => 'Items cleaned';
+
+  @override
+  String get dashboardSessionData => 'Session Data';
+
+  @override
+  String get dashboardBefore => 'Before';
+
+  @override
+  String get dashboardAfter => 'After';
+
+  @override
+  String get dashboardSwipeToCompare => 'Swipe to compare';
+
+  @override
+  String get dashboardDurationLabel => 'Duration';
+
+  @override
+  String dashboardDurationMinutes(String minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get dashboardItemsDeclutteredLabel => 'Items decluttered';
+
+  @override
+  String get dashboardMessinessReducedLabel => 'Messiness reduced';
+
+  @override
+  String dashboardMessinessImprovement(
+    int improvement,
+    String before,
+    String after,
+  ) {
+    return '$improvement% (from $before to $after)';
+  }
+
+  @override
+  String get dashboardNoDetailedMetrics => 'No detailed metrics recorded yet';
+
+  @override
+  String get dashboardNoDetailsSaved =>
+      'Add photos or session metrics to unlock detailed insights here.';
+
+  @override
+  String get dashboardLettingGoDetailsTitle => 'Letting Go Details';
+
+  @override
+  String get dashboardLettingGoDetailsSubtitle =>
+      'See how items found their next home';
+
+  @override
+  String get dashboardSessionDeleted => 'Session deleted';
+
+  @override
+  String get dashboardNotScheduled => 'Not scheduled';
+
+  @override
+  String get dashboardToday => 'Today';
+
+  @override
+  String get dashboardTomorrow => 'Tomorrow';
 
   @override
   String get appTitle => 'KeepJoy';
@@ -317,6 +557,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get garage => 'Garage';
 
   @override
+  String get closet => 'Closet';
+
+  @override
+  String get bathroom => 'Bathroom';
+
+  @override
+  String get study => 'Study';
+
+  @override
   String get customArea => 'Custom area…';
 
   @override
@@ -374,6 +623,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startDeclutter => 'Start Declutter';
 
   @override
+  String get startOrganizing => 'Start Organizing';
+
+  @override
+  String get joyDeclutterModeSubtitle => 'One item at a time, feel the joy';
+
+  @override
+  String get quickDeclutterModeSubtitle => 'Quick capture, batch process';
+
+  @override
+  String get deepCleaningModeSubtitle => 'Focused cleaning session';
+
+  @override
+  String get activitySeparator => ' • ';
+
+  @override
+  String get noRecentActivity => 'No recent activity yet—keep going!';
+
+  @override
   String get justNow => 'just now';
 
   @override
@@ -413,6 +680,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewDetails => 'View Details';
 
   @override
+  String get cleaningLegendButton => 'Legend';
+
+  @override
+  String get cleaningLegendTitle => 'Cleaning Areas Legend';
+
+  @override
+  String get cleaningLegendNone => '0 sessions • not started';
+
+  @override
+  String get cleaningLegendLight => '1-2 sessions • light touch';
+
+  @override
+  String get cleaningLegendMomentum => '3-4 sessions • getting momentum';
+
+  @override
+  String get cleaningLegendSteady => '5-7 sessions • steady groove';
+
+  @override
+  String get cleaningLegendHighFocus => '8-10 sessions • high focus';
+
+  @override
+  String get cleaningLegendMaintenance => '11+ sessions • maintenance mode';
+
+  @override
   String get joyDeclutterCaptureTitle => 'Capture Item';
 
   @override
@@ -421,6 +712,64 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get joyQuestionDescription =>
       'Hold the item in your hands and ask yourself: Does this bring joy to my life?';
+
+  @override
+  String joyQuestionProgress(int current, int total) {
+    return 'Question $current/$total';
+  }
+
+  @override
+  String get joyQuestion1Prompt => 'When did you last use this item?';
+
+  @override
+  String get joyQuestion2Prompt => 'Do you have a similar item you prefer?';
+
+  @override
+  String get joyQuestion3Prompt => 'Would you buy this item again today?';
+
+  @override
+  String get joyQuestion4Prompt =>
+      'Does this fit your current lifestyle and goals?';
+
+  @override
+  String get joyQuestion5Prompt =>
+      'Are you keeping it because you spent too much money?';
+
+  @override
+  String get joyQuestionOptionLessThanMonth => '< 1 month';
+
+  @override
+  String get joyQuestionOption1To6Months => '1-6 months';
+
+  @override
+  String get joyQuestionOption6To12Months => '6-12 months';
+
+  @override
+  String get joyQuestionOptionMoreThanYear => '> 1 year';
+
+  @override
+  String get joyQuestion2Yes => 'Yes';
+
+  @override
+  String get joyQuestion2No => 'No';
+
+  @override
+  String get joyQuestion3Yes => 'Yes';
+
+  @override
+  String get joyQuestion3No => 'No';
+
+  @override
+  String get joyQuestion4Yes => 'Yes';
+
+  @override
+  String get joyQuestion4No => 'No';
+
+  @override
+  String get joyQuestion5Yes => 'Yes';
+
+  @override
+  String get joyQuestion5No => 'No';
 
   @override
   String get keepItem => 'Yes, Keep It';
@@ -537,6 +886,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get memoryTypeCustom => 'Custom';
+
+  @override
+  String get memoryTypeGrateful => 'Grateful';
+
+  @override
+  String get memoryTypeLesson => 'Lesson';
+
+  @override
+  String get memoryTypeCelebrate => 'Celebrate';
+
+  @override
+  String get priorityToday => 'Today';
+
+  @override
+  String get priorityThisWeek => 'This Week';
+
+  @override
+  String get prioritySomeday => 'Someday';
 
   @override
   String get memoryAddNote => 'Add a note';
@@ -877,6 +1244,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatDidThisItemBring => 'What did this item bring you?';
 
   @override
+  String get chooseFromGallery => 'Choose from Gallery';
+
+  @override
+  String get addPhoto => 'Add Photo';
+
+  @override
+  String get captureSpecialMoment => 'Capture this special moment';
+
+  @override
+  String get enterItemName => 'Enter item name';
+
+  @override
+  String get selectCategory => 'Select a category';
+
+  @override
+  String get pleaseSelectCategory => 'Please select a category';
+
+  @override
+  String failedToPickImage(String error) {
+    return 'Failed to pick image: $error';
+  }
+
+  @override
   String get sentimentLove => 'Love';
 
   @override
@@ -941,10 +1331,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startPlanningDeclutter => 'Start planning your declutter';
 
   @override
+  String get calendarTitle => 'Declutter Calendar';
+
+  @override
+  String get calendarAddNewPlan => 'Add New Plan';
+
+  @override
+  String get calendarPlanTitleLabel => 'Plan Title';
+
+  @override
+  String get calendarPlanTitleHint => 'e.g., Clean bedroom';
+
+  @override
+  String get calendarPlanAreaLabel => 'Declutter Area';
+
+  @override
+  String get calendarPlanAreaHint => 'e.g., Bedroom';
+
+  @override
+  String get calendarUnscheduled => 'Unscheduled';
+
+  @override
   String get noPlannedSessions => 'No planned declutter sessions';
 
   @override
   String get planNewSession => 'Plan New Session';
+
+  @override
+  String get add => 'Add';
 
   @override
   String get area => 'Area';
@@ -1092,6 +1506,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nameRequired => 'Name is required';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get enterYourName => 'Enter your name';
+
+  @override
+  String get emailNotEditable => 'Email cannot be changed';
+
+  @override
+  String get profileUpdateSuccess => 'Profile updated successfully';
+
+  @override
+  String profileUpdateFailed(String error) {
+    return 'Update failed: $error';
+  }
 
   @override
   String get invalidEmail => 'Invalid email address';
