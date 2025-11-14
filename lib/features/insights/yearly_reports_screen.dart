@@ -762,7 +762,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                       colors: [
                         Color(0xFF89CFF0), // Blue
                         Color(0xFFE6F4F9), // Light blue
-                        Colors.white,
+                        Color(0xFFF5F5F7),
                       ],
                       stops: [0.0, 0.15, 0.33],
                     ),

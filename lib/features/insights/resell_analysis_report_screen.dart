@@ -141,7 +141,7 @@ class _ResellAnalysisReportScreenState
                       colors: [
                         Color(0xFFFFD93D), // Yellow
                         Color(0xFFFFF9E6), // Light yellow
-                        Colors.white,
+                        Color(0xFFF5F5F7),
                       ],
                       stops: [0.0, 0.15, 0.33],
                     ),

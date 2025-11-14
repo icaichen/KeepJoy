@@ -69,7 +69,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                       colors: [
                         Color(0xFFB794F6), // Purple
                         Color(0xFFF3EBFF), // Light purple
-                        Colors.white,
+                        Color(0xFFF5F5F7),
                       ],
                       stops: [0.0, 0.15, 0.33],
                     ),
