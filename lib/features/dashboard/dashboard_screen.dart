@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:keepjoy_app/features/deep_cleaning/deep_cleaning_flow.dart';
 import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
-import 'package:keepjoy_app/features/dashboard/widgets/cleaning_area_legend.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
 import 'package:keepjoy_app/features/insights/yearly_reports_screen.dart';
 import 'package:keepjoy_app/features/profile/profile_page.dart';
@@ -203,8 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _showAddGoalDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController goalController = TextEditingController();
     DateTime? selectedDate;
-    final isChineseLocale =
-        l10n.localeName.toLowerCase().startsWith('zh');
+    final isChineseLocale = l10n.localeName.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -279,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         selectedDate != null
                             ? DateFormat(
                                 isChineseLocale ? 'yyyy年M月d日' : 'MMM d, yyyy',
-                               ).format(selectedDate!)
+                              ).format(selectedDate!)
                             : l10n.dashboardTapToSelectDate,
                       ),
                       trailing: selectedDate != null
@@ -357,9 +355,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    l10n.dashboardGoalCreated,
-                                  ),
+                                  content: Text(l10n.dashboardGoalCreated),
                                 ),
                               );
                             },
@@ -392,8 +388,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     DateTime? selectedDate = DateTime.now();
     TimeOfDay? selectedTime;
     SessionMode selectedMode = SessionMode.deepCleaning;
-    final isChineseLocale =
-        l10n.localeName.toLowerCase().startsWith('zh');
+    final isChineseLocale = l10n.localeName.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -529,9 +524,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         subtitle: Text(
                           selectedDate != null
                               ? DateFormat(
-                                  isChineseLocale
-                                      ? 'yyyy年M月d日'
-                                      : 'MMM d, yyyy',
+                                  isChineseLocale ? 'yyyy年M月d日' : 'MMM d, yyyy',
                                 ).format(selectedDate!)
                               : l10n.dashboardSelectDate,
                         ),
@@ -619,7 +612,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 final newSession = PlannedSession(
                                   id: DateTime.now().millisecondsSinceEpoch
                                       .toString(),
-                                  title: selectedMode == SessionMode.deepCleaning
+                                  title:
+                                      selectedMode == SessionMode.deepCleaning
                                       ? '${areaController.text} ${selectedMode.displayName(l10n)}'
                                       : selectedMode.displayName(l10n),
                                   area: selectedMode == SessionMode.deepCleaning
@@ -640,9 +634,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(
-                                      l10n.dashboardSessionCreated,
-                                    ),
+                                    content: Text(l10n.dashboardSessionCreated),
                                   ),
                                 );
                               },
@@ -674,8 +666,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showAllSessionsCalendar(BuildContext context, AppLocalizations l10n) {
-    final isChineseLocale =
-        l10n.localeName.toLowerCase().startsWith('zh');
+    final isChineseLocale = l10n.localeName.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -980,9 +971,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   shape: BoxShape.circle,
                   color: isSelected ? primaryColor : Colors.white,
                   border: Border.all(
-                    color: isSelected
-                        ? primaryColor
-                        : const Color(0xFFE5E7EA),
+                    color: isSelected ? primaryColor : const Color(0xFFE5E7EA),
                     width: 1.5,
                   ),
                   boxShadow: isSelected
@@ -999,9 +988,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Icon(
                   getIconForArea(label),
                   size: 24,
-                  color: isSelected
-                      ? Colors.white
-                      : const Color(0xFF1F2937),
+                  color: isSelected ? Colors.white : const Color(0xFF1F2937),
                 ),
               ),
             ),
@@ -1012,12 +999,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected
-                          ? primaryColor
-                          : const Color(0xFF6B7280),
-                    ),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected ? primaryColor : const Color(0xFF6B7280),
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1200,13 +1185,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  String _formatSessionDate(DateTime? date, String? time, AppLocalizations l10n) {
+  String _formatSessionDate(
+    DateTime? date,
+    String? time,
+    AppLocalizations l10n,
+  ) {
     if (date == null) {
       return l10n.dashboardNotScheduled;
     }
 
-    final isChineseLocale =
-        l10n.localeName.toLowerCase().startsWith('zh');
+    final isChineseLocale = l10n.localeName.toLowerCase().startsWith('zh');
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -2140,9 +2128,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               horizontal: 16,
                                               vertical: 6,
                                             ),
-                                            child: Text(
-                                              l10n.dashboardStartNow,
-                                            ),
+                                            child: Text(l10n.dashboardStartNow),
                                           ),
                                       ],
                                     ),
@@ -2584,7 +2570,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildMonthlyReportCard(BuildContext context, bool isChinese) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     // Calculate THIS MONTH's metrics
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
@@ -2611,6 +2597,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final theme = Theme.of(context);
 
     // Calculate counts for each disposal method
+    final keepCount = widget.declutteredItems
+        .where((item) => item.status == DeclutterStatus.keep)
+        .length;
     final resellCount = widget.declutteredItems
         .where((item) => item.status == DeclutterStatus.resell)
         .length;
@@ -2624,264 +2613,375 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .where((item) => item.status == DeclutterStatus.discard)
         .length;
 
-    final total = resellCount + recycleCount + donateCount + discardCount;
+    final total =
+        keepCount + resellCount + recycleCount + donateCount + discardCount;
 
     // Define colors for each category
-    const resellColor = Color(0xFFFFD93D); // Yellow
-    const recycleColor = Color(0xFF5ECFB8); // Teal
-    const donateColor = Color(0xFFFF9AA2); // Pink
-    const discardColor = Color(0xFFC7A2FF); // Lavender
+    const keepColor = Color(0xFF9FAEF8); // Calm periwinkle
+    const resellColor = Color(0xFFFFC857); // Golden amber
+    const recycleColor = Color(0xFF4CC9B0); // Teal green
+    const donateColor = Color(0xFFFF8FA3); // Rose quartz
+    const discardColor = Color(0xFFB99CFF); // Lavender haze
+
+    final breakdowns = [
+      _OutcomeBreakdown(
+        color: keepColor,
+        label: l10n.dashboardKeptLabel,
+        count: keepCount,
+      ),
+      _OutcomeBreakdown(
+        color: resellColor,
+        label: l10n.routeResell,
+        count: resellCount,
+      ),
+      _OutcomeBreakdown(
+        color: recycleColor,
+        label: l10n.routeRecycle,
+        count: recycleCount,
+      ),
+      _OutcomeBreakdown(
+        color: donateColor,
+        label: l10n.routeDonation,
+        count: donateCount,
+      ),
+      _OutcomeBreakdown(
+        color: discardColor,
+        label: l10n.routeDiscard,
+        count: discardCount,
+      ),
+    ];
+
+    final chartSlices = total > 0
+        ? breakdowns.where((b) => b.count > 0).toList()
+        : breakdowns;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
+        border: Border.all(color: const Color(0xFFE4E6F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.dashboardLettingGoDetailsTitle,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.dashboardLettingGoDetailsSubtitle,
-            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
-          ),
-          const SizedBox(height: 24),
-          // Pie chart
-          Center(
-            child: SizedBox(
-              width: 200,
-              height: 200,
-              child: total > 0
-                  ? CustomPaint(
-                      painter: _DonutChartPainter(
-                        resellCount: resellCount,
-                        recycleCount: recycleCount,
-                        donateCount: donateCount,
-                        discardCount: discardCount,
-                        total: total,
-                        resellColor: resellColor,
-                        recycleColor: recycleColor,
-                        donateColor: donateColor,
-                        discardColor: discardColor,
-                      ),
-                    )
-                  : CustomPaint(painter: _EmptyDonutChartPainter()),
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Legend
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildLegendItem(
-                color: resellColor,
-                label: l10n.routeResell,
-                count: resellCount,
-                theme: theme,
-                isChinese: isChinese,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.dashboardLettingGoDetailsTitle,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.dashboardLettingGoDetailsSubtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              _buildLegendItem(
-                color: recycleColor,
-                label: l10n.routeRecycle,
-                count: recycleCount,
-                theme: theme,
-                isChinese: isChinese,
-              ),
-              _buildLegendItem(
-                color: donateColor,
-                label: l10n.routeDonation,
-                count: donateCount,
-                theme: theme,
-                isChinese: isChinese,
-              ),
-              _buildLegendItem(
-                color: discardColor,
-                label: l10n.routeDiscard,
-                count: discardCount,
-                theme: theme,
-                isChinese: isChinese,
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAE4FF),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.bubble_chart_rounded,
+                      size: 16,
+                      color: Color(0xFF6B4E71),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      isChinese ? '实时更新' : 'Live view',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: const Color(0xFF5B21B6),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: 18),
+          Center(
+            child: SizedBox(
+              width: 220,
+              height: 220,
+              child: _buildLetGoChart(
+                size: 220,
+                slices: chartSlices,
+                total: total,
+                theme: theme,
+                isChinese: isChinese,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildOutcomeLegend(
+            breakdowns: breakdowns,
+            total: total,
+            theme: theme,
+            isChinese: isChinese,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem({
-    required Color color,
-    required String label,
-    required int count,
+  Widget _buildLetGoChart({
+    required double size,
+    required List<_OutcomeBreakdown> slices,
+    required int total,
     required ThemeData theme,
     required bool isChinese,
   }) {
+    final hasData = total > 0;
+    final emptyTitle = isChinese ? '暂无整理数据' : 'No data yet';
+    final emptySubtitle = isChinese
+        ? '记录一次整理后即可看到比例。'
+        : 'Log a letting-go result to see the breakdown.';
+
+    final innerWidth = size * 0.65;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: Size.square(size),
+            painter: _OutcomeDonutPainter(
+              slices: hasData ? slices : const <_OutcomeBreakdown>[],
+              total: total,
+            ),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: hasData
+                ? SizedBox(
+                    key: const ValueKey('letGoData'),
+                    width: innerWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$total',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.totalItemsDecluttered,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : SizedBox(
+                    key: const ValueKey('letGoEmpty'),
+                    width: innerWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          emptyTitle,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF374151),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          emptySubtitle,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOutcomeLegend({
+    required List<_OutcomeBreakdown> breakdowns,
+    required int total,
+    required ThemeData theme,
+    required bool isChinese,
+  }) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 12,
+      children: breakdowns
+          .map(
+            (breakdown) => SizedBox(
+              width: 150,
+              child: _buildOutcomeLegendItem(
+                breakdown: breakdown,
+                total: total,
+                theme: theme,
+                isChinese: isChinese,
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildOutcomeLegendItem({
+    required _OutcomeBreakdown breakdown,
+    required int total,
+    required ThemeData theme,
+    required bool isChinese,
+  }) {
+    final ratio = total == 0 ? 0.0 : breakdown.count / total;
+    final percentage = ratio * 100;
+    final percentageLabel = total == 0
+        ? (isChinese ? '占比 0%' : '0%')
+        : (isChinese
+              ? '占比 ${percentage.toStringAsFixed(0)}%'
+              : '${percentage.toStringAsFixed(0)}%');
+
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black87),
+        Row(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: breakdown.color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                breakdown.label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
-          '$count',
-          style: theme.textTheme.titleMedium?.copyWith(
+          isChinese ? '${breakdown.count} 件' : '${breakdown.count}',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF111827),
+          ),
+        ),
+        Text(
+          percentageLabel,
+          style: theme.textTheme.bodyMedium?.copyWith(
             color: const Color(0xFF6B7280),
           ),
         ),
-        if (isChinese)
-          Text(
-            '件',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: const Color(0xFF9CA3AF),
-            ),
-          ),
       ],
     );
   }
 }
 
-// Custom painter for donut chart
-class _DonutChartPainter extends CustomPainter {
-  final int resellCount;
-  final int recycleCount;
-  final int donateCount;
-  final int discardCount;
-  final int total;
-  final Color resellColor;
-  final Color recycleColor;
-  final Color donateColor;
-  final Color discardColor;
+class _OutcomeBreakdown {
+  final Color color;
+  final String label;
+  final int count;
 
-  _DonutChartPainter({
-    required this.resellCount,
-    required this.recycleCount,
-    required this.donateCount,
-    required this.discardCount,
-    required this.total,
-    required this.resellColor,
-    required this.recycleColor,
-    required this.donateColor,
-    required this.discardColor,
+  const _OutcomeBreakdown({
+    required this.color,
+    required this.label,
+    required this.count,
   });
+}
+
+class _OutcomeDonutPainter extends CustomPainter {
+  final List<_OutcomeBreakdown> slices;
+  final int total;
+
+  _OutcomeDonutPainter({required this.slices, required this.total});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    final innerRadius = radius * 0.6;
+    final strokeWidth = radius * 0.32;
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
+
+    final basePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..color = const Color(0xFFE7EAF6);
+
+    canvas.drawArc(rect, 0, math.pi * 2, false, basePaint);
+
+    if (total == 0) {
+      return;
+    }
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = radius - innerRadius;
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
 
-    double startAngle = -90 * (3.14159 / 180); // Start from top
+    double startAngle = -math.pi / 2;
 
-    // Draw resell segment
-    if (resellCount > 0) {
-      final sweepAngle = (resellCount / total) * 2 * 3.14159;
-      paint.color = resellColor;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
+    for (final slice in slices) {
+      if (slice.count <= 0) continue;
+      final sweepAngle = (slice.count / total) * math.pi * 2;
+      if (sweepAngle <= 0) continue;
+
+      paint.shader = SweepGradient(
+        startAngle: startAngle,
+        endAngle: startAngle + sweepAngle,
+        colors: [slice.color.withValues(alpha: 0.65), slice.color],
+      ).createShader(rect);
+
+      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
       startAngle += sweepAngle;
-    }
-
-    // Draw recycle segment
-    if (recycleCount > 0) {
-      final sweepAngle = (recycleCount / total) * 2 * 3.14159;
-      paint.color = recycleColor;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
-      startAngle += sweepAngle;
-    }
-
-    // Draw donate segment
-    if (donateCount > 0) {
-      final sweepAngle = (donateCount / total) * 2 * 3.14159;
-      paint.color = donateColor;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
-      startAngle += sweepAngle;
-    }
-
-    // Draw discard segment
-    if (discardCount > 0) {
-      final sweepAngle = (discardCount / total) * 2 * 3.14159;
-      paint.color = discardColor;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-// Empty donut chart painter (all gray)
-class _EmptyDonutChartPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    final innerRadius = radius * 0.6;
-
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = radius - innerRadius
-      ..color = const Color(0xFFE0E0E0);
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-      0,
-      2 * 3.14159,
-      false,
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

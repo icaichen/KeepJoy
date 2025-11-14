@@ -585,14 +585,20 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardLettingGoDetailsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Letting Go Breakdown'**
+  /// **'Outcome Distribution'**
   String get dashboardLettingGoDetailsTitle;
 
   /// No description provided for @dashboardLettingGoDetailsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'See how items found their next home'**
+  /// **'How many items you kept, resold or released'**
   String get dashboardLettingGoDetailsSubtitle;
+
+  /// No description provided for @dashboardKeptLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept'**
+  String get dashboardKeptLabel;
 
   /// No description provided for @dashboardSessionDeleted.
   ///

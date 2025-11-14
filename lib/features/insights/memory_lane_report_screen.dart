@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/memory.dart';
 
 class MemoryLaneReportScreen extends StatefulWidget {
-  const MemoryLaneReportScreen({
-    super.key,
-    required this.memories,
-  });
+  const MemoryLaneReportScreen({super.key, required this.memories});
 
   final List<Memory> memories;
 
@@ -35,10 +32,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     final topPadding = MediaQuery.of(context).padding.top;
     final pageName = isChinese ? '记忆长廊' : 'Memory Lane';
@@ -113,94 +109,91 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                     // Content sections
                     Column(
                       children: [
-                      // 1. Emotion Distribution (Vertical Bar Chart)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                        child: _buildEmotionDistribution(context, isChinese),
-                      ),
-                      const SizedBox(height: 20),
+                        // 1. Emotion Distribution (Vertical Bar Chart)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                          child: _buildEmotionDistribution(context, isChinese),
+                        ),
+                        const SizedBox(height: 20),
 
-                // 2. Memory Heatmap
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _buildMemoryHeatmap(context, isChinese),
-                ),
-                const SizedBox(height: 20),
+                        // 2. Memory Heatmap
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildMemoryHeatmap(context, isChinese),
+                        ),
+                        const SizedBox(height: 20),
 
-                // 3. Emotion by Category (Horizontal Bar Chart)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _buildEmotionByCategory(context, isChinese),
-                ),
-                const SizedBox(height: 20),
+                        // 3. Emotion by Category (Horizontal Bar Chart)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildEmotionByCategory(context, isChinese),
+                        ),
+                        const SizedBox(height: 20),
 
-                // 4. Time Markers
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _buildTimeMarkers(context, isChinese),
+                        // 4. Time Markers
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildTimeMarkers(context, isChinese),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ],
-        ),
               ],
             ),
           ),
 
           // Real header that appears when scrolling is complete
           Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: IgnorePointer(
-                ignoring: realHeaderOpacity < 0.5,
-                child: Opacity(
-                  opacity: realHeaderOpacity,
-                  child: Container(
-                    height: topPadding + kToolbarHeight,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Color(0xFFE5E5EA),
-                          width: 0.5,
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: realHeaderOpacity < 0.5,
+              child: Opacity(
+                opacity: realHeaderOpacity,
+                child: Container(
+                  height: topPadding + kToolbarHeight,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Back button
+                      Positioned(
+                        left: 0,
+                        top: topPadding,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_rounded),
+                          onPressed: () => Navigator.pop(context),
                         ),
                       ),
-                    ),
-                    child: Stack(
-                      children: [
-                        // Back button
-                        Positioned(
-                          left: 0,
-                          top: topPadding,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_rounded),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ),
-                        // Centered title
-                        Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: topPadding),
-                            child: Text(
-                              pageName,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87,
-                              ),
+                      // Centered title
+                      Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: topPadding),
+                          child: Text(
+                            pageName,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -209,7 +202,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final sentimentCounts = <MemorySentiment, int>{};
     for (final memory in widget.memories) {
       if (memory.sentiment != null) {
-        sentimentCounts[memory.sentiment!] = (sentimentCounts[memory.sentiment!] ?? 0) + 1;
+        sentimentCounts[memory.sentiment!] =
+            (sentimentCounts[memory.sentiment!] ?? 0) + 1;
       }
     }
 
@@ -217,32 +211,32 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       {
         'sentiment': MemorySentiment.love,
         'label': isChinese ? '爱' : 'Love',
-        'color': const Color(0xFFFF9AA2)
+        'color': const Color(0xFFFF9AA2),
       },
       {
         'sentiment': MemorySentiment.nostalgia,
         'label': isChinese ? '怀念' : 'Nostalgia',
-        'color': const Color(0xFFFFD93D)
+        'color': const Color(0xFFFFD93D),
       },
       {
         'sentiment': MemorySentiment.adventure,
         'label': isChinese ? '冒险' : 'Adventure',
-        'color': const Color(0xFF89CFF0)
+        'color': const Color(0xFF89CFF0),
       },
       {
         'sentiment': MemorySentiment.happy,
         'label': isChinese ? '快乐' : 'Happy',
-        'color': const Color(0xFFFFA07A)
+        'color': const Color(0xFFFFA07A),
       },
       {
         'sentiment': MemorySentiment.grateful,
         'label': isChinese ? '感激' : 'Grateful',
-        'color': const Color(0xFF5ECFB8)
+        'color': const Color(0xFF5ECFB8),
       },
       {
         'sentiment': MemorySentiment.peaceful,
         'label': isChinese ? '平静' : 'Peaceful',
-        'color': const Color(0xFFB794F6)
+        'color': const Color(0xFFB794F6),
       },
     ];
 
@@ -265,16 +259,16 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           Text(
             isChinese ? '情绪分布' : 'Emotion Distribution',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             isChinese ? '每个回忆都是珍贵的' : 'Every memory is precious',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black54,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 20),
           ClipRRect(
@@ -358,16 +352,16 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           Text(
             isChinese ? '回忆热力图' : 'Memory Heatmap',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             isChinese ? '过去12个月的回忆活跃度' : 'Activity in past 12 months',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black54,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 20),
           ClipRRect(
@@ -390,9 +384,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               Text(
                 isChinese ? '少' : 'Less',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.black54,
-                      fontSize: 10,
-                    ),
+                  color: Colors.black54,
+                  fontSize: 10,
+                ),
               ),
               const SizedBox(width: 8),
               ...List.generate(5, (i) {
@@ -416,9 +410,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               Text(
                 isChinese ? '多' : 'More',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.black54,
-                      fontSize: 10,
-                    ),
+                  color: Colors.black54,
+                  fontSize: 10,
+                ),
               ),
             ],
           ),
@@ -433,8 +427,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 isChinese ? '最活跃月份' : 'Most Active',
                 mostActiveMonth != null
                     ? (isChinese
-                        ? '${mostActiveMonth!.split('-')[1]}月'
-                        : mostActiveMonth!.split('-')[1])
+                          ? '${mostActiveMonth!.split('-')[1]}月'
+                          : mostActiveMonth!.split('-')[1])
                     : (isChinese ? '无' : 'N/A'),
                 isChinese,
               ),
@@ -458,7 +452,11 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   }
 
   Widget _buildStatChip(
-      BuildContext context, String label, String value, bool isChinese) {
+    BuildContext context,
+    String label,
+    String value,
+    bool isChinese,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -471,18 +469,18 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black54,
-                  fontSize: 10,
-                ),
+              color: Colors.black54,
+              fontSize: 10,
+            ),
           ),
           const SizedBox(width: 4),
           Text(
             value,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black87,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: Colors.black87,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -528,16 +526,16 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           Text(
             isChinese ? '分类统计' : 'Category Statistics',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             isChinese ? '各类别的回忆数量' : 'Memory count per category',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black54,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 20),
           if (sortedCategories.isEmpty)
@@ -546,9 +544,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 padding: const EdgeInsets.all(32.0),
                 child: Text(
                   isChinese ? '暂无分类数据' : 'No category data yet',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.black54,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                 ),
               ),
             )
@@ -578,14 +576,19 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         : (List<Memory>.from(widget.memories)
             ..sort((a, b) => a.createdAt.compareTo(b.createdAt)));
 
-    Memory? firstMemory = sortedMemories.isNotEmpty ? sortedMemories.first : null;
-    Memory? latestMemory = sortedMemories.isNotEmpty ? sortedMemories.last : null;
+    Memory? firstMemory = sortedMemories.isNotEmpty
+        ? sortedMemories.first
+        : null;
+    Memory? latestMemory = sortedMemories.isNotEmpty
+        ? sortedMemories.last
+        : null;
 
     // Find longest story (by description length)
     Memory? longestStory;
     int maxLength = 0;
     for (final memory in widget.memories) {
-      final length = (memory.description?.length ?? 0) + (memory.notes?.length ?? 0);
+      final length =
+          (memory.description?.length ?? 0) + (memory.notes?.length ?? 0);
       if (length > maxLength) {
         maxLength = length;
         longestStory = memory;
@@ -617,17 +620,17 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 Text(
                   isChinese ? '时光印记' : 'Time Markers',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Center(
                   child: Text(
                     isChinese ? '暂无回忆' : 'No memories yet',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.black54,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                   ),
                 ),
               ],
@@ -638,16 +641,16 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 Text(
                   isChinese ? '时光印记' : 'Time Markers',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   isChinese ? '珍贵的时刻' : 'Precious moments',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.black54,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.black54),
                 ),
                 const SizedBox(height: 20),
                 _buildTimeMarker(
@@ -705,7 +708,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                           children: [
                             Text(
                               isChinese ? '回忆之旅' : 'Memory Journey',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     color: Colors.black87,
                                   ),
@@ -715,9 +719,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                               isChinese
                                   ? '$totalDays 天 · ${widget.memories.length} 个回忆'
                                   : '$totalDays days · ${widget.memories.length} memories',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.black54,
-                                  ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.black54),
                             ),
                           ],
                         ),
@@ -731,13 +734,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   }
 
   Widget _buildTimeMarker(
-      BuildContext context,
-      IconData icon,
-      Color iconColor,
-      String label,
-      String title,
-      String date,
-      bool isChinese) {
+    BuildContext context,
+    IconData icon,
+    Color iconColor,
+    String label,
+    String title,
+    String date,
+    bool isChinese,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -748,13 +752,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             color: const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Center(
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 24,
-            ),
-          ),
+          child: Center(child: Icon(icon, color: iconColor, size: 24)),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -764,17 +762,17 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.black54,
-                      fontSize: 10,
-                    ),
+                  color: Colors.black54,
+                  fontSize: 10,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 title,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -782,9 +780,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               Text(
                 date,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.black54,
-                      fontSize: 10,
-                    ),
+                  color: Colors.black54,
+                  fontSize: 10,
+                ),
               ),
             ],
           ),
@@ -809,7 +807,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       'Sep',
       'Oct',
       'Nov',
-      'Dec'
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -867,7 +865,10 @@ class _VerticalBarChartPainter extends CustomPainter {
 
       // Calculate bar height
       final normalizedHeight = maxCount > 0 ? (count / maxCount) : 0.0;
-      final barHeight = (normalizedHeight * chartHeight).clamp(5.0, chartHeight);
+      final barHeight = (normalizedHeight * chartHeight).clamp(
+        5.0,
+        chartHeight,
+      );
       final x = padding + (barSpacing * i) + (barSpacing - barWidth) / 2;
       final y = padding + chartHeight - barHeight;
 
@@ -894,10 +895,7 @@ class _VerticalBarChartPainter extends CustomPainter {
       final countY = barHeight > 25 ? y + 6 : y - 22;
       textPainter.paint(
         canvas,
-        Offset(
-          x + (barWidth - textPainter.width) / 2,
-          countY,
-        ),
+        Offset(x + (barWidth - textPainter.width) / 2, countY),
       );
 
       // Draw label below
@@ -953,7 +951,11 @@ class _MonthlyHeatmapPainter extends CustomPainter {
 
     // Draw 12 month squares in 2 rows, 6 columns
     for (int i = 0; i < monthsToShow; i++) {
-      final monthDate = DateTime(now.year, now.month - (monthsToShow - 1 - i), 1);
+      final monthDate = DateTime(
+        now.year,
+        now.month - (monthsToShow - 1 - i),
+        1,
+      );
       final monthKey =
           '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
       final count = monthlyData[monthKey] ?? 0;
@@ -995,10 +997,11 @@ class _MonthlyHeatmapPainter extends CustomPainter {
         'Sep',
         'Oct',
         'Nov',
-        'Dec'
+        'Dec',
       ];
-      final monthLabel =
-          isChinese ? '${monthDate.month}月' : months[monthDate.month - 1];
+      final monthLabel = isChinese
+          ? '${monthDate.month}月'
+          : months[monthDate.month - 1];
 
       textPainter.text = TextSpan(
         text: monthLabel,
@@ -1041,8 +1044,9 @@ class _CategoryVerticalBarChartPainter extends CustomPainter {
     final double barWidth = categories.isEmpty
         ? 0.0
         : (chartWidth / categories.length) * 0.5;
-    final double barSpacing =
-        categories.isEmpty ? 0.0 : chartWidth / categories.length;
+    final double barSpacing = categories.isEmpty
+        ? 0.0
+        : chartWidth / categories.length;
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     final colors = [
@@ -1076,7 +1080,9 @@ class _CategoryVerticalBarChartPainter extends CustomPainter {
       final category = categories[i];
       final count = counts[category]!;
       final normalizedHeight = maxCount == 0 ? 0.0 : count / maxCount;
-      final barHeight = (normalizedHeight * chartHeight).clamp(4.0, chartHeight).toDouble();
+      final barHeight = (normalizedHeight * chartHeight)
+          .clamp(4.0, chartHeight)
+          .toDouble();
       final x = padding + (barSpacing * i) + (barSpacing - barWidth) / 2;
       final y = padding + chartHeight - barHeight;
 
@@ -1102,10 +1108,7 @@ class _CategoryVerticalBarChartPainter extends CustomPainter {
       final countY = barHeight > 28 ? y + 6 : y - textPainter.height - 4;
       textPainter.paint(
         canvas,
-        Offset(
-          x + (barWidth - textPainter.width) / 2,
-          countY,
-        ),
+        Offset(x + (barWidth - textPainter.width) / 2, countY),
       );
 
       // Category label

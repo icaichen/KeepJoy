@@ -283,11 +283,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add photos or session metrics to unlock detailed insights here.';
 
   @override
-  String get dashboardLettingGoDetailsTitle => 'Letting Go Breakdown';
+  String get dashboardLettingGoDetailsTitle => 'Outcome Distribution';
 
   @override
   String get dashboardLettingGoDetailsSubtitle =>
-      'See how items found their next home';
+      'How many items you kept, resold or released';
+
+  @override
+  String get dashboardKeptLabel => 'Kept';
 
   @override
   String get dashboardSessionDeleted => 'Session deleted';

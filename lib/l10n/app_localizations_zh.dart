@@ -277,10 +277,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardNoDetailsSaved => '添加整理照片或指标，以获得更深入的洞察。';
 
   @override
-  String get dashboardLettingGoDetailsTitle => '放手分布图';
+  String get dashboardLettingGoDetailsTitle => '整理结果分布';
 
   @override
-  String get dashboardLettingGoDetailsSubtitle => '了解不同去向的放手占比';
+  String get dashboardLettingGoDetailsSubtitle => '看看保留与各去向的比例';
+
+  @override
+  String get dashboardKeptLabel => '保留';
 
   @override
   String get dashboardSessionDeleted => '计划已删除';
