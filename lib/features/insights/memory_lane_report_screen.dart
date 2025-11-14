@@ -556,9 +556,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             ClipRRect(
               child: SizedBox(
                 width: double.infinity,
-                height: 200,
+                height: 260,
                 child: CustomPaint(
-                  painter: _HorizontalBarChartPainter(
+                  painter: _CategoryVerticalBarChartPainter(
                     categories: sortedCategories,
                     counts: categoryCounts,
                     isChinese: isChinese,
@@ -652,7 +652,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 const SizedBox(height: 20),
                 _buildTimeMarker(
                   context,
-                  '🌱',
+                  Icons.spa_rounded,
+                  const Color(0xFF66BB6A),
                   isChinese ? '第一个回忆' : 'First Memory',
                   firstMemory!.title,
                   _formatDate(firstMemory.createdAt, isChinese),
@@ -662,7 +663,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 if (longestStory != null)
                   _buildTimeMarker(
                     context,
-                    '📖',
+                    Icons.menu_book_rounded,
+                    const Color(0xFF8E24AA),
                     isChinese ? '最长故事' : 'Longest Story',
                     longestStory.title,
                     _formatDate(longestStory.createdAt, isChinese),
@@ -671,7 +673,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 const SizedBox(height: 16),
                 _buildTimeMarker(
                   context,
-                  '✨',
+                  Icons.auto_awesome_rounded,
+                  const Color(0xFFFFB300),
                   isChinese ? '最新回忆' : 'Latest Memory',
                   latestMemory!.title,
                   _formatDate(latestMemory.createdAt, isChinese),
@@ -690,7 +693,11 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Text('🎯', style: TextStyle(fontSize: 32)),
+                      const Icon(
+                        Icons.track_changes_rounded,
+                        size: 32,
+                        color: Color(0xFF7B61FF),
+                      ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -723,8 +730,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     );
   }
 
-  Widget _buildTimeMarker(BuildContext context, String emoji, String label,
-      String title, String date, bool isChinese) {
+  Widget _buildTimeMarker(
+      BuildContext context,
+      IconData icon,
+      Color iconColor,
+      String label,
+      String title,
+      String date,
+      bool isChinese) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -736,7 +749,11 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
-            child: Text(emoji, style: const TextStyle(fontSize: 24)),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 24,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -1003,13 +1020,13 @@ class _MonthlyHeatmapPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-// HORIZONTAL BAR CHART PAINTER
-class _HorizontalBarChartPainter extends CustomPainter {
+// CATEGORY VERTICAL BAR CHART PAINTER
+class _CategoryVerticalBarChartPainter extends CustomPainter {
   final List<String> categories;
   final Map<String, int> counts;
   final bool isChinese;
 
-  _HorizontalBarChartPainter({
+  _CategoryVerticalBarChartPainter({
     required this.categories,
     required this.counts,
     required this.isChinese,
@@ -1017,12 +1034,15 @@ class _HorizontalBarChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const padding = 16.0;
-    const labelWidth = 100.0;
-    final chartWidth = size.width - labelWidth - padding * 2;
-    final barHeight = (size.height - padding * 2) / categories.length;
-    final actualBarHeight = barHeight * 0.6;
-
+    const padding = 32.0;
+    const bottomPadding = 80.0;
+    final chartWidth = size.width - padding * 2;
+    final chartHeight = size.height - padding - bottomPadding;
+    final double barWidth = categories.isEmpty
+        ? 0.0
+        : (chartWidth / categories.length) * 0.5;
+    final double barSpacing =
+        categories.isEmpty ? 0.0 : chartWidth / categories.length;
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     final colors = [
@@ -1034,69 +1054,75 @@ class _HorizontalBarChartPainter extends CustomPainter {
       const Color(0xFFFF6B6B),
     ];
 
+    if (categories.isEmpty || counts.isEmpty) {
+      return;
+    }
     final maxCount = counts.values.reduce((a, b) => a > b ? a : b);
+
+    // Grid lines for context
+    final gridPaint = Paint()
+      ..color = const Color(0xFFE0E0E0)
+      ..strokeWidth = 1;
+    for (var i = 0; i <= 4; i++) {
+      final y = padding + (chartHeight * i / 4);
+      canvas.drawLine(
+        Offset(padding, y),
+        Offset(size.width - padding, y),
+        gridPaint,
+      );
+    }
 
     for (int i = 0; i < categories.length; i++) {
       final category = categories[i];
       final count = counts[category]!;
-      final y = padding + (i * barHeight);
+      final normalizedHeight = maxCount == 0 ? 0.0 : count / maxCount;
+      final barHeight = (normalizedHeight * chartHeight).clamp(4.0, chartHeight).toDouble();
+      final x = padding + (barSpacing * i) + (barSpacing - barWidth) / 2;
+      final y = padding + chartHeight - barHeight;
 
-      // Draw label
-      textPainter.text = TextSpan(
-        text: category,
-        style: const TextStyle(
-          color: Color(0xFF666666),
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      );
-      textPainter.layout(maxWidth: labelWidth - 8);
-      textPainter.paint(
-        canvas,
-        Offset(padding, y + (barHeight - textPainter.height) / 2),
-      );
-
-      // Draw bar background
-      final barX = padding + labelWidth;
-      final bgPaint = Paint()..color = const Color(0xFFF5F5F5);
-
+      final barPaint = Paint()..color = colors[i % colors.length];
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(barX, y + (barHeight - actualBarHeight) / 2,
-              chartWidth, actualBarHeight),
-          const Radius.circular(6),
+          Rect.fromLTWH(x, y, barWidth, barHeight),
+          const Radius.circular(8),
         ),
-        bgPaint,
+        barPaint,
       );
 
-      // Draw bar value
-      final barWidth = (count / maxCount) * chartWidth;
-      final valuePaint = Paint()..color = colors[i % colors.length];
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(barX, y + (barHeight - actualBarHeight) / 2,
-              barWidth, actualBarHeight),
-          const Radius.circular(6),
-        ),
-        valuePaint,
-      );
-
-      // Draw count
+      // Count label
       textPainter.text = TextSpan(
         text: count.toString(),
-        style: const TextStyle(
-          color: Color(0xFF666666),
+        style: TextStyle(
+          color: barHeight > 28 ? Colors.white : const Color(0xFF666666),
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
       );
       textPainter.layout();
+      final countY = barHeight > 28 ? y + 6 : y - textPainter.height - 4;
       textPainter.paint(
         canvas,
         Offset(
-          barX + barWidth + 8,
-          y + (barHeight - textPainter.height) / 2,
+          x + (barWidth - textPainter.width) / 2,
+          countY,
+        ),
+      );
+
+      // Category label
+      textPainter.text = TextSpan(
+        text: category,
+        style: const TextStyle(
+          color: Color(0xFF666666),
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+      textPainter.layout(maxWidth: barSpacing);
+      textPainter.paint(
+        canvas,
+        Offset(
+          x + barWidth / 2 - textPainter.width / 2,
+          size.height - bottomPadding + 24,
         ),
       );
     }

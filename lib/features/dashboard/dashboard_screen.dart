@@ -495,17 +495,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      TextField(
-                        controller: areaController,
-                        decoration: InputDecoration(
-                          labelText: l10n.area,
-                          hintText: l10n.dashboardAreaHint,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      // Area selection - only for deep cleaning
+                      if (selectedMode == SessionMode.deepCleaning) ...[
+                        Text(
+                          l10n.area,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF6B7280),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 12),
+                        _buildAreaSelection(
+                          context,
+                          areaController,
+                          isChineseLocale,
+                          selectedMode == SessionMode.deepCleaning,
+                          setModalState,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       ListTile(
                         contentPadding: const EdgeInsets.symmetric(
@@ -594,7 +603,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
-                                if (areaController.text.trim().isEmpty) {
+                                // Only require area for deep cleaning
+                                if (selectedMode == SessionMode.deepCleaning &&
+                                    areaController.text.trim().isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
@@ -608,9 +619,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 final newSession = PlannedSession(
                                   id: DateTime.now().millisecondsSinceEpoch
                                       .toString(),
-                                  title:
-                                      '${areaController.text} ${selectedMode.displayName(l10n)}',
-                                  area: areaController.text.trim(),
+                                  title: selectedMode == SessionMode.deepCleaning
+                                      ? '${areaController.text} ${selectedMode.displayName(l10n)}'
+                                      : selectedMode.displayName(l10n),
+                                  area: selectedMode == SessionMode.deepCleaning
+                                      ? areaController.text.trim()
+                                      : 'General',
                                   scheduledDate: selectedDate,
                                   scheduledTime: selectedTime?.format(
                                     builderContext,
@@ -894,6 +908,123 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildAreaSelection(
+    BuildContext context,
+    TextEditingController areaController,
+    bool isChinese,
+    bool isEnabled,
+    void Function(void Function()) setState,
+  ) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final areas = isChinese
+        ? ['客厅', '卧室', '衣柜', '书柜', '厨房', '书桌']
+        : [
+            'Living Room',
+            'Bedroom',
+            'Wardrobe',
+            'Bookshelf',
+            'Kitchen',
+            'Desk',
+          ];
+
+    final selectedArea = areaController.text.trim();
+    const primaryColor = Color(0xFF414B5A);
+
+    // Map areas to icons
+    IconData getIconForArea(String area) {
+      final areaLower = area.toLowerCase();
+      if (areaLower.contains('living') || area == '客厅') {
+        return Icons.weekend_outlined;
+      } else if (areaLower.contains('bedroom') || area == '卧室') {
+        return Icons.bed_outlined;
+      } else if (areaLower.contains('wardrobe') || area == '衣柜') {
+        return Icons.checkroom_outlined;
+      } else if (areaLower.contains('bookshelf') || area == '书柜') {
+        return Icons.book_outlined;
+      } else if (areaLower.contains('kitchen') || area == '厨房') {
+        return Icons.kitchen_outlined;
+      } else if (areaLower.contains('desk') || area == '书桌') {
+        return Icons.desk_outlined;
+      } else {
+        return Icons.home_outlined;
+      }
+    }
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 16,
+      children: areas.map((label) {
+        final isSelected = label.toLowerCase() == selectedArea.toLowerCase();
+        final diameter = screenWidth * 0.15;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: isEnabled
+                  ? () {
+                      setState(() {
+                        areaController.text = label;
+                      });
+                    }
+                  : null,
+              borderRadius: BorderRadius.circular(diameter / 2),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: diameter,
+                height: diameter,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? primaryColor : Colors.white,
+                  border: Border.all(
+                    color: isSelected
+                        ? primaryColor
+                        : const Color(0xFFE5E7EA),
+                    width: 1.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ]
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  getIconForArea(label),
+                  size: 24,
+                  color: isSelected
+                      ? Colors.white
+                      : const Color(0xFF1F2937),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: diameter,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected
+                          ? primaryColor
+                          : const Color(0xFF6B7280),
+                    ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        );
+      }).toList(),
     );
   }
 
