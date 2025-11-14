@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import '../../services/ai_identification_service.dart';
+import '../../utils/navigation.dart';
 
 // Quick Declutter styling constants to match Joy Declutter
 const LinearGradient _quickPinkOrangeGradient = LinearGradient(
@@ -50,7 +51,7 @@ Widget _buildQuickTopBar(
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.close_rounded),
-            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+            onPressed: () => popToHome(context),
             splashRadius: 20,
           ),
         ],
@@ -65,7 +66,9 @@ Widget _buildQuickTopBar(
             height: 3,
             margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
-              color: index <= currentStep ? _quickPrimaryColor : const Color(0xFFE0E5EB),
+              color: index <= currentStep
+                  ? _quickPrimaryColor
+                  : const Color(0xFFE0E5EB),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -81,11 +84,7 @@ BoxDecoration _quickCardDecoration({Color? color}) {
     color: color ?? Colors.white,
     borderRadius: BorderRadius.circular(24),
     boxShadow: const [
-      BoxShadow(
-        color: _quickCardShadow,
-        blurRadius: 20,
-        offset: Offset(0, 12),
-      ),
+      BoxShadow(color: _quickCardShadow, blurRadius: 20, offset: Offset(0, 12)),
     ],
   );
 }
@@ -204,14 +203,21 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
                       const SizedBox(height: 16),
                       // Items captured counter
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.inbox_outlined, size: 24, color: Color(0xFF6B7280)),
+                            const Icon(
+                              Icons.inbox_outlined,
+                              size: 24,
+                              color: Color(0xFF6B7280),
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               l10n.itemsCaptured,
@@ -323,7 +329,8 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
 
   // Joy decision state
   int? _joyLevel;
-  DeclutterStatus? _decision; // null = not decided, keep/discard/donate/etc = decided
+  DeclutterStatus?
+  _decision; // null = not decided, keep/discard/donate/etc = decided
 
   @override
   void didChangeDependencies() {
@@ -344,17 +351,21 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
     setState(() => _isIdentifying = true);
 
     try {
-      final locale = Localizations.localeOf(context).languageCode;
-      print('🎯 Quick Declutter: Starting AI identification, locale: $locale');
+      final locale = Localizations.localeOf(context);
+      print(
+        '🎯 Quick Declutter: Starting AI identification, locale: ${locale.languageCode}',
+      );
 
       final result = await _aiService.identifyBasic(widget.photoPath, locale);
 
-      print('🎯 Quick Declutter: AI result received: ${result != null ? "name=${result.itemName}, category=${result.suggestedCategory}" : "null"}');
+      print(
+        '🎯 Quick Declutter: AI result received: ${result != null ? "name=${result.itemName}, category=${result.suggestedCategory}" : "null"}',
+      );
 
       if (result != null && mounted) {
         setState(() {
           _aiResult = result;
-          _nameController.text = result.itemName;
+          _nameController.text = result.nameForLocale(locale);
           _selectedCategory = result.suggestedCategory;
           _isAISuggested = true;
         });
@@ -372,31 +383,34 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
 
   Future<void> _getDetailedInfo() async {
     final l10n = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context).languageCode;
+    final locale = Localizations.localeOf(context);
 
     setState(() => _isIdentifying = true);
 
     try {
-      final result = await _aiService.identifyDetailed(widget.photoPath, locale);
+      final result = await _aiService.identifyDetailed(
+        widget.photoPath,
+        locale,
+      );
       if (result != null && mounted) {
         setState(() {
           _aiResult = result;
-          _nameController.text = result.itemName;
+          _nameController.text = result.nameForLocale(locale);
           _selectedCategory = result.suggestedCategory;
           _isAISuggested = true;
         });
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.aiIdentificationFailed)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.aiIdentificationFailed)));
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.aiIdentificationFailed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.aiIdentificationFailed)));
       }
     } finally {
       if (mounted) {
@@ -410,18 +424,17 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
   }
 
   Future<void> _handleKeep() async {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final locale = Localizations.localeOf(context);
     final name = _nameController.text.trim().isEmpty
-        ? (isChinese ? '未命名物品' : 'Unnamed item')
+        ? _unnamedPlaceholder(locale)
         : _nameController.text.trim();
+    final nameLocalizations = _buildNameLocalizations(locale, name);
 
     final item = DeclutterItem(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       userId: 'temp-user-id',
       name: name,
+      nameLocalizations: nameLocalizations,
       category: _selectedCategory,
       createdAt: DateTime.now(),
       status: DeclutterStatus.keep,
@@ -448,10 +461,9 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
       ),
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
-        final isChinese = Localizations.localeOf(sheetContext)
-            .languageCode
-            .toLowerCase()
-            .startsWith('zh');
+        final isChinese = Localizations.localeOf(
+          sheetContext,
+        ).languageCode.toLowerCase().startsWith('zh');
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -529,18 +541,17 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
       return;
     }
 
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final locale = Localizations.localeOf(context);
     final name = _nameController.text.trim().isEmpty
-        ? (isChinese ? '未命名物品' : 'Unnamed item')
+        ? _unnamedPlaceholder(locale)
         : _nameController.text.trim();
+    final nameLocalizations = _buildNameLocalizations(locale, name);
 
     final item = DeclutterItem(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       userId: 'temp-user-id',
       name: name,
+      nameLocalizations: nameLocalizations,
       category: _selectedCategory,
       createdAt: DateTime.now(),
       status: status,
@@ -587,14 +598,43 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
     Navigator.of(context).pop(true);
   }
 
+  String _unnamedPlaceholder(Locale locale) {
+    return locale.languageCode.toLowerCase().startsWith('zh')
+        ? '未命名物品'
+        : 'Unnamed item';
+  }
+
+  Map<String, String>? _buildNameLocalizations(Locale locale, String name) {
+    final map = <String, String>{};
+
+    if (_aiResult?.localizedNames.isNotEmpty ?? false) {
+      map.addAll(_aiResult!.localizedNames);
+    }
+
+    final normalized = _localeKey(locale);
+    map[locale.languageCode.toLowerCase()] = name;
+    map[normalized] = name;
+
+    map.removeWhere((key, value) => value.isEmpty);
+    return map.isEmpty ? null : map;
+  }
+
+  String _localeKey(Locale locale) {
+    final language = locale.languageCode.toLowerCase();
+    final country = locale.countryCode?.toLowerCase();
+    if (country == null || country.isEmpty) {
+      return language;
+    }
+    return '$language-$country';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.quickDeclutterTitle), centerTitle: false),
@@ -635,7 +675,10 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                       labelText: l10n.itemName,
                       hintText: l10n.itemName,
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -652,7 +695,10 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                     decoration: InputDecoration(
                       labelText: l10n.category,
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -708,12 +754,17 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                                 gradient: const LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
-                                  colors: [Color(0xFFEF4444), Color(0xFFFCA5A5)],
+                                  colors: [
+                                    Color(0xFFEF4444),
+                                    Color(0xFFFCA5A5),
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                                    color: const Color(
+                                      0xFFEF4444,
+                                    ).withValues(alpha: 0.3),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -741,7 +792,9 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -759,12 +812,17 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                                 gradient: const LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
-                                  colors: [Color(0xFF10B981), Color(0xFF6EE7B7)],
+                                  colors: [
+                                    Color(0xFF10B981),
+                                    Color(0xFF6EE7B7),
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                                    color: const Color(
+                                      0xFF10B981,
+                                    ).withValues(alpha: 0.3),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -792,7 +850,9 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -896,6 +956,7 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
       id: widget.item.id,
       userId: widget.item.userId,
       name: widget.item.name,
+      nameLocalizations: widget.item.nameLocalizations,
       category: widget.item.category,
       createdAt: widget.item.createdAt,
       status: DeclutterStatus.keep,
@@ -907,19 +968,18 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.itemSaved)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.itemSaved)));
 
     // If there are more pending items, show continue option
     if (widget.pendingItems.isNotEmpty) {
       final shouldContinue = await showDialog<bool>(
         context: context,
         builder: (context) {
-          final isChinese = Localizations.localeOf(context)
-              .languageCode
-              .toLowerCase()
-              .startsWith('zh');
+          final isChinese = Localizations.localeOf(
+            context,
+          ).languageCode.toLowerCase().startsWith('zh');
           return AlertDialog(
             title: Text(isChinese ? '继续整理？' : 'Continue?'),
             content: Text(
@@ -955,12 +1015,12 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
             ),
           );
         } else {
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          popToHome(context);
         }
       }
     } else {
       if (mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        popToHome(context);
       }
     }
   }
@@ -976,10 +1036,9 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
       ),
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
-        final isChinese = Localizations.localeOf(sheetContext)
-            .languageCode
-            .toLowerCase()
-            .startsWith('zh');
+        final isChinese = Localizations.localeOf(
+          sheetContext,
+        ).languageCode.toLowerCase().startsWith('zh');
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -1061,6 +1120,7 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
       id: widget.item.id,
       userId: widget.item.userId,
       name: widget.item.name,
+      nameLocalizations: widget.item.nameLocalizations,
       category: widget.item.category,
       createdAt: DateTime.now(),
       status: status,
@@ -1074,10 +1134,9 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
 
     // If there are more pending items, show continue option
     if (widget.pendingItems.isNotEmpty) {
-      final isChinese = Localizations.localeOf(context)
-          .languageCode
-          .toLowerCase()
-          .startsWith('zh');
+      final isChinese = Localizations.localeOf(
+        context,
+      ).languageCode.toLowerCase().startsWith('zh');
       final shouldContinue = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -1113,12 +1172,12 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
             ),
           );
         } else {
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          popToHome(context);
         }
       }
     } else {
       if (mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        popToHome(context);
       }
     }
   }
@@ -1151,10 +1210,9 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -1183,7 +1241,9 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
                             borderRadius: BorderRadius.circular(24),
                             child: AspectRatio(
                               aspectRatio: 4 / 3,
-                              child: widget.item.photoPath == null || widget.item.photoPath!.isEmpty
+                              child:
+                                  widget.item.photoPath == null ||
+                                      widget.item.photoPath!.isEmpty
                                   ? Container(
                                       color: Colors.grey.shade200,
                                       child: const Icon(
@@ -1202,7 +1262,7 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
 
                           // Item name
                           Text(
-                            widget.item.name,
+                            widget.item.displayName(context),
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w700,
                               color: _quickPrimaryColor,
@@ -1245,7 +1305,8 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     isChinese ? '不心动' : 'No Joy',
@@ -1309,9 +1370,7 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
                             onPressed: _handleLetGo,
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFFEF4444),
-                              side: const BorderSide(
-                                color: Color(0xFFEF4444),
-                              ),
+                              side: const BorderSide(color: Color(0xFFEF4444)),
                               minimumSize: const Size.fromHeight(48),
                             ),
                             icon: const Icon(Icons.close_rounded),

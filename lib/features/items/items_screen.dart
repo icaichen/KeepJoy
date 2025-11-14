@@ -46,7 +46,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate stats
@@ -95,10 +97,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                   decoration: const BoxDecoration(
                     color: Color(0xFFF5F6F7),
                     border: Border(
-                      bottom: BorderSide(
-                        color: Color(0xFFE5E5EA),
-                        width: 0.5,
-                      ),
+                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
                     ),
                   ),
                   padding: EdgeInsets.only(top: topPadding),
@@ -163,72 +162,72 @@ class _ItemsScreenState extends State<ItemsScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
       child: Column(
-      children: [
-        const SizedBox(height: 8),
+        children: [
+          const SizedBox(height: 8),
 
-        // Stats Cards Row
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.favorite_rounded,
-                iconColor: const Color(0xFF10B981),
-                title: isChinese ? '保留' : 'Kept',
-                count: keptItems.length,
-                subtitle: isChinese ? '件保留' : 'kept',
+          // Stats Cards Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.favorite_rounded,
+                  iconColor: const Color(0xFF10B981),
+                  title: isChinese ? '保留' : 'Kept',
+                  count: keptItems.length,
+                  subtitle: isChinese ? '件保留' : 'kept',
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.check_circle_outline_rounded,
-                iconColor: const Color(0xFF5ECFB8),
-                title: isChinese ? '已整理' : 'Let Go',
-                count: letGoItems.length,
-                subtitle: isChinese ? '件放手' : 'let go',
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.check_circle_outline_rounded,
+                  iconColor: const Color(0xFF5ECFB8),
+                  title: isChinese ? '已整理' : 'Let Go',
+                  count: letGoItems.length,
+                  subtitle: isChinese ? '件放手' : 'let go',
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
+            ],
+          ),
+          const SizedBox(height: 24),
 
-        // Categories Section - Always show all categories
-        Text(
-          isChinese ? '分类' : 'Categories',
-          style: const TextStyle(
-            fontFamily: 'SF Pro Display',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF1C1C1E),
+          // Categories Section - Always show all categories
+          Text(
+            isChinese ? '分类' : 'Categories',
+            style: const TextStyle(
+              fontFamily: 'SF Pro Display',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1C1C1E),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.1,
+          const SizedBox(height: 16),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.1,
+            ),
+            itemCount: DeclutterCategory.values.length,
+            itemBuilder: (context, index) {
+              final category = DeclutterCategory.values[index];
+              final stats = categoryStats[category] ?? {'total': 0, 'kept': 0};
+              return GestureDetector(
+                onTap: () => _showCategoryItems(category, isChinese),
+                child: _buildCategoryCard(
+                  category,
+                  stats['total']!,
+                  stats['kept']!,
+                  isChinese,
+                ),
+              );
+            },
           ),
-          itemCount: DeclutterCategory.values.length,
-          itemBuilder: (context, index) {
-            final category = DeclutterCategory.values[index];
-            final stats = categoryStats[category] ?? {'total': 0, 'kept': 0};
-            return GestureDetector(
-              onTap: () => _showCategoryItems(category, isChinese),
-              child: _buildCategoryCard(
-                category,
-                stats['total']!,
-                stats['kept']!,
-                isChinese,
-              ),
-            );
-          },
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
@@ -438,10 +437,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
   }
 
   void _showCategoryItems(DeclutterCategory category, bool isChinese) {
-    final categoryItems = widget.items
-        .where((item) => item.category == category)
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final categoryItems =
+        widget.items.where((item) => item.category == category).toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     showModalBottomSheet<void>(
       context: context,
@@ -508,7 +506,7 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
           builder: (_) => CreateMemoryPage(
             item: item,
             photoPath: widget.item.photoPath ?? '',
-            itemName: item.name,
+            itemName: item.displayName(context),
           ),
         ),
       );
@@ -530,9 +528,9 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.itemSaved)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.itemSaved)));
     Navigator.of(context).pop();
   }
 
@@ -648,9 +646,9 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
             Expanded(
               child: Text(
                 label,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
             const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
@@ -663,7 +661,9 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -727,7 +727,7 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                                 ),
                               const SizedBox(height: 20),
                               Text(
-                                widget.item.name,
+                                widget.item.displayName(context),
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w700,
@@ -770,7 +770,9 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isChinese ? '这件物品是否能带来怦然心动的感觉？' : 'Does this item spark joy?',
+                                isChinese
+                                    ? '这件物品是否能带来怦然心动的感觉？'
+                                    : 'Does this item spark joy?',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
@@ -880,8 +882,12 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final keptItems = widget.items.where((item) => item.status == DeclutterStatus.keep).toList();
-    final letGoItems = widget.items.where((item) => item.status != DeclutterStatus.keep).toList();
+    final keptItems = widget.items
+        .where((item) => item.status == DeclutterStatus.keep)
+        .toList();
+    final letGoItems = widget.items
+        .where((item) => item.status != DeclutterStatus.keep)
+        .toList();
 
     final displayItems = _selectedTab == 0 ? keptItems : letGoItems;
 
@@ -914,7 +920,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: _getCategoryColor(widget.category).withValues(alpha: 0.15),
+                          color: _getCategoryColor(
+                            widget.category,
+                          ).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
@@ -969,7 +977,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
-                                color: _selectedTab == 0 ? Colors.white : Colors.transparent,
+                                color: _selectedTab == 0
+                                    ? Colors.white
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                                 boxShadow: _selectedTab == 0
                                     ? const [
@@ -988,7 +998,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: _selectedTab == 0 ? const Color(0xFF1C1C1E) : const Color(0xFF6F7278),
+                                      color: _selectedTab == 0
+                                          ? const Color(0xFF1C1C1E)
+                                          : const Color(0xFF6F7278),
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -997,7 +1009,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: _selectedTab == 0 ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+                                      color: _selectedTab == 0
+                                          ? const Color(0xFF10B981)
+                                          : const Color(0xFF9CA3AF),
                                     ),
                                   ),
                                 ],
@@ -1011,7 +1025,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
-                                color: _selectedTab == 1 ? Colors.white : Colors.transparent,
+                                color: _selectedTab == 1
+                                    ? Colors.white
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                                 boxShadow: _selectedTab == 1
                                     ? const [
@@ -1030,7 +1046,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: _selectedTab == 1 ? const Color(0xFF1C1C1E) : const Color(0xFF6F7278),
+                                      color: _selectedTab == 1
+                                          ? const Color(0xFF1C1C1E)
+                                          : const Color(0xFF6F7278),
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -1039,7 +1057,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: _selectedTab == 1 ? const Color(0xFF5ECFB8) : const Color(0xFF9CA3AF),
+                                      color: _selectedTab == 1
+                                          ? const Color(0xFF5ECFB8)
+                                          : const Color(0xFF9CA3AF),
                                     ),
                                   ),
                                 ],
@@ -1093,25 +1113,44 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                             ),
                             confirmDismiss: (direction) async {
                               return await showDialog<bool>(
-                                context: context,
-                                builder: (dialogContext) => AlertDialog(
-                                  title: Text(widget.isChinese ? '删除物品' : 'Delete Item'),
-                                  content: Text(widget.isChinese ? '确定要删除这个物品吗？' : 'Are you sure you want to delete this item?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                                      child: Text(widget.isChinese ? '取消' : 'Cancel'),
-                                    ),
-                                    FilledButton(
-                                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: const Color(0xFFEF4444),
+                                    context: context,
+                                    builder: (dialogContext) => AlertDialog(
+                                      title: Text(
+                                        widget.isChinese
+                                            ? '删除物品'
+                                            : 'Delete Item',
                                       ),
-                                      child: Text(widget.isChinese ? '删除' : 'Delete'),
+                                      content: Text(
+                                        widget.isChinese
+                                            ? '确定要删除这个物品吗？'
+                                            : 'Are you sure you want to delete this item?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(
+                                            dialogContext,
+                                          ).pop(false),
+                                          child: Text(
+                                            widget.isChinese ? '取消' : 'Cancel',
+                                          ),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () => Navigator.of(
+                                            dialogContext,
+                                          ).pop(true),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFFEF4444,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            widget.isChinese ? '删除' : 'Delete',
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ) ?? false;
+                                  ) ??
+                                  false;
                             },
                             onDismissed: (direction) {
                               widget.onDeleteItem(item.id);
@@ -1170,7 +1209,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: _getCategoryColor(widget.category).withValues(alpha: 0.15),
+                color: _getCategoryColor(
+                  widget.category,
+                ).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
@@ -1182,7 +1223,7 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              item.name,
+              item.displayName(context),
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,

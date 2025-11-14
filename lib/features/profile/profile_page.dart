@@ -23,7 +23,8 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final _authService = AuthService();
 
-  String get _userEmail => _authService.currentUser?.email ?? 'user@example.com';
+  String get _userEmail =>
+      _authService.currentUser?.email ?? 'user@example.com';
 
   String get _userName {
     final metadata = _authService.currentUser?.userMetadata;
@@ -91,7 +92,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     // Profile Avatar
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: const Color(0xFFB794F6).withValues(alpha: 0.15),
+                      backgroundColor: const Color(
+                        0xFFB794F6,
+                      ).withValues(alpha: 0.15),
                       child: Text(
                         _userInitial,
                         style: const TextStyle(
@@ -135,7 +138,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     // Edit Button
                     IconButton(
-                      icon: const Icon(Icons.edit_outlined, color: Color(0xFF6B7280)),
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        color: Color(0xFF6B7280),
+                      ),
                       onPressed: () async {
                         final result = await Navigator.push<bool>(
                           context,
@@ -447,10 +453,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showClearDataDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     showDialog(
       context: context,
@@ -458,7 +463,11 @@ class _ProfilePageState extends State<ProfilePage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            const Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.red,
+              size: 28,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -546,7 +555,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 context: context,
                 barrierDismissible: false,
                 builder: (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -623,10 +634,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showLogoutDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     showDialog(
       context: context,
@@ -642,9 +652,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         content: Text(
-          isChinese
-              ? '确定要登出吗？'
-              : 'Are you sure you want to log out?',
+          isChinese ? '确定要登出吗？' : 'Are you sure you want to log out?',
           style: const TextStyle(
             fontFamily: 'SF Pro Text',
             fontSize: 15,
@@ -673,9 +681,7 @@ class _ProfilePageState extends State<ProfilePage> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      isChinese ? '正在登出...' : 'Logging out...',
-                    ),
+                    content: Text(isChinese ? '正在登出...' : 'Logging out...'),
                     duration: const Duration(seconds: 1),
                   ),
                 );
@@ -687,10 +693,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // Navigate to welcome screen
                 if (mounted) {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/welcome',
-                    (route) => false,
-                  );
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/welcome', (route) => false);
                 }
               } catch (e) {
                 if (mounted) {
@@ -732,9 +737,7 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not open email client'),
-          ),
+          const SnackBar(content: Text('Could not open email client')),
         );
       }
     }
@@ -748,9 +751,7 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not open privacy policy'),
-          ),
+          const SnackBar(content: Text('Could not open privacy policy')),
         );
       }
     }
@@ -764,9 +765,7 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not open terms of service'),
-          ),
+          const SnackBar(content: Text('Could not open terms of service')),
         );
       }
     }
@@ -776,7 +775,9 @@ class _ProfilePageState extends State<ProfilePage> {
     // For iOS
     final Uri iosUrl = Uri.parse('https://apps.apple.com/app/idYOUR_APP_ID');
     // For Android
-    final Uri androidUrl = Uri.parse('https://play.google.com/store/apps/details?id=com.keepjoy.app');
+    final Uri androidUrl = Uri.parse(
+      'https://play.google.com/store/apps/details?id=com.keepjoy.app',
+    );
 
     final Uri url = Platform.isIOS ? iosUrl : androidUrl;
 
@@ -785,19 +786,16 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not open app store'),
-          ),
+          const SnackBar(content: Text('Could not open app store')),
         );
       }
     }
   }
 
   Future<void> _shareApp() async {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     final String shareText = isChinese
         ? '快来试试 KeepJoy - 用心动整理法让生活更美好！\n\nhttps://keepjoy.app'
@@ -808,10 +806,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _exportData(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     // Show loading dialog
     showDialog(
@@ -852,63 +849,88 @@ class _ProfilePageState extends State<ProfilePage> {
       final exportData = {
         'version': '1.0.0',
         'exportDate': DateTime.now().toIso8601String(),
-        'user': {
-          'email': _userEmail,
-          'name': _userName,
-        },
+        'user': {'email': _userEmail, 'name': _userName},
         'data': {
-          'items': items.map((item) => {
-            'id': item.id,
-            'name': item.name,
-            'category': item.category.name,
-            'createdAt': item.createdAt.toIso8601String(),
-            'photoPath': item.photoPath,
-            'status': item.status.name,
-            'notes': item.notes,
-            'joyLevel': item.joyLevel,
-          }).toList(),
-          'sessions': sessions.map((session) => {
-            'id': session.id,
-            'area': session.area,
-            'startTime': session.startTime.toIso8601String(),
-            'elapsedSeconds': session.elapsedSeconds,
-            'itemsCount': session.itemsCount,
-            'beforePhotoPath': session.beforePhotoPath,
-            'afterPhotoPath': session.afterPhotoPath,
-            'focusIndex': session.focusIndex,
-            'moodIndex': session.moodIndex,
-          }).toList(),
-          'memories': memories.map((memory) => {
-            'id': memory.id,
-            'title': memory.title,
-            'itemName': memory.itemName,
-            'description': memory.description,
-            'sentiment': memory.sentiment?.name,
-            'createdAt': memory.createdAt.toIso8601String(),
-            'photoPath': memory.photoPath,
-            'type': memory.type.name,
-          }).toList(),
-          'resellItems': resellItems.map((item) => {
-            'id': item.id,
-            'declutterItemId': item.declutterItemId,
-            'status': item.status.name,
-            'platform': item.platform?.name,
-            'sellingPrice': item.sellingPrice,
-            'soldPrice': item.soldPrice,
-            'soldDate': item.soldDate?.toIso8601String(),
-            'createdAt': item.createdAt.toIso8601String(),
-          }).toList(),
+          'items': items
+              .map(
+                (item) => {
+                  'id': item.id,
+                  'name': item.name,
+                  'displayName': item.displayName(context),
+                  'nameLocalizations': item.nameLocalizations,
+                  'category': item.category.name,
+                  'createdAt': item.createdAt.toIso8601String(),
+                  'photoPath': item.photoPath,
+                  'status': item.status.name,
+                  'notes': item.notes,
+                  'joyLevel': item.joyLevel,
+                },
+              )
+              .toList(),
+          'sessions': sessions
+              .map(
+                (session) => {
+                  'id': session.id,
+                  'area': session.area,
+                  'startTime': session.startTime.toIso8601String(),
+                  'elapsedSeconds': session.elapsedSeconds,
+                  'itemsCount': session.itemsCount,
+                  'beforePhotoPath': session.beforePhotoPath,
+                  'afterPhotoPath': session.afterPhotoPath,
+                  'focusIndex': session.focusIndex,
+                  'moodIndex': session.moodIndex,
+                },
+              )
+              .toList(),
+          'memories': memories
+              .map(
+                (memory) => {
+                  'id': memory.id,
+                  'title': memory.title,
+                  'itemName': memory.itemName,
+                  'description': memory.description,
+                  'sentiment': memory.sentiment?.name,
+                  'createdAt': memory.createdAt.toIso8601String(),
+                  'photoPath': memory.photoPath,
+                  'type': memory.type.name,
+                },
+              )
+              .toList(),
+          'resellItems': resellItems
+              .map(
+                (item) => {
+                  'id': item.id,
+                  'declutterItemId': item.declutterItemId,
+                  'status': item.status.name,
+                  'platform': item.platform?.name,
+                  'sellingPrice': item.sellingPrice,
+                  'soldPrice': item.soldPrice,
+                  'soldDate': item.soldDate?.toIso8601String(),
+                  'createdAt': item.createdAt.toIso8601String(),
+                },
+              )
+              .toList(),
         },
         'statistics': {
           'totalItems': items.length,
           'totalSessions': sessions.length,
           'totalMemories': memories.length,
           'totalResellItems': resellItems.length,
-          'itemsKept': items.where((item) => item.status == DeclutterStatus.keep).length,
-          'itemsDiscarded': items.where((item) => item.status == DeclutterStatus.discard).length,
-          'itemsDonated': items.where((item) => item.status == DeclutterStatus.donate).length,
-          'itemsRecycled': items.where((item) => item.status == DeclutterStatus.recycle).length,
-          'itemsResell': items.where((item) => item.status == DeclutterStatus.resell).length,
+          'itemsKept': items
+              .where((item) => item.status == DeclutterStatus.keep)
+              .length,
+          'itemsDiscarded': items
+              .where((item) => item.status == DeclutterStatus.discard)
+              .length,
+          'itemsDonated': items
+              .where((item) => item.status == DeclutterStatus.donate)
+              .length,
+          'itemsRecycled': items
+              .where((item) => item.status == DeclutterStatus.recycle)
+              .length,
+          'itemsResell': items
+              .where((item) => item.status == DeclutterStatus.resell)
+              .length,
         },
       };
 
@@ -916,7 +938,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
       // Save to documents directory
       final directory = await getApplicationDocumentsDirectory();
-      final fileName = 'keepjoy_export_${DateTime.now().millisecondsSinceEpoch}.json';
+      final fileName =
+          'keepjoy_export_${DateTime.now().millisecondsSinceEpoch}.json';
       final file = File('${directory.path}/$fileName');
 
       await file.writeAsString(jsonString);
@@ -931,7 +954,9 @@ class _ProfilePageState extends State<ProfilePage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: Text(
               isChinese ? '导出成功' : 'Export Successful',
               style: const TextStyle(
@@ -946,9 +971,7 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isChinese
-                      ? '你的数据已成功导出到：'
-                      : 'Your data has been exported to:',
+                  isChinese ? '你的数据已成功导出到：' : 'Your data has been exported to:',
                   style: const TextStyle(
                     fontFamily: 'SF Pro Text',
                     fontSize: 15,
@@ -1010,9 +1033,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              isChinese ? '导出失败: $e' : 'Export failed: $e',
-            ),
+            content: Text(isChinese ? '导出失败: $e' : 'Export failed: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -1042,11 +1063,7 @@ class _SettingsTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 24,
-              color: textColor ?? const Color(0xFF6B7280),
-            ),
+            Icon(icon, size: 24, color: textColor ?? const Color(0xFF6B7280)),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -1060,11 +1077,7 @@ class _SettingsTile extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: const Color(0xFF9CA3AF),
-              size: 20,
-            ),
+            Icon(Icons.chevron_right, color: const Color(0xFF9CA3AF), size: 20),
           ],
         ),
       ),
@@ -1091,9 +1104,13 @@ class _LanguageOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFB794F6).withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected
+              ? const Color(0xFFB794F6).withValues(alpha: 0.1)
+              : Colors.transparent,
           border: Border.all(
-            color: isSelected ? const Color(0xFFB794F6) : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? const Color(0xFFB794F6)
+                : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -1107,7 +1124,9 @@ class _LanguageOption extends StatelessWidget {
                   fontFamily: 'SF Pro Text',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: isSelected ? const Color(0xFFB794F6) : const Color(0xFF111827),
+                  color: isSelected
+                      ? const Color(0xFFB794F6)
+                      : const Color(0xFF111827),
                 ),
               ),
             ),

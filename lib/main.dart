@@ -266,9 +266,10 @@ class _MainNavigatorState extends State<MainNavigator> {
 
   void _addDeclutteredItem(DeclutterItem item) {
     // Record activity based on which flow created the item
+    final localizedName = item.displayName(context);
     _recordActivity(
       ActivityType.joyDeclutter,
-      description: item.name,
+      description: localizedName,
       itemCount: 1,
     );
     setState(() {
@@ -486,8 +487,9 @@ class _MainNavigatorState extends State<MainNavigator> {
                 backgroundColor: Colors.transparent,
                 isScrollControlled: true,
                 builder: (sheetContext) {
-                  final bottomPadding =
-                      MediaQuery.of(sheetContext).viewPadding.bottom;
+                  final bottomPadding = MediaQuery.of(
+                    sheetContext,
+                  ).viewPadding.bottom;
                   return FractionallySizedBox(
                     heightFactor: 0.55,
                     child: Container(
@@ -565,8 +567,8 @@ class _MainNavigatorState extends State<MainNavigator> {
                                         return _buildCleaningModeButton(
                                           icon: Icons.flash_on_rounded,
                                           title: l10n.quickDeclutterTitle,
-                                          subtitle:
-                                              l10n.quickDeclutterFlowDescription,
+                                          subtitle: l10n
+                                              .quickDeclutterFlowDescription,
                                           buttonLabel: l10n.startAction,
                                           colors: const [
                                             Color(0xFFFF8A65),
@@ -594,10 +596,11 @@ class _MainNavigatorState extends State<MainNavigator> {
                                               MaterialPageRoute(
                                                 builder: (_) =>
                                                     DeepCleaningFlowPage(
-                                                  onStartSession:
-                                                      _startSession,
-                                                  onStopSession: _stopSession,
-                                                ),
+                                                      onStartSession:
+                                                          _startSession,
+                                                      onStopSession:
+                                                          _stopSession,
+                                                    ),
                                               ),
                                             );
                                           },
@@ -1054,10 +1057,7 @@ class _HomeScreenState extends State<_HomeScreen> {
     }
   }
 
-  String? _activitySubtitle(
-    ActivityEntry entry,
-    AppLocalizations l10n,
-  ) {
+  String? _activitySubtitle(ActivityEntry entry, AppLocalizations l10n) {
     final parts = <String>[];
     final description = entry.description?.trim();
     if (description != null && description.isNotEmpty) {
@@ -1135,10 +1135,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                         const Divider(height: 24, color: Color(0xFFE5E7EB)),
                     itemBuilder: (_, index) {
                       final entry = activities[index];
-                      final subtitle = _activitySubtitle(
-                        entry,
-                        l10n,
-                      );
+                      final subtitle = _activitySubtitle(entry, l10n);
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1361,7 +1358,6 @@ class _HomeScreenState extends State<_HomeScreen> {
   }
 
   void _showCleaningModeSelection(BuildContext context, AppLocalizations l10n) {
-
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,

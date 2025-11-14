@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../services/messiness_analysis_service.dart';
+import '../../utils/navigation.dart';
 
 const Color _deepCleaningBackgroundColor = Color(0xFFF5F5F7);
 const Color _deepCleaningPrimaryColor = Color(0xFF111827);
@@ -43,7 +44,7 @@ Widget _buildDeepCleaningTopBar(
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.close_rounded),
-            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+            onPressed: () => popToHome(context),
             splashRadius: 20,
           ),
         ],
@@ -873,7 +874,7 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        popToHome(context);
                       },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: _deepCleaningPrimaryColor,
@@ -1853,9 +1854,7 @@ class _SummaryPageState extends State<SummaryPage> {
                           afterMessinessIndex: _afterMessiness,
                         );
                         // Pop all the way back to home
-                        Navigator.of(
-                          context,
-                        ).popUntil((route) => route.isFirst);
+                        popToHome(context);
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF414B5A),

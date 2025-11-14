@@ -78,6 +78,7 @@ class DeclutterItem {
     required this.id,
     this.userId = 'local_user',
     required this.name,
+    this.nameLocalizations,
     required this.category,
     DateTime? createdAt,
     this.updatedAt,
@@ -93,6 +94,7 @@ class DeclutterItem {
   final String id;
   final String userId; // Foreign key to auth.users
   final String name;
+  final Map<String, String>? nameLocalizations;
   final DeclutterCategory category;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -110,6 +112,7 @@ class DeclutterItem {
       'id': id,
       'user_id': userId,
       'name': name,
+      'name_localizations': nameLocalizations,
       'category': category.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
@@ -129,6 +132,8 @@ class DeclutterItem {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       name: json['name'] as String,
+      nameLocalizations: (json['name_localizations'] as Map<String, dynamic>?)
+          ?.map((key, value) => MapEntry(key.toString(), value.toString())),
       category: DeclutterCategory.values.firstWhere(
         (e) => e.name == json['category'],
       ),
@@ -158,6 +163,7 @@ class DeclutterItem {
     String? id,
     String? userId,
     String? name,
+    Map<String, String>? nameLocalizations,
     DeclutterCategory? category,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -173,6 +179,7 @@ class DeclutterItem {
       id: id ?? this.id,
       userId: userId ?? this.userId,
       name: name ?? this.name,
+      nameLocalizations: nameLocalizations ?? this.nameLocalizations,
       category: category ?? this.category,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -184,5 +191,64 @@ class DeclutterItem {
       purchaseReview: purchaseReview ?? this.purchaseReview,
       reviewedAt: reviewedAt ?? this.reviewedAt,
     );
+  }
+}
+
+extension DeclutterItemLocalization on DeclutterItem {
+  String displayName(BuildContext context) {
+    return displayNameForLocale(Localizations.localeOf(context));
+  }
+
+  String displayNameForLocale(Locale locale) {
+    final normalized = _normalizeLocale(locale);
+    if (nameLocalizations == null || nameLocalizations!.isEmpty) {
+      return name;
+    }
+
+    final directMatch = nameLocalizations![normalized];
+    if (directMatch != null && directMatch.isNotEmpty) {
+      return directMatch;
+    }
+
+    final baseMatch = nameLocalizations![locale.languageCode.toLowerCase()];
+    if (baseMatch != null && baseMatch.isNotEmpty) {
+      return baseMatch;
+    }
+
+    if (locale.languageCode.toLowerCase().startsWith('zh')) {
+      final zhEntry = nameLocalizations!.entries.firstWhere(
+        (entry) =>
+            entry.key.toLowerCase().startsWith('zh') && entry.value.isNotEmpty,
+        orElse: () => MapEntry('', ''),
+      );
+      if (zhEntry.key.isNotEmpty) {
+        return zhEntry.value;
+      }
+    }
+
+    return nameLocalizations!['en'] ??
+        nameLocalizations!.values.firstWhere(
+          (value) => value.isNotEmpty,
+          orElse: () => name,
+        );
+  }
+
+  Map<String, String> updatedLocalizationsForLocale(
+    Locale locale,
+    String value,
+  ) {
+    final normalized = _normalizeLocale(locale);
+    final base = locale.languageCode.toLowerCase();
+    return {
+      if (nameLocalizations != null) ...nameLocalizations!,
+      base: value,
+      normalized: value,
+    }..removeWhere((key, val) => val.isEmpty);
+  }
+
+  static String _normalizeLocale(Locale locale) {
+    final language = locale.languageCode.toLowerCase();
+    final country = locale.countryCode?.toLowerCase();
+    return country == null || country.isEmpty ? language : '$language-$country';
   }
 }

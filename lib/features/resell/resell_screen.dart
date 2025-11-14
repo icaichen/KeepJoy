@@ -47,12 +47,19 @@ class _ResellScreenState extends State<ResellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate total money earned from sold items
-    final soldItems = widget.resellItems.where((item) => item.status == ResellStatus.sold);
-    final totalEarned = soldItems.fold(0.0, (sum, item) => sum + (item.soldPrice ?? 0.0));
+    final soldItems = widget.resellItems.where(
+      (item) => item.status == ResellStatus.sold,
+    );
+    final totalEarned = soldItems.fold(
+      0.0,
+      (sum, item) => sum + (item.soldPrice ?? 0.0),
+    );
 
     // Get currency symbol
     final currencySymbol = isChinese ? '¥' : '\$';
@@ -61,13 +68,19 @@ class _ResellScreenState extends State<ResellScreen> {
     final List<ResellItem> displayItems;
     switch (_selectedTab) {
       case 0:
-        displayItems = widget.resellItems.where((item) => item.status == ResellStatus.toSell).toList();
+        displayItems = widget.resellItems
+            .where((item) => item.status == ResellStatus.toSell)
+            .toList();
         break;
       case 1:
-        displayItems = widget.resellItems.where((item) => item.status == ResellStatus.listing).toList();
+        displayItems = widget.resellItems
+            .where((item) => item.status == ResellStatus.listing)
+            .toList();
         break;
       case 2:
-        displayItems = widget.resellItems.where((item) => item.status == ResellStatus.sold).toList();
+        displayItems = widget.resellItems
+            .where((item) => item.status == ResellStatus.sold)
+            .toList();
         break;
       default:
         displayItems = [];
@@ -116,7 +129,9 @@ class _ResellScreenState extends State<ResellScreen> {
                             width: 56,
                             height: 56,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                              color: const Color(
+                                0xFF10B981,
+                              ).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
@@ -150,7 +165,9 @@ class _ResellScreenState extends State<ResellScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  isChinese ? '${soldItems.length} 件已售出' : '${soldItems.length} items sold',
+                                  isChinese
+                                      ? '${soldItems.length} 件已售出'
+                                      : '${soldItems.length} items sold',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Color(0xFF9CA3AF),
@@ -177,14 +194,24 @@ class _ResellScreenState extends State<ResellScreen> {
                             child: _buildTab(
                               isChinese ? '待售' : 'To Sell',
                               0,
-                              widget.resellItems.where((item) => item.status == ResellStatus.toSell).length,
+                              widget.resellItems
+                                  .where(
+                                    (item) =>
+                                        item.status == ResellStatus.toSell,
+                                  )
+                                  .length,
                             ),
                           ),
                           Expanded(
                             child: _buildTab(
                               isChinese ? '在售' : 'Listing',
                               1,
-                              widget.resellItems.where((item) => item.status == ResellStatus.listing).length,
+                              widget.resellItems
+                                  .where(
+                                    (item) =>
+                                        item.status == ResellStatus.listing,
+                                  )
+                                  .length,
                             ),
                           ),
                           Expanded(
@@ -246,7 +273,12 @@ class _ResellScreenState extends State<ResellScreen> {
                           ),
                         );
 
-                        return _buildResellItemCard(resellItem, declutterItem, isChinese, currencySymbol);
+                        return _buildResellItemCard(
+                          resellItem,
+                          declutterItem,
+                          isChinese,
+                          currencySymbol,
+                        );
                       }),
                   ]),
                 ),
@@ -268,10 +300,7 @@ class _ResellScreenState extends State<ResellScreen> {
                   decoration: const BoxDecoration(
                     color: Color(0xFFF5F6F7),
                     border: Border(
-                      bottom: BorderSide(
-                        color: Color(0xFFE5E5EA),
-                        width: 0.5,
-                      ),
+                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
                     ),
                   ),
                   padding: EdgeInsets.only(top: topPadding),
@@ -352,7 +381,9 @@ class _ResellScreenState extends State<ResellScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? const Color(0xFF1C1C1E) : const Color(0xFF6F7278),
+                color: isSelected
+                    ? const Color(0xFF1C1C1E)
+                    : const Color(0xFF6F7278),
               ),
             ),
             const SizedBox(height: 2),
@@ -361,7 +392,9 @@ class _ResellScreenState extends State<ResellScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: isSelected ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+                color: isSelected
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF9CA3AF),
               ),
             ),
           ],
@@ -380,7 +413,14 @@ class _ResellScreenState extends State<ResellScreen> {
     final bool isClickable = resellItem.status != ResellStatus.sold;
 
     return GestureDetector(
-      onTap: isClickable ? () => _showResellStatusChangeSheet(resellItem, declutterItem, isChinese, currencySymbol) : null,
+      onTap: isClickable
+          ? () => _showResellStatusChangeSheet(
+              resellItem,
+              declutterItem,
+              isChinese,
+              currencySymbol,
+            )
+          : null,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -431,7 +471,7 @@ class _ResellScreenState extends State<ResellScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    declutterItem.name,
+                    declutterItem.displayName(context),
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -453,7 +493,10 @@ class _ResellScreenState extends State<ResellScreen> {
                   // Price info based on status
                   if (_selectedTab == 1 && resellItem.sellingPrice != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDBEAFE),
                         borderRadius: BorderRadius.circular(8),
@@ -469,7 +512,10 @@ class _ResellScreenState extends State<ResellScreen> {
                     )
                   else if (_selectedTab == 2 && resellItem.soldPrice != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFD1FAE5),
                         borderRadius: BorderRadius.circular(8),
@@ -499,7 +545,12 @@ class _ResellScreenState extends State<ResellScreen> {
     );
   }
 
-  void _showResellStatusChangeSheet(ResellItem item, DeclutterItem declutterItem, bool isChinese, String currencySymbol) {
+  void _showResellStatusChangeSheet(
+    ResellItem item,
+    DeclutterItem declutterItem,
+    bool isChinese,
+    String currencySymbol,
+  ) {
     final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
@@ -528,7 +579,7 @@ class _ResellScreenState extends State<ResellScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          declutterItem.name,
+                          declutterItem.displayName(sheetContext),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -600,7 +651,11 @@ class _ResellScreenState extends State<ResellScreen> {
     );
   }
 
-  void _showListingDialog(ResellItem item, bool isChinese, String currencySymbol) {
+  void _showListingDialog(
+    ResellItem item,
+    bool isChinese,
+    String currencySymbol,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final priceController = TextEditingController();
     ResellPlatform? selectedPlatform;
@@ -626,7 +681,8 @@ class _ResellScreenState extends State<ResellScreen> {
                         child: Text(platform.label(context)),
                       );
                     }).toList(),
-                    onChanged: (value) => setState(() => selectedPlatform = value),
+                    onChanged: (value) =>
+                        setState(() => selectedPlatform = value),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -637,7 +693,9 @@ class _ResellScreenState extends State<ResellScreen> {
                       prefixText: currencySymbol,
                       border: const OutlineInputBorder(),
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                   ),
                 ],
               ),
@@ -713,9 +771,9 @@ class _ResellScreenState extends State<ResellScreen> {
                 );
                 widget.onUpdateResellItem(updatedItem);
                 Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.itemStatusUpdated)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(l10n.itemStatusUpdated)));
               },
               child: Text(l10n.save),
             ),

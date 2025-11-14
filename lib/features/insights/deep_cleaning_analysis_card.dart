@@ -18,7 +18,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (sessions.isEmpty) {
       return Container(
         width: double.infinity,
@@ -48,9 +48,9 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               emptyStateMessage ?? 'No deep cleaning records yet.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.black54,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
             ),
           ],
         ),
@@ -68,6 +68,43 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         .where((session) => session.elapsedSeconds != null)
         .fold(0, (sum, session) => sum + session.elapsedSeconds!);
     final totalTimeHours = totalTimeSeconds / 3600;
+
+    // Messiness insights
+    final sessionsWithBefore = sessions
+        .where((s) => s.beforeMessinessIndex != null)
+        .toList();
+    final sessionsWithAfter = sessions
+        .where((s) => s.afterMessinessIndex != null)
+        .toList();
+    final sessionsWithBoth = sessions
+        .where(
+          (s) =>
+              s.beforeMessinessIndex != null && s.afterMessinessIndex != null,
+        )
+        .toList();
+
+    final beforeAverage = _calculateAverageMessiness(
+      sessionsWithBefore,
+      (s) => s.beforeMessinessIndex,
+    );
+    final afterAverage = _calculateAverageMessiness(
+      sessionsWithAfter,
+      (s) => s.afterMessinessIndex,
+    );
+
+    final improvementPercent = _calculateImprovementPercentage(
+      beforeAverage,
+      afterAverage,
+    );
+    final bestImprovementSession = _findBestImprovementSession(
+      sessionsWithBoth,
+    );
+    final bestImprovementPercent = bestImprovementSession != null
+        ? _calculateImprovementPercentage(
+            bestImprovementSession.beforeMessinessIndex,
+            bestImprovementSession.afterMessinessIndex,
+          )
+        : null;
 
     // Group sessions by area
     final sessionsByArea = <String, List<DeepCleaningSession>>{};
@@ -99,9 +136,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     }
 
     // Calculate areas cleared (unique areas with sessions)
-    final areasCleared = areaCounts.values
-        .where((count) => count > 0)
-        .length;
+    final areasCleared = areaCounts.values.where((count) => count > 0).length;
 
     return Container(
       width: double.infinity,
@@ -181,6 +216,59 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
               ),
             ],
           ),
+
+          if (sessionsWithBefore.isNotEmpty || sessionsWithAfter.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: _buildReportSection(
+                context,
+                title: l10n.beforeAfterComparison,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildMessinessSummaryCard(
+                            context,
+                            label: l10n.messinessBefore,
+                            value: beforeAverage,
+                            color: const Color(0xFFEF6C99),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildMessinessSummaryCard(
+                            context,
+                            label: l10n.messinessAfter,
+                            value: afterAverage,
+                            color: const Color(0xFF34D399),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (improvementPercent != null)
+                      _buildImprovementCallout(
+                        context,
+                        improvementPercent: improvementPercent,
+                        topArea: bestImprovementSession?.area,
+                        topAreaImprovement: bestImprovementPercent,
+                        improvementLabel: l10n.improvement,
+                        areaLabel: l10n.cleaningAreas,
+                      )
+                    else
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          l10n.dashboardNoDetailedMetrics,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.black54),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
 
           const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
@@ -278,6 +366,172 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     );
   }
 
+  Widget _buildMessinessSummaryCard(
+    BuildContext context, {
+    required String label,
+    required double? value,
+    required Color color,
+  }) {
+    final displayValue = () {
+      if (value == null) return '--';
+      final decimals = value >= 100 ? 0 : 1;
+      return value.toStringAsFixed(decimals);
+    }();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            displayValue,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: color,
+              fontSize: 32,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImprovementCallout(
+    BuildContext context, {
+    required double improvementPercent,
+    String? topArea,
+    double? topAreaImprovement,
+    required String improvementLabel,
+    required String areaLabel,
+  }) {
+    final improvementText = improvementPercent.isFinite
+        ? '${improvementPercent.round()}%'
+        : '--';
+    final areaText = (topArea != null && topAreaImprovement != null)
+        ? '${topAreaImprovement.round()}% · $topArea'
+        : topArea;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF111827).withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.trending_down_rounded,
+              color: Color(0xFF111827),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  improvementLabel,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  improvementText,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
+                  ),
+                ),
+                if (areaText != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    areaLabel,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    areaText,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  double? _calculateAverageMessiness(
+    List<DeepCleaningSession> data,
+    double? Function(DeepCleaningSession) selector,
+  ) {
+    if (data.isEmpty) return null;
+    final values = data
+        .map(selector)
+        .whereType<double>()
+        .where((value) => value.isFinite)
+        .toList();
+    if (values.isEmpty) return null;
+    final sum = values.reduce((a, b) => a + b);
+    return sum / values.length;
+  }
+
+  double? _calculateImprovementPercentage(double? before, double? after) {
+    if (before == null || after == null || before <= 0) return null;
+    return ((before - after) / before) * 100;
+  }
+
+  DeepCleaningSession? _findBestImprovementSession(
+    List<DeepCleaningSession> sessions,
+  ) {
+    DeepCleaningSession? bestSession;
+    double? bestImprovement;
+
+    for (final session in sessions) {
+      final improvement = _calculateImprovementPercentage(
+        session.beforeMessinessIndex,
+        session.afterMessinessIndex,
+      );
+      if (improvement == null) continue;
+      if (bestImprovement == null || improvement > bestImprovement) {
+        bestImprovement = improvement;
+        bestSession = session;
+      }
+    }
+
+    return bestSession;
+  }
+
   Widget _buildReportSection(
     BuildContext context, {
     required String title,
@@ -299,7 +553,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                   color: Color(0xFF111827),
                 ),
               ),
-              trailing!,
+              trailing,
             ],
           )
         else

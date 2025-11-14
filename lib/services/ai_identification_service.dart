@@ -6,9 +6,18 @@ import 'package:http/http.dart' as http;
 
 import 'package:keepjoy_app/models/declutter_item.dart';
 
+String _normalizeLocaleCode(String languageCode, String? countryCode) {
+  final base = languageCode.toLowerCase();
+  if (countryCode == null || countryCode.isEmpty) {
+    return base;
+  }
+  return '$base-${countryCode.toLowerCase()}';
+}
+
 /// Result from AI identification
 class AIIdentificationResult {
   final String itemName;
+  final Map<String, String> localizedNames;
   final DeclutterCategory suggestedCategory;
   final double confidence; // 0-100
   final String method; // 'on-device' or 'cloud'
@@ -16,18 +25,40 @@ class AIIdentificationResult {
 
   AIIdentificationResult({
     required this.itemName,
+    required this.localizedNames,
     required this.suggestedCategory,
     required this.confidence,
     required this.method,
     this.alternativeNames = const [],
   });
+
+  String nameForLocale(Locale locale) {
+    return nameForLocaleCode(
+      _normalizeLocaleCode(locale.languageCode, locale.countryCode),
+    );
+  }
+
+  String nameForLocaleCode(String? localeCode) {
+    if (localeCode == null || localeCode.isEmpty) {
+      return localizedNames['en'] ?? itemName;
+    }
+
+    final normalized = localeCode.toLowerCase();
+    final languageOnly = normalized.split('-').first;
+
+    return localizedNames[normalized] ??
+        localizedNames[languageOnly] ??
+        localizedNames['en'] ??
+        itemName;
+  }
 }
 
 /// AI-powered object and brand identification service
 /// Uses Google ML Kit for both iOS and Android (70%+ accuracy, 1000+ objects)
 /// Cloud: OpenRouter API (Qwen) for brand recognition (paid feature)
 class AIIdentificationService {
-  static final AIIdentificationService _instance = AIIdentificationService._internal();
+  static final AIIdentificationService _instance =
+      AIIdentificationService._internal();
   factory AIIdentificationService() => _instance;
   AIIdentificationService._internal();
 
@@ -36,7 +67,8 @@ class AIIdentificationService {
 
   // TODO: Add your OpenRouter API key here for cloud-based brand detection
   // Get your key from: https://openrouter.ai/keys
-  static const String _openRouterApiKey = ''; // Leave empty for now - will be paid feature
+  static const String _openRouterApiKey =
+      ''; // Leave empty for now - will be paid feature
 
   /// Initialize the service
   Future<void> initialize() async {
@@ -55,12 +87,18 @@ class AIIdentificationService {
   }
 
   /// Quick on-device identification using Google ML Kit (both iOS & Android)
-  Future<AIIdentificationResult?> identifyBasic(String imagePath, String locale) async {
+  Future<AIIdentificationResult?> identifyBasic(
+    String imagePath,
+    Locale locale,
+  ) async {
     return _identifyWithMLKit(imagePath, locale);
   }
 
   /// ML Kit identification (iOS & Android)
-  Future<AIIdentificationResult?> _identifyWithMLKit(String imagePath, String locale) async {
+  Future<AIIdentificationResult?> _identifyWithMLKit(
+    String imagePath,
+    Locale locale,
+  ) async {
     try {
       print('🔍 ML Kit: Starting identification for $imagePath');
 
@@ -82,27 +120,36 @@ class AIIdentificationService {
       }
 
       final topLabel = labels.first;
-      print('🔍 ML Kit: Top label - text: "${topLabel.label}", confidence: ${topLabel.confidence}');
+      print(
+        '🔍 ML Kit: Top label - text: "${topLabel.label}", confidence: ${topLabel.confidence}',
+      );
 
-      // Translate if Chinese locale
-      final isZh = locale.toLowerCase().startsWith('zh');
-      print('🔍 ML Kit: Locale: $locale, isZh: $isZh');
+      final localeCode = _normalizeLocaleCode(
+        locale.languageCode,
+        locale.countryCode,
+      );
+      print(
+        '🔍 ML Kit: Locale: ${_localeTag(locale)}, normalized: $localeCode',
+      );
 
-      final translatedName = isZh ? _translateToChinese(topLabel.label) : _cleanLabelName(topLabel.label);
-      print('🔍 ML Kit: Translated name: "$translatedName"');
+      final localizedNames = _buildLocalizedNames(topLabel.label);
+      final displayName = _nameForLocale(localizedNames, localeCode);
+      print('🔍 ML Kit: Display name: "$displayName"');
 
       final category = _mapLabelToCategory(topLabel.label);
       print('🔍 ML Kit: Mapped category: $category');
 
-      final alternatives = labels
-          .skip(1)
-          .take(2)
-          .map((l) => isZh ? _translateToChinese(l.label) : _cleanLabelName(l.label))
-          .toList();
+      final alternatives = labels.skip(1).take(2).map((l) {
+        final altNames = _buildLocalizedNames(l.label);
+        return _nameForLocale(altNames, localeCode);
+      }).toList();
 
-      print('🔍 ML Kit: Returning result - name: "$translatedName", category: $category, confidence: ${topLabel.confidence * 100}%');
+      print(
+        '🔍 ML Kit: Returning result - name: "$displayName", category: $category, confidence: ${topLabel.confidence * 100}%',
+      );
       return AIIdentificationResult(
-        itemName: translatedName,
+        itemName: displayName,
+        localizedNames: localizedNames,
         suggestedCategory: category,
         confidence: topLabel.confidence * 100,
         method: 'on-device',
@@ -115,7 +162,10 @@ class AIIdentificationService {
   }
 
   /// Detailed identification using OpenRouter API (Qwen vision model)
-  Future<AIIdentificationResult?> identifyDetailed(String imagePath, String locale) async {
+  Future<AIIdentificationResult?> identifyDetailed(
+    String imagePath,
+    Locale locale,
+  ) async {
     if (_openRouterApiKey.isEmpty) {
       print('OpenRouter API key not configured. This will be a paid feature.');
       return null;
@@ -125,8 +175,11 @@ class AIIdentificationService {
       final imageBytes = await File(imagePath).readAsBytes();
       final base64Image = base64Encode(imageBytes);
 
-      final isZh = locale.toLowerCase().startsWith('zh');
-      final language = isZh ? 'Chinese' : 'English';
+      final localeCode = _normalizeLocaleCode(
+        locale.languageCode,
+        locale.countryCode,
+      );
+      const language = 'English';
 
       final response = await http.post(
         Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
@@ -143,19 +196,18 @@ class AIIdentificationService {
               'content': [
                 {
                   'type': 'image_url',
-                  'image_url': {
-                    'url': 'data:image/jpeg;base64,$base64Image',
-                  },
+                  'image_url': {'url': 'data:image/jpeg;base64,$base64Image'},
                 },
                 {
                   'type': 'text',
-                  'text': '''Identify this item in $language. Include brand name if visible.
+                  'text':
+                      '''Identify this item in $language. Include brand name if visible.
 Respond in JSON format:
 {
   "name": "specific item name with brand if visible",
   "category": "one of: clothes, books, papers, beauty, sentimental, miscellaneous",
   "confidence": 0-100
-}'''
+}''',
                 },
               ],
             },
@@ -168,8 +220,14 @@ Respond in JSON format:
         final content = data['choices'][0]['message']['content'];
         final result = jsonDecode(content);
 
+        final localizedNames = _buildLocalizedNames(
+          result['name'] ?? 'Unknown item',
+        );
+        final displayName = _nameForLocale(localizedNames, localeCode);
+
         return AIIdentificationResult(
-          itemName: result['name'] ?? 'Unknown item',
+          itemName: displayName,
+          localizedNames: localizedNames,
           suggestedCategory: _parseCategoryFromString(result['category']),
           confidence: (result['confidence'] ?? 70).toDouble(),
           method: 'cloud',
@@ -271,46 +329,103 @@ Respond in JSON format:
     return translations[lower] ?? _cleanLabelName(englishLabel);
   }
 
+  Map<String, String> _buildLocalizedNames(String label) {
+    final english = _cleanLabelName(label);
+    final chinese = _translateToChinese(label);
+    final names = <String, String>{'en': english};
+    if (chinese.isNotEmpty) {
+      names['zh'] = chinese;
+    }
+    return names;
+  }
+
+  String _localeTag(Locale locale) {
+    final components = [locale.languageCode];
+    if (locale.scriptCode != null && locale.scriptCode!.isNotEmpty) {
+      components.add(locale.scriptCode!);
+    }
+    if (locale.countryCode != null && locale.countryCode!.isNotEmpty) {
+      components.add(locale.countryCode!);
+    }
+    return components.join('-');
+  }
+
+  String _nameForLocale(Map<String, String> names, String? localeCode) {
+    if (localeCode == null || localeCode.isEmpty) {
+      return names['en'] ?? names.values.first;
+    }
+    final normalized = localeCode.toLowerCase();
+    final languageOnly = normalized.split('-').first;
+    return names[normalized] ??
+        names[languageOnly] ??
+        names['en'] ??
+        names.values.first;
+  }
+
   /// Map label to category
   DeclutterCategory _mapLabelToCategory(String label) {
     final lower = label.toLowerCase();
 
-    if (lower.contains('clothing') || lower.contains('shirt') ||
-        lower.contains('pants') || lower.contains('dress') ||
-        lower.contains('shoe') || lower.contains('hat') ||
-        lower.contains('jacket') || lower.contains('sweater') ||
-        lower.contains('garment') || lower.contains('apparel') ||
-        lower.contains('coat') || lower.contains('jeans') ||
-        lower.contains('skirt') || lower.contains('sock') ||
-        lower.contains('scarf') || lower.contains('tie')) {
+    if (lower.contains('clothing') ||
+        lower.contains('shirt') ||
+        lower.contains('pants') ||
+        lower.contains('dress') ||
+        lower.contains('shoe') ||
+        lower.contains('hat') ||
+        lower.contains('jacket') ||
+        lower.contains('sweater') ||
+        lower.contains('garment') ||
+        lower.contains('apparel') ||
+        lower.contains('coat') ||
+        lower.contains('jeans') ||
+        lower.contains('skirt') ||
+        lower.contains('sock') ||
+        lower.contains('scarf') ||
+        lower.contains('tie')) {
       return DeclutterCategory.clothes;
     }
 
-    if (lower.contains('book') || lower.contains('novel') ||
-        lower.contains('magazine') || lower.contains('publication') ||
-        lower.contains('text') || lower.contains('reading')) {
+    if (lower.contains('book') ||
+        lower.contains('novel') ||
+        lower.contains('magazine') ||
+        lower.contains('publication') ||
+        lower.contains('text') ||
+        lower.contains('reading')) {
       return DeclutterCategory.books;
     }
 
-    if (lower.contains('paper') || lower.contains('document') ||
-        lower.contains('receipt') || lower.contains('letter') ||
-        lower.contains('card') || lower.contains('mail') ||
-        lower.contains('envelope') || lower.contains('note')) {
+    if (lower.contains('paper') ||
+        lower.contains('document') ||
+        lower.contains('receipt') ||
+        lower.contains('letter') ||
+        lower.contains('card') ||
+        lower.contains('mail') ||
+        lower.contains('envelope') ||
+        lower.contains('note')) {
       return DeclutterCategory.papers;
     }
 
-    if (lower.contains('cosmetic') || lower.contains('makeup') ||
-        lower.contains('perfume') || lower.contains('lotion') ||
-        lower.contains('cream') || lower.contains('beauty') ||
-        lower.contains('skincare') || lower.contains('fragrance') ||
-        lower.contains('lipstick') || lower.contains('bottle') ||
-        lower.contains('shampoo') || lower.contains('soap')) {
+    if (lower.contains('cosmetic') ||
+        lower.contains('makeup') ||
+        lower.contains('perfume') ||
+        lower.contains('lotion') ||
+        lower.contains('cream') ||
+        lower.contains('beauty') ||
+        lower.contains('skincare') ||
+        lower.contains('fragrance') ||
+        lower.contains('lipstick') ||
+        lower.contains('bottle') ||
+        lower.contains('shampoo') ||
+        lower.contains('soap')) {
       return DeclutterCategory.beauty;
     }
 
-    if (lower.contains('photo') || lower.contains('picture') ||
-        lower.contains('gift') || lower.contains('memorabilia') ||
-        lower.contains('souvenir') || lower.contains('keepsake') ||
+    if (lower.contains('photo') ||
+        lower.contains('picture') ||
+        lower.contains('gift') ||
+        lower.contains('memorabilia') ||
+        lower.contains('souvenir') ||
+        lower.contains('keepsake') ||
         lower.contains('frame')) {
       return DeclutterCategory.sentimental;
     }
@@ -323,11 +438,15 @@ Respond in JSON format:
     if (category == null) return DeclutterCategory.miscellaneous;
     final lower = category.toLowerCase();
 
-    if (lower.contains('cloth') || lower.contains('apparel')) return DeclutterCategory.clothes;
+    if (lower.contains('cloth') || lower.contains('apparel'))
+      return DeclutterCategory.clothes;
     if (lower.contains('book')) return DeclutterCategory.books;
-    if (lower.contains('paper') || lower.contains('document')) return DeclutterCategory.papers;
-    if (lower.contains('beauty') || lower.contains('cosmetic')) return DeclutterCategory.beauty;
-    if (lower.contains('sentimental') || lower.contains('photo')) return DeclutterCategory.sentimental;
+    if (lower.contains('paper') || lower.contains('document'))
+      return DeclutterCategory.papers;
+    if (lower.contains('beauty') || lower.contains('cosmetic'))
+      return DeclutterCategory.beauty;
+    if (lower.contains('sentimental') || lower.contains('photo'))
+      return DeclutterCategory.sentimental;
 
     return DeclutterCategory.miscellaneous;
   }

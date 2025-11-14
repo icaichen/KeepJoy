@@ -8,6 +8,7 @@ import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import '../../services/ai_identification_service.dart';
 import '../memories/create_memory_page.dart';
+import '../../utils/navigation.dart';
 
 const LinearGradient _joyMintPurpleGradient = LinearGradient(
   begin: Alignment.topLeft,
@@ -51,7 +52,7 @@ Widget _buildJoyTopBar(
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.close_rounded),
-            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+            onPressed: () => popToHome(context),
             splashRadius: 20,
           ),
         ],
@@ -66,7 +67,9 @@ Widget _buildJoyTopBar(
             height: 3,
             margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
-              color: index <= currentStep ? _joyPrimaryColor : const Color(0xFFE0E5EB),
+              color: index <= currentStep
+                  ? _joyPrimaryColor
+                  : const Color(0xFFE0E5EB),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -82,11 +85,7 @@ BoxDecoration _joyCardDecoration({Color? color}) {
     color: color ?? Colors.white,
     borderRadius: BorderRadius.circular(24),
     boxShadow: const [
-      BoxShadow(
-        color: _joyCardShadow,
-        blurRadius: 20,
-        offset: Offset(0, 12),
-      ),
+      BoxShadow(color: _joyCardShadow, blurRadius: 20, offset: Offset(0, 12)),
     ],
   );
 }
@@ -160,10 +159,9 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     return Scaffold(
       backgroundColor: _joyBackgroundColor,
@@ -322,6 +320,7 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
   bool _isIdentifying = false;
   bool _isAISuggested = false;
   String? _itemName;
+  Map<String, String>? _aiLocalizedNames;
   bool _hasInitialized = false;
 
   @override
@@ -343,15 +342,16 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
     setState(() => _isIdentifying = true);
 
     try {
-      final locale = Localizations.localeOf(context).languageCode;
+      final locale = Localizations.localeOf(context);
       final result = await _aiService.identifyBasic(widget.photoPath, locale);
 
       if (result != null && mounted) {
         setState(() {
-          _itemName = result.itemName;
-          _nameController.text = result.itemName;
+          _itemName = result.nameForLocale(locale);
+          _nameController.text = _itemName!;
           _selectedCategory = result.suggestedCategory;
           _isAISuggested = true;
+          _aiLocalizedNames = Map<String, String>.from(result.localizedNames);
         });
       }
     } catch (_) {
@@ -394,9 +394,11 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
 
   void _startQuestions() {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
     final itemName = _nameController.text.trim().isEmpty
-        ? (_itemName ?? l10n.itemName)
+        ? (_itemName ?? _placeholderName(locale, l10n))
         : _nameController.text.trim();
+    final nameLocalizations = _buildNameLocalizations(locale, itemName);
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -405,12 +407,40 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
           answers: _JoyAnswers(),
           photoPath: widget.photoPath,
           itemName: itemName,
+          nameLocalizations: nameLocalizations,
           category: _selectedCategory,
           onItemCompleted: widget.onItemCompleted,
           onMemoryCreated: widget.onMemoryCreated,
         ),
       ),
     );
+  }
+
+  Map<String, String>? _buildNameLocalizations(Locale locale, String name) {
+    final map = <String, String>{};
+    if (_aiLocalizedNames != null && _aiLocalizedNames!.isNotEmpty) {
+      map.addAll(_aiLocalizedNames!);
+    }
+    final normalized = _localeKey(locale);
+    map[locale.languageCode.toLowerCase()] = name;
+    map[normalized] = name;
+    map.removeWhere((key, value) => value.isEmpty);
+    return map.isEmpty ? null : map;
+  }
+
+  String _localeKey(Locale locale) {
+    final language = locale.languageCode.toLowerCase();
+    final country = locale.countryCode?.toLowerCase();
+    if (country == null || country.isEmpty) {
+      return language;
+    }
+    return '$language-$country';
+  }
+
+  String _placeholderName(Locale locale, AppLocalizations l10n) {
+    return locale.languageCode.toLowerCase().startsWith('zh')
+        ? '未命名物品'
+        : l10n.itemName;
   }
 
   @override
@@ -477,14 +507,14 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                                       ),
                                     )
                                   : _isAISuggested
-                                      ? Tooltip(
-                                          message: l10n.aiSuggested,
-                                          child: const Icon(
-                                            Icons.auto_awesome,
-                                            size: 20,
-                                          ),
-                                        )
-                                      : null,
+                                  ? Tooltip(
+                                      message: l10n.aiSuggested,
+                                      child: const Icon(
+                                        Icons.auto_awesome,
+                                        size: 20,
+                                      ),
+                                    )
+                                  : null,
                             ),
                             onChanged: (_) {
                               if (_isAISuggested) {
@@ -550,6 +580,7 @@ Widget _createJoyQuestionPage({
   required _JoyAnswers answers,
   required String photoPath,
   required String itemName,
+  Map<String, String>? nameLocalizations,
   required DeclutterCategory category,
   required Function(DeclutterItem) onItemCompleted,
   required Function(Memory) onMemoryCreated,
@@ -568,6 +599,7 @@ Widget _createJoyQuestionPage({
               answers: answers,
               photoPath: photoPath,
               itemName: itemName,
+              nameLocalizations: nameLocalizations,
               category: category,
               onItemCompleted: onItemCompleted,
               onMemoryCreated: onMemoryCreated,
@@ -580,6 +612,7 @@ Widget _createJoyQuestionPage({
             builder: (_) => _SummaryPage(
               photoPath: photoPath,
               itemName: itemName,
+              nameLocalizations: nameLocalizations,
               category: category,
               answers: answers,
               onItemCompleted: onItemCompleted,
@@ -776,15 +809,11 @@ _JoyQuestionDefinition _joyQuestionDefinition(int questionIndex) {
   }
 }
 
-
-
-
-
-
 // Summary page showing objective insights
 class _SummaryPage extends StatelessWidget {
   final String photoPath;
   final String itemName;
+  final Map<String, String>? nameLocalizations;
   final DeclutterCategory category;
   final _JoyAnswers answers;
   final Function(DeclutterItem) onItemCompleted;
@@ -793,6 +822,7 @@ class _SummaryPage extends StatelessWidget {
   const _SummaryPage({
     required this.photoPath,
     required this.itemName,
+    required this.nameLocalizations,
     required this.category,
     required this.answers,
     required this.onItemCompleted,
@@ -821,7 +851,9 @@ class _SummaryPage extends StatelessWidget {
 
     // Lifestyle fit insight
     if (answers.fitsLifestyle == false) {
-      insights.add(isChinese ? '• 不符合当前生活方式' : '• Does not fit current lifestyle');
+      insights.add(
+        isChinese ? '• 不符合当前生活方式' : '• Does not fit current lifestyle',
+      );
     }
 
     // Sunk cost insight
@@ -838,6 +870,7 @@ class _SummaryPage extends StatelessWidget {
     final item = DeclutterItem(
       id: 'item_${DateTime.now().millisecondsSinceEpoch}',
       name: itemName,
+      nameLocalizations: nameLocalizations,
       category: category,
       createdAt: DateTime.now(),
       status: DeclutterStatus.keep,
@@ -848,10 +881,10 @@ class _SummaryPage extends StatelessWidget {
 
     if (!context.mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.itemSaved)),
-    );
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.itemSaved)));
+    popToHome(context);
   }
 
   Future<void> _handleLetGo(BuildContext context) async {
@@ -941,6 +974,7 @@ class _SummaryPage extends StatelessWidget {
     final item = DeclutterItem(
       id: 'item_${DateTime.now().millisecondsSinceEpoch}',
       name: itemName,
+      nameLocalizations: nameLocalizations,
       category: category,
       createdAt: DateTime.now(),
       status: status,
@@ -987,16 +1021,15 @@ class _SummaryPage extends StatelessWidget {
     }
 
     if (context.mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      popToHome(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context)
-        .languageCode
-        .toLowerCase()
-        .startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final theme = Theme.of(context);
     final insights = _getInsights(isChinese);
 
@@ -1059,23 +1092,27 @@ class _SummaryPage extends StatelessWidget {
                           const SizedBox(height: 12),
                           if (insights.isEmpty)
                             Text(
-                              isChinese ? '这件物品似乎对你很有价值' : 'This item seems valuable to you',
+                              isChinese
+                                  ? '这件物品似乎对你很有价值'
+                                  : 'This item seems valuable to you',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: const Color(0xFF374151),
                                 height: 1.5,
                               ),
                             )
                           else
-                            ...insights.map((insight) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Text(
-                                    insight,
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: const Color(0xFF374151),
-                                      height: 1.5,
-                                    ),
+                            ...insights.map(
+                              (insight) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(
+                                  insight,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: const Color(0xFF374151),
+                                    height: 1.5,
                                   ),
-                                )),
+                                ),
+                              ),
+                            ),
                           const SizedBox(height: 20),
                           Container(
                             padding: const EdgeInsets.all(16),
@@ -1127,9 +1164,7 @@ class _SummaryPage extends StatelessWidget {
                             onPressed: () => _handleLetGo(context),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFFEF4444),
-                              side: const BorderSide(
-                                color: Color(0xFFEF4444),
-                              ),
+                              side: const BorderSide(color: Color(0xFFEF4444)),
                               minimumSize: const Size.fromHeight(48),
                             ),
                             child: Text(isChinese ? '放手' : 'Let Go'),
