@@ -131,22 +131,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardDeclutteredLabel => '已整理物品';
 
   @override
-  String get dashboardResellLabel => '转售价值';
+  String get dashboardResellLabel => '转售收益';
 
   @override
-  String get dashboardResellReportTitle => '转卖分析';
+  String get dashboardResellReportTitle => '二手趋势';
 
   @override
   String get dashboardResellReportSubtitle => '查看完整报告';
 
   @override
-  String get dashboardMemoryLaneTitle => '记忆长廊';
+  String get dashboardMemoryLaneTitle => '心动记忆';
 
   @override
   String get dashboardMemoryLaneSubtitle => '重温你的整理旅程';
 
   @override
-  String get dashboardYearlyReportsTitle => '年度报告';
+  String get dashboardYearlyReportsTitle => '心动年鉴';
 
   @override
   String get dashboardYearlyReportsSubtitle => '查看年度总结';
@@ -179,9 +179,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardNoSessionsForDay => '这天没有计划任务';
 
   @override
-  String get dashboardStartNow => '开始';
-
-  @override
   String get deepCleaningAnalysisTitle => '深度整理分析';
 
   @override
@@ -194,7 +191,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardAverageFocusLabel => '平均专注度';
 
   @override
-  String get dashboardAverageJoyLabel => '平均愉悦度';
+  String get dashboardAverageJoyLabel => '平均喜悦';
+
+  @override
+  String get dashboardAreasClearedLabel => '已清理区域';
+
+  @override
+  String get dashboardTotalTimeLabel => '总时间';
 
   @override
   String dashboardSessionCount(int count) {
@@ -274,7 +277,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardNoDetailsSaved => '添加整理照片或指标，以获得更深入的洞察。';
 
   @override
-  String get dashboardLettingGoDetailsTitle => '放手详情';
+  String get dashboardLettingGoDetailsTitle => '放手分布图';
 
   @override
   String get dashboardLettingGoDetailsSubtitle => '了解不同去向的放手占比';
@@ -290,6 +293,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dashboardTomorrow => '明天';
+
+  @override
+  String get dashboardStartNow => '开始';
 
   @override
   String get appTitle => 'KeepJoy';

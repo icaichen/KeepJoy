@@ -341,13 +341,13 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardResellLabel.
   ///
   /// In en, this message translates to:
-  /// **'Resell Value'**
+  /// **'Resell Earnings'**
   String get dashboardResellLabel;
 
   /// No description provided for @dashboardResellReportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Resell Analysis'**
+  /// **'Second-hand Trends'**
   String get dashboardResellReportTitle;
 
   /// No description provided for @dashboardResellReportSubtitle.
@@ -359,7 +359,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardMemoryLaneTitle.
   ///
   /// In en, this message translates to:
-  /// **'Memory Lane'**
+  /// **'Heartfelt Memories'**
   String get dashboardMemoryLaneTitle;
 
   /// No description provided for @dashboardMemoryLaneSubtitle.
@@ -371,7 +371,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardYearlyReportsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Yearly Reports'**
+  /// **'Heartfelt Chronicles'**
   String get dashboardYearlyReportsTitle;
 
   /// No description provided for @dashboardYearlyReportsSubtitle.
@@ -463,6 +463,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Avg Joy'**
   String get dashboardAverageJoyLabel;
+
+  /// No description provided for @dashboardAreasClearedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Areas Cleared'**
+  String get dashboardAreasClearedLabel;
+
+  /// No description provided for @dashboardTotalTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Time'**
+  String get dashboardTotalTimeLabel;
 
   /// No description provided for @dashboardSessionCount.
   ///
@@ -573,7 +585,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardLettingGoDetailsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Letting Go Details'**
+  /// **'Letting Go Breakdown'**
   String get dashboardLettingGoDetailsTitle;
 
   /// No description provided for @dashboardLettingGoDetailsSubtitle.

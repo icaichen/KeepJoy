@@ -135,22 +135,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardDeclutteredLabel => 'Decluttered Items';
 
   @override
-  String get dashboardResellLabel => 'Resell Value';
+  String get dashboardResellLabel => 'Resell Earnings';
 
   @override
-  String get dashboardResellReportTitle => 'Resell Analysis';
+  String get dashboardResellReportTitle => 'Second-hand Trends';
 
   @override
   String get dashboardResellReportSubtitle => 'View full report';
 
   @override
-  String get dashboardMemoryLaneTitle => 'Memory Lane';
+  String get dashboardMemoryLaneTitle => 'Heartfelt Memories';
 
   @override
   String get dashboardMemoryLaneSubtitle => 'Revisit your journey';
 
   @override
-  String get dashboardYearlyReportsTitle => 'Yearly Reports';
+  String get dashboardYearlyReportsTitle => 'Heartfelt Chronicles';
 
   @override
   String get dashboardYearlyReportsSubtitle => 'View annual summary';
@@ -184,9 +184,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardNoSessionsForDay => 'No sessions on this day';
 
   @override
-  String get dashboardStartNow => 'Start Now';
-
-  @override
   String get deepCleaningAnalysisTitle => 'Deep Cleaning Analysis';
 
   @override
@@ -200,6 +197,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardAverageJoyLabel => 'Avg Joy';
+
+  @override
+  String get dashboardAreasClearedLabel => 'Areas Cleared';
+
+  @override
+  String get dashboardTotalTimeLabel => 'Total Time';
 
   @override
   String dashboardSessionCount(int count) {
@@ -280,7 +283,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add photos or session metrics to unlock detailed insights here.';
 
   @override
-  String get dashboardLettingGoDetailsTitle => 'Letting Go Details';
+  String get dashboardLettingGoDetailsTitle => 'Letting Go Breakdown';
 
   @override
   String get dashboardLettingGoDetailsSubtitle =>
@@ -297,6 +300,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardTomorrow => 'Tomorrow';
+
+  @override
+  String get dashboardStartNow => 'Start Now';
 
   @override
   String get appTitle => 'KeepJoy';

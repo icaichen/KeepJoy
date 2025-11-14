@@ -7,6 +7,7 @@ import 'package:keepjoy_app/features/dashboard/widgets/cleaning_area_legend.dart
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
+import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 
 class YearlyReportsScreen extends StatefulWidget {
   const YearlyReportsScreen({
@@ -389,48 +390,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
         const SizedBox(height: 12),
         child,
       ],
-    );
-  }
-
-  Widget _buildDeepCleaningMetricItem(
-    BuildContext context, {
-    required IconData icon,
-    required Color color,
-    required String value,
-    required String label,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-              fontSize: 22,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.black54,
-              fontSize: 11,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
     );
   }
 
@@ -1367,10 +1326,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 const SizedBox(height: 20),
 
                                 // Deep Cleaning Analysis (Yearly)
-                                _buildDeepCleaningAnalysis(
-                                  context,
-                                  isChinese,
-                                  yearlySessions,
+                                DeepCleaningAnalysisCard(
+                                  sessions: yearlySessions,
+                                  title: isChinese ? '深度整理分析' : 'Deep Cleaning Analysis',
+                                  emptyStateMessage: isChinese
+                                      ? '今年还没有深度整理记录，开始一次专注的整理吧。'
+                                      : 'No deep cleaning records yet this year. Start your first focused session.',
                                 ),
                                 const SizedBox(height: 20),
 
@@ -2082,268 +2043,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildDeepCleaningAnalysis(
-    BuildContext context,
-    bool isChinese,
-    List<DeepCleaningSession> yearlySessions,
-  ) {
-    final deepCleaningCount = yearlySessions.length;
-    final cleanedItemsCount = yearlySessions
-        .where((session) => session.itemsCount != null)
-        .fold<int>(0, (sum, session) => sum + session.itemsCount!);
-
-    final sessionsWithFocus = yearlySessions
-        .where((session) => session.focusIndex != null)
-        .toList();
-    final averageFocus = sessionsWithFocus.isEmpty
-        ? 0.0
-        : sessionsWithFocus
-                  .map((session) => session.focusIndex!)
-                  .reduce((a, b) => a + b) /
-              sessionsWithFocus.length;
-
-    final sessionsWithJoy = yearlySessions
-        .where((session) => session.moodIndex != null)
-        .toList();
-    final averageJoy = sessionsWithJoy.isEmpty
-        ? 0.0
-        : sessionsWithJoy
-                  .map((session) => session.moodIndex!)
-                  .reduce((a, b) => a + b) /
-              sessionsWithJoy.length;
-
-    final sessionsByArea = <String, List<DeepCleaningSession>>{};
-    for (final session in yearlySessions) {
-      sessionsByArea.update(
-        session.area,
-        (list) => list..add(session),
-        ifAbsent: () => [session],
-      );
-    }
-
-    final commonAreas = [
-      isChinese ? '厨房' : 'Kitchen',
-      isChinese ? '卧室' : 'Bedroom',
-      isChinese ? '客厅' : 'Living Room',
-      isChinese ? '浴室' : 'Bathroom',
-      isChinese ? '书房' : 'Study',
-      isChinese ? '衣柜' : 'Closet',
-    ];
-
-    final allAreas = <String>{...commonAreas, ...sessionsByArea.keys}.toList();
-    final areaCounts = <String, int>{};
-    for (final area in allAreas) {
-      areaCounts[area] = sessionsByArea[area]?.length ?? 0;
-    }
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            isChinese ? '深度整理分析' : 'Deep Cleaning Analysis',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 20),
-          if (yearlySessions.isEmpty) ...[
-            Text(
-              isChinese
-                  ? '今年还没有深度整理记录，开始一次专注的整理吧。'
-                  : 'No deep cleaning records yet this year. Start your first focused session.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: Colors.black54),
-            ),
-          ] else ...[
-            // Metrics Row
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDeepCleaningMetricItem(
-                    context,
-                    icon: Icons.cleaning_services_rounded,
-                    color: const Color(0xFFB794F6),
-                    value: deepCleaningCount.toString(),
-                    label: isChinese ? '整理次数' : 'Sessions',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDeepCleaningMetricItem(
-                    context,
-                    icon: Icons.inventory_2_rounded,
-                    color: const Color(0xFF5ECFB8),
-                    value: cleanedItemsCount.toString(),
-                    label: isChinese ? '清理物品' : 'Items',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDeepCleaningMetricItem(
-                    context,
-                    icon: Icons.spa_rounded,
-                    color: const Color(0xFF89CFF0),
-                    value: averageFocus.toStringAsFixed(1),
-                    label: isChinese ? '平均专注度' : 'Avg Focus',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDeepCleaningMetricItem(
-                    context,
-                    icon: Icons.sentiment_satisfied_rounded,
-                    color: const Color(0xFFFFD93D),
-                    value: averageJoy.toStringAsFixed(1),
-                    label: isChinese ? '平均愉悦度' : 'Avg Joy',
-                  ),
-                ),
-              ],
-            ),
-
-            const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
-
-            // Cleaning Areas with heatmap (ALL areas)
-            _buildReportSection(
-              context,
-              title: isChinese ? '整理区域' : 'Cleaning Areas',
-              trailing: CleaningAreaLegend.badge(
-                context: context,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    builder: (dialogContext) =>
-                        CleaningAreaLegend.dialog(context: dialogContext),
-                  );
-                },
-              ),
-              child: SizedBox(
-                height: 40,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: allAreas.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final area = allAreas[index];
-                    final count = areaCounts[area] ?? 0;
-                    final entry = CleaningAreaLegend.forCount(count);
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: entry.color,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$area ($count)',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: entry.textColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
-
-            // Before & After - Area-based sessions (clickable)
-            _buildReportSection(
-              context,
-              title: isChinese ? '整理前后对比' : 'Before & After',
-              child: sessionsByArea.isEmpty
-                  ? Text(
-                      isChinese
-                          ? '还没有深度整理记录，开始第一次整理吧。'
-                          : 'No deep cleaning records yet. Start your first session.',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: sessionsByArea.entries.map((entry) {
-                        final area = entry.key;
-                        final sessions = entry.value;
-                        final sessionCount = sessions.length;
-
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: InkWell(
-                            onTap: () {
-                              _showAreaDeepCleaningReport(
-                                context,
-                                area,
-                                isChinese,
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F5),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '$area ($sessionCount ${isChinese ? '次' : 'sessions'})',
-                                    style: Theme.of(context).textTheme.bodyMedium
-                                        ?.copyWith(
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                  ),
-                                  const Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 14,
-                                    color: Color(0xFF6B7280),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-          ],
-        ],
-      ),
     );
   }
 
