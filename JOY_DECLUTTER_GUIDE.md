@@ -16,7 +16,7 @@ Joy Declutter is a mindful decluttering feature inspired by Marie Kondo's KonMar
 ### ✍️ Step 2: Review & Confirm
 - User reviews the suggested item name
 - User confirms or changes the category
-- Categories: Clothes, Books, Papers, Miscellaneous, Sentimental, Beauty
+- Categories: Clothes, Books & Documents, Electronics, Miscellaneous, Sentimental, Beauty
 - Click "Next Step" (下一步) to proceed
 
 ### 💫 Step 3: Joy Question

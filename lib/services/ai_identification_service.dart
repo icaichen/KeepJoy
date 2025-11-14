@@ -205,7 +205,7 @@ class AIIdentificationService {
 Respond in JSON format:
 {
   "name": "specific item name with brand if visible",
-  "category": "one of: clothes, books, papers, beauty, sentimental, miscellaneous",
+  "category": "one of: clothes, booksDocuments, electronics, beauty, sentimental, miscellaneous",
   "confidence": 0-100
 }''',
                 },
@@ -310,6 +310,18 @@ Respond in JSON format:
       'backpack': '背包',
       'wallet': '钱包',
       'key': '钥匙',
+      'tableware': '餐具',
+      'utensil': '餐具',
+      'utensils': '餐具',
+      'cutlery': '刀叉',
+      'silverware': '银器',
+      'fork': '叉子',
+      'spoon': '勺子',
+      'knife': '刀子',
+      'chopsticks': '筷子',
+      'dish': '餐盘',
+      'dishes': '餐具',
+      'utensils set': '餐具套装',
 
       // Misc
       'toy': '玩具',
@@ -390,11 +402,8 @@ Respond in JSON format:
         lower.contains('magazine') ||
         lower.contains('publication') ||
         lower.contains('text') ||
-        lower.contains('reading')) {
-      return DeclutterCategory.books;
-    }
-
-    if (lower.contains('paper') ||
+        lower.contains('reading') ||
+        lower.contains('paper') ||
         lower.contains('document') ||
         lower.contains('receipt') ||
         lower.contains('letter') ||
@@ -402,7 +411,29 @@ Respond in JSON format:
         lower.contains('mail') ||
         lower.contains('envelope') ||
         lower.contains('note')) {
-      return DeclutterCategory.papers;
+      return DeclutterCategory.booksDocuments;
+    }
+
+    if (lower.contains('phone') ||
+        lower.contains('laptop') ||
+        lower.contains('tablet') ||
+        lower.contains('computer') ||
+        lower.contains('camera') ||
+        lower.contains('electronics') ||
+        lower.contains('device') ||
+        lower.contains('headphones') ||
+        lower.contains('earbuds') ||
+        lower.contains('charger') ||
+        lower.contains('watch') ||
+        lower.contains('console') ||
+        lower.contains('keyboard') ||
+        lower.contains('mouse') ||
+        lower.contains('monitor') ||
+        lower.contains('television') ||
+        lower.contains('tv') ||
+        lower.contains('speaker') ||
+        lower.contains('projector')) {
+      return DeclutterCategory.electronics;
     }
 
     if (lower.contains('cosmetic') ||
@@ -438,15 +469,25 @@ Respond in JSON format:
     if (category == null) return DeclutterCategory.miscellaneous;
     final lower = category.toLowerCase();
 
-    if (lower.contains('cloth') || lower.contains('apparel'))
+    if (lower.contains('cloth') || lower.contains('apparel')) {
       return DeclutterCategory.clothes;
-    if (lower.contains('book')) return DeclutterCategory.books;
-    if (lower.contains('paper') || lower.contains('document'))
-      return DeclutterCategory.papers;
-    if (lower.contains('beauty') || lower.contains('cosmetic'))
+    }
+    if (lower.contains('book') ||
+        lower.contains('paper') ||
+        lower.contains('document')) {
+      return DeclutterCategory.booksDocuments;
+    }
+    if (lower.contains('electronic') ||
+        lower.contains('device') ||
+        lower.contains('phone')) {
+      return DeclutterCategory.electronics;
+    }
+    if (lower.contains('beauty') || lower.contains('cosmetic')) {
       return DeclutterCategory.beauty;
-    if (lower.contains('sentimental') || lower.contains('photo'))
+    }
+    if (lower.contains('sentimental') || lower.contains('photo')) {
       return DeclutterCategory.sentimental;
+    }
 
     return DeclutterCategory.miscellaneous;
   }

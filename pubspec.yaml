@@ -104,6 +104,15 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  fonts:
+    - family: NotoSansSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Regular.otf
+          weight: 400
+        - asset: assets/fonts/NotoSansSC-Medium.otf
+          weight: 500
+        - asset: assets/fonts/NotoSansSC-Bold.otf
+          weight: 700
 
 flutter_launcher_icons:
   android: true
@@ -113,4 +122,3 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: "assets/images/app_logo.png"
-

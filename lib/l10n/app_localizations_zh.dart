@@ -459,10 +459,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryClothes => '衣物';
 
   @override
-  String get categoryBooks => '书籍';
+  String get categoryBooksDocuments => '书籍/文档';
 
   @override
-  String get categoryPapers => '文件';
+  String get categoryElectronics => '电子产品';
 
   @override
   String get categoryMiscellaneous => '杂项';

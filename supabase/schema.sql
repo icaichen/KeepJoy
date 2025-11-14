@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS declutter_items (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   name_localizations JSONB,
-  category TEXT NOT NULL CHECK (category IN ('clothes', 'books', 'papers', 'miscellaneous', 'sentimental', 'beauty')),
+  category TEXT NOT NULL CHECK (
+    category IN ('clothes', 'booksDocuments', 'electronics', 'beauty', 'sentimental', 'miscellaneous')
+  ),
   status TEXT NOT NULL CHECK (status IN ('pending', 'keep', 'discard', 'donate', 'recycle', 'resell')),
   photo_path TEXT,
   notes TEXT,

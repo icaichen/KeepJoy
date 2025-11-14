@@ -188,8 +188,8 @@
   "couldNotAccessCamera": "无法打开相机。",
 
   "categoryClothes": "衣物",
-  "categoryBooks": "书籍",
-  "categoryPapers": "文件",
+  "categoryBooksDocuments": "书籍/文档",
+  "categoryElectronics": "电子产品",
   "categoryMiscellaneous": "杂项",
   "categorySentimental": "情感纪念品",
   "categoryBeauty": "美妆用品",

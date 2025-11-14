@@ -482,10 +482,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryClothes => 'Clothes';
 
   @override
-  String get categoryBooks => 'Books';
+  String get categoryBooksDocuments => 'Books & Documents';
 
   @override
-  String get categoryPapers => 'Papers';
+  String get categoryElectronics => 'Electronics';
 
   @override
   String get categoryMiscellaneous => 'Miscellaneous';

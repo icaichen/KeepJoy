@@ -206,8 +206,8 @@
   "couldNotAccessCamera": "Could not access camera.",
 
   "categoryClothes": "Clothes",
-  "categoryBooks": "Books",
-  "categoryPapers": "Papers",
+  "categoryBooksDocuments": "Books & Documents",
+  "categoryElectronics": "Electronics",
   "categoryMiscellaneous": "Miscellaneous",
   "categorySentimental": "Sentimental",
   "categoryBeauty": "Beauty",

@@ -406,16 +406,16 @@ class _ItemsScreenState extends State<ItemsScreen> {
     switch (category) {
       case DeclutterCategory.clothes:
         return const Color(0xFF95E3C6);
-      case DeclutterCategory.books:
+      case DeclutterCategory.booksDocuments:
         return const Color(0xFFFFB74D);
-      case DeclutterCategory.papers:
-        return const Color(0xFF89CFF0);
-      case DeclutterCategory.miscellaneous:
-        return const Color(0xFFFF9AA2);
-      case DeclutterCategory.sentimental:
-        return const Color(0xFFB794F6);
+      case DeclutterCategory.electronics:
+        return const Color(0xFF5AC8FA);
       case DeclutterCategory.beauty:
         return const Color(0xFFFFD93D);
+      case DeclutterCategory.sentimental:
+        return const Color(0xFFB794F6);
+      case DeclutterCategory.miscellaneous:
+        return const Color(0xFFFF9AA2);
     }
   }
 
@@ -423,16 +423,16 @@ class _ItemsScreenState extends State<ItemsScreen> {
     switch (category) {
       case DeclutterCategory.clothes:
         return Icons.checkroom_rounded;
-      case DeclutterCategory.books:
+      case DeclutterCategory.booksDocuments:
         return Icons.menu_book_rounded;
-      case DeclutterCategory.papers:
-        return Icons.description_rounded;
-      case DeclutterCategory.miscellaneous:
-        return Icons.category_rounded;
-      case DeclutterCategory.sentimental:
-        return Icons.favorite_rounded;
+      case DeclutterCategory.electronics:
+        return Icons.devices_other_rounded;
       case DeclutterCategory.beauty:
         return Icons.face_retouching_natural_rounded;
+      case DeclutterCategory.sentimental:
+        return Icons.favorite_rounded;
+      case DeclutterCategory.miscellaneous:
+        return Icons.category_rounded;
     }
   }
 
@@ -1245,16 +1245,16 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
     switch (category) {
       case DeclutterCategory.clothes:
         return const Color(0xFF95E3C6);
-      case DeclutterCategory.books:
+      case DeclutterCategory.booksDocuments:
         return const Color(0xFFFFB74D);
-      case DeclutterCategory.papers:
-        return const Color(0xFF89CFF0);
-      case DeclutterCategory.miscellaneous:
-        return const Color(0xFFFF9AA2);
-      case DeclutterCategory.sentimental:
-        return const Color(0xFFB794F6);
+      case DeclutterCategory.electronics:
+        return const Color(0xFF5AC8FA);
       case DeclutterCategory.beauty:
         return const Color(0xFFFFD93D);
+      case DeclutterCategory.sentimental:
+        return const Color(0xFFB794F6);
+      case DeclutterCategory.miscellaneous:
+        return const Color(0xFFFF9AA2);
     }
   }
 
@@ -1262,16 +1262,16 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
     switch (category) {
       case DeclutterCategory.clothes:
         return Icons.checkroom_rounded;
-      case DeclutterCategory.books:
+      case DeclutterCategory.booksDocuments:
         return Icons.menu_book_rounded;
-      case DeclutterCategory.papers:
-        return Icons.description_rounded;
-      case DeclutterCategory.miscellaneous:
-        return Icons.category_rounded;
-      case DeclutterCategory.sentimental:
-        return Icons.favorite_rounded;
+      case DeclutterCategory.electronics:
+        return Icons.devices_other_rounded;
       case DeclutterCategory.beauty:
         return Icons.face_retouching_natural_rounded;
+      case DeclutterCategory.sentimental:
+        return Icons.favorite_rounded;
+      case DeclutterCategory.miscellaneous:
+        return Icons.category_rounded;
     }
   }
 }

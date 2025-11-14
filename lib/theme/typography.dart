@@ -25,9 +25,10 @@ class AppTypography {
   /// Fallback fonts for Chinese characters
   /// Ordered by preference and availability
   static const List<String> chineseFallbacks = [
+    'NotoSansSC',         // Bundled fallback for Simplified Chinese
     'PingFang SC',        // Apple's modern Chinese font (best for iOS/macOS)
     'Source Han Sans CN', // Adobe's open-source Chinese font
-    'Noto Sans SC',       // Google's Pan-CJK font
+    'Noto Sans SC',       // System-installed Pan-CJK font name
     'Roboto',             // Android fallback
     'Inter',              // Web fallback
   ];

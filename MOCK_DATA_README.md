@@ -97,7 +97,7 @@ const SizedBox(height: 20),
 ## What the Mock Data Service Generates
 
 ### Declutter Items (50 items)
-- Random categories (Clothes, Books, Papers, etc.)
+- Random categories (Clothes, Books & Documents, Electronics, etc.)
 - Random joy levels (70% have joy, 1-10 scale)
 - Random statuses (resell, donate, recycle, discard)
 - Distributed over last 6 months

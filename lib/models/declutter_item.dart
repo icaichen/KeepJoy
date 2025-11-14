@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 enum DeclutterCategory {
   clothes('Clothes', '衣物'),
-  books('Books', '书籍'),
-  papers('Papers', '文件'),
-  miscellaneous('Miscellaneous', '杂项'),
+  booksDocuments('Books & Documents', '书籍/文档'),
+  electronics('Electronics', '电子产品'),
+  beauty('Beauty', '美妆用品'),
   sentimental('Sentimental', '情感纪念品'),
-  beauty('Beauty', '美妆用品');
+  miscellaneous('Miscellaneous', '杂项');
 
   const DeclutterCategory(this.english, this.chinese);
   final String english;

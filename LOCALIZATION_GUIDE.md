@@ -113,8 +113,8 @@ Here are all the translation keys currently available:
 - `couldNotAccessCamera`
 
 ### Categories
-- `categoryClothes`, `categoryBooks`, `categoryPapers`
-- `categoryMiscellaneous`, `categorySentimental`, `categoryBeauty`
+- `categoryClothes`, `categoryBooksDocuments`, `categoryElectronics`
+- `categoryBeauty`, `categorySentimental`, `categoryMiscellaneous`
 
 ### Quick Sweep
 - `quickSweep`, `quickSweepTimer`

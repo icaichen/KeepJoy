@@ -942,17 +942,17 @@ abstract class AppLocalizations {
   /// **'Clothes'**
   String get categoryClothes;
 
-  /// No description provided for @categoryBooks.
+  /// No description provided for @categoryBooksDocuments.
   ///
   /// In en, this message translates to:
-  /// **'Books'**
-  String get categoryBooks;
+  /// **'Books & Documents'**
+  String get categoryBooksDocuments;
 
-  /// No description provided for @categoryPapers.
+  /// No description provided for @categoryElectronics.
   ///
   /// In en, this message translates to:
-  /// **'Papers'**
-  String get categoryPapers;
+  /// **'Electronics'**
+  String get categoryElectronics;
 
   /// No description provided for @categoryMiscellaneous.
   ///
