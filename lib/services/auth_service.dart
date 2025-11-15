@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:keepjoy_app/config/supabase_config.dart';
 
@@ -8,24 +9,42 @@ class AuthService {
   factory AuthService() => _instance;
   AuthService._internal();
 
-  SupabaseClient get client => Supabase.instance.client;
+  SupabaseClient? get client {
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Initialize Supabase
   static Future<void> initialize() async {
     if (!SupabaseConfig.isConfigured) {
-      throw StateError(
-        'Supabase credentials are missing. '
-        'Provide SUPABASE_URL and SUPABASE_ANON_KEY via --dart-define.',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          '⚠️ Supabase credentials are missing. '
+          'App will run in offline mode. '
+          'Provide SUPABASE_URL and SUPABASE_ANON_KEY via --dart-define for full functionality.',
+        );
+      }
+      // Don't throw - allow app to run without Supabase in development
+      return;
     }
-    await Supabase.initialize(
-      url: SupabaseConfig.supabaseUrl,
-      anonKey: SupabaseConfig.supabaseAnonKey,
-    );
+    try {
+      await Supabase.initialize(
+        url: SupabaseConfig.supabaseUrl,
+        anonKey: SupabaseConfig.supabaseAnonKey,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to initialize Supabase: $e');
+      }
+      // Don't throw - allow app to continue
+    }
   }
 
   /// Get current user
-  User? get currentUser => client.auth.currentUser;
+  User? get currentUser => client?.auth.currentUser;
 
   /// Get current user ID
   String? get currentUserId => currentUser?.id;
@@ -43,25 +62,37 @@ class AuthService {
   bool get isAuthenticated => currentUser != null;
 
   /// Stream of auth state changes
-  Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
+  Stream<AuthState>? get authStateChanges => client?.auth.onAuthStateChange;
 
   /// Sign up with email and password
-  Future<AuthResponse> signUp({
+  Future<AuthResponse?> signUp({
     required String email,
     required String password,
   }) async {
-    return await client.auth.signUp(
+    if (client == null) {
+      throw StateError(
+        'Authentication is not available. Supabase is not configured. '
+        'Please configure SUPABASE_URL and SUPABASE_ANON_KEY to use authentication.',
+      );
+    }
+    return await client!.auth.signUp(
       email: email,
       password: password,
     );
   }
 
   /// Sign in with email and password
-  Future<AuthResponse> signIn({
+  Future<AuthResponse?> signIn({
     required String email,
     required String password,
   }) async {
-    return await client.auth.signInWithPassword(
+    if (client == null) {
+      throw StateError(
+        'Authentication is not available. Supabase is not configured. '
+        'Please configure SUPABASE_URL and SUPABASE_ANON_KEY to use authentication.',
+      );
+    }
+    return await client!.auth.signInWithPassword(
       email: email,
       password: password,
     );
@@ -69,17 +100,20 @@ class AuthService {
 
   /// Sign out
   Future<void> signOut() async {
-    await client.auth.signOut();
+    if (client == null) return;
+    await client!.auth.signOut();
   }
 
   /// Reset password (send reset email)
   Future<void> resetPassword(String email) async {
-    await client.auth.resetPasswordForEmail(email);
+    if (client == null) return;
+    await client!.auth.resetPasswordForEmail(email);
   }
 
   /// Update password (when user is logged in)
-  Future<UserResponse> updatePassword(String newPassword) async {
-    return await client.auth.updateUser(
+  Future<UserResponse?> updatePassword(String newPassword) async {
+    if (client == null) return null;
+    return await client!.auth.updateUser(
       UserAttributes(password: newPassword),
     );
   }

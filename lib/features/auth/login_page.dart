@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
             password: _passwordController.text,
           );
 
-          if (response.user != null && mounted) {
+          if (response?.user != null && mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(l10n.signUpSuccess),
@@ -64,6 +64,13 @@ class _LoginPageState extends State<LoginPage> {
 
             // Navigate to home after successful sign up
             Navigator.pushReplacementNamed(context, '/home');
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Sign up failed. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         } else {
           // Sign in
@@ -72,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
             password: _passwordController.text,
           );
 
-          if (response.user != null && mounted) {
+          if (response?.user != null && mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(l10n.signInSuccess),
@@ -82,14 +89,30 @@ class _LoginPageState extends State<LoginPage> {
 
             // Navigate to home after successful sign in
             Navigator.pushReplacementNamed(context, '/home');
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Sign in failed. Please check your credentials.'),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         }
       } catch (e) {
         if (mounted) {
+          // Extract a user-friendly error message
+          String errorMessage = e.toString();
+          if (errorMessage.contains('StateError:')) {
+            errorMessage = errorMessage.replaceFirst('StateError: ', '');
+          } else if (errorMessage.contains('Exception:')) {
+            errorMessage = errorMessage.replaceFirst('Exception: ', '');
+          }
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(errorMessage),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
             ),
           );
         }

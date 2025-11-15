@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -92,6 +92,14 @@ class SubscriptionService {
       return true;
     }
 
+    // Skip configuration on web platform (RevenueCat doesn't support web)
+    if (kIsWeb) {
+      if (kDebugMode) {
+        debugPrint('⚠️ RevenueCat is not supported on web platform. Skipping configuration.');
+      }
+      return false;
+    }
+
     final apiKey = Platform.isIOS
         ? RevenueCatConfig.iosApiKey
         : RevenueCatConfig.androidApiKey;
@@ -107,7 +115,8 @@ class SubscriptionService {
     }
 
     try {
-      await Purchases.configure(PurchasesConfiguration(apiKey));
+      final PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
+      await Purchases.configure(configuration);
       _isConfigured = true;
       return true;
     } catch (error) {

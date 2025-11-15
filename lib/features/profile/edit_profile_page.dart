@@ -88,7 +88,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     try {
       // Update user metadata
-      await _authService.client.auth.updateUser(
+      if (_authService.client == null) return;
+      await _authService.client!.auth.updateUser(
         UserAttributes(
           data: {
             'name': _nameController.text.trim(),

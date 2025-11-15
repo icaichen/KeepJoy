@@ -1,0 +1,21 @@
+// Supabase Local Configuration (Development Only)
+//
+// INSTRUCTIONS:
+// 1. Copy this file to supabase_config_local.dart (without .example)
+// 2. Fill in your Supabase credentials below
+// 3. This file is gitignored and will NOT be committed to version control
+//
+// IMPORTANT: Never commit your actual credentials!
+//
+// To create the actual file:
+//   cp lib/config/supabase_config_local.dart.example lib/config/supabase_config_local.dart
+//   Then edit supabase_config_local.dart with your credentials
+
+class _SupabaseConfigLocal {
+  // Replace with your Supabase project URL
+  static const String url = '';
+  
+  // Replace with your Supabase anon/public key
+  static const String key = '';
+}
+
