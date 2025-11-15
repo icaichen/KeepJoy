@@ -13,6 +13,7 @@ class DataRepository {
   SupabaseClient get _client => _authService.client;
 
   String? get _userId => _authService.currentUserId;
+  String get _requiredUserId => _authService.requireUserId();
 
   // ========================================================================
   // DECLUTTER ITEMS
@@ -35,9 +36,10 @@ class DataRepository {
 
   /// Create a new declutter item
   Future<DeclutterItem> createDeclutterItem(DeclutterItem item) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('declutter_items')
-        .insert(item.toJson())
+        .insert(item.copyWith(userId: userId).toJson())
         .select()
         .single();
 
@@ -46,9 +48,10 @@ class DataRepository {
 
   /// Update a declutter item
   Future<DeclutterItem> updateDeclutterItem(DeclutterItem item) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('declutter_items')
-        .update(item.toJson())
+        .update(item.copyWith(userId: userId).toJson())
         .eq('id', item.id)
         .select()
         .single();
@@ -58,6 +61,7 @@ class DataRepository {
 
   /// Delete a declutter item
   Future<void> deleteDeclutterItem(String id) async {
+    final _ = _requiredUserId;
     await _client.from('declutter_items').delete().eq('id', id);
   }
 
@@ -80,9 +84,10 @@ class DataRepository {
 
   /// Create a new resell item
   Future<ResellItem> createResellItem(ResellItem item) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('resell_items')
-        .insert(item.toJson())
+        .insert(item.copyWith(userId: userId).toJson())
         .select()
         .single();
 
@@ -91,9 +96,10 @@ class DataRepository {
 
   /// Update a resell item
   Future<ResellItem> updateResellItem(ResellItem item) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('resell_items')
-        .update(item.toJson())
+        .update(item.copyWith(userId: userId).toJson())
         .eq('id', item.id)
         .select()
         .single();
@@ -103,6 +109,7 @@ class DataRepository {
 
   /// Delete a resell item
   Future<void> deleteResellItem(String id) async {
+    final _ = _requiredUserId;
     await _client.from('resell_items').delete().eq('id', id);
   }
 
@@ -129,9 +136,10 @@ class DataRepository {
   Future<DeepCleaningSession> createDeepCleaningSession(
     DeepCleaningSession session,
   ) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('deep_cleaning_sessions')
-        .insert(session.toJson())
+        .insert(session.copyWith(userId: userId).toJson())
         .select()
         .single();
 
@@ -142,9 +150,10 @@ class DataRepository {
   Future<DeepCleaningSession> updateDeepCleaningSession(
     DeepCleaningSession session,
   ) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('deep_cleaning_sessions')
-        .update(session.toJson())
+        .update(session.copyWith(userId: userId).toJson())
         .eq('id', session.id)
         .select()
         .single();
@@ -154,6 +163,7 @@ class DataRepository {
 
   /// Delete a deep cleaning session
   Future<void> deleteDeepCleaningSession(String id) async {
+    final _ = _requiredUserId;
     await _client.from('deep_cleaning_sessions').delete().eq('id', id);
   }
 
@@ -176,9 +186,10 @@ class DataRepository {
 
   /// Create a new memory
   Future<Memory> createMemory(Memory memory) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('memories')
-        .insert(memory.toJson())
+        .insert(memory.copyWith(userId: userId).toJson())
         .select()
         .single();
 
@@ -187,9 +198,10 @@ class DataRepository {
 
   /// Update a memory
   Future<Memory> updateMemory(Memory memory) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('memories')
-        .update(memory.toJson())
+        .update(memory.copyWith(userId: userId).toJson())
         .eq('id', memory.id)
         .select()
         .single();
@@ -199,6 +211,7 @@ class DataRepository {
 
   /// Delete a memory
   Future<void> deleteMemory(String id) async {
+    final _ = _requiredUserId;
     await _client.from('memories').delete().eq('id', id);
   }
 
@@ -223,9 +236,10 @@ class DataRepository {
 
   /// Create a new planned session
   Future<PlannedSession> createPlannedSession(PlannedSession session) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('planned_sessions')
-        .insert(session.toJson())
+        .insert(session.copyWith(userId: userId).toJson())
         .select()
         .single();
 
@@ -234,9 +248,10 @@ class DataRepository {
 
   /// Update a planned session
   Future<PlannedSession> updatePlannedSession(PlannedSession session) async {
+    final userId = _requiredUserId;
     final response = await _client
         .from('planned_sessions')
-        .update(session.toJson())
+        .update(session.copyWith(userId: userId).toJson())
         .eq('id', session.id)
         .select()
         .single();
@@ -246,6 +261,7 @@ class DataRepository {
 
   /// Delete a planned session
   Future<void> deletePlannedSession(String id) async {
+    final _ = _requiredUserId;
     await _client.from('planned_sessions').delete().eq('id', id);
   }
 
@@ -324,15 +340,15 @@ class DataRepository {
 
   /// Clear all user data from Supabase
   Future<void> clearAllData() async {
-    if (_userId == null) return;
+    final userId = _requiredUserId;
 
     // Delete all data for the current user in parallel
     await Future.wait([
-      _client.from('declutter_items').delete().eq('user_id', _userId!),
-      _client.from('resell_items').delete().eq('user_id', _userId!),
-      _client.from('deep_cleaning_sessions').delete().eq('user_id', _userId!),
-      _client.from('memories').delete().eq('user_id', _userId!),
-      _client.from('planned_sessions').delete().eq('user_id', _userId!),
+      _client.from('declutter_items').delete().eq('user_id', userId),
+      _client.from('resell_items').delete().eq('user_id', userId),
+      _client.from('deep_cleaning_sessions').delete().eq('user_id', userId),
+      _client.from('memories').delete().eq('user_id', userId),
+      _client.from('planned_sessions').delete().eq('user_id', userId),
     ]);
   }
 }

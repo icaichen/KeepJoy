@@ -1060,10 +1060,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get termsOfService => 'Terms of Service';
 
   @override
-  String get rateApp => 'Rate the App';
+  String get rateApp => 'Rate KeepJoy';
 
   @override
-  String get shareApp => 'Share with Friends';
+  String get shareApp => 'Share KeepJoy';
+
+  @override
+  String get premiumMembership => 'Premium Membership';
+
+  @override
+  String get premiumMembershipDescription =>
+      'Unlock exclusive rituals, deeper insights, and advanced automation.';
+
+  @override
+  String get upgradeToPremium => 'Upgrade to KeepJoy Premium';
+
+  @override
+  String get paywallTitle => 'KeepJoy Premium';
+
+  @override
+  String get paywallDescription =>
+      'Choose a plan to unlock the full set of mindful decluttering tools.';
+
+  @override
+  String get paywallLoading => 'Loading subscription options...';
+
+  @override
+  String get paywallUnavailable =>
+      'We can\'t load subscription info right now. Please try again soon.';
+
+  @override
+  String get paywallPurchaseButton => 'Continue';
+
+  @override
+  String get paywallRestorePurchases => 'Restore purchases';
+
+  @override
+  String get paywallPurchaseSuccess => 'Premium unlocked - enjoy KeepJoy!';
+
+  @override
+  String get paywallPurchaseFailure =>
+      'We couldn\'t complete the purchase. Please try again.';
+
+  @override
+  String get paywallRestoreSuccess => 'Purchases restored.';
+
+  @override
+  String get paywallRestoreFailure => 'No purchases to restore right now.';
 
   @override
   String get data => 'Data Management';

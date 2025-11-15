@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../services/app_feedback_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/data_repository.dart';
 import '../../models/declutter_item.dart';
+import '../../ui/paywall/paywall_page.dart';
 import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -199,6 +200,64 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 32),
 
+            // Premium Section
+            _buildSectionTitle(context, l10n.premiumMembership),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.upgradeToPremium,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Display',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.premiumMembershipDescription,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const PaywallPage(),
+                            ),
+                          );
+                        },
+                        child: Text(l10n.upgradeToPremium),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
             // Support & Information Section
             _buildSectionTitle(context, l10n.support),
             const SizedBox(height: 12),
@@ -252,7 +311,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.star_outline,
                     title: l10n.rateApp,
                     onTap: () {
-                      _rateApp();
+                      AppFeedbackService.rateApp();
                     },
                   ),
                   const Divider(height: 1, indent: 56),
@@ -260,7 +319,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.share_outlined,
                     title: l10n.shareApp,
                     onTap: () {
-                      _shareApp();
+                      AppFeedbackService.shareApp();
                     },
                   ),
                 ],
@@ -769,39 +828,6 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }
     }
-  }
-
-  Future<void> _rateApp() async {
-    // For iOS
-    final Uri iosUrl = Uri.parse('https://apps.apple.com/app/idYOUR_APP_ID');
-    // For Android
-    final Uri androidUrl = Uri.parse(
-      'https://play.google.com/store/apps/details?id=com.keepjoy.app',
-    );
-
-    final Uri url = Platform.isIOS ? iosUrl : androidUrl;
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open app store')),
-        );
-      }
-    }
-  }
-
-  Future<void> _shareApp() async {
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
-
-    final String shareText = isChinese
-        ? '快来试试 KeepJoy - 用心动整理法让生活更美好！\n\nhttps://keepjoy.app'
-        : 'Check out KeepJoy - Declutter your life with joy!\n\nhttps://keepjoy.app';
-
-    await Share.share(shareText);
   }
 
   Future<void> _exportData(BuildContext context) async {

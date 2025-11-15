@@ -2037,14 +2037,92 @@ abstract class AppLocalizations {
   /// No description provided for @rateApp.
   ///
   /// In en, this message translates to:
-  /// **'Rate the App'**
+  /// **'Rate KeepJoy'**
   String get rateApp;
 
   /// No description provided for @shareApp.
   ///
   /// In en, this message translates to:
-  /// **'Share with Friends'**
+  /// **'Share KeepJoy'**
   String get shareApp;
+
+  /// No description provided for @premiumMembership.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Membership'**
+  String get premiumMembership;
+
+  /// No description provided for @premiumMembershipDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock exclusive rituals, deeper insights, and advanced automation.'**
+  String get premiumMembershipDescription;
+
+  /// No description provided for @upgradeToPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to KeepJoy Premium'**
+  String get upgradeToPremium;
+
+  /// No description provided for @paywallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'KeepJoy Premium'**
+  String get paywallTitle;
+
+  /// No description provided for @paywallDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a plan to unlock the full set of mindful decluttering tools.'**
+  String get paywallDescription;
+
+  /// No description provided for @paywallLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading subscription options...'**
+  String get paywallLoading;
+
+  /// No description provided for @paywallUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'We can\'t load subscription info right now. Please try again soon.'**
+  String get paywallUnavailable;
+
+  /// No description provided for @paywallPurchaseButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get paywallPurchaseButton;
+
+  /// No description provided for @paywallRestorePurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get paywallRestorePurchases;
+
+  /// No description provided for @paywallPurchaseSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium unlocked - enjoy KeepJoy!'**
+  String get paywallPurchaseSuccess;
+
+  /// No description provided for @paywallPurchaseFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t complete the purchase. Please try again.'**
+  String get paywallPurchaseFailure;
+
+  /// No description provided for @paywallRestoreSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases restored.'**
+  String get paywallRestoreSuccess;
+
+  /// No description provided for @paywallRestoreFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'No purchases to restore right now.'**
+  String get paywallRestoreFailure;
 
   /// No description provided for @data.
   ///

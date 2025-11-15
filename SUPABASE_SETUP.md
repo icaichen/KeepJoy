@@ -41,23 +41,17 @@ The authentication system has been fully integrated with Supabase. Here's what's
 
 ### Step 3: Configure Your App
 
-1. Open the file: `lib/config/supabase_config.dart`
-2. Replace the placeholder values:
+1. Copy your Supabase URL and anon key from **Project Settings > API**.
+2. Pass them to Flutter via `--dart-define` so they never touch source control:
 
-```dart
-class SupabaseConfig {
-  static const String supabaseUrl = 'YOUR_PROJECT_URL_HERE';
-  static const String supabaseAnonKey = 'YOUR_ANON_KEY_HERE';
-}
+```bash
+flutter run \
+  --dart-define=SUPABASE_URL=https://xyzcompany.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-Example:
-```dart
-class SupabaseConfig {
-  static const String supabaseUrl = 'https://xyzcompany.supabase.co';
-  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5emNvbXBhbnkiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTYyMzQxMjM0MCwiZXhwIjoxOTM4OTg4MzQwfQ.abc123xyz...';
-}
-```
+For release builds, do the same (e.g., `flutter build ipa --dart-define=...`).
+If you previously committed credentials, regenerate your anon key in the Supabase dashboard after updating this configuration.
 
 ### Step 4: Enable Email Authentication (Optional Configuration)
 
@@ -278,27 +272,18 @@ For production, enable email verification:
 
 ⚠️ **IMPORTANT**: Never commit your Supabase credentials to version control!
 
-### Option 1: Use .gitignore (Simple)
+### Provide credentials at runtime
 
-Add to your `.gitignore`:
-```
-lib/config/supabase_config.dart
-```
+- Use `--dart-define` (or your CI/CD secret store) to inject `SUPABASE_URL` and `SUPABASE_ANON_KEY` when running or building the app.
+- Example: `flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...`
+- For CI, configure the same defines in your build pipeline or use environment-specific per-app configuration.
 
-Then create a template file `lib/config/supabase_config.dart.example`:
-```dart
-class SupabaseConfig {
-  static const String supabaseUrl = 'YOUR_SUPABASE_URL_HERE';
-  static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY_HERE';
-}
-```
+### Rotate leaked keys
 
-### Option 2: Use Environment Variables (Advanced)
-
-For production apps, consider using:
-- `flutter_dotenv` package
-- Environment variables in your CI/CD pipeline
-- Secure secret management services
+If a key was ever committed, immediately:
+1. Go to **Project Settings > API** in Supabase.
+2. Click **Regenerate** under the anon/public key.
+3. Update your local `--dart-define` values and any deployed environments.
 
 ### Row Level Security (RLS)
 

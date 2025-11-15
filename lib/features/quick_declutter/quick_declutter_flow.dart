@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
+import 'package:keepjoy_app/services/auth_service.dart';
 import '../../services/ai_identification_service.dart';
 import '../../utils/navigation.dart';
 
@@ -318,6 +319,7 @@ class _QuickItemReviewPage extends StatefulWidget {
 }
 
 class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
+  final _authService = AuthService();
   final TextEditingController _nameController = TextEditingController();
   DeclutterCategory _selectedCategory = DeclutterCategory.miscellaneous;
   final AIIdentificationService _aiService = AIIdentificationService();
@@ -424,6 +426,9 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
   }
 
   Future<void> _handleKeep() async {
+    final userId = _currentUserIdOrWarn();
+    if (userId == null) return;
+
     final locale = Localizations.localeOf(context);
     final name = _nameController.text.trim().isEmpty
         ? _unnamedPlaceholder(locale)
@@ -432,7 +437,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
 
     final item = DeclutterItem(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
-      userId: 'temp-user-id',
+      userId: userId,
       name: name,
       nameLocalizations: nameLocalizations,
       category: _selectedCategory,
@@ -452,6 +457,8 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
 
   Future<void> _handleLetGo() async {
     final l10n = AppLocalizations.of(context)!;
+    final userId = _currentUserIdOrWarn();
+    if (userId == null) return;
 
     final status = await showModalBottomSheet<DeclutterStatus>(
       context: context,
@@ -549,7 +556,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
 
     final item = DeclutterItem(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
-      userId: 'temp-user-id',
+      userId: userId,
       name: name,
       nameLocalizations: nameLocalizations,
       category: _selectedCategory,
@@ -565,6 +572,20 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
       _decision = status;
       _joyLevel = 3;
     });
+  }
+
+  String? _currentUserIdOrWarn() {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      final isChinese =
+          Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+      final message =
+          isChinese ? '请先登录以保存数据' : 'Please sign in to save your data.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+    return userId;
   }
 
   Widget _buildLetGoOption(

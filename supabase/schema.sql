@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS declutter_items (
   notes TEXT,
   joy_level INTEGER CHECK (joy_level >= 1 AND joy_level <= 10),
   joy_notes TEXT,
+  purchase_review TEXT CHECK (
+    purchase_review IN ('worthIt', 'wouldBuyAgain', 'neutral', 'wasteMoney')
+  ),
+  reviewed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ,
 
@@ -45,7 +49,8 @@ CREATE POLICY "Users can insert their own declutter items"
 
 CREATE POLICY "Users can update their own declutter items"
   ON declutter_items FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own declutter items"
   ON declutter_items FOR DELETE
@@ -88,7 +93,8 @@ CREATE POLICY "Users can insert their own resell items"
 
 CREATE POLICY "Users can update their own resell items"
   ON resell_items FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own resell items"
   ON resell_items FOR DELETE
@@ -135,7 +141,8 @@ CREATE POLICY "Users can insert their own deep cleaning sessions"
 
 CREATE POLICY "Users can update their own deep cleaning sessions"
   ON deep_cleaning_sessions FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own deep cleaning sessions"
   ON deep_cleaning_sessions FOR DELETE
@@ -151,11 +158,32 @@ CREATE TABLE IF NOT EXISTS memories (
   title TEXT NOT NULL,
   description TEXT,
   photo_path TEXT,
-  type TEXT NOT NULL CHECK (type IN ('decluttering', 'cleaning', 'custom')),
+  type TEXT NOT NULL CHECK (
+    type IN (
+      'decluttering',
+      'cleaning',
+      'custom',
+      'grateful',
+      'lesson',
+      'celebrate'
+    )
+  ),
   item_name TEXT,
   category TEXT,
   notes TEXT,
-  sentiment TEXT CHECK (sentiment IN ('childhoodMemory', 'grownTogether', 'missionCompleted')),
+  sentiment TEXT CHECK (
+    sentiment IN (
+      'love',
+      'nostalgia',
+      'adventure',
+      'happy',
+      'grateful',
+      'peaceful',
+      'childhoodMemory',
+      'grownTogether',
+      'missionCompleted'
+    )
+  ),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ,
 
@@ -180,7 +208,8 @@ CREATE POLICY "Users can insert their own memories"
 
 CREATE POLICY "Users can update their own memories"
   ON memories FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own memories"
   ON memories FOR DELETE
@@ -195,9 +224,18 @@ CREATE TABLE IF NOT EXISTS planned_sessions (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   area TEXT NOT NULL,
-  scheduled_date DATE NOT NULL,
-  scheduled_time TEXT NOT NULL,
+  scheduled_date DATE,
+  scheduled_time TEXT,
   notes TEXT,
+  is_completed BOOLEAN NOT NULL DEFAULT FALSE,
+  completed_at TIMESTAMPTZ,
+  priority TEXT NOT NULL DEFAULT 'someday' CHECK (
+    priority IN ('today', 'thisWeek', 'someday')
+  ),
+  mode TEXT NOT NULL DEFAULT 'deepCleaning' CHECK (
+    mode IN ('deepCleaning', 'joyDeclutter', 'quickDeclutter')
+  ),
+  goal TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ,
 
@@ -221,7 +259,8 @@ CREATE POLICY "Users can insert their own planned sessions"
 
 CREATE POLICY "Users can update their own planned sessions"
   ON planned_sessions FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own planned sessions"
   ON planned_sessions FOR DELETE
