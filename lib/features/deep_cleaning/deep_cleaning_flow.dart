@@ -736,11 +736,11 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
+                  color: const Color(0xFFEFFAF3),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.clean_hands_rounded,
+                  Icons.task_alt_rounded,
                   color: _deepCleaningPrimaryColor,
                   size: 32,
                 ),

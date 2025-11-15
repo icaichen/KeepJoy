@@ -9,6 +9,7 @@ import 'package:keepjoy_app/models/memory.dart';
 import '../../services/ai_identification_service.dart';
 import '../memories/create_memory_page.dart';
 import '../../utils/navigation.dart';
+import 'package:keepjoy_app/widgets/create_memory_prompt_sheet.dart';
 
 const LinearGradient _joyMintPurpleGradient = LinearGradient(
   begin: Alignment.topLeft,
@@ -986,31 +987,31 @@ class _SummaryPage extends StatelessWidget {
     if (!context.mounted) return;
 
     // Show memory prompt
-    final shouldCreateMemory = await showDialog<bool>(
+    final shouldCreateMemory = await showCreateMemoryPromptSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.createMemoryQuestion),
-        content: Text(l10n.createMemoryPrompt),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.skipMemory),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.createMemory),
-          ),
-        ],
-      ),
+      l10n: l10n,
     );
 
     if (shouldCreateMemory == true && context.mounted) {
-      final memory = await Navigator.of(context).push<Memory>(
-        MaterialPageRoute(
-          builder: (_) => CreateMemoryPage(
-            item: item,
-            photoPath: photoPath,
-            itemName: itemName,
+      final memory = await showModalBottomSheet<Memory>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) => DraggableScrollableSheet(
+          initialChildSize: 0.95,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) => Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFFF5F5F7),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: CreateMemoryPage(
+              item: item,
+              photoPath: photoPath,
+              itemName: itemName,
+              isModal: true,
+            ),
           ),
         ),
       );

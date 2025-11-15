@@ -9,11 +9,18 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
 
 class CreateMemoryPage extends StatefulWidget {
-  const CreateMemoryPage({super.key, this.item, this.photoPath, this.itemName});
+  const CreateMemoryPage({
+    super.key,
+    this.item,
+    this.photoPath,
+    this.itemName,
+    this.isModal = false,
+  });
 
   final DeclutterItem? item;
   final String? photoPath;
   final String? itemName;
+  final bool isModal;
 
   @override
   State<CreateMemoryPage> createState() => _CreateMemoryPageState();
@@ -183,131 +190,138 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F7),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          l10n.createMemoryTitle,
-          style: const TextStyle(
-            fontFamily: 'SF Pro Display',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF111827),
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 16),
+    final content = SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.isModal) ...[
+              // Modal header
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF111827)),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    Expanded(
+                      child: Text(
+                        l10n.createMemoryTitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'SF Pro Display',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 48), // Balance the close button
+                  ],
+                ),
+              ),
+            ],
+            if (!widget.isModal) const SizedBox(height: 16),
 
-              // Photo Section
-              GestureDetector(
-                onTap: _showImageSourceDialog,
-                child: _photoPath != null && _photoPath!.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Stack(
-                          children: [
-                            Image.file(
-                              File(_photoPath!),
-                              height: 240,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                            Positioned(
-                              top: 12,
-                              right: 12,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.5),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.edit,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Container(
-                        height: 240,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: const Color(0xFFE5E7EA),
-                            width: 2,
-                            strokeAlign: BorderSide.strokeAlignInside,
+            // Photo Section
+            GestureDetector(
+              onTap: _showImageSourceDialog,
+              child: _photoPath != null && _photoPath!.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        children: [
+                          Image.file(
+                            File(_photoPath!),
+                            height: 240,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
                           ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 64,
-                              height: 64,
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFB794F6).withValues(alpha: 0.1),
+                                color: Colors.black.withValues(alpha: 0.5),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
-                                Icons.add_photo_alternate_rounded,
-                                size: 32,
-                                color: Color(0xFFB794F6),
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 20,
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              l10n.addPhoto,
-                              style: const TextStyle(
-                                fontFamily: 'SF Pro Text',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF111827),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              l10n.captureSpecialMoment,
-                              style: const TextStyle(
-                                fontFamily: 'SF Pro Text',
-                                fontSize: 14,
-                                color: Color(0xFF6B7280),
-                              ),
-                            ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    )
+                  : Container(
+                      height: 240,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFE5E7EA),
+                          width: 2,
+                          strokeAlign: BorderSide.strokeAlignInside,
                         ),
                       ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFB794F6).withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.add_photo_alternate_rounded,
+                              size: 32,
+                              color: Color(0xFFB794F6),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.addPhoto,
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.captureSpecialMoment,
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              fontSize: 14,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Form Card
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EA)),
               ),
-
-              const SizedBox(height: 24),
-
-              // Form Card
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE5E7EA)),
-                ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                     // Item Name
                     Text(
                       l10n.itemName,
@@ -539,23 +553,49 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                     ),
                   ],
                 ),
-              ),
+            ),
 
-              const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-              // Create Button
-              GradientButton(
-                onPressed: _isLoading ? null : _createMemory,
-                isLoading: _isLoading,
-                width: double.infinity,
-                child: Text(l10n.createMemory),
-              ),
+            // Create Button
+            GradientButton(
+              onPressed: _isLoading ? null : _createMemory,
+              isLoading: _isLoading,
+              width: double.infinity,
+              child: Text(l10n.createMemory),
+            ),
 
-              const SizedBox(height: 32),
-            ],
-          ),
+            const SizedBox(height: 32),
+          ],
         ),
       ),
+    );
+
+    if (widget.isModal) {
+      return content;
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF5F5F7),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          l10n.createMemoryTitle,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: content,
     );
   }
 }
