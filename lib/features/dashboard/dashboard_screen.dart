@@ -10,6 +10,7 @@ import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart
 import 'package:keepjoy_app/features/insights/yearly_reports_screen.dart';
 import 'package:keepjoy_app/features/profile/profile_page.dart';
 import 'package:keepjoy_app/features/memories/create_memory_page.dart';
+import 'package:keepjoy_app/features/dashboard/widgets/declutter_results_distribution_card.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/activity_entry.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -2091,7 +2092,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 },
                                 width: double.infinity,
                                 height: 44,
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.max,
@@ -2674,10 +2678,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 24),
 
-                // Letting Go Details Card
+                // Declutter Results Distribution Card
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                  child: _buildLetGoDetailsCard(context, isChinese),
+                  child: DeclutterResultsDistributionCard(
+                    items: widget.declutteredItems,
+                    title: l10n.dashboardLettingGoDetailsTitle,
+                    subtitle: l10n.dashboardLettingGoDetailsSubtitle,
+                    keptLabel: l10n.dashboardKeptLabel,
+                    resellLabel: l10n.routeResell,
+                    recycleLabel: l10n.routeRecycle,
+                    donateLabel: l10n.routeDonation,
+                    discardLabel: l10n.routeDiscard,
+                    totalItemsLabel: l10n.totalItemsDecluttered,
+                    isChinese: isChinese,
+                  ),
                 ),
 
                 const SizedBox(height: 24),
@@ -2992,7 +3007,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildMonthlyReportCard(BuildContext context, bool isChinese) {
     final l10n = AppLocalizations.of(context)!;
 
-    // Calculate THIS MONTH's metrics
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
     final nextMonthStart = DateTime(now.year, now.month + 1, 1);
@@ -3013,345 +3027,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
           : 'No deep cleaning records yet this month. Start your first focused session.',
     );
   }
-
-  Widget _buildLetGoDetailsCard(BuildContext context, bool isChinese) {
-    final theme = Theme.of(context);
-
-    // Calculate counts for each disposal method
-    final keepCount = widget.declutteredItems
-        .where((item) => item.status == DeclutterStatus.keep)
-        .length;
-    final resellCount = widget.declutteredItems
-        .where((item) => item.status == DeclutterStatus.resell)
-        .length;
-    final recycleCount = widget.declutteredItems
-        .where((item) => item.status == DeclutterStatus.recycle)
-        .length;
-    final donateCount = widget.declutteredItems
-        .where((item) => item.status == DeclutterStatus.donate)
-        .length;
-    final discardCount = widget.declutteredItems
-        .where((item) => item.status == DeclutterStatus.discard)
-        .length;
-
-    final total =
-        keepCount + resellCount + recycleCount + donateCount + discardCount;
-
-    // Define colors for each category
-    const keepColor = Color(0xFF9FAEF8); // Calm periwinkle
-    const resellColor = Color(0xFFFFC857); // Golden amber
-    const recycleColor = Color(0xFF4CC9B0); // Teal green
-    const donateColor = Color(0xFFFF8FA3); // Rose quartz
-    const discardColor = Color(0xFFB99CFF); // Lavender haze
-
-    final breakdowns = [
-      _OutcomeBreakdown(
-        color: keepColor,
-        label: l10n.dashboardKeptLabel,
-        count: keepCount,
-      ),
-      _OutcomeBreakdown(
-        color: resellColor,
-        label: l10n.routeResell,
-        count: resellCount,
-      ),
-      _OutcomeBreakdown(
-        color: recycleColor,
-        label: l10n.routeRecycle,
-        count: recycleCount,
-      ),
-      _OutcomeBreakdown(
-        color: donateColor,
-        label: l10n.routeDonation,
-        count: donateCount,
-      ),
-      _OutcomeBreakdown(
-        color: discardColor,
-        label: l10n.routeDiscard,
-        count: discardCount,
-      ),
-    ];
-
-    final chartSlices = total > 0
-        ? breakdowns.where((b) => b.count > 0).toList()
-        : breakdowns;
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE4E6F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.dashboardLettingGoDetailsTitle,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                l10n.dashboardLettingGoDetailsSubtitle,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B7280),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Center(
-            child: SizedBox(
-              width: 220,
-              height: 220,
-              child: _buildLetGoChart(
-                size: 220,
-                slices: chartSlices,
-                total: total,
-                theme: theme,
-                isChinese: isChinese,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          _buildOutcomeLegend(
-            breakdowns: breakdowns,
-            total: total,
-            theme: theme,
-            isChinese: isChinese,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLetGoChart({
-    required double size,
-    required List<_OutcomeBreakdown> slices,
-    required int total,
-    required ThemeData theme,
-    required bool isChinese,
-  }) {
-    final hasData = total > 0;
-    final emptyTitle = isChinese ? '暂无整理数据' : 'No data yet';
-    final emptySubtitle = isChinese
-        ? '记录一次整理后即可看到比例。'
-        : 'Log a letting-go result to see the breakdown.';
-
-    final innerWidth = size * 0.65;
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: Size.square(size),
-            painter: _OutcomeDonutPainter(
-              slices: hasData ? slices : const <_OutcomeBreakdown>[],
-              total: total,
-            ),
-          ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: hasData
-                ? SizedBox(
-                    key: const ValueKey('letGoData'),
-                    width: innerWidth,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '$total',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF111827),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.totalItemsDecluttered,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : SizedBox(
-                    key: const ValueKey('letGoEmpty'),
-                    width: innerWidth,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          emptyTitle,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF374151),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          emptySubtitle,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOutcomeLegend({
-    required List<_OutcomeBreakdown> breakdowns,
-    required int total,
-    required ThemeData theme,
-    required bool isChinese,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        for (final breakdown in breakdowns)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: _buildOutcomeLegendItem(
-                breakdown: breakdown,
-                theme: theme,
-                isChinese: isChinese,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildOutcomeLegendItem({
-    required _OutcomeBreakdown breakdown,
-    required ThemeData theme,
-    required bool isChinese,
-  }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: breakdown.color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(height: 6),
-        AutoScaleText(
-          breakdown.label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: const Color(0xFF111827),
-          ),
-        ),
-        const SizedBox(height: 2),
-        AutoScaleText(
-          '${breakdown.count}',
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: const Color(0xFF111827),
-          ),
-        ),
-        if (isChinese)
-          Text(
-            '件',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: const Color(0xFF9CA3AF),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _OutcomeBreakdown {
-  final Color color;
-  final String label;
-  final int count;
-
-  const _OutcomeBreakdown({
-    required this.color,
-    required this.label,
-    required this.count,
-  });
-}
-
-class _OutcomeDonutPainter extends CustomPainter {
-  final List<_OutcomeBreakdown> slices;
-  final int total;
-
-  _OutcomeDonutPainter({required this.slices, required this.total});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    final strokeWidth = radius * 0.32;
-    final rect = Rect.fromCircle(
-      center: center,
-      radius: radius - strokeWidth / 2,
-    );
-
-    final basePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..color = const Color(0xFFE7EAF6);
-
-    canvas.drawArc(rect, 0, math.pi * 2, false, basePaint);
-
-    if (total == 0) {
-      return;
-    }
-
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    double startAngle = -math.pi / 2;
-
-    for (final slice in slices) {
-      if (slice.count <= 0) continue;
-      final sweepAngle = (slice.count / total) * math.pi * 2;
-      if (sweepAngle <= 0) continue;
-
-      paint.shader = SweepGradient(
-        startAngle: startAngle,
-        endAngle: startAngle + sweepAngle,
-        colors: [slice.color.withValues(alpha: 0.65), slice.color],
-      ).createShader(rect);
-
-      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
-      startAngle += sweepAngle;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

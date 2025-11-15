@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -79,6 +77,14 @@ class SubscriptionService {
   static void listenCustomerInfoUpdates(
     void Function(CustomerInfo customerInfo) onUpdated,
   ) {
+    if (kIsWeb) {
+      if (kDebugMode) {
+        debugPrint(
+          'RevenueCat listeners are disabled on web because purchases_flutter is not supported.',
+        );
+      }
+      return;
+    }
     Purchases.addCustomerInfoUpdateListener(onUpdated);
   }
 
@@ -95,12 +101,15 @@ class SubscriptionService {
     // Skip configuration on web platform (RevenueCat doesn't support web)
     if (kIsWeb) {
       if (kDebugMode) {
-        debugPrint('⚠️ RevenueCat is not supported on web platform. Skipping configuration.');
+        debugPrint(
+          '⚠️ RevenueCat is not supported on web platform. Skipping configuration.',
+        );
       }
       return false;
     }
 
-    final apiKey = Platform.isIOS
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final apiKey = isIOS
         ? RevenueCatConfig.iosApiKey
         : RevenueCatConfig.androidApiKey;
 
@@ -115,7 +124,9 @@ class SubscriptionService {
     }
 
     try {
-      final PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
+      final PurchasesConfiguration configuration = PurchasesConfiguration(
+        apiKey,
+      );
       await Purchases.configure(configuration);
       _isConfigured = true;
       return true;
