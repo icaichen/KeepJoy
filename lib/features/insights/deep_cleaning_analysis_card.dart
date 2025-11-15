@@ -95,13 +95,21 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     ];
 
     // Combine common areas with custom areas
-    final allAreas = <String>{...commonAreas, ...sessionsByArea.keys}.toList();
+    final areaSet = <String>{...commonAreas, ...sessionsByArea.keys};
 
     // Calculate area counts for heatmap
-    final areaCounts = <String, int>{};
-    for (final area in allAreas) {
-      areaCounts[area] = sessionsByArea[area]?.length ?? 0;
-    }
+    final areaCounts = <String, int>{
+      for (final area in areaSet) area: sessionsByArea[area]?.length ?? 0,
+    };
+
+    final allAreas = areaSet.toList()
+      ..sort((a, b) {
+        final countB = areaCounts[b] ?? 0;
+        final countA = areaCounts[a] ?? 0;
+        final diff = countB.compareTo(countA);
+        if (diff != 0) return diff;
+        return a.compareTo(b);
+      });
 
     // Calculate areas cleared (unique areas with sessions)
     final areasCleared = areaCounts.values.where((count) => count > 0).length;
@@ -407,86 +415,36 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildPhotoCarousel(context, l10n, session),
-                const SizedBox(height: 20),
-                Text(
-                  l10n.messiness,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
+                const SizedBox(height: 18),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: _buildSessionDetailList(
+                    l10n: l10n,
+                    colon: l10n.localeName.toLowerCase().startsWith('zh') ? '：' : ':',
+                    itemsValue: session.itemsCount?.toString() ?? '--',
+                    durationValue: session.elapsedSeconds != null
+                        ? _formatDuration(session.elapsedSeconds!, l10n)
+                        : '--',
+                    beforeValue: session.beforeMessinessIndex != null
+                        ? session.beforeMessinessIndex!.toStringAsFixed(1)
+                        : '--',
+                    afterValue: session.afterMessinessIndex != null
+                        ? session.afterMessinessIndex!.toStringAsFixed(1)
+                        : '--',
+                    improvementValue: improvement != null
+                        ? '${improvement.toStringAsFixed(0)}%'
+                        : '--',
+                    focusValue: session.focusIndex?.toString() ?? '--',
+                    joyValue: session.moodIndex?.toString() ?? '--',
                   ),
                 ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _buildMetricChip(
-                      label: l10n.messinessBefore,
-                      value: session.beforeMessinessIndex != null
-                          ? session.beforeMessinessIndex!.toStringAsFixed(1)
-                          : '--',
-                    ),
-                    _buildMetricChip(
-                      label: l10n.messinessAfter,
-                      value: session.afterMessinessIndex != null
-                          ? session.afterMessinessIndex!.toStringAsFixed(1)
-                          : '--',
-                    ),
-                    _buildMetricChip(
-                      label: l10n.dashboardMessinessReducedLabel,
-                      value: improvement != null
-                          ? '${improvement.toStringAsFixed(0)}%'
-                          : '--',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Divider(color: Color(0xFFE5E7EA)),
-                const SizedBox(height: 20),
-                Text(
-                  '${l10n.dashboardFocusLabel} · ${l10n.dashboardJoyLabel}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildMetricChip(
-                        label: l10n.dashboardFocusLabel,
-                        value: session.focusIndex?.toString() ?? '--',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildMetricChip(
-                        label: l10n.dashboardJoyLabel,
-                        value: session.moodIndex?.toString() ?? '--',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Divider(color: Color(0xFFE5E7EA)),
-                const SizedBox(height: 20),
-                Text(
-                  l10n.dashboardItemsLabel,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildMetricChip(
-                  label: l10n.dashboardItemsLabel,
-                  value: session.itemsCount?.toString() ?? '--',
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -518,7 +476,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
 
     if (allMissing) {
       return Container(
-        height: 200,
+        height: 170,
         decoration: BoxDecoration(
           color: const Color(0xFFF3F4F6),
           borderRadius: BorderRadius.circular(18),
@@ -533,7 +491,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 220,
+      height: 180,
       child: PageView.builder(
         itemCount: slides.length,
         itemBuilder: (context, index) {
@@ -544,36 +502,65 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMetricChip({required String label, required String value}) {
-    return Container(
-      width: 150,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
+  Widget _buildSessionDetailList({
+    required AppLocalizations l10n,
+    required String colon,
+    required String itemsValue,
+    required String durationValue,
+    required String beforeValue,
+    required String afterValue,
+    required String improvementValue,
+    required String focusValue,
+    required String joyValue,
+  }) {
+    final labelStyle = const TextStyle(
+      fontSize: 14,
+      color: Color(0xFF6B7280),
+    );
+    final valueStyle = const TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF111827),
+    );
+
+    Widget buildRow(String label, String value) {
+      return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF6B7280),
+          Expanded(
+            child: Text(
+              '$label$colon',
+              style: labelStyle,
             ),
           ),
-          const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF111827),
-            ),
+            style: valueStyle,
           ),
         ],
-      ),
+      );
+    }
+
+    return Column(
+      children: [
+        buildRow(l10n.dashboardItemsLabel, itemsValue),
+        const SizedBox(height: 10),
+        buildRow(l10n.dashboardDurationLabel, durationValue),
+        const SizedBox(height: 14),
+        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+        const SizedBox(height: 14),
+        buildRow(l10n.messinessBefore, beforeValue),
+        const SizedBox(height: 10),
+        buildRow(l10n.messinessAfter, afterValue),
+        const SizedBox(height: 10),
+        buildRow(l10n.dashboardMessinessReducedLabel, improvementValue),
+        const SizedBox(height: 14),
+        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+        const SizedBox(height: 14),
+        buildRow(l10n.dashboardFocusLabel, focusValue),
+        const SizedBox(height: 10),
+        buildRow(l10n.dashboardJoyLabel, joyValue),
+      ],
     );
   }
 
@@ -593,6 +580,57 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
       return null;
     }
     return ((before - after) / before) * 100;
+  }
+
+  String _formatDuration(int seconds, AppLocalizations l10n) {
+    final duration = Duration(seconds: seconds);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final secs = duration.inSeconds.remainder(60);
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
+
+    if (hours > 0) {
+      if (isChinese) {
+        final buffer = StringBuffer()
+          ..write(hours)
+          ..write('小时');
+        if (minutes > 0) {
+          buffer
+            ..write(minutes)
+            ..write('分钟');
+        }
+        return buffer.toString();
+      }
+
+      final buffer = StringBuffer()
+        ..write(hours)
+        ..write('h');
+      if (minutes > 0) {
+        buffer
+          ..write(' ')
+          ..write(minutes)
+          ..write('m');
+      }
+      return buffer.toString();
+    }
+
+    if (minutes > 0) {
+      if (isChinese) {
+        return '$minutes分钟';
+      }
+      return (StringBuffer()
+            ..write(minutes)
+            ..write(' min'))
+          .toString();
+    }
+
+    if (isChinese) {
+      return '$secs秒';
+    }
+    return (StringBuffer()
+          ..write(secs)
+          ..write('s'))
+        .toString();
   }
 
   String _formatSessionDate(DateTime date, AppLocalizations l10n) {
