@@ -96,6 +96,7 @@ class MainNavigator extends StatefulWidget {
 }
 
 class _MainNavigatorState extends State<MainNavigator> {
+  final _authService = AuthService();
   int _selectedIndex = 0;
   DeepCleaningSession? _activeSession;
   final List<DeclutterItem> _declutteredItems = [];
@@ -107,9 +108,13 @@ class _MainNavigatorState extends State<MainNavigator> {
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
 
-  // Temporary placeholder userId until authentication is integrated
-  // TODO: Replace with actual userId from AuthService after integration
-  static const String _placeholderUserId = 'temp-user-id';
+  String get _currentUserId {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw StateError('MainNavigator requires an authenticated Supabase user.');
+    }
+    return userId;
+  }
 
   // Calculate streak (consecutive days of activity)
   int _calculateStreak() {
@@ -203,7 +208,7 @@ class _MainNavigatorState extends State<MainNavigator> {
     setState(() {
       _activeSession = DeepCleaningSession(
         id: const Uuid().v4(),
-        userId: _placeholderUserId,
+        userId: _currentUserId,
         area: area,
         startTime: DateTime.now(),
         beforePhotoPath: beforePhotoPath,
@@ -279,7 +284,7 @@ class _MainNavigatorState extends State<MainNavigator> {
       if (item.status == DeclutterStatus.resell) {
         final resellItem = ResellItem(
           id: 'resell_${DateTime.now().millisecondsSinceEpoch}',
-          userId: _placeholderUserId,
+          userId: _currentUserId,
           declutterItemId: item.id,
           status: ResellStatus.toSell,
           createdAt: DateTime.now(),
@@ -307,7 +312,7 @@ class _MainNavigatorState extends State<MainNavigator> {
           if (!hasResellItem) {
             final resellItem = ResellItem(
               id: 'resell_${DateTime.now().millisecondsSinceEpoch}',
-              userId: _placeholderUserId,
+              userId: _currentUserId,
               declutterItemId: item.id,
               status: ResellStatus.toSell,
               createdAt: DateTime.now(),

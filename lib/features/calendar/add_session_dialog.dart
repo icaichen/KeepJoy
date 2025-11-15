@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
+import 'package:keepjoy_app/services/auth_service.dart';
 
 /// Dialog for adding a new planned decluttering session
 class AddSessionDialog extends StatefulWidget {
@@ -13,6 +14,7 @@ class AddSessionDialog extends StatefulWidget {
 }
 
 class _AddSessionDialogState extends State<AddSessionDialog> {
+  final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
   final _areaController = TextEditingController();
   final _notesController = TextEditingController();
@@ -64,9 +66,12 @@ class _AddSessionDialogState extends State<AddSessionDialog> {
 
   void _saveSession() {
     if (_formKey.currentState!.validate()) {
+      final userId = _currentUserIdOrWarn();
+      if (userId == null) return;
+
       final session = PlannedSession(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: 'temp-user-id', // TODO: Replace with actual userId from AuthService
+        userId: userId,
         title: '${_areaController.text} declutter',
         area: _areaController.text,
         scheduledDate: _selectedDate,
@@ -77,6 +82,20 @@ class _AddSessionDialogState extends State<AddSessionDialog> {
 
       Navigator.of(context).pop(session);
     }
+  }
+
+  String? _currentUserIdOrWarn() {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      final isChinese =
+          Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+      final message =
+          isChinese ? '请先登录以保存数据' : 'Please sign in to save your data.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+    return userId;
   }
 
   @override

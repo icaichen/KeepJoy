@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
+import 'package:keepjoy_app/services/auth_service.dart';
 
 class CreateMemoryPage extends StatefulWidget {
   const CreateMemoryPage({super.key, this.item, this.photoPath, this.itemName});
@@ -20,6 +21,7 @@ class CreateMemoryPage extends StatefulWidget {
 }
 
 class _CreateMemoryPageState extends State<CreateMemoryPage> {
+  final _authService = AuthService();
   final TextEditingController _itemNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -136,6 +138,8 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
 
   void _createMemory() {
     final l10n = AppLocalizations.of(context)!;
+    final userId = _currentUserIdOrWarn();
+    if (userId == null) return;
 
     if (_itemNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -162,8 +166,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
 
     final memory = Memory.fromDeclutteredItem(
       id: 'memory_${DateTime.now().millisecondsSinceEpoch}',
-      userId:
-          'temp-user-id', // TODO: Replace with actual userId from AuthService
+      userId: userId,
       itemName: _itemNameController.text.trim(),
       category: _selectedCategory!.name,
       createdAt: DateTime.now(),
@@ -176,6 +179,20 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
 
     // Return the memory to the caller
     Navigator.of(context).pop(memory);
+  }
+
+  String? _currentUserIdOrWarn() {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      final isChinese =
+          Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+      final message =
+          isChinese ? '请先登录以保存数据' : 'Please sign in to save your data.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+    return userId;
   }
 
   @override

@@ -12,6 +12,12 @@ class AuthService {
 
   /// Initialize Supabase
   static Future<void> initialize() async {
+    if (!SupabaseConfig.isConfigured) {
+      throw StateError(
+        'Supabase credentials are missing. '
+        'Provide SUPABASE_URL and SUPABASE_ANON_KEY via --dart-define.',
+      );
+    }
     await Supabase.initialize(
       url: SupabaseConfig.supabaseUrl,
       anonKey: SupabaseConfig.supabaseAnonKey,
@@ -23,6 +29,15 @@ class AuthService {
 
   /// Get current user ID
   String? get currentUserId => currentUser?.id;
+
+  /// Require an authenticated user ID or throw.
+  String requireUserId() {
+    final id = currentUserId;
+    if (id == null) {
+      throw StateError('An authenticated user is required for this action.');
+    }
+    return id;
+  }
 
   /// Check if user is authenticated
   bool get isAuthenticated => currentUser != null;
