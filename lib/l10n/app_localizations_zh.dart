@@ -80,7 +80,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get keepGoing => '继续加油！';
 
   @override
-  String get dashboardCreateGoalTitle => '创建新目标';
+  String get dashboardCreateGoalTitle => '创建目标';
 
   @override
   String get dashboardGoalLabel => '目标';
@@ -104,7 +104,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardCreateAction => '创建';
 
   @override
-  String get dashboardCreateSessionTitle => '创建新计划';
+  String get dashboardCreateSessionTitle => '创建计划';
 
   @override
   String get dashboardModeLabel => '模式';

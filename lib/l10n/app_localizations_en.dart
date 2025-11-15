@@ -83,7 +83,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keepGoing => 'Keep going!';
 
   @override
-  String get dashboardCreateGoalTitle => 'Create New Goal';
+  String get dashboardCreateGoalTitle => 'Create Goal';
 
   @override
   String get dashboardGoalLabel => 'Goal';
@@ -108,7 +108,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardCreateAction => 'Create';
 
   @override
-  String get dashboardCreateSessionTitle => 'Create New Session';
+  String get dashboardCreateSessionTitle => 'Create Session';
 
   @override
   String get dashboardModeLabel => 'Mode';

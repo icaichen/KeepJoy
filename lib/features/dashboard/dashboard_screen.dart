@@ -18,6 +18,7 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
+import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -291,13 +292,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             )
                           : null,
                       onTap: () async {
-                        final picked = await showDatePicker(
+                        final picked = await _showStyledDatePicker(
                           context: builderContext,
-                          initialDate: selectedDate ?? DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 365),
-                          ),
+                          initialDate: selectedDate,
+                          l10n: l10n,
                         );
                         if (picked != null) {
                           setModalState(() {
@@ -383,6 +381,115 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Future<DateTime?> _showStyledDatePicker({
+    required BuildContext context,
+    required DateTime? initialDate,
+    required AppLocalizations l10n,
+  }) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final DateTime initial =
+        (initialDate != null && !initialDate.isBefore(today))
+        ? initialDate
+        : today;
+    final lastDate = today.add(const Duration(days: 365));
+
+    DateTime tempDate = initial;
+
+    return showModalBottomSheet<DateTime>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 12,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.dashboardSelectDate,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: Theme.of(context).colorScheme.copyWith(
+                          primary: const Color(0xFF414B5A),
+                          onPrimary: Colors.white,
+                        ),
+                      ),
+                      child: CalendarDatePicker(
+                        initialDate: tempDate,
+                        firstDate: today,
+                        lastDate: lastDate,
+                        onDateChanged: (value) {
+                          setSheetState(() {
+                            tempDate = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF414B5A),
+                              side: const BorderSide(color: Color(0xFFD1D5DB)),
+                            ),
+                            child: Text(l10n.cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () =>
+                                Navigator.pop(sheetContext, tempDate),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF414B5A),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: Text(l10n.done),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showAddSessionDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController areaController = TextEditingController();
     DateTime? selectedDate = DateTime.now();
@@ -400,6 +507,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (builderContext, setModalState) {
+            final modeOrder = [
+              SessionMode.quickDeclutter,
+              SessionMode.joyDeclutter,
+              SessionMode.deepCleaning,
+            ];
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
@@ -445,11 +557,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 8),
                       Row(
-                        children: SessionMode.values.map((mode) {
+                        children: modeOrder.map((mode) {
+                          final index = modeOrder.indexOf(mode);
                           final isSelected = selectedMode == mode;
                           return Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: EdgeInsets.only(
+                                right: index == modeOrder.length - 1 ? 0 : 8,
+                              ),
                               child: InkWell(
                                 onTap: () {
                                   setModalState(() {
@@ -529,13 +644,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               : l10n.dashboardSelectDate,
                         ),
                         onTap: () async {
-                          final picked = await showDatePicker(
+                          final picked = await _showStyledDatePicker(
                             context: builderContext,
-                            initialDate: selectedDate ?? DateTime.now(),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(
-                              const Duration(days: 365),
-                            ),
+                            initialDate: selectedDate,
+                            l10n: l10n,
                           );
                           if (picked != null) {
                             setModalState(() {
@@ -666,8 +778,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showAllSessionsCalendar(BuildContext context, AppLocalizations l10n) {
-    final isChineseLocale = l10n.localeName.toLowerCase().startsWith('zh');
-
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
@@ -909,7 +1019,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     bool isEnabled,
     void Function(void Function()) setState,
   ) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final areas = isChinese
         ? ['客厅', '卧室', '衣柜', '书柜', '厨房', '书桌']
         : [
@@ -921,95 +1030,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
             'Desk',
           ];
 
-    final selectedArea = areaController.text.trim();
-    const primaryColor = Color(0xFF414B5A);
+    final selectedArea = areaController.text.trim().isEmpty
+        ? null
+        : areaController.text.trim();
 
-    // Map areas to icons
-    IconData getIconForArea(String area) {
-      final areaLower = area.toLowerCase();
-      if (areaLower.contains('living') || area == '客厅') {
-        return Icons.weekend_outlined;
-      } else if (areaLower.contains('bedroom') || area == '卧室') {
-        return Icons.bed_outlined;
-      } else if (areaLower.contains('wardrobe') || area == '衣柜') {
-        return Icons.checkroom_outlined;
-      } else if (areaLower.contains('bookshelf') || area == '书柜') {
-        return Icons.book_outlined;
-      } else if (areaLower.contains('kitchen') || area == '厨房') {
-        return Icons.kitchen_outlined;
-      } else if (areaLower.contains('desk') || area == '书桌') {
-        return Icons.desk_outlined;
-      } else {
-        return Icons.home_outlined;
-      }
-    }
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 16,
-      children: areas.map((label) {
-        final isSelected = label.toLowerCase() == selectedArea.toLowerCase();
-        final diameter = screenWidth * 0.15;
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            InkWell(
-              onTap: isEnabled
-                  ? () {
-                      setState(() {
-                        areaController.text = label;
-                      });
-                    }
-                  : null,
-              borderRadius: BorderRadius.circular(diameter / 2),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: diameter,
-                height: diameter,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? primaryColor : Colors.white,
-                  border: Border.all(
-                    color: isSelected ? primaryColor : const Color(0xFFE5E7EA),
-                    width: 1.5,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ]
-                      : null,
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  getIconForArea(label),
-                  size: 24,
-                  color: isSelected ? Colors.white : const Color(0xFF1F2937),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: diameter,
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? primaryColor : const Color(0xFF6B7280),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        );
-      }).toList(),
+    return DropdownButtonFormField<String>(
+      initialValue: selectedArea,
+      isExpanded: true,
+      icon: const Icon(Icons.keyboard_arrow_down_rounded),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF414B5A)),
+        ),
+        hintText: isChinese ? '选择区域' : 'Select an area',
+      ),
+      items: areas
+          .map(
+            (label) =>
+                DropdownMenuItem<String>(value: label, child: Text(label)),
+          )
+          .toList(),
+      onChanged: isEnabled
+          ? (value) {
+              setState(() {
+                areaController.text = value ?? '';
+              });
+            }
+          : null,
     );
   }
 
@@ -1676,6 +1738,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 height: 44,
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     const Icon(
                                       Icons.sentiment_satisfied_alt,
@@ -1685,13 +1748,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     const SizedBox(width: 8),
                                     Text(
                                       l10n.createMemory,
-                                      style: const TextStyle(
-                                        fontFamily: 'SF Pro Text',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400,
-                                        letterSpacing: 0,
-                                        color: Colors.white,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                            letterSpacing: 0,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -2673,55 +2737,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.dashboardLettingGoDetailsTitle,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF111827),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      l10n.dashboardLettingGoDetailsSubtitle,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF6B7280),
-                      ),
-                    ),
-                  ],
+              Text(
+                l10n.dashboardLettingGoDetailsTitle,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEAE4FF),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.bubble_chart_rounded,
-                      size: 16,
-                      color: Color(0xFF6B4E71),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isChinese ? '实时更新' : 'Live view',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: const Color(0xFF5B21B6),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 6),
+              Text(
+                l10n.dashboardLettingGoDetailsSubtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF6B7280),
                 ),
               ),
             ],
@@ -2790,7 +2820,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Text(
                           '$total',
-                          style: theme.textTheme.titleLarge?.copyWith(
+                          style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF111827),
                           ),
@@ -2815,7 +2845,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(
                           emptyTitle,
                           textAlign: TextAlign.center,
-                          style: theme.textTheme.titleMedium?.copyWith(
+                          style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF374151),
                           ),
@@ -2824,7 +2854,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(
                           emptySubtitle,
                           textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium?.copyWith(
+                          style: theme.textTheme.bodySmall?.copyWith(
                             color: const Color(0xFF6B7280),
                           ),
                         ),
@@ -2843,78 +2873,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required ThemeData theme,
     required bool isChinese,
   }) {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 12,
-      children: breakdowns
-          .map(
-            (breakdown) => SizedBox(
-              width: 150,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (final breakdown in breakdowns)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
               child: _buildOutcomeLegendItem(
                 breakdown: breakdown,
-                total: total,
                 theme: theme,
                 isChinese: isChinese,
               ),
             ),
-          )
-          .toList(),
+          ),
+      ],
     );
   }
 
   Widget _buildOutcomeLegendItem({
     required _OutcomeBreakdown breakdown,
-    required int total,
     required ThemeData theme,
     required bool isChinese,
   }) {
-    final ratio = total == 0 ? 0.0 : breakdown.count / total;
-    final percentage = ratio * 100;
-    final percentageLabel = total == 0
-        ? (isChinese ? '占比 0%' : '0%')
-        : (isChinese
-              ? '占比 ${percentage.toStringAsFixed(0)}%'
-              : '${percentage.toStringAsFixed(0)}%');
-
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: breakdown.color,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                breakdown.label,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF111827),
-                ),
-              ),
-            ),
-          ],
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: breakdown.color,
+            shape: BoxShape.circle,
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          isChinese ? '${breakdown.count} 件' : '${breakdown.count}',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
+        const SizedBox(height: 6),
+        AutoScaleText(
+          breakdown.label,
+          style: theme.textTheme.bodyMedium?.copyWith(
             color: const Color(0xFF111827),
           ),
         ),
-        Text(
-          percentageLabel,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: const Color(0xFF6B7280),
+        const SizedBox(height: 2),
+        AutoScaleText(
+          '${breakdown.count}',
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: const Color(0xFF111827),
           ),
         ),
+        if (isChinese)
+          Text(
+            '件',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
       ],
     );
   }

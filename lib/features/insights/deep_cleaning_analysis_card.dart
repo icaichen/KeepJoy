@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/deep_cleaning_session.dart';
 import '../dashboard/widgets/cleaning_area_legend.dart';
+import '../../widgets/auto_scale_text.dart';
 
 class DeepCleaningAnalysisCard extends StatelessWidget {
   final List<DeepCleaningSession> sessions;
@@ -343,7 +344,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 24),
           const SizedBox(height: 8),
-          Text(
+          AutoScaleText(
             value,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w700,
@@ -352,7 +353,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(
+          AutoScaleText(
             label,
             style: TextStyle(
               fontSize: 12,

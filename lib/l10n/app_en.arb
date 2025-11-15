@@ -33,7 +33,7 @@
   },
   "keepGoing": "Keep going!",
 
-  "dashboardCreateGoalTitle": "Create New Goal",
+  "dashboardCreateGoalTitle": "Create Goal",
   "dashboardGoalLabel": "Goal",
   "dashboardGoalHint": "e.g., Declutter 50 items by end of December\nor Clean kitchen and take photos",
   "dashboardDateOptional": "Date (Optional)",
@@ -41,7 +41,7 @@
   "dashboardEnterGoalPrompt": "Please enter a goal",
   "dashboardGoalCreated": "Goal created",
   "dashboardCreateAction": "Create",
-  "dashboardCreateSessionTitle": "Create New Session",
+  "dashboardCreateSessionTitle": "Create Session",
   "dashboardModeLabel": "Mode",
   "dashboardAreaHint": "e.g., Kitchen, Bedroom",
   "dashboardSelectDate": "Select date",

@@ -239,7 +239,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardCreateGoalTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create New Goal'**
+  /// **'Create Goal'**
   String get dashboardCreateGoalTitle;
 
   /// No description provided for @dashboardGoalLabel.
@@ -287,7 +287,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardCreateSessionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create New Session'**
+  /// **'Create Session'**
   String get dashboardCreateSessionTitle;
 
   /// No description provided for @dashboardModeLabel.

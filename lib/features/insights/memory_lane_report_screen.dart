@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/memory.dart';
+import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 
 class MemoryLaneReportScreen extends StatefulWidget {
   const MemoryLaneReportScreen({super.key, required this.memories});
@@ -271,16 +272,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 20),
-          ClipRRect(
-            child: SizedBox(
-              width: double.infinity,
-              height: 250,
-              child: CustomPaint(
-                painter: _VerticalBarChartPainter(
-                  emotions: emotions,
-                  sentimentCounts: sentimentCounts,
-                  isChinese: isChinese,
-                ),
+          SizedBox(
+            height: 250,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _VerticalBarChartPainter(
+                emotions: emotions,
+                sentimentCounts: sentimentCounts,
+                isChinese: isChinese,
               ),
             ),
           ),
@@ -466,21 +465,23 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          AutoScaleText(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Colors.black54,
               fontSize: 10,
             ),
+            textAlign: TextAlign.left,
           ),
           const SizedBox(width: 4),
-          Text(
+          AutoScaleText(
             value,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Colors.black87,
               fontSize: 10,
               fontWeight: FontWeight.w700,
             ),
+            textAlign: TextAlign.left,
           ),
         ],
       ),
@@ -827,95 +828,94 @@ class _VerticalBarChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const padding = 40.0;
-    const bottomPadding = 60.0;
-    final chartWidth = size.width - (padding * 2);
-    final chartHeight = size.height - padding - bottomPadding;
+    const labelColumnWidth = 92.0;
+    const countColumnWidth = 40.0;
+    const leftPadding = 20.0;
+    const rightPadding = 24.0;
+    const topPadding = 24.0;
+    const bottomPadding = 24.0;
+
+    final barStartX = leftPadding + labelColumnWidth + countColumnWidth + 12;
+    final chartWidth = size.width - barStartX - rightPadding;
+    final chartHeight = size.height - topPadding - bottomPadding;
 
     final maxCount = sentimentCounts.values.isEmpty
         ? 1
         : sentimentCounts.values.reduce((a, b) => a > b ? a : b);
 
-    final barWidth = (chartWidth / emotions.length) * 0.5;
-    final barSpacing = chartWidth / emotions.length;
+    final barSpacing = chartHeight / emotions.length;
+    final barHeight = barSpacing * 0.55;
 
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
-    // Draw grid lines
+    // Grid only across bar area
     final gridPaint = Paint()
-      ..color = const Color(0xFFE0E0E0)
+      ..color = const Color(0xFFE5E7EB)
       ..strokeWidth = 1;
-
-    for (int i = 0; i <= 5; i++) {
-      final y = padding + (chartHeight * i / 5);
+    for (int i = 0; i <= 4; i++) {
+      final x = barStartX + (chartWidth * i / 4);
       canvas.drawLine(
-        Offset(padding, y),
-        Offset(size.width - padding, y),
+        Offset(x, topPadding),
+        Offset(x, size.height - bottomPadding),
         gridPaint,
       );
     }
 
-    // Draw bars
     for (int i = 0; i < emotions.length; i++) {
       final emotion = emotions[i];
       final sentiment = emotion['sentiment'] as MemorySentiment;
       final count = sentimentCounts[sentiment] ?? 0;
       final color = emotion['color'] as Color;
+
+      final normalizedWidth = maxCount > 0 ? (count / maxCount) : 0.0;
+      final proposedWidth = normalizedWidth * chartWidth;
+      final barWidth = count == 0 ? 8.0 : proposedWidth.clamp(18.0, chartWidth);
+      final y = topPadding + (i * barSpacing) + (barSpacing - barHeight) / 2;
+
+      final barRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(barStartX, y, barWidth, barHeight),
+        const Radius.circular(8),
+      );
+      canvas.drawRRect(barRect, Paint()..color = color);
+
+      // dot
+      final dotCenter = Offset(leftPadding + 6, y + barHeight / 2);
+      canvas.drawCircle(dotCenter, 5, Paint()..color = color);
+
+      // label text
       final label = emotion['label'] as String;
-
-      // Calculate bar height
-      final normalizedHeight = maxCount > 0 ? (count / maxCount) : 0.0;
-      final barHeight = (normalizedHeight * chartHeight).clamp(
-        5.0,
-        chartHeight,
+      textPainter.text = TextSpan(
+        text: label,
+        style: TextStyle(
+          color: const Color(0xFF4B5563),
+          fontSize: isChinese ? 12 : 11,
+          fontWeight: FontWeight.w600,
+        ),
       );
-      final x = padding + (barSpacing * i) + (barSpacing - barWidth) / 2;
-      final y = padding + chartHeight - barHeight;
-
-      // Draw bar
-      final barPaint = Paint()..color = color;
-      final rect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(x, y, barWidth, barHeight),
-        const Radius.circular(6),
+      textPainter.layout(maxWidth: labelColumnWidth - 16);
+      textPainter.paint(
+        canvas,
+        Offset(dotCenter.dx + 10, y + (barHeight - textPainter.height) / 2),
       );
-      canvas.drawRRect(rect, barPaint);
 
-      // Draw count
+      // count column
       final countText = count.toString();
+      final fitsInside = barWidth > 50;
       textPainter.text = TextSpan(
         text: countText,
         style: TextStyle(
-          color: barHeight > 25 ? Colors.white : const Color(0xFF666666),
-          fontSize: 14,
+          color: fitsInside ? Colors.white : const Color(0xFF1F2937),
+          fontSize: 13,
           fontWeight: FontWeight.w700,
         ),
       );
       textPainter.layout();
 
-      final countY = barHeight > 25 ? y + 6 : y - 22;
-      textPainter.paint(
-        canvas,
-        Offset(x + (barWidth - textPainter.width) / 2, countY),
-      );
-
-      // Draw label below
-      textPainter.text = TextSpan(
-        text: label,
-        style: const TextStyle(
-          color: Color(0xFF666666),
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          height: 1.2,
-        ),
-      );
-      textPainter.layout(maxWidth: barWidth + 20);
-      textPainter.paint(
-        canvas,
-        Offset(
-          x + barWidth / 2 - textPainter.width / 2,
-          size.height - bottomPadding + 12,
-        ),
-      );
+      final countX = fitsInside
+          ? barStartX + barWidth - textPainter.width - 8
+          : barStartX + barWidth + 8;
+      final countY = y + (barHeight - textPainter.height) / 2;
+      textPainter.paint(canvas, Offset(countX, countY));
     }
   }
 

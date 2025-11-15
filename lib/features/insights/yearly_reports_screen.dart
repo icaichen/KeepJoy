@@ -8,6 +8,7 @@ import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
+import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 
 class YearlyReportsScreen extends StatefulWidget {
   const YearlyReportsScreen({
@@ -1443,18 +1444,20 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(height: 12),
-          Text(
+          AutoScaleText(
             value,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: Color(0xFF111827),
             ),
+            textAlign: TextAlign.left,
           ),
           const SizedBox(height: 4),
-          Text(
+          AutoScaleText(
             label,
             style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            textAlign: TextAlign.left,
           ),
         ],
       ),
@@ -1475,13 +1478,13 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(height: 4),
-        Text(
+        AutoScaleText(
           label,
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(color: Colors.black87),
         ),
-        Text(
+        AutoScaleText(
           count.toString(),
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: Colors.black54,

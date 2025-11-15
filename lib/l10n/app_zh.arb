@@ -26,7 +26,7 @@
   "daysStreak": "连续 {count} 天！",
   "keepGoing": "继续加油！",
 
-  "dashboardCreateGoalTitle": "创建新目标",
+  "dashboardCreateGoalTitle": "创建目标",
   "dashboardGoalLabel": "目标",
   "dashboardGoalHint": "例如：12 月底前整理 50 件物品\n或：清理厨房并拍照记录",
   "dashboardDateOptional": "日期（可选）",
@@ -34,7 +34,7 @@
   "dashboardEnterGoalPrompt": "请输入目标",
   "dashboardGoalCreated": "目标已创建",
   "dashboardCreateAction": "创建",
-  "dashboardCreateSessionTitle": "创建新计划",
+  "dashboardCreateSessionTitle": "创建计划",
   "dashboardModeLabel": "模式",
   "dashboardAreaHint": "例如：厨房、卧室",
   "dashboardSelectDate": "选择日期",

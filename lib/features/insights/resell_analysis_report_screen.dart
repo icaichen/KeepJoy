@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
+import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 
 enum TrendMetric {
   resellItems('转卖数量', 'Resell Items'),
@@ -1119,20 +1120,22 @@ class _ResellAnalysisReportScreenState
         children: [
           Icon(icon, size: 24, color: color),
           const SizedBox(height: 8),
-          Text(
+          AutoScaleText(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Colors.black54,
               fontSize: 12,
             ),
+            textAlign: TextAlign.left,
           ),
           const SizedBox(height: 4),
-          Text(
+          AutoScaleText(
             value,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.black87,
             ),
+            textAlign: TextAlign.left,
           ),
         ],
       ),
