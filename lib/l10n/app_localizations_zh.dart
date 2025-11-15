@@ -1037,6 +1037,37 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shareApp => '分享 KeepJoy';
 
   @override
+  String get notificationsPermissionDenied =>
+      '目前无法启用通知，请到系统设置中为 KeepJoy 开启通知权限。';
+
+  @override
+  String get reminderGeneralTitle => 'KeepJoy 温馨提醒';
+
+  @override
+  String get reminderJoyNudge1 => '花一点时间感谢一件物品，来一场 Joy Dedclutter 吧？';
+
+  @override
+  String get reminderJoyNudge2 => '家里想念心动感，轻松整理一个角落，让空间再次发光。';
+
+  @override
+  String get reminderJoyNudge3 => '小步伐也能带来清晰，现在拍下一件物品开始 Joy Dedclutter。';
+
+  @override
+  String get reminderPendingTask1 => '还有整理计划未完成，安排一个时间继续吧。';
+
+  @override
+  String get reminderPendingTask2 => '目标还在等你，抽空续上心动整理旅程。';
+
+  @override
+  String get reminderActiveSessionTitle => '深度整理仍在进行';
+
+  @override
+  String get reminderActiveSessionBody => '你的深度整理流程还没结束，回来继续并记录成果吧。';
+
+  @override
+  String get memoryNoDescription => '这段回忆目前还没有补充说明。';
+
+  @override
   String get premiumMembership => '高级会员';
 
   @override

@@ -25,6 +25,9 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
+import 'services/notification_service_stub.dart'
+    if (dart.library.io) 'services/notification_service_mobile.dart';
+import 'package:keepjoy_app/services/reminder_service.dart';
 import 'package:keepjoy_app/services/subscription_service.dart';
 
 void main() async {
@@ -33,6 +36,7 @@ void main() async {
   // Initialize Supabase
   await AuthService.initialize();
   await SubscriptionService.configure();
+  await NotificationService.instance.ensureInitialized();
 
   runApp(const KeepJoyApp());
 }
@@ -97,7 +101,8 @@ class MainNavigator extends StatefulWidget {
   State<MainNavigator> createState() => _MainNavigatorState();
 }
 
-class _MainNavigatorState extends State<MainNavigator> {
+class _MainNavigatorState extends State<MainNavigator>
+    with WidgetsBindingObserver {
   final _authService = AuthService();
   int _selectedIndex = 0;
   DeepCleaningSession? _activeSession;
@@ -109,6 +114,30 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<ActivityEntry> _activityHistory = [];
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      if (_activeSession != null) {
+        ReminderService.scheduleActiveSessionReminder(context);
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      ReminderService.cancelActiveSessionReminder();
+      unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
+    }
+  }
 
   String get _currentUserId {
     final userId = _authService.currentUserId;
@@ -270,6 +299,9 @@ class _MainNavigatorState extends State<MainNavigator> {
         }
         _activeSession = null;
       });
+
+      ReminderService.cancelActiveSessionReminder();
+      unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
     }
   }
 
@@ -298,6 +330,8 @@ class _MainNavigatorState extends State<MainNavigator> {
 
       // Note: Memory creation is now manual via Create Memory button or prompt after Joy Declutter
     });
+
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
   void _onItemCompleted(DeclutterItem item) {
@@ -398,12 +432,16 @@ class _MainNavigatorState extends State<MainNavigator> {
         session,
       ); // Add to beginning so it shows up first
     });
+
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
   void _deletePlannedSession(PlannedSession session) {
     setState(() {
       _plannedSessions.removeWhere((s) => s.id == session.id);
     });
+
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
   void _togglePlannedSession(PlannedSession session) {
@@ -416,6 +454,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         );
       }
     });
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
   @override

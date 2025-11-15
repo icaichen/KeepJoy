@@ -43,6 +43,10 @@ dependencies:
   url_launcher: ^6.3.0  # Open URLs and email links
   share_plus: ^10.0.3  # Native sharing functionality
   in_app_review: ^2.0.9  # System rating prompt
+  flutter_local_notifications: ^16.3.2  # Local notification scheduling
+  shared_preferences: ^2.2.2  # Store notification opt-in state
+  timezone: ^0.9.2  # Timezone data for scheduled notifications
+  flutter_native_timezone: ^2.0.0  # Detect device timezone
   purchases_flutter: ^6.25.0  # RevenueCat purchases SDK
   path_provider: ^2.1.4  # Access to file system paths
 
