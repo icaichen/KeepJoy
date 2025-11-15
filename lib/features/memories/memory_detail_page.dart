@@ -36,18 +36,30 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
       appBar: AppBar(
+        backgroundColor: const Color(0xFFF5F5F7),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
           l10n.memoryDetailTitle,
           style: const TextStyle(
+            fontFamily: 'SF Pro Display',
             fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
           ),
         ),
         centerTitle: false,
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(Icons.more_vert, color: Color(0xFF111827)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             onSelected: (value) {
               switch (value) {
                 case 'delete':
@@ -63,9 +75,15 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
                 value: 'share',
                 child: Row(
                   children: [
-                    const Icon(Icons.share),
-                    const SizedBox(width: 8),
-                    Text(l10n.memoryShare),
+                    const Icon(Icons.share, size: 20),
+                    const SizedBox(width: 12),
+                    Text(
+                      l10n.memoryShare,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 15,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -73,11 +91,15 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
                 value: 'delete',
                 child: Row(
                   children: [
-                    const Icon(Icons.delete, color: Colors.red),
-                    const SizedBox(width: 8),
+                    const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                    const SizedBox(width: 12),
                     Text(
                       l10n.memoryDeleteMemory,
-                      style: const TextStyle(color: Colors.red),
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 15,
+                        color: Colors.red,
+                      ),
                     ),
                   ],
                 ),
@@ -95,7 +117,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
 
             // Content section
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -104,30 +126,52 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
                     Text(
                       _currentMemory.itemName!,
                       style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontFamily: 'SF Pro Display',
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                        height: 1.2,
                       ),
                     ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
 
-                  // Date only
-                  Text(
-                    l10n.memoryCreatedOn(_formatDate(_currentMemory.createdAt)),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+                  // Date
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      l10n.memoryCreatedOn(_formatDate(_currentMemory.createdAt)),
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // Description
                   if (_currentMemory.description != null) ...[
-                    Text(
-                      _currentMemory.description!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        height: 1.5,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE5E7EA)),
+                      ),
+                      child: Text(
+                        _currentMemory.description!,
+                        style: const TextStyle(
+                          fontFamily: 'SF Pro Text',
+                          fontSize: 16,
+                          height: 1.6,
+                          color: Color(0xFF111827),
+                        ),
                       ),
                     ),
                   ],
@@ -141,38 +185,57 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
   }
 
   Widget _buildPhotoSection() {
-    return SizedBox(
+    return Container(
       width: double.infinity,
-      height: 300,
-      child: _currentMemory.hasPhoto
-          ? GestureDetector(
-              onTap: () => _openPhotoViewer(),
-              child: Hero(
-                tag: 'memory_photo_${_currentMemory.id}',
-                child: Image.file(
-                  _currentMemory.photoFile!,
-                  fit: BoxFit.cover,
+      height: 400,
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: _currentMemory.hasPhoto
+            ? GestureDetector(
+                onTap: () => _openPhotoViewer(),
+                child: Hero(
+                  tag: 'memory_photo_${_currentMemory.id}',
+                  child: Image.file(
+                    _currentMemory.photoFile!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              )
+            : Container(
+                color: const Color(0xFFF3F4F6),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _currentMemory.type.icon,
+                        style: const TextStyle(fontSize: 64),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No photo available',
+                        style: TextStyle(
+                          fontFamily: 'SF Pro Text',
+                          fontSize: 16,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            )
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _currentMemory.type.icon,
-                    style: const TextStyle(fontSize: 64),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No photo available',
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      ),
     );
   }
 

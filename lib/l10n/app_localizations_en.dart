@@ -28,15 +28,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pick the experience that fits your current energy.';
 
   @override
-  String get joyDeclutterFlowDescription => 'Lead with joy when letting go';
+  String get joyDeclutterFlowDescription => 'Keep only what sparks joy';
 
   @override
   String get quickDeclutterFlowDescription =>
-      'Clear spaces in under 10 minutes';
+      'Fast pass: clear a spot in minutes';
 
   @override
-  String get deepCleaningFlowDescription =>
-      'Structured sessions for thorough results';
+  String get deepCleaningFlowDescription => 'Plan, focus, finish a deep clean';
+
+  @override
+  String get deepCleaningComparisonsTitle => 'Before & After Comparisons';
+
+  @override
+  String get deepCleaningComparisonsEmpty =>
+      'Add photos and messiness scores to see comparisons.';
 
   @override
   String get startAction => 'Start';
@@ -83,7 +89,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keepGoing => 'Keep going!';
 
   @override
-  String get dashboardCreateGoalTitle => 'Create New Goal';
+  String get dashboardCreateGoalTitle => 'Create Goal';
 
   @override
   String get dashboardGoalLabel => 'Goal';
@@ -108,7 +114,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardCreateAction => 'Create';
 
   @override
-  String get dashboardCreateSessionTitle => 'Create New Session';
+  String get dashboardCreateSessionTitle => 'Create Session';
 
   @override
   String get dashboardModeLabel => 'Mode';
@@ -283,11 +289,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add photos or session metrics to unlock detailed insights here.';
 
   @override
-  String get dashboardLettingGoDetailsTitle => 'Letting Go Breakdown';
+  String get dashboardLettingGoDetailsTitle => 'Outcome Distribution';
 
   @override
   String get dashboardLettingGoDetailsSubtitle =>
-      'See how items found their next home';
+      'How many items you kept, resold or released';
+
+  @override
+  String get dashboardKeptLabel => 'Kept';
 
   @override
   String get dashboardSessionDeleted => 'Session deleted';
@@ -684,6 +693,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewDetails => 'View Details';
+
+  @override
+  String get close => 'Close';
 
   @override
   String get cleaningLegendButton => 'Legend';

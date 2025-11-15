@@ -8,6 +8,7 @@ import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
+import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 
 class YearlyReportsScreen extends StatefulWidget {
   const YearlyReportsScreen({
@@ -370,9 +371,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               child: Text(
                 title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
               ),
             ),
             if (trailing != null) trailing,
@@ -1088,8 +1089,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                         children: [
                                           Expanded(
                                             child: Container(
-                                              constraints:
-                                                  const BoxConstraints(minHeight: 96),
+                                              constraints: const BoxConstraints(
+                                                minHeight: 96,
+                                              ),
                                               padding: const EdgeInsets.all(16),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFFF9FAFB),
@@ -1135,8 +1137,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Container(
-                                              constraints:
-                                                  const BoxConstraints(minHeight: 96),
+                                              constraints: const BoxConstraints(
+                                                minHeight: 96,
+                                              ),
                                               padding: const EdgeInsets.all(16),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFFF9FAFB),
@@ -1184,8 +1187,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Container(
-                                              constraints:
-                                                  const BoxConstraints(minHeight: 96),
+                                              constraints: const BoxConstraints(
+                                                minHeight: 96,
+                                              ),
                                               padding: const EdgeInsets.all(16),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFFF9FAFB),
@@ -1328,7 +1332,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 // Deep Cleaning Analysis (Yearly)
                                 DeepCleaningAnalysisCard(
                                   sessions: yearlySessions,
-                                  title: isChinese ? '深度整理分析' : 'Deep Cleaning Analysis',
+                                  title: isChinese
+                                      ? '深度整理分析'
+                                      : 'Deep Cleaning Analysis',
                                   emptyStateMessage: isChinese
                                       ? '今年还没有深度整理记录，开始一次专注的整理吧。'
                                       : 'No deep cleaning records yet this year. Start your first focused session.',
@@ -1438,18 +1444,20 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(height: 12),
-          Text(
+          AutoScaleText(
             value,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: Color(0xFF111827),
             ),
+            textAlign: TextAlign.left,
           ),
           const SizedBox(height: 4),
-          Text(
+          AutoScaleText(
             label,
             style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            textAlign: TextAlign.left,
           ),
         ],
       ),
@@ -1470,13 +1478,13 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(height: 4),
-        Text(
+        AutoScaleText(
           label,
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(color: Colors.black87),
         ),
-        Text(
+        AutoScaleText(
           count.toString(),
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: Colors.black54,
@@ -2061,9 +2069,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
     final statusCounts = {
       for (final status in statusOrder)
-        status: yearlyItems
-            .where((item) => item.status == status)
-            .length,
+        status: yearlyItems.where((item) => item.status == status).length,
     };
 
     final totalItems = yearlyItems.length;
@@ -2095,17 +2101,17 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           Text(
             isChinese ? '整理去向分析' : 'Declutter Outcomes',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             summaryText,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B7280),
-                  height: 1.4,
-                ),
+              color: const Color(0xFF6B7280),
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 24),
           SizedBox(
@@ -2399,10 +2405,7 @@ class _JoyTrendChartPainter extends CustomPainter {
 }
 
 class _DeclutterOutcomeBarPainter extends CustomPainter {
-  _DeclutterOutcomeBarPainter({
-    required this.categories,
-    required this.counts,
-  });
+  _DeclutterOutcomeBarPainter({required this.categories, required this.counts});
 
   final List<String> categories;
   final Map<String, int> counts;
@@ -2500,10 +2503,7 @@ class _DeclutterOutcomeBarPainter extends CustomPainter {
       final textX = barWidth > 40
           ? barX + barWidth - textPainter.width - 8
           : barX + barWidth + 8;
-      canvas.drawRect(
-        Rect.fromLTWH(barX, textY, 0, 0),
-        Paint(),
-      );
+      canvas.drawRect(Rect.fromLTWH(barX, textY, 0, 0), Paint());
       textPainter.paint(canvas, Offset(textX, textY));
     }
   }

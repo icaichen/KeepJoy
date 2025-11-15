@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:math' as math;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:keepjoy_app/features/deep_cleaning/deep_cleaning_flow.dart';
 import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
-import 'package:keepjoy_app/features/dashboard/widgets/cleaning_area_legend.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
 import 'package:keepjoy_app/features/insights/yearly_reports_screen.dart';
 import 'package:keepjoy_app/features/profile/profile_page.dart';
@@ -19,7 +19,22 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
+import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
+
+class _ModeMeta {
+  final IconData icon;
+  final List<Color> colors;
+  final String title;
+  final String subtitle;
+
+  const _ModeMeta({
+    required this.icon,
+    required this.colors,
+    required this.title,
+    required this.subtitle,
+  });
+}
 
 class DashboardScreen extends StatefulWidget {
   final DeepCleaningSession? activeSession;
@@ -203,8 +218,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _showAddGoalDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController goalController = TextEditingController();
     DateTime? selectedDate;
-    final isChineseLocale =
-        l10n.localeName.toLowerCase().startsWith('zh');
+    final isChineseLocale = l10n.localeName.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -279,7 +293,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         selectedDate != null
                             ? DateFormat(
                                 isChineseLocale ? 'yyyy年M月d日' : 'MMM d, yyyy',
-                               ).format(selectedDate!)
+                              ).format(selectedDate!)
                             : l10n.dashboardTapToSelectDate,
                       ),
                       trailing: selectedDate != null
@@ -293,13 +307,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             )
                           : null,
                       onTap: () async {
-                        final picked = await showDatePicker(
+                        final picked = await _showStyledDatePicker(
                           context: builderContext,
-                          initialDate: selectedDate ?? DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 365),
-                          ),
+                          initialDate: selectedDate,
+                          l10n: l10n,
                         );
                         if (picked != null) {
                           setModalState(() {
@@ -357,9 +368,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    l10n.dashboardGoalCreated,
-                                  ),
+                                  content: Text(l10n.dashboardGoalCreated),
                                 ),
                               );
                             },
@@ -387,13 +396,301 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Future<DateTime?> _showStyledDatePicker({
+    required BuildContext context,
+    required DateTime? initialDate,
+    required AppLocalizations l10n,
+  }) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final DateTime initial =
+        (initialDate != null && !initialDate.isBefore(today))
+        ? initialDate
+        : today;
+    final lastDate = today.add(const Duration(days: 365));
+
+    DateTime tempDate = initial;
+
+    return showModalBottomSheet<DateTime>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 12,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.dashboardSelectDate,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: Theme.of(context).colorScheme.copyWith(
+                          primary: const Color(0xFF414B5A),
+                          onPrimary: Colors.white,
+                        ),
+                      ),
+                      child: CalendarDatePicker(
+                        initialDate: tempDate,
+                        firstDate: today,
+                        lastDate: lastDate,
+                        onDateChanged: (value) {
+                          setSheetState(() {
+                            tempDate = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF414B5A),
+                              side: const BorderSide(color: Color(0xFFD1D5DB)),
+                            ),
+                            child: Text(l10n.cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () =>
+                                Navigator.pop(sheetContext, tempDate),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF414B5A),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: Text(l10n.done),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<TimeOfDay?> _showStyledTimePicker({
+    required BuildContext context,
+    required TimeOfDay? initialTime,
+    required AppLocalizations l10n,
+  }) async {
+    final now = TimeOfDay.now();
+    final mediaQuery = MediaQuery.of(context);
+    DateTime tempDateTime = DateTime(
+      0,
+      1,
+      1,
+      initialTime?.hour ?? now.hour,
+      initialTime?.minute ?? now.minute,
+    );
+
+    return showModalBottomSheet<TimeOfDay>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 12,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.dashboardSelectTimeOptional,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 180,
+                      child: CupertinoDatePicker(
+                        mode: CupertinoDatePickerMode.time,
+                        use24hFormat: mediaQuery.alwaysUse24HourFormat,
+                        initialDateTime: tempDateTime,
+                        onDateTimeChanged: (value) {
+                          setSheetState(() {
+                            tempDateTime = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF414B5A),
+                              side: const BorderSide(color: Color(0xFFD1D5DB)),
+                            ),
+                            child: Text(l10n.cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () {
+                              Navigator.pop(
+                                sheetContext,
+                                TimeOfDay(
+                                  hour: tempDateTime.hour,
+                                  minute: tempDateTime.minute,
+                                ),
+                              );
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF414B5A),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: Text(l10n.done),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<String?> _showAreaPicker({
+    required BuildContext context,
+    required List<String> areas,
+    required String? selectedArea,
+    required bool isChinese,
+  }) async {
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    isChinese ? '选择区域' : 'Pick an area',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: areas.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final label = areas[index];
+                      final isSelected = label == selectedArea;
+                      return ListTile(
+                        title: Text(label),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Color(0xFF414B5A),
+                              )
+                            : null,
+                        onTap: () => Navigator.pop(sheetContext, label),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showAddSessionDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController areaController = TextEditingController();
     DateTime? selectedDate = DateTime.now();
     TimeOfDay? selectedTime;
     SessionMode selectedMode = SessionMode.deepCleaning;
-    final isChineseLocale =
-        l10n.localeName.toLowerCase().startsWith('zh');
+    final isChineseLocale = l10n.localeName.toLowerCase().startsWith('zh');
 
     showModalBottomSheet<void>(
       context: context,
@@ -405,6 +702,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (builderContext, setModalState) {
+            final modeOrder = [
+              SessionMode.quickDeclutter,
+              SessionMode.joyDeclutter,
+              SessionMode.deepCleaning,
+            ];
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
@@ -439,7 +741,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Mode Selection
                       Text(
                         l10n.dashboardModeLabel,
                         style: const TextStyle(
@@ -449,49 +750,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        children: SessionMode.values.map((mode) {
-                          final isSelected = selectedMode == mode;
-                          return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: InkWell(
-                                onTap: () {
-                                  setModalState(() {
-                                    selectedMode = mode;
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? const Color(0xFF414B5A)
-                                        : Colors.white,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? const Color(0xFF414B5A)
-                                          : const Color(0xFFE5E7EA),
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    mode.displayName(l10n),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : const Color(0xFF6B7280),
-                                    ),
-                                    textAlign: TextAlign.center,
+                      InkWell(
+                        onTap: () async {
+                          final picked = await _showModePicker(
+                            context: builderContext,
+                            selectedMode: selectedMode,
+                            modeOrder: modeOrder,
+                            l10n: l10n,
+                          );
+                          if (picked != null) {
+                            setModalState(() {
+                              selectedMode = picked;
+                            });
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE5E7EA)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: LinearGradient(
+                                    colors: _modeMeta(
+                                      selectedMode,
+                                      l10n,
+                                    ).colors,
                                   ),
                                 ),
+                                child: Icon(
+                                  _modeMeta(selectedMode, l10n).icon,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _modeMeta(selectedMode, l10n).title,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF111827),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _modeMeta(selectedMode, l10n).subtitle,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: Color(0xFF9CA3AF),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
 
@@ -529,20 +862,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         subtitle: Text(
                           selectedDate != null
                               ? DateFormat(
-                                  isChineseLocale
-                                      ? 'yyyy年M月d日'
-                                      : 'MMM d, yyyy',
+                                  isChineseLocale ? 'yyyy年M月d日' : 'MMM d, yyyy',
                                 ).format(selectedDate!)
                               : l10n.dashboardSelectDate,
                         ),
                         onTap: () async {
-                          final picked = await showDatePicker(
+                          final picked = await _showStyledDatePicker(
                             context: builderContext,
-                            initialDate: selectedDate ?? DateTime.now(),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(
-                              const Duration(days: 365),
-                            ),
+                            initialDate: selectedDate,
+                            l10n: l10n,
                           );
                           if (picked != null) {
                             setModalState(() {
@@ -568,9 +896,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               : l10n.dashboardSelectTimeOptional,
                         ),
                         onTap: () async {
-                          final picked = await showTimePicker(
+                          final picked = await _showStyledTimePicker(
                             context: builderContext,
-                            initialTime: selectedTime ?? TimeOfDay.now(),
+                            initialTime: selectedTime,
+                            l10n: l10n,
                           );
                           if (picked != null) {
                             setModalState(() {
@@ -619,7 +948,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 final newSession = PlannedSession(
                                   id: DateTime.now().millisecondsSinceEpoch
                                       .toString(),
-                                  title: selectedMode == SessionMode.deepCleaning
+                                  title:
+                                      selectedMode == SessionMode.deepCleaning
                                       ? '${areaController.text} ${selectedMode.displayName(l10n)}'
                                       : selectedMode.displayName(l10n),
                                   area: selectedMode == SessionMode.deepCleaning
@@ -640,9 +970,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(
-                                      l10n.dashboardSessionCreated,
-                                    ),
+                                    content: Text(l10n.dashboardSessionCreated),
                                   ),
                                 );
                               },
@@ -674,9 +1002,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showAllSessionsCalendar(BuildContext context, AppLocalizations l10n) {
-    final isChineseLocale =
-        l10n.localeName.toLowerCase().startsWith('zh');
-
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
@@ -918,7 +1243,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     bool isEnabled,
     void Function(void Function()) setState,
   ) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final areas = isChinese
         ? ['客厅', '卧室', '衣柜', '书柜', '厨房', '书桌']
         : [
@@ -930,102 +1254,180 @@ class _DashboardScreenState extends State<DashboardScreen> {
             'Desk',
           ];
 
-    final selectedArea = areaController.text.trim();
-    const primaryColor = Color(0xFF414B5A);
+    final selectedArea = areaController.text.trim().isEmpty
+        ? null
+        : areaController.text.trim();
 
-    // Map areas to icons
-    IconData getIconForArea(String area) {
-      final areaLower = area.toLowerCase();
-      if (areaLower.contains('living') || area == '客厅') {
-        return Icons.weekend_outlined;
-      } else if (areaLower.contains('bedroom') || area == '卧室') {
-        return Icons.bed_outlined;
-      } else if (areaLower.contains('wardrobe') || area == '衣柜') {
-        return Icons.checkroom_outlined;
-      } else if (areaLower.contains('bookshelf') || area == '书柜') {
-        return Icons.book_outlined;
-      } else if (areaLower.contains('kitchen') || area == '厨房') {
-        return Icons.kitchen_outlined;
-      } else if (areaLower.contains('desk') || area == '书桌') {
-        return Icons.desk_outlined;
-      } else {
-        return Icons.home_outlined;
-      }
-    }
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 16,
-      children: areas.map((label) {
-        final isSelected = label.toLowerCase() == selectedArea.toLowerCase();
-        final diameter = screenWidth * 0.15;
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            InkWell(
-              onTap: isEnabled
-                  ? () {
-                      setState(() {
-                        areaController.text = label;
-                      });
-                    }
-                  : null,
-              borderRadius: BorderRadius.circular(diameter / 2),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: diameter,
-                height: diameter,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? primaryColor : Colors.white,
-                  border: Border.all(
-                    color: isSelected
-                        ? primaryColor
-                        : const Color(0xFFE5E7EA),
-                    width: 1.5,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ]
-                      : null,
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  getIconForArea(label),
-                  size: 24,
-                  color: isSelected
-                      ? Colors.white
-                      : const Color(0xFF1F2937),
-                ),
-              ),
+    return Column(
+      children: [
+        InkWell(
+          onTap: isEnabled
+              ? () async {
+                  final picked = await _showAreaPicker(
+                    context: context,
+                    areas: areas,
+                    selectedArea: selectedArea,
+                    isChinese: isChinese,
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      areaController.text = picked;
+                    });
+                  }
+                }
+              : null,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5E7EA)),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: diameter,
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected
-                          ? primaryColor
-                          : const Color(0xFF6B7280),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.place_rounded,
+                  color: isEnabled
+                      ? const Color(0xFF414B5A)
+                      : const Color(0xFF9CA3AF),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    selectedArea ??
+                        (isChinese ? '请选择区域' : 'Tap to choose an area'),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: selectedArea != null
+                          ? const Color(0xFF111827)
+                          : const Color(0xFF9CA3AF),
                     ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+                  ),
+                ),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF9CA3AF),
+                ),
+              ],
             ),
-          ],
-        );
-      }).toList(),
+          ),
+        ),
+      ],
     );
+  }
+
+  Future<SessionMode?> _showModePicker({
+    required BuildContext context,
+    required SessionMode selectedMode,
+    required List<SessionMode> modeOrder,
+    required AppLocalizations l10n,
+  }) async {
+    return showModalBottomSheet<SessionMode>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    l10n.dashboardModeLabel,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...modeOrder.map((mode) {
+                  final meta = _modeMeta(mode, l10n);
+                  final isSelected = mode == selectedMode;
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: meta.colors),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(meta.icon, color: Colors.white),
+                    ),
+                    title: Text(
+                      meta.title,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      meta.subtitle,
+                      style: const TextStyle(color: Color(0xFF6B7280)),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(
+                            Icons.check_circle,
+                            color: Color(0xFF414B5A),
+                          )
+                        : null,
+                    onTap: () => Navigator.pop(sheetContext, mode),
+                  );
+                }).toList(),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    child: Text(l10n.cancel),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  _ModeMeta _modeMeta(SessionMode mode, AppLocalizations l10n) {
+    switch (mode) {
+      case SessionMode.quickDeclutter:
+        return _ModeMeta(
+          icon: Icons.flash_on_rounded,
+          colors: const [Color(0xFFFF8A65), Color(0xFFFFB74D)],
+          title: mode.displayName(l10n),
+          subtitle: l10n.quickDeclutterFlowDescription,
+        );
+      case SessionMode.joyDeclutter:
+        return _ModeMeta(
+          icon: Icons.auto_awesome_rounded,
+          colors: const [Color(0xFF5B8CFF), Color(0xFF61D1FF)],
+          title: mode.displayName(l10n),
+          subtitle: l10n.joyDeclutterFlowDescription,
+        );
+      case SessionMode.deepCleaning:
+        return _ModeMeta(
+          icon: Icons.cleaning_services_rounded,
+          colors: const [Color(0xFF34E27A), Color(0xFF0BBF75)],
+          title: mode.displayName(l10n),
+          subtitle: l10n.deepCleaningFlowDescription,
+        );
+    }
   }
 
   Widget _buildSessionCard(
@@ -1200,13 +1602,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  String _formatSessionDate(DateTime? date, String? time, AppLocalizations l10n) {
+  String _formatSessionDate(
+    DateTime? date,
+    String? time,
+    AppLocalizations l10n,
+  ) {
     if (date == null) {
       return l10n.dashboardNotScheduled;
     }
 
-    final isChineseLocale =
-        l10n.localeName.toLowerCase().startsWith('zh');
+    final isChineseLocale = l10n.localeName.toLowerCase().startsWith('zh');
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -1686,8 +2091,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 },
                                 width: double.infinity,
                                 height: 44,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.max,
                                   children: [
                                     const Icon(
                                       Icons.sentiment_satisfied_alt,
@@ -1697,13 +2104,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     const SizedBox(width: 8),
                                     Text(
                                       l10n.createMemory,
-                                      style: const TextStyle(
-                                        fontFamily: 'SF Pro Text',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400,
-                                        letterSpacing: 0,
-                                        color: Colors.white,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                            letterSpacing: 0,
+                                          ),
+                                      overflow: TextOverflow.visible,
                                     ),
                                   ],
                                 ),
@@ -2140,9 +2549,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               horizontal: 16,
                                               vertical: 6,
                                             ),
-                                            child: Text(
-                                              l10n.dashboardStartNow,
-                                            ),
+                                            child: Text(l10n.dashboardStartNow),
                                           ),
                                       ],
                                     ),
@@ -2584,7 +2991,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildMonthlyReportCard(BuildContext context, bool isChinese) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     // Calculate THIS MONTH's metrics
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
@@ -2611,6 +3018,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final theme = Theme.of(context);
 
     // Calculate counts for each disposal method
+    final keepCount = widget.declutteredItems
+        .where((item) => item.status == DeclutterStatus.keep)
+        .length;
     final resellCount = widget.declutteredItems
         .where((item) => item.status == DeclutterStatus.resell)
         .length;
@@ -2624,111 +3034,222 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .where((item) => item.status == DeclutterStatus.discard)
         .length;
 
-    final total = resellCount + recycleCount + donateCount + discardCount;
+    final total =
+        keepCount + resellCount + recycleCount + donateCount + discardCount;
 
     // Define colors for each category
-    const resellColor = Color(0xFFFFD93D); // Yellow
-    const recycleColor = Color(0xFF5ECFB8); // Teal
-    const donateColor = Color(0xFFFF9AA2); // Pink
-    const discardColor = Color(0xFFC7A2FF); // Lavender
+    const keepColor = Color(0xFF9FAEF8); // Calm periwinkle
+    const resellColor = Color(0xFFFFC857); // Golden amber
+    const recycleColor = Color(0xFF4CC9B0); // Teal green
+    const donateColor = Color(0xFFFF8FA3); // Rose quartz
+    const discardColor = Color(0xFFB99CFF); // Lavender haze
+
+    final breakdowns = [
+      _OutcomeBreakdown(
+        color: keepColor,
+        label: l10n.dashboardKeptLabel,
+        count: keepCount,
+      ),
+      _OutcomeBreakdown(
+        color: resellColor,
+        label: l10n.routeResell,
+        count: resellCount,
+      ),
+      _OutcomeBreakdown(
+        color: recycleColor,
+        label: l10n.routeRecycle,
+        count: recycleCount,
+      ),
+      _OutcomeBreakdown(
+        color: donateColor,
+        label: l10n.routeDonation,
+        count: donateCount,
+      ),
+      _OutcomeBreakdown(
+        color: discardColor,
+        label: l10n.routeDiscard,
+        count: discardCount,
+      ),
+    ];
+
+    final chartSlices = total > 0
+        ? breakdowns.where((b) => b.count > 0).toList()
+        : breakdowns;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
+        border: Border.all(color: const Color(0xFFE4E6F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.dashboardLettingGoDetailsTitle,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.dashboardLettingGoDetailsSubtitle,
-            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
-          ),
-          const SizedBox(height: 24),
-          // Pie chart
-          Center(
-            child: SizedBox(
-              width: 200,
-              height: 200,
-              child: total > 0
-                  ? CustomPaint(
-                      painter: _DonutChartPainter(
-                        resellCount: resellCount,
-                        recycleCount: recycleCount,
-                        donateCount: donateCount,
-                        discardCount: discardCount,
-                        total: total,
-                        resellColor: resellColor,
-                        recycleColor: recycleColor,
-                        donateColor: donateColor,
-                        discardColor: discardColor,
-                      ),
-                    )
-                  : CustomPaint(painter: _EmptyDonutChartPainter()),
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Legend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLegendItem(
-                color: resellColor,
-                label: l10n.routeResell,
-                count: resellCount,
-                theme: theme,
-                isChinese: isChinese,
+              Text(
+                l10n.dashboardLettingGoDetailsTitle,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
+                ),
               ),
-              _buildLegendItem(
-                color: recycleColor,
-                label: l10n.routeRecycle,
-                count: recycleCount,
-                theme: theme,
-                isChinese: isChinese,
-              ),
-              _buildLegendItem(
-                color: donateColor,
-                label: l10n.routeDonation,
-                count: donateCount,
-                theme: theme,
-                isChinese: isChinese,
-              ),
-              _buildLegendItem(
-                color: discardColor,
-                label: l10n.routeDiscard,
-                count: discardCount,
-                theme: theme,
-                isChinese: isChinese,
+              const SizedBox(height: 6),
+              Text(
+                l10n.dashboardLettingGoDetailsSubtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF6B7280),
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: 18),
+          Center(
+            child: SizedBox(
+              width: 220,
+              height: 220,
+              child: _buildLetGoChart(
+                size: 220,
+                slices: chartSlices,
+                total: total,
+                theme: theme,
+                isChinese: isChinese,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildOutcomeLegend(
+            breakdowns: breakdowns,
+            total: total,
+            theme: theme,
+            isChinese: isChinese,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem({
-    required Color color,
-    required String label,
-    required int count,
+  Widget _buildLetGoChart({
+    required double size,
+    required List<_OutcomeBreakdown> slices,
+    required int total,
+    required ThemeData theme,
+    required bool isChinese,
+  }) {
+    final hasData = total > 0;
+    final emptyTitle = isChinese ? '暂无整理数据' : 'No data yet';
+    final emptySubtitle = isChinese
+        ? '记录一次整理后即可看到比例。'
+        : 'Log a letting-go result to see the breakdown.';
+
+    final innerWidth = size * 0.65;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: Size.square(size),
+            painter: _OutcomeDonutPainter(
+              slices: hasData ? slices : const <_OutcomeBreakdown>[],
+              total: total,
+            ),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: hasData
+                ? SizedBox(
+                    key: const ValueKey('letGoData'),
+                    width: innerWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$total',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.totalItemsDecluttered,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : SizedBox(
+                    key: const ValueKey('letGoEmpty'),
+                    width: innerWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          emptyTitle,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF374151),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          emptySubtitle,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOutcomeLegend({
+    required List<_OutcomeBreakdown> breakdowns,
+    required int total,
+    required ThemeData theme,
+    required bool isChinese,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (final breakdown in breakdowns)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: _buildOutcomeLegendItem(
+                breakdown: breakdown,
+                theme: theme,
+                isChinese: isChinese,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildOutcomeLegendItem({
+    required _OutcomeBreakdown breakdown,
     required ThemeData theme,
     required bool isChinese,
   }) {
@@ -2736,20 +3257,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: breakdown.color,
+            shape: BoxShape.circle,
+          ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black87),
+        const SizedBox(height: 6),
+        AutoScaleText(
+          breakdown.label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: const Color(0xFF111827),
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          '$count',
+        const SizedBox(height: 2),
+        AutoScaleText(
+          '${breakdown.count}',
           style: theme.textTheme.titleMedium?.copyWith(
-            color: const Color(0xFF6B7280),
+            color: const Color(0xFF111827),
           ),
         ),
         if (isChinese)
@@ -2764,124 +3290,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// Custom painter for donut chart
-class _DonutChartPainter extends CustomPainter {
-  final int resellCount;
-  final int recycleCount;
-  final int donateCount;
-  final int discardCount;
-  final int total;
-  final Color resellColor;
-  final Color recycleColor;
-  final Color donateColor;
-  final Color discardColor;
+class _OutcomeBreakdown {
+  final Color color;
+  final String label;
+  final int count;
 
-  _DonutChartPainter({
-    required this.resellCount,
-    required this.recycleCount,
-    required this.donateCount,
-    required this.discardCount,
-    required this.total,
-    required this.resellColor,
-    required this.recycleColor,
-    required this.donateColor,
-    required this.discardColor,
+  const _OutcomeBreakdown({
+    required this.color,
+    required this.label,
+    required this.count,
   });
+}
+
+class _OutcomeDonutPainter extends CustomPainter {
+  final List<_OutcomeBreakdown> slices;
+  final int total;
+
+  _OutcomeDonutPainter({required this.slices, required this.total});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    final innerRadius = radius * 0.6;
+    final strokeWidth = radius * 0.32;
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
+
+    final basePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..color = const Color(0xFFE7EAF6);
+
+    canvas.drawArc(rect, 0, math.pi * 2, false, basePaint);
+
+    if (total == 0) {
+      return;
+    }
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = radius - innerRadius;
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
 
-    double startAngle = -90 * (3.14159 / 180); // Start from top
+    double startAngle = -math.pi / 2;
 
-    // Draw resell segment
-    if (resellCount > 0) {
-      final sweepAngle = (resellCount / total) * 2 * 3.14159;
-      paint.color = resellColor;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
+    for (final slice in slices) {
+      if (slice.count <= 0) continue;
+      final sweepAngle = (slice.count / total) * math.pi * 2;
+      if (sweepAngle <= 0) continue;
+
+      paint.shader = SweepGradient(
+        startAngle: startAngle,
+        endAngle: startAngle + sweepAngle,
+        colors: [slice.color.withValues(alpha: 0.65), slice.color],
+      ).createShader(rect);
+
+      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
       startAngle += sweepAngle;
-    }
-
-    // Draw recycle segment
-    if (recycleCount > 0) {
-      final sweepAngle = (recycleCount / total) * 2 * 3.14159;
-      paint.color = recycleColor;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
-      startAngle += sweepAngle;
-    }
-
-    // Draw donate segment
-    if (donateCount > 0) {
-      final sweepAngle = (donateCount / total) * 2 * 3.14159;
-      paint.color = donateColor;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
-      startAngle += sweepAngle;
-    }
-
-    // Draw discard segment
-    if (discardCount > 0) {
-      final sweepAngle = (discardCount / total) * 2 * 3.14159;
-      paint.color = discardColor;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-// Empty donut chart painter (all gray)
-class _EmptyDonutChartPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    final innerRadius = radius * 0.6;
-
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = radius - innerRadius
-      ..color = const Color(0xFFE0E0E0);
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
-      0,
-      2 * 3.14159,
-      false,
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

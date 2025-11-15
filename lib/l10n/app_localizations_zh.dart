@@ -27,13 +27,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chooseFlowSubtitle => '根据当前状态选择最合适的整理体验。';
 
   @override
-  String get joyDeclutterFlowDescription => '从情感出发整理物品';
+  String get joyDeclutterFlowDescription => '只保留让你心动的物品';
 
   @override
-  String get quickDeclutterFlowDescription => '10 分钟快速清理';
+  String get quickDeclutterFlowDescription => '几分钟完成一次快速清理';
 
   @override
-  String get deepCleaningFlowDescription => '系统化、深度的整理流程';
+  String get deepCleaningFlowDescription => '规划、聚焦、完成深度整理';
+
+  @override
+  String get deepCleaningComparisonsTitle => '前后对比报告';
+
+  @override
+  String get deepCleaningComparisonsEmpty => '添加照片和凌乱度数据即可查看前后对比。';
 
   @override
   String get startAction => '开始';
@@ -80,7 +86,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get keepGoing => '继续加油！';
 
   @override
-  String get dashboardCreateGoalTitle => '创建新目标';
+  String get dashboardCreateGoalTitle => '创建目标';
 
   @override
   String get dashboardGoalLabel => '目标';
@@ -104,7 +110,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardCreateAction => '创建';
 
   @override
-  String get dashboardCreateSessionTitle => '创建新计划';
+  String get dashboardCreateSessionTitle => '创建计划';
 
   @override
   String get dashboardModeLabel => '模式';
@@ -277,10 +283,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardNoDetailsSaved => '添加整理照片或指标，以获得更深入的洞察。';
 
   @override
-  String get dashboardLettingGoDetailsTitle => '放手分布图';
+  String get dashboardLettingGoDetailsTitle => '整理结果分布';
 
   @override
-  String get dashboardLettingGoDetailsSubtitle => '了解不同去向的放手占比';
+  String get dashboardLettingGoDetailsSubtitle => '看看保留与各去向的比例';
+
+  @override
+  String get dashboardKeptLabel => '保留';
 
   @override
   String get dashboardSessionDeleted => '计划已删除';
@@ -661,6 +670,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get viewDetails => '查看详情';
+
+  @override
+  String get close => '关闭';
 
   @override
   String get cleaningLegendButton => '颜色说明';

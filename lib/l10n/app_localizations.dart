@@ -137,20 +137,32 @@ abstract class AppLocalizations {
   /// No description provided for @joyDeclutterFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Lead with joy when letting go'**
+  /// **'Keep only what sparks joy'**
   String get joyDeclutterFlowDescription;
 
   /// No description provided for @quickDeclutterFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Clear spaces in under 10 minutes'**
+  /// **'Fast pass: clear a spot in minutes'**
   String get quickDeclutterFlowDescription;
 
   /// No description provided for @deepCleaningFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Structured sessions for thorough results'**
+  /// **'Plan, focus, finish a deep clean'**
   String get deepCleaningFlowDescription;
+
+  /// No description provided for @deepCleaningComparisonsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before & After Comparisons'**
+  String get deepCleaningComparisonsTitle;
+
+  /// No description provided for @deepCleaningComparisonsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos and messiness scores to see comparisons.'**
+  String get deepCleaningComparisonsEmpty;
 
   /// No description provided for @startAction.
   ///
@@ -239,7 +251,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardCreateGoalTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create New Goal'**
+  /// **'Create Goal'**
   String get dashboardCreateGoalTitle;
 
   /// No description provided for @dashboardGoalLabel.
@@ -287,7 +299,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardCreateSessionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create New Session'**
+  /// **'Create Session'**
   String get dashboardCreateSessionTitle;
 
   /// No description provided for @dashboardModeLabel.
@@ -585,14 +597,20 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardLettingGoDetailsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Letting Go Breakdown'**
+  /// **'Outcome Distribution'**
   String get dashboardLettingGoDetailsTitle;
 
   /// No description provided for @dashboardLettingGoDetailsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'See how items found their next home'**
+  /// **'How many items you kept, resold or released'**
   String get dashboardLettingGoDetailsSubtitle;
+
+  /// No description provided for @dashboardKeptLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept'**
+  String get dashboardKeptLabel;
 
   /// No description provided for @dashboardSessionDeleted.
   ///
@@ -1325,6 +1343,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View Details'**
   String get viewDetails;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 
   /// No description provided for @cleaningLegendButton.
   ///

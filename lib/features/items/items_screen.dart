@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/features/memories/create_memory_page.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
+import 'package:keepjoy_app/widgets/create_memory_prompt_sheet.dart';
 
 class ItemsScreen extends StatefulWidget {
   const ItemsScreen({
@@ -482,22 +484,9 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
   Future<void> _showMemoryPrompt(DeclutterItem item) async {
     final l10n = AppLocalizations.of(context)!;
 
-    final shouldCreateMemory = await showDialog<bool>(
+    final shouldCreateMemory = await showCreateMemoryPromptSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.createMemoryQuestion),
-        content: Text(l10n.createMemoryPrompt),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.skipMemory),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.createMemory),
-          ),
-        ],
-      ),
+      l10n: l10n,
     );
 
     if (shouldCreateMemory == true && mounted) {
@@ -1184,6 +1173,9 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
   }
 
   Widget _buildItemCard(DeclutterItem item) {
+    final dateText = _formatDeclutterDate(item.createdAt);
+    final routeLabel = item.status.label(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -1222,13 +1214,26 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
             ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              item.displayName(context),
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1C1C1E),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.displayName(context),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1C1C1E),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '$dateText · $routeLabel',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
             ),
           ),
           const Icon(
@@ -1273,5 +1278,10 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
       case DeclutterCategory.miscellaneous:
         return Icons.category_rounded;
     }
+  }
+
+  String _formatDeclutterDate(DateTime date) {
+    final locale = Localizations.localeOf(context);
+    return DateFormat.yMMMd(locale.toLanguageTag()).format(date);
   }
 }

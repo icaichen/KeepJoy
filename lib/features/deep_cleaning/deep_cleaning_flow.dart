@@ -10,7 +10,7 @@ import '../../utils/navigation.dart';
 
 const Color _deepCleaningBackgroundColor = Color(0xFFF5F5F7);
 const Color _deepCleaningPrimaryColor = Color(0xFF111827);
-const Color _deepCleaningCardShadow = Color(0x11000000);
+const Color _deepCleaningCardShadow = Color(0x14000000);
 const int _deepCleaningTotalSteps = 5;
 
 Widget _buildDeepCleaningTopBar(
@@ -59,7 +59,9 @@ Widget _buildDeepCleaningTopBar(
             height: 3,
             margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
-              color: index <= currentStep ? _deepCleaningPrimaryColor : const Color(0xFFE0E5EB),
+              color: index <= currentStep
+                  ? _deepCleaningPrimaryColor
+                  : const Color(0xFFE0E5EB),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -94,7 +96,8 @@ class DeepCleaningFlowPage extends StatefulWidget {
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) onStopSession;
+  })
+  onStopSession;
 
   const DeepCleaningFlowPage({
     super.key,
@@ -191,14 +194,16 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                             padding: const EdgeInsets.only(left: 4, bottom: 8),
                             child: Text(
                               isChinese ? '输入整理区域' : 'Enter the Area',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: _deepCleaningPrimaryColor,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: _deepCleaningPrimaryColor,
+                                  ),
                             ),
                           ),
                           TextField(
                             controller: _areaController,
+                            onChanged: (_) => setState(() {}),
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
@@ -316,7 +321,9 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
       children: [
         InkWell(
           onTap: () {
-            _areaController.text = label;
+            setState(() {
+              _areaController.text = label;
+            });
           },
           borderRadius: BorderRadius.circular(diameter / 2),
           child: AnimatedContainer(
@@ -327,7 +334,9 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
               shape: BoxShape.circle,
               color: isSelected ? _deepCleaningPrimaryColor : Colors.white,
               border: Border.all(
-                color: isSelected ? _deepCleaningPrimaryColor : const Color(0xFFE1E7EF),
+                color: isSelected
+                    ? _deepCleaningPrimaryColor
+                    : const Color(0xFFE1E7EF),
                 width: 1.5,
               ),
               boxShadow: [
@@ -356,7 +365,9 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isSelected ? _deepCleaningPrimaryColor : const Color(0xFF6B7280),
+              color: isSelected
+                  ? _deepCleaningPrimaryColor
+                  : const Color(0xFF6B7280),
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -379,7 +390,8 @@ class BeforePhotoPage extends StatefulWidget {
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) onStopSession;
+  })
+  onStopSession;
 
   const BeforePhotoPage({
     super.key,
@@ -465,7 +477,11 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 1, title: l10n.deepCleaningTitle),
+              _buildDeepCleaningTopBar(
+                context,
+                currentStep: 1,
+                title: l10n.deepCleaningTitle,
+              ),
               Text(
                 l10n.beforePhoto,
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -524,13 +540,17 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
                                 width: 96,
                                 height: 96,
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withOpacity(0.1),
+                                  color: theme.colorScheme.primary.withOpacity(
+                                    0.1,
+                                  ),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
                                   Icons.camera_alt_outlined,
                                   size: 44,
-                                  color: theme.colorScheme.primary.withOpacity(0.6),
+                                  color: theme.colorScheme.primary.withOpacity(
+                                    0.6,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -618,7 +638,8 @@ class DeepCleaningTimerPage extends StatefulWidget {
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) onStopSession;
+  })
+  onStopSession;
   final DateTime? sessionStartTime; // Add start time from active session
 
   const DeepCleaningTimerPage({
@@ -689,6 +710,97 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
     _timer?.cancel();
   }
 
+  void _showFinishConfirmation(AppLocalizations l10n) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.25),
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: const [
+              BoxShadow(
+                color: _deepCleaningCardShadow,
+                blurRadius: 20,
+                offset: Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFFAF3),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.task_alt_rounded,
+                  color: _deepCleaningPrimaryColor,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.finishCleaning,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _deepCleaningPrimaryColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.finishCleaningConfirm,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF4B5563),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _deepCleaningPrimaryColor,
+                        side: BorderSide(
+                          color: _deepCleaningPrimaryColor.withOpacity(0.3),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(l10n.cancel),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        _finishCleaning();
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _deepCleaningPrimaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(l10n.finish),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _finishCleaning() {
     // Pause timer first
     _pauseTimer();
@@ -734,7 +846,11 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 2, title: l10n.deepCleaningTitle),
+              _buildDeepCleaningTopBar(
+                context,
+                currentStep: 2,
+                title: l10n.deepCleaningTitle,
+              ),
               Text(
                 l10n.deepCleaningTitle,
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -778,7 +894,8 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: theme.colorScheme.primary.withOpacity(0.2),
+                                        color: theme.colorScheme.primary
+                                            .withOpacity(0.2),
                                         width: 2,
                                       ),
                                     ),
@@ -790,9 +907,13 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
                               height: screenWidth * 0.58,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: theme.colorScheme.primary.withOpacity(0.08),
+                                color: theme.colorScheme.primary.withOpacity(
+                                  0.08,
+                                ),
                                 border: Border.all(
-                                  color: theme.colorScheme.primary.withOpacity(0.28),
+                                  color: theme.colorScheme.primary.withOpacity(
+                                    0.28,
+                                  ),
                                   width: 2,
                                 ),
                               ),
@@ -801,24 +922,34 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
                                 children: [
                                   Text(
                                     _formatTime(_elapsedSeconds),
-                                    style: theme.textTheme.displaySmall?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: theme.colorScheme.primary,
-                                    ),
+                                    style: theme.textTheme.displaySmall
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          color: theme.colorScheme.primary,
+                                        ),
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
                                     _isRunning
-                                        ? (Localizations.localeOf(context).languageCode == 'zh'
-                                            ? '专注整理中'
-                                            : 'Cleaning in progress')
+                                        ? (Localizations.localeOf(
+                                                    context,
+                                                  ).languageCode ==
+                                                  'zh'
+                                              ? '专注整理中'
+                                              : 'Cleaning in progress')
                                         : (_elapsedSeconds > 0
-                                            ? (Localizations.localeOf(context).languageCode == 'zh'
-                                                ? '已暂停'
-                                                : 'Paused')
-                                            : (Localizations.localeOf(context).languageCode == 'zh'
-                                                ? '准备开始'
-                                                : 'Ready to start')),
+                                              ? (Localizations.localeOf(
+                                                          context,
+                                                        ).languageCode ==
+                                                        'zh'
+                                                    ? '已暂停'
+                                                    : 'Paused')
+                                              : (Localizations.localeOf(
+                                                          context,
+                                                        ).languageCode ==
+                                                        'zh'
+                                                    ? '准备开始'
+                                                    : 'Ready to start')),
                                     style: theme.textTheme.bodyLarge?.copyWith(
                                       color: theme.colorScheme.onSurfaceVariant,
                                     ),
@@ -838,9 +969,14 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
                             ? FilledButton.icon(
                                 onPressed: _pauseTimer,
                                 icon: const Icon(Icons.pause),
-                                label: Text(Localizations.localeOf(context).languageCode == 'zh'
-                                    ? '暂停'
-                                    : 'Pause'),
+                                label: Text(
+                                  Localizations.localeOf(
+                                            context,
+                                          ).languageCode ==
+                                          'zh'
+                                      ? '暂停'
+                                      : 'Pause',
+                                ),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: _deepCleaningPrimaryColor,
                                   textStyle: const TextStyle(fontSize: 18),
@@ -851,12 +987,18 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
                                 icon: const Icon(Icons.play_arrow_rounded),
                                 label: Text(
                                   _elapsedSeconds > 0
-                                      ? (Localizations.localeOf(context).languageCode == 'zh'
-                                          ? '继续'
-                                          : 'Resume')
-                                      : (Localizations.localeOf(context).languageCode == 'zh'
-                                          ? '开始'
-                                          : 'Start'),
+                                      ? (Localizations.localeOf(
+                                                  context,
+                                                ).languageCode ==
+                                                'zh'
+                                            ? '继续'
+                                            : 'Resume')
+                                      : (Localizations.localeOf(
+                                                  context,
+                                                ).languageCode ==
+                                                'zh'
+                                            ? '开始'
+                                            : 'Start'),
                                 ),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: _deepCleaningPrimaryColor,
@@ -888,28 +1030,7 @@ class _DeepCleaningTimerPageState extends State<DeepCleaningTimerPage>
                   SizedBox(width: screenWidth * 0.03),
                   Expanded(
                     child: FilledButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text(l10n.finishCleaning),
-                            content: Text(l10n.finishCleaningConfirm),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text(l10n.cancel),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _finishCleaning();
-                                },
-                                child: Text(l10n.finish),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                      onPressed: () => _showFinishConfirmation(l10n),
                       style: FilledButton.styleFrom(
                         backgroundColor: _deepCleaningPrimaryColor,
                       ),
@@ -940,7 +1061,8 @@ class AfterPhotoPage extends StatefulWidget {
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) onStopSession;
+  })
+  onStopSession;
 
   const AfterPhotoPage({
     super.key,
@@ -1025,7 +1147,11 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 3, title: l10n.deepCleaningTitle),
+              _buildDeepCleaningTopBar(
+                context,
+                currentStep: 3,
+                title: l10n.deepCleaningTitle,
+              ),
               Text(
                 l10n.afterPhoto,
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -1084,13 +1210,17 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
                                 width: 96,
                                 height: 96,
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withOpacity(0.1),
+                                  color: theme.colorScheme.primary.withOpacity(
+                                    0.1,
+                                  ),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
                                   Icons.camera_alt_outlined,
                                   size: 44,
-                                  color: theme.colorScheme.primary.withOpacity(0.6),
+                                  color: theme.colorScheme.primary.withOpacity(
+                                    0.6,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -1180,7 +1310,8 @@ class UserInputPage extends StatefulWidget {
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) onStopSession;
+  })
+  onStopSession;
 
   const UserInputPage({
     super.key,
@@ -1246,7 +1377,11 @@ class _UserInputPageState extends State<UserInputPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDeepCleaningTopBar(context, currentStep: 4, title: l10n.deepCleaningTitle),
+              _buildDeepCleaningTopBar(
+                context,
+                currentStep: 4,
+                title: l10n.deepCleaningTitle,
+              ),
               Text(
                 widget.area,
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -1279,7 +1414,9 @@ class _UserInputPageState extends State<UserInputPage> {
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFFE1E7EF)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE1E7EF),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -1416,7 +1553,8 @@ class SummaryPage extends StatefulWidget {
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) onStopSession;
+  })
+  onStopSession;
 
   const SummaryPage({
     super.key,
@@ -1506,12 +1644,16 @@ class _SummaryPageState extends State<SummaryPage> {
     final theme = Theme.of(context);
 
     // Calculate improvement percentage only if we have messiness data
-    final hasMessinessData = _beforeMessiness != null && _afterMessiness != null;
+    final hasMessinessData =
+        _beforeMessiness != null && _afterMessiness != null;
     final improvement = hasMessinessData
-        ? ((_beforeMessiness! - _afterMessiness!) / _beforeMessiness! * 100).round()
+        ? ((_beforeMessiness! - _afterMessiness!) / _beforeMessiness! * 100)
+              .round()
         : 0;
 
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
@@ -1602,7 +1744,9 @@ class _SummaryPageState extends State<SummaryPage> {
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFF3F4F6),
                                         borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: const Color(0xFFE5E7EA)),
+                                        border: Border.all(
+                                          color: const Color(0xFFE5E7EA),
+                                        ),
                                       ),
                                       child: const Icon(
                                         Icons.image_not_supported_outlined,
@@ -1641,7 +1785,9 @@ class _SummaryPageState extends State<SummaryPage> {
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFF3F4F6),
                                         borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: const Color(0xFFE5E7EA)),
+                                        border: Border.all(
+                                          color: const Color(0xFFE5E7EA),
+                                        ),
                                       ),
                                       child: const Icon(
                                         Icons.image_not_supported_outlined,
@@ -1680,10 +1826,12 @@ class _SummaryPageState extends State<SummaryPage> {
                         ? Column(
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         l10n.messinessBefore,
@@ -1704,7 +1852,11 @@ class _SummaryPageState extends State<SummaryPage> {
                                       ),
                                     ],
                                   ),
-                                  const Icon(Icons.arrow_forward_rounded, size: 32, color: Color(0xFF9CA3AF)),
+                                  const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 32,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
@@ -1731,7 +1883,10 @@ class _SummaryPageState extends State<SummaryPage> {
                               ),
                               const SizedBox(height: 20),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF3F4F6),
                                   borderRadius: BorderRadius.circular(12),
@@ -1779,7 +1934,9 @@ class _SummaryPageState extends State<SummaryPage> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                isChinese ? '未提供前后照片' : 'Before and after photos not provided',
+                                isChinese
+                                    ? '未提供前后照片'
+                                    : 'Before and after photos not provided',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Color(0xFF9CA3AF),
@@ -1894,11 +2051,7 @@ class _StatRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: const Color(0xFF6B7280),
-          size: 22,
-        ),
+        Icon(icon, color: const Color(0xFF6B7280), size: 22),
         const SizedBox(width: 16),
         Expanded(
           child: Text(

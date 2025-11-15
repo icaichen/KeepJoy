@@ -491,7 +491,7 @@ class _MainNavigatorState extends State<MainNavigator> {
                     sheetContext,
                   ).viewPadding.bottom;
                   return FractionallySizedBox(
-                    heightFactor: 0.55,
+                    heightFactor: 0.68,
                     child: Container(
                       margin: EdgeInsets.only(bottom: bottomPadding),
                       decoration: const BoxDecoration(
@@ -541,76 +541,56 @@ class _MainNavigatorState extends State<MainNavigator> {
                                 ),
                               ),
                               const SizedBox(height: 24),
-                              Expanded(
-                                child: ListView.separated(
-                                  padding: EdgeInsets.zero,
-                                  physics: const BouncingScrollPhysics(),
-                                  itemBuilder: (_, index) {
-                                    switch (index) {
-                                      case 0:
-                                        return _buildCleaningModeButton(
-                                          icon: Icons.auto_awesome_rounded,
-                                          title: l10n.joyDeclutterTitle,
-                                          subtitle:
-                                              l10n.joyDeclutterFlowDescription,
-                                          buttonLabel: l10n.startAction,
-                                          colors: const [
-                                            Color(0xFF5B8CFF),
-                                            Color(0xFF61D1FF),
-                                          ],
-                                          onTap: () {
-                                            Navigator.pop(sheetContext);
-                                            _openJoyDeclutter(context);
-                                          },
-                                        );
-                                      case 1:
-                                        return _buildCleaningModeButton(
-                                          icon: Icons.flash_on_rounded,
-                                          title: l10n.quickDeclutterTitle,
-                                          subtitle: l10n
-                                              .quickDeclutterFlowDescription,
-                                          buttonLabel: l10n.startAction,
-                                          colors: const [
-                                            Color(0xFFFF8A65),
-                                            Color(0xFFFFB74D),
-                                          ],
-                                          onTap: () {
-                                            Navigator.pop(sheetContext);
-                                            _openQuickDeclutter(context);
-                                          },
-                                        );
-                                      default:
-                                        return _buildCleaningModeButton(
-                                          icon: Icons.cleaning_services_rounded,
-                                          title: l10n.deepCleaningTitle,
-                                          subtitle:
-                                              l10n.deepCleaningFlowDescription,
-                                          buttonLabel: l10n.startAction,
-                                          colors: const [
-                                            Color(0xFF34E27A),
-                                            Color(0xFF0BBF75),
-                                          ],
-                                          onTap: () {
-                                            Navigator.pop(sheetContext);
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    DeepCleaningFlowPage(
-                                                      onStartSession:
-                                                          _startSession,
-                                                      onStopSession:
-                                                          _stopSession,
-                                                    ),
-                                              ),
-                                            );
-                                          },
-                                        );
-                                    }
-                                  },
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(height: 16),
-                                  itemCount: 3,
-                                ),
+                              _buildCleaningModeButton(
+                                icon: Icons.flash_on_rounded,
+                                title: l10n.quickDeclutterTitle,
+                                subtitle: l10n.quickDeclutterFlowDescription,
+                                buttonLabel: l10n.startAction,
+                                colors: const [
+                                  Color(0xFFFF8A65),
+                                  Color(0xFFFFB74D),
+                                ],
+                                onTap: () {
+                                  Navigator.pop(sheetContext);
+                                  _openQuickDeclutter(context);
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              _buildCleaningModeButton(
+                                icon: Icons.auto_awesome_rounded,
+                                title: l10n.joyDeclutterTitle,
+                                subtitle: l10n.joyDeclutterFlowDescription,
+                                buttonLabel: l10n.startAction,
+                                colors: const [
+                                  Color(0xFF5B8CFF),
+                                  Color(0xFF61D1FF),
+                                ],
+                                onTap: () {
+                                  Navigator.pop(sheetContext);
+                                  _openJoyDeclutter(context);
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              _buildCleaningModeButton(
+                                icon: Icons.cleaning_services_rounded,
+                                title: l10n.deepCleaningTitle,
+                                subtitle: l10n.deepCleaningFlowDescription,
+                                buttonLabel: l10n.startAction,
+                                colors: const [
+                                  Color(0xFF34E27A),
+                                  Color(0xFF0BBF75),
+                                ],
+                                onTap: () {
+                                  Navigator.pop(sheetContext);
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => DeepCleaningFlowPage(
+                                        onStartSession: _startSession,
+                                        onStopSession: _stopSession,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -729,11 +709,11 @@ class _MainNavigatorState extends State<MainNavigator> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         child: Ink(
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: colors),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
                 color: colors[0].withValues(alpha: 0.3),
@@ -743,17 +723,17 @@ class _MainNavigatorState extends State<MainNavigator> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             child: Row(
               children: [
                 Container(
-                  width: 54,
-                  height: 54,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     color: Colors.white.withValues(alpha: 0.22),
                   ),
-                  child: Icon(icon, color: Colors.white, size: 28),
+                  child: Icon(icon, color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 20),
                 Expanded(
@@ -764,18 +744,18 @@ class _MainNavigatorState extends State<MainNavigator> {
                         title,
                         style: const TextStyle(
                           fontFamily: 'SF Pro Display',
-                          fontSize: 19,
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                           letterSpacing: -0.2,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
                         style: const TextStyle(
                           fontFamily: 'SF Pro Text',
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: Colors.white70,
                           height: 1.3,
@@ -786,8 +766,8 @@ class _MainNavigatorState extends State<MainNavigator> {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                    horizontal: 10,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),

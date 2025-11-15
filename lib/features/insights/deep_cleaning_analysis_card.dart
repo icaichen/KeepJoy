@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import '../../l10n/app_localizations.dart';
 import '../../models/deep_cleaning_session.dart';
 import '../dashboard/widgets/cleaning_area_legend.dart';
+import '../../widgets/auto_scale_text.dart';
 
 class DeepCleaningAnalysisCard extends StatelessWidget {
   final List<DeepCleaningSession> sessions;
@@ -69,43 +74,6 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         .fold(0, (sum, session) => sum + session.elapsedSeconds!);
     final totalTimeHours = totalTimeSeconds / 3600;
 
-    // Messiness insights
-    final sessionsWithBefore = sessions
-        .where((s) => s.beforeMessinessIndex != null)
-        .toList();
-    final sessionsWithAfter = sessions
-        .where((s) => s.afterMessinessIndex != null)
-        .toList();
-    final sessionsWithBoth = sessions
-        .where(
-          (s) =>
-              s.beforeMessinessIndex != null && s.afterMessinessIndex != null,
-        )
-        .toList();
-
-    final beforeAverage = _calculateAverageMessiness(
-      sessionsWithBefore,
-      (s) => s.beforeMessinessIndex,
-    );
-    final afterAverage = _calculateAverageMessiness(
-      sessionsWithAfter,
-      (s) => s.afterMessinessIndex,
-    );
-
-    final improvementPercent = _calculateImprovementPercentage(
-      beforeAverage,
-      afterAverage,
-    );
-    final bestImprovementSession = _findBestImprovementSession(
-      sessionsWithBoth,
-    );
-    final bestImprovementPercent = bestImprovementSession != null
-        ? _calculateImprovementPercentage(
-            bestImprovementSession.beforeMessinessIndex,
-            bestImprovementSession.afterMessinessIndex,
-          )
-        : null;
-
     // Group sessions by area
     final sessionsByArea = <String, List<DeepCleaningSession>>{};
     for (final session in sessions) {
@@ -127,13 +95,21 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     ];
 
     // Combine common areas with custom areas
-    final allAreas = <String>{...commonAreas, ...sessionsByArea.keys}.toList();
+    final areaSet = <String>{...commonAreas, ...sessionsByArea.keys};
 
     // Calculate area counts for heatmap
-    final areaCounts = <String, int>{};
-    for (final area in allAreas) {
-      areaCounts[area] = sessionsByArea[area]?.length ?? 0;
-    }
+    final areaCounts = <String, int>{
+      for (final area in areaSet) area: sessionsByArea[area]?.length ?? 0,
+    };
+
+    final allAreas = areaSet.toList()
+      ..sort((a, b) {
+        final countB = areaCounts[b] ?? 0;
+        final countA = areaCounts[a] ?? 0;
+        final diff = countB.compareTo(countA);
+        if (diff != 0) return diff;
+        return a.compareTo(b);
+      });
 
     // Calculate areas cleared (unique areas with sessions)
     final areasCleared = areaCounts.values.where((count) => count > 0).length;
@@ -217,59 +193,6 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
             ],
           ),
 
-          if (sessionsWithBefore.isNotEmpty || sessionsWithAfter.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: _buildReportSection(
-                context,
-                title: l10n.beforeAfterComparison,
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildMessinessSummaryCard(
-                            context,
-                            label: l10n.messinessBefore,
-                            value: beforeAverage,
-                            color: const Color(0xFFEF6C99),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildMessinessSummaryCard(
-                            context,
-                            label: l10n.messinessAfter,
-                            value: afterAverage,
-                            color: const Color(0xFF34D399),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (improvementPercent != null)
-                      _buildImprovementCallout(
-                        context,
-                        improvementPercent: improvementPercent,
-                        topArea: bestImprovementSession?.area,
-                        topAreaImprovement: bestImprovementPercent,
-                        improvementLabel: l10n.improvement,
-                        areaLabel: l10n.cleaningAreas,
-                      )
-                    else
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          l10n.dashboardNoDetailedMetrics,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Colors.black54),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
           const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
 
           // Cleaning Areas with heatmap
@@ -320,11 +243,405 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 24),
+          _buildComparisonsSection(context, l10n, sessions),
         ],
       ),
     );
   }
 
+  Widget _buildComparisonsSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<DeepCleaningSession> sessions,
+  ) {
+    if (sessions.isEmpty) {
+      return Text(
+        l10n.deepCleaningComparisonsEmpty,
+        style: Theme.of(context)
+            .textTheme
+            .bodyMedium
+            ?.copyWith(color: Colors.black54),
+      );
+    }
+
+    final sortedSessions = [...sessions]
+      ..sort((a, b) => b.startTime.compareTo(a.startTime));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.deepCleaningComparisonsTitle,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Colors.black87,
+              ),
+        ),
+        const SizedBox(height: 12),
+        ...sortedSessions.map(
+          (session) => _buildComparisonRow(context, l10n, session),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildComparisonRow(
+    BuildContext context,
+    AppLocalizations l10n,
+    DeepCleaningSession session,
+  ) {
+    final subtitleParts = <String>[
+      _formatSessionDate(session.startTime, l10n),
+      _formatSessionTime(session.startTime, l10n),
+      if (session.elapsedSeconds != null)
+        '${Duration(seconds: session.elapsedSeconds!).inMinutes} min',
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _showSessionReportSheet(context, l10n, session),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EA)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.compare_rounded,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      session.area,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitleParts.join(' · '),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFF9CA3AF),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSessionReportSheet(
+    BuildContext context,
+    AppLocalizations l10n,
+    DeepCleaningSession session,
+  ) {
+    final improvement = _sessionImprovement(session);
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 12,
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '${session.area} · ${_formatSessionDate(session.startTime, l10n)}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatSessionTime(session.startTime, l10n),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildPhotoCarousel(context, l10n, session),
+                const SizedBox(height: 18),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: _buildSessionDetailList(
+                    l10n: l10n,
+                    colon: l10n.localeName.toLowerCase().startsWith('zh') ? '：' : ':',
+                    itemsValue: session.itemsCount?.toString() ?? '--',
+                    durationValue: session.elapsedSeconds != null
+                        ? _formatDuration(session.elapsedSeconds!, l10n)
+                        : '--',
+                    beforeValue: session.beforeMessinessIndex != null
+                        ? session.beforeMessinessIndex!.toStringAsFixed(1)
+                        : '--',
+                    afterValue: session.afterMessinessIndex != null
+                        ? session.afterMessinessIndex!.toStringAsFixed(1)
+                        : '--',
+                    improvementValue: improvement != null
+                        ? '${improvement.toStringAsFixed(0)}%'
+                        : '--',
+                    focusValue: session.focusIndex?.toString() ?? '--',
+                    joyValue: session.moodIndex?.toString() ?? '--',
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    child: Text(l10n.close),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPhotoCarousel(
+    BuildContext context,
+    AppLocalizations l10n,
+    DeepCleaningSession session,
+  ) {
+    final slides = [
+      _PhotoSlide(label: l10n.beforePhoto, path: session.beforePhotoPath),
+      _PhotoSlide(label: l10n.afterPhoto, path: session.afterPhotoPath),
+    ];
+
+    final allMissing = slides.every(
+      (slide) => slide.path == null || slide.path!.isEmpty,
+    );
+
+    if (allMissing) {
+      return Container(
+        height: 170,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Center(
+          child: Text(
+            l10n.memoryNoPhoto,
+            style: const TextStyle(color: Color(0xFF9CA3AF)),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 180,
+      child: PageView.builder(
+        itemCount: slides.length,
+        itemBuilder: (context, index) {
+          final slide = slides[index];
+          return _PhotoPage(label: slide.label, path: slide.path);
+        },
+      ),
+    );
+  }
+
+  Widget _buildSessionDetailList({
+    required AppLocalizations l10n,
+    required String colon,
+    required String itemsValue,
+    required String durationValue,
+    required String beforeValue,
+    required String afterValue,
+    required String improvementValue,
+    required String focusValue,
+    required String joyValue,
+  }) {
+    final labelStyle = const TextStyle(
+      fontSize: 14,
+      color: Color(0xFF6B7280),
+    );
+    final valueStyle = const TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF111827),
+    );
+
+    Widget buildRow(String label, String value) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              '$label$colon',
+              style: labelStyle,
+            ),
+          ),
+          Text(
+            value,
+            style: valueStyle,
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        buildRow(l10n.dashboardItemsLabel, itemsValue),
+        const SizedBox(height: 10),
+        buildRow(l10n.dashboardDurationLabel, durationValue),
+        const SizedBox(height: 14),
+        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+        const SizedBox(height: 14),
+        buildRow(l10n.messinessBefore, beforeValue),
+        const SizedBox(height: 10),
+        buildRow(l10n.messinessAfter, afterValue),
+        const SizedBox(height: 10),
+        buildRow(l10n.dashboardMessinessReducedLabel, improvementValue),
+        const SizedBox(height: 14),
+        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+        const SizedBox(height: 14),
+        buildRow(l10n.dashboardFocusLabel, focusValue),
+        const SizedBox(height: 10),
+        buildRow(l10n.dashboardJoyLabel, joyValue),
+      ],
+    );
+  }
+
+  double? _sessionImprovement(DeepCleaningSession session) {
+    if (session.beforeMessinessIndex == null ||
+        session.afterMessinessIndex == null) {
+      return null;
+    }
+    return _calculateImprovementPercentage(
+      session.beforeMessinessIndex,
+      session.afterMessinessIndex,
+    );
+  }
+
+  double? _calculateImprovementPercentage(double? before, double? after) {
+    if (before == null || after == null || before <= 0) {
+      return null;
+    }
+    return ((before - after) / before) * 100;
+  }
+
+  String _formatDuration(int seconds, AppLocalizations l10n) {
+    final duration = Duration(seconds: seconds);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final secs = duration.inSeconds.remainder(60);
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
+
+    if (hours > 0) {
+      if (isChinese) {
+        final buffer = StringBuffer()
+          ..write(hours)
+          ..write('小时');
+        if (minutes > 0) {
+          buffer
+            ..write(minutes)
+            ..write('分钟');
+        }
+        return buffer.toString();
+      }
+
+      final buffer = StringBuffer()
+        ..write(hours)
+        ..write('h');
+      if (minutes > 0) {
+        buffer
+          ..write(' ')
+          ..write(minutes)
+          ..write('m');
+      }
+      return buffer.toString();
+    }
+
+    if (minutes > 0) {
+      if (isChinese) {
+        return '$minutes分钟';
+      }
+      return (StringBuffer()
+            ..write(minutes)
+            ..write(' min'))
+          .toString();
+    }
+
+    if (isChinese) {
+      return '$secs秒';
+    }
+    return (StringBuffer()
+          ..write(secs)
+          ..write('s'))
+        .toString();
+  }
+
+  String _formatSessionDate(DateTime date, AppLocalizations l10n) {
+    final locale = l10n.localeName;
+    return DateFormat.yMMMMd(locale).format(date);
+  }
+
+  String _formatSessionTime(DateTime date, AppLocalizations l10n) {
+    final locale = l10n.localeName;
+    return DateFormat.jm(locale).format(date);
+  }
   Widget _buildDeepCleaningMetricItem(
     BuildContext context, {
     required IconData icon,
@@ -343,7 +660,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 24),
           const SizedBox(height: 8),
-          Text(
+          AutoScaleText(
             value,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w700,
@@ -352,7 +669,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(
+          AutoScaleText(
             label,
             style: TextStyle(
               fontSize: 12,
@@ -366,208 +683,105 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMessinessSummaryCard(
+  Widget _buildReportSection(
     BuildContext context, {
-    required String label,
-    required double? value,
-    required Color color,
-  }) {
-    final displayValue = () {
-      if (value == null) return '--';
-      final decimals = value >= 100 ? 0 : 1;
-      return value.toStringAsFixed(decimals);
-    }();
+      required String title,
+      Widget? trailing,
+      required Widget child,
+    }) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (trailing != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                trailing,
+              ],
+            )
+          else
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+            ),
+          const SizedBox(height: 12),
+          child,
+        ],
+      );
+    }
+  }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+class _PhotoSlide {
+  final String label;
+  final String? path;
+
+  const _PhotoSlide({required this.label, this.path});
+}
+
+class _PhotoPage extends StatelessWidget {
+  final String label;
+  final String? path;
+
+  const _PhotoPage({required this.label, this.path});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Colors.black87,
+            style: const TextStyle(
+              fontSize: 13,
               fontWeight: FontWeight.w600,
+              color: Color(0xFF4B5563),
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            displayValue,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: color,
-              fontSize: 32,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImprovementCallout(
-    BuildContext context, {
-    required double improvementPercent,
-    String? topArea,
-    double? topAreaImprovement,
-    required String improvementLabel,
-    required String areaLabel,
-  }) {
-    final improvementText = improvementPercent.isFinite
-        ? '${improvementPercent.round()}%'
-        : '--';
-    final areaText = (topArea != null && topAreaImprovement != null)
-        ? '${topAreaImprovement.round()}% · $topArea'
-        : topArea;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF111827).withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF111827).withValues(alpha: 0.08),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.trending_down_rounded,
-              color: Color(0xFF111827),
-            ),
-          ),
-          const SizedBox(width: 14),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  improvementLabel,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  improvementText,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF111827),
-                  ),
-                ),
-                if (areaText != null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    areaLabel,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    areaText,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF111827),
-                    ),
-                  ),
-                ],
-              ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                width: double.infinity,
+                color: const Color(0xFFF3F4F6),
+                child: path == null || path!.isEmpty
+                    ? const Center(
+                        child: Icon(
+                          Icons.photo_camera_back_outlined,
+                          color: Color(0xFF9CA3AF),
+                          size: 32,
+                        ),
+                      )
+                    : Image.file(
+                        File(path!),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            color: Color(0xFF9CA3AF),
+                            size: 32,
+                          ),
+                        ),
+                      ),
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  double? _calculateAverageMessiness(
-    List<DeepCleaningSession> data,
-    double? Function(DeepCleaningSession) selector,
-  ) {
-    if (data.isEmpty) return null;
-    final values = data
-        .map(selector)
-        .whereType<double>()
-        .where((value) => value.isFinite)
-        .toList();
-    if (values.isEmpty) return null;
-    final sum = values.reduce((a, b) => a + b);
-    return sum / values.length;
-  }
-
-  double? _calculateImprovementPercentage(double? before, double? after) {
-    if (before == null || after == null || before <= 0) return null;
-    return ((before - after) / before) * 100;
-  }
-
-  DeepCleaningSession? _findBestImprovementSession(
-    List<DeepCleaningSession> sessions,
-  ) {
-    DeepCleaningSession? bestSession;
-    double? bestImprovement;
-
-    for (final session in sessions) {
-      final improvement = _calculateImprovementPercentage(
-        session.beforeMessinessIndex,
-        session.afterMessinessIndex,
-      );
-      if (improvement == null) continue;
-      if (bestImprovement == null || improvement > bestImprovement) {
-        bestImprovement = improvement;
-        bestSession = session;
-      }
-    }
-
-    return bestSession;
-  }
-
-  Widget _buildReportSection(
-    BuildContext context, {
-    required String title,
-    Widget? trailing,
-    required Widget child,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (trailing != null)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                ),
-              ),
-              trailing,
-            ],
-          )
-        else
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
-            ),
-          ),
-        const SizedBox(height: 12),
-        child,
-      ],
     );
   }
 }

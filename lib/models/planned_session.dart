@@ -20,18 +20,18 @@ enum TaskPriority {
 
 /// Session mode type
 enum SessionMode {
-  deepCleaning,
+  quickDeclutter,
   joyDeclutter,
-  quickDeclutter;
+  deepCleaning;
 
   String displayName(AppLocalizations l10n) {
     switch (this) {
-      case SessionMode.deepCleaning:
-        return l10n.deepCleaningTitle;
       case SessionMode.joyDeclutter:
         return l10n.joyDeclutterTitle;
       case SessionMode.quickDeclutter:
         return l10n.quickDeclutterTitle;
+      case SessionMode.deepCleaning:
+        return l10n.deepCleaningTitle;
     }
   }
 }
