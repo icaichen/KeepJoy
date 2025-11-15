@@ -2091,9 +2091,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 },
                                 width: double.infinity,
                                 height: 44,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 child: Row(
-                                  mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.max,
                                   children: [
                                     const Icon(
                                       Icons.sentiment_satisfied_alt,
@@ -2111,6 +2112,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             color: Colors.white,
                                             letterSpacing: 0,
                                           ),
+                                      overflow: TextOverflow.visible,
                                     ),
                                   ],
                                 ),
