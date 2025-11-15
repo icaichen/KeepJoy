@@ -137,20 +137,32 @@ abstract class AppLocalizations {
   /// No description provided for @joyDeclutterFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Lead with joy when letting go'**
+  /// **'Keep only what sparks joy'**
   String get joyDeclutterFlowDescription;
 
   /// No description provided for @quickDeclutterFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Clear spaces in under 10 minutes'**
+  /// **'Fast pass: clear a spot in minutes'**
   String get quickDeclutterFlowDescription;
 
   /// No description provided for @deepCleaningFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Structured sessions for thorough results'**
+  /// **'Plan, focus, finish a deep clean'**
   String get deepCleaningFlowDescription;
+
+  /// No description provided for @deepCleaningComparisonsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before & After Comparisons'**
+  String get deepCleaningComparisonsTitle;
+
+  /// No description provided for @deepCleaningComparisonsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos and messiness scores to see comparisons.'**
+  String get deepCleaningComparisonsEmpty;
 
   /// No description provided for @startAction.
   ///
@@ -1331,6 +1343,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View Details'**
   String get viewDetails;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 
   /// No description provided for @cleaningLegendButton.
   ///

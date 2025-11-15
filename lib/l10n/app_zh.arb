@@ -7,9 +7,11 @@
   "startYourDeclutterJourney": "开始你的断舍离旅程",
   "chooseFlowTitle": "选择整理方式",
   "chooseFlowSubtitle": "根据当前状态选择最合适的整理体验。",
-  "joyDeclutterFlowDescription": "从情感出发整理物品",
-  "quickDeclutterFlowDescription": "10 分钟快速清理",
-  "deepCleaningFlowDescription": "系统化、深度的整理流程",
+  "joyDeclutterFlowDescription": "只保留让你心动的物品",
+  "quickDeclutterFlowDescription": "几分钟完成一次快速清理",
+  "deepCleaningFlowDescription": "规划、聚焦、完成深度整理",
+  "deepCleaningComparisonsTitle": "前后对比报告",
+  "deepCleaningComparisonsEmpty": "添加照片和凌乱度数据即可查看前后对比。",
   "startAction": "开始",
 
   "dailyInspiration": "每日灵感",
@@ -259,6 +261,7 @@
 
   "secondHandTracker": "二手物品追踪",
   "viewDetails": "查看详情",
+  "close": "关闭",
   "cleaningLegendButton": "颜色说明",
   "cleaningLegendTitle": "整理区域颜色说明",
   "cleaningLegendNone": "0 次：尚未开始",

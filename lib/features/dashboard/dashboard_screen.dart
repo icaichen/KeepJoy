@@ -22,6 +22,20 @@ import 'package:keepjoy_app/widgets/gradient_button.dart';
 import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 
+class _ModeMeta {
+  final IconData icon;
+  final List<Color> colors;
+  final String title;
+  final String subtitle;
+
+  const _ModeMeta({
+    required this.icon,
+    required this.colors,
+    required this.title,
+    required this.subtitle,
+  });
+}
+
 class DashboardScreen extends StatefulWidget {
   final DeepCleaningSession? activeSession;
   final void Function({
@@ -727,7 +741,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Mode Selection
                       Text(
                         l10n.dashboardModeLabel,
                         style: const TextStyle(
@@ -737,52 +750,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        children: modeOrder.map((mode) {
-                          final index = modeOrder.indexOf(mode);
-                          final isSelected = selectedMode == mode;
-                          return Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                right: index == modeOrder.length - 1 ? 0 : 8,
-                              ),
-                              child: InkWell(
-                                onTap: () {
-                                  setModalState(() {
-                                    selectedMode = mode;
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? const Color(0xFF414B5A)
-                                        : Colors.white,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? const Color(0xFF414B5A)
-                                          : const Color(0xFFE5E7EA),
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    mode.displayName(l10n),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : const Color(0xFF6B7280),
-                                    ),
-                                    textAlign: TextAlign.center,
+                      InkWell(
+                        onTap: () async {
+                          final picked = await _showModePicker(
+                            context: builderContext,
+                            selectedMode: selectedMode,
+                            modeOrder: modeOrder,
+                            l10n: l10n,
+                          );
+                          if (picked != null) {
+                            setModalState(() {
+                              selectedMode = picked;
+                            });
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE5E7EA)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: LinearGradient(
+                                    colors: _modeMeta(
+                                      selectedMode,
+                                      l10n,
+                                    ).colors,
                                   ),
                                 ),
+                                child: Icon(
+                                  _modeMeta(selectedMode, l10n).icon,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _modeMeta(selectedMode, l10n).title,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF111827),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _modeMeta(selectedMode, l10n).subtitle,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: Color(0xFF9CA3AF),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
 
@@ -1273,6 +1315,119 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ],
     );
+  }
+
+  Future<SessionMode?> _showModePicker({
+    required BuildContext context,
+    required SessionMode selectedMode,
+    required List<SessionMode> modeOrder,
+    required AppLocalizations l10n,
+  }) async {
+    return showModalBottomSheet<SessionMode>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    l10n.dashboardModeLabel,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...modeOrder.map((mode) {
+                  final meta = _modeMeta(mode, l10n);
+                  final isSelected = mode == selectedMode;
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: meta.colors),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(meta.icon, color: Colors.white),
+                    ),
+                    title: Text(
+                      meta.title,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      meta.subtitle,
+                      style: const TextStyle(color: Color(0xFF6B7280)),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(
+                            Icons.check_circle,
+                            color: Color(0xFF414B5A),
+                          )
+                        : null,
+                    onTap: () => Navigator.pop(sheetContext, mode),
+                  );
+                }).toList(),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    child: Text(l10n.cancel),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  _ModeMeta _modeMeta(SessionMode mode, AppLocalizations l10n) {
+    switch (mode) {
+      case SessionMode.quickDeclutter:
+        return _ModeMeta(
+          icon: Icons.flash_on_rounded,
+          colors: const [Color(0xFFFF8A65), Color(0xFFFFB74D)],
+          title: mode.displayName(l10n),
+          subtitle: l10n.quickDeclutterFlowDescription,
+        );
+      case SessionMode.joyDeclutter:
+        return _ModeMeta(
+          icon: Icons.auto_awesome_rounded,
+          colors: const [Color(0xFF5B8CFF), Color(0xFF61D1FF)],
+          title: mode.displayName(l10n),
+          subtitle: l10n.joyDeclutterFlowDescription,
+        );
+      case SessionMode.deepCleaning:
+        return _ModeMeta(
+          icon: Icons.cleaning_services_rounded,
+          colors: const [Color(0xFF34E27A), Color(0xFF0BBF75)],
+          title: mode.displayName(l10n),
+          subtitle: l10n.deepCleaningFlowDescription,
+        );
+    }
   }
 
   Widget _buildSessionCard(

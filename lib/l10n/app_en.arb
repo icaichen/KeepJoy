@@ -7,9 +7,11 @@
   "startYourDeclutterJourney": "Start your declutter journey",
   "chooseFlowTitle": "Choose a flow",
   "chooseFlowSubtitle": "Pick the experience that fits your current energy.",
-  "joyDeclutterFlowDescription": "Lead with joy when letting go",
-  "quickDeclutterFlowDescription": "Clear spaces in under 10 minutes",
-  "deepCleaningFlowDescription": "Structured sessions for thorough results",
+  "joyDeclutterFlowDescription": "Keep only what sparks joy",
+  "quickDeclutterFlowDescription": "Fast pass: clear a spot in minutes",
+  "deepCleaningFlowDescription": "Plan, focus, finish a deep clean",
+  "deepCleaningComparisonsTitle": "Before & After Comparisons",
+  "deepCleaningComparisonsEmpty": "Add photos and messiness scores to see comparisons.",
   "startAction": "Start",
 
   "dailyInspiration": "Daily Inspiration",
@@ -319,6 +321,7 @@
 
   "secondHandTracker": "Second-hand Tracker",
   "viewDetails": "View Details",
+  "close": "Close",
   "cleaningLegendButton": "Legend",
   "cleaningLegendTitle": "Cleaning Areas Legend",
   "cleaningLegendNone": "0 sessions • not started",

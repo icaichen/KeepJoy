@@ -28,15 +28,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pick the experience that fits your current energy.';
 
   @override
-  String get joyDeclutterFlowDescription => 'Lead with joy when letting go';
+  String get joyDeclutterFlowDescription => 'Keep only what sparks joy';
 
   @override
   String get quickDeclutterFlowDescription =>
-      'Clear spaces in under 10 minutes';
+      'Fast pass: clear a spot in minutes';
 
   @override
-  String get deepCleaningFlowDescription =>
-      'Structured sessions for thorough results';
+  String get deepCleaningFlowDescription => 'Plan, focus, finish a deep clean';
+
+  @override
+  String get deepCleaningComparisonsTitle => 'Before & After Comparisons';
+
+  @override
+  String get deepCleaningComparisonsEmpty =>
+      'Add photos and messiness scores to see comparisons.';
 
   @override
   String get startAction => 'Start';
@@ -687,6 +693,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewDetails => 'View Details';
+
+  @override
+  String get close => 'Close';
 
   @override
   String get cleaningLegendButton => 'Legend';
