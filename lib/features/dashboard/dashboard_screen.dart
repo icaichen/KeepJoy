@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -490,6 +491,186 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Future<TimeOfDay?> _showStyledTimePicker({
+    required BuildContext context,
+    required TimeOfDay? initialTime,
+    required AppLocalizations l10n,
+  }) async {
+    final now = TimeOfDay.now();
+    final mediaQuery = MediaQuery.of(context);
+    DateTime tempDateTime = DateTime(
+      0,
+      1,
+      1,
+      initialTime?.hour ?? now.hour,
+      initialTime?.minute ?? now.minute,
+    );
+
+    return showModalBottomSheet<TimeOfDay>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 12,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.dashboardSelectTimeOptional,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 180,
+                      child: CupertinoDatePicker(
+                        mode: CupertinoDatePickerMode.time,
+                        use24hFormat: mediaQuery.alwaysUse24HourFormat,
+                        initialDateTime: tempDateTime,
+                        onDateTimeChanged: (value) {
+                          setSheetState(() {
+                            tempDateTime = value;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF414B5A),
+                              side: const BorderSide(color: Color(0xFFD1D5DB)),
+                            ),
+                            child: Text(l10n.cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () {
+                              Navigator.pop(
+                                sheetContext,
+                                TimeOfDay(
+                                  hour: tempDateTime.hour,
+                                  minute: tempDateTime.minute,
+                                ),
+                              );
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF414B5A),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: Text(l10n.done),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<String?> _showAreaPicker({
+    required BuildContext context,
+    required List<String> areas,
+    required String? selectedArea,
+    required bool isChinese,
+  }) async {
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    isChinese ? '选择区域' : 'Pick an area',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: areas.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final label = areas[index];
+                      final isSelected = label == selectedArea;
+                      return ListTile(
+                        title: Text(label),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Color(0xFF414B5A),
+                              )
+                            : null,
+                        onTap: () => Navigator.pop(sheetContext, label),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showAddSessionDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController areaController = TextEditingController();
     DateTime? selectedDate = DateTime.now();
@@ -673,9 +854,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               : l10n.dashboardSelectTimeOptional,
                         ),
                         onTap: () async {
-                          final picked = await showTimePicker(
+                          final picked = await _showStyledTimePicker(
                             context: builderContext,
-                            initialTime: selectedTime ?? TimeOfDay.now(),
+                            initialTime: selectedTime,
+                            l10n: l10n,
                           );
                           if (picked != null) {
                             setModalState(() {
@@ -1034,44 +1216,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? null
         : areaController.text.trim();
 
-    return DropdownButtonFormField<String>(
-      initialValue: selectedArea,
-      isExpanded: true,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        border: OutlineInputBorder(
+    return Column(
+      children: [
+        InkWell(
+          onTap: isEnabled
+              ? () async {
+                  final picked = await _showAreaPicker(
+                    context: context,
+                    areas: areas,
+                    selectedArea: selectedArea,
+                    isChinese: isChinese,
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      areaController.text = picked;
+                    });
+                  }
+                }
+              : null,
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5E7EA)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.place_rounded,
+                  color: isEnabled
+                      ? const Color(0xFF414B5A)
+                      : const Color(0xFF9CA3AF),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    selectedArea ??
+                        (isChinese ? '请选择区域' : 'Tap to choose an area'),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: selectedArea != null
+                          ? const Color(0xFF111827)
+                          : const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF9CA3AF),
+                ),
+              ],
+            ),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF414B5A)),
-        ),
-        hintText: isChinese ? '选择区域' : 'Select an area',
-      ),
-      items: areas
-          .map(
-            (label) =>
-                DropdownMenuItem<String>(value: label, child: Text(label)),
-          )
-          .toList(),
-      onChanged: isEnabled
-          ? (value) {
-              setState(() {
-                areaController.text = value ?? '';
-              });
-            }
-          : null,
+      ],
     );
   }
 
