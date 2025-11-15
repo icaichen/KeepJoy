@@ -1019,10 +1019,49 @@ class AppLocalizationsZh extends AppLocalizations {
   String get termsOfService => '服务条款';
 
   @override
-  String get rateApp => '给应用评分';
+  String get rateApp => '评价 KeepJoy';
 
   @override
-  String get shareApp => '分享给朋友';
+  String get shareApp => '分享 KeepJoy';
+
+  @override
+  String get premiumMembership => '高级会员';
+
+  @override
+  String get premiumMembershipDescription => '解锁专属仪式、更深入的洞察和进阶自动化。';
+
+  @override
+  String get upgradeToPremium => '升级为 KeepJoy 高级版';
+
+  @override
+  String get paywallTitle => 'KeepJoy 高级版';
+
+  @override
+  String get paywallDescription => '选择一个订阅方案，解锁完整的心动整理工具。';
+
+  @override
+  String get paywallLoading => '正在加载订阅方案...';
+
+  @override
+  String get paywallUnavailable => '当前无法获取订阅信息，请稍后重试。';
+
+  @override
+  String get paywallPurchaseButton => '立即订阅';
+
+  @override
+  String get paywallRestorePurchases => '恢复购买';
+
+  @override
+  String get paywallPurchaseSuccess => '高级版已解锁，尽情享用 KeepJoy！';
+
+  @override
+  String get paywallPurchaseFailure => '无法完成购买，请稍后再试。';
+
+  @override
+  String get paywallRestoreSuccess => '已恢复之前的购买。';
+
+  @override
+  String get paywallRestoreFailure => '暂时没有可恢复的购买记录。';
 
   @override
   String get data => '数据管理';

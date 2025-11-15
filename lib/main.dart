@@ -25,12 +25,14 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
+import 'package:keepjoy_app/services/subscription_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Supabase
   await AuthService.initialize();
+  await SubscriptionService.configure();
 
   runApp(const KeepJoyApp());
 }
@@ -111,7 +113,9 @@ class _MainNavigatorState extends State<MainNavigator> {
   String get _currentUserId {
     final userId = _authService.currentUserId;
     if (userId == null) {
-      throw StateError('MainNavigator requires an authenticated Supabase user.');
+      throw StateError(
+        'MainNavigator requires an authenticated Supabase user.',
+      );
     }
     return userId;
   }
