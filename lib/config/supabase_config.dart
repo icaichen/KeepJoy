@@ -17,8 +17,8 @@ class SupabaseConfig {
   // First try local config (for development), then fall back to --dart-define
   static String get supabaseUrl {
     // Check if local config has values (not empty)
-    if (local_config._SupabaseConfigLocal.url.isNotEmpty) {
-      return local_config._SupabaseConfigLocal.url;
+    if (local_config.SupabaseConfigLocal.url.isNotEmpty) {
+      return local_config.SupabaseConfigLocal.url;
     }
     // Fall back to environment variable
     return const String.fromEnvironment('SUPABASE_URL');
@@ -26,8 +26,8 @@ class SupabaseConfig {
 
   static String get supabaseAnonKey {
     // Check if local config has values (not empty)
-    if (local_config._SupabaseConfigLocal.key.isNotEmpty) {
-      return local_config._SupabaseConfigLocal.key;
+    if (local_config.SupabaseConfigLocal.key.isNotEmpty) {
+      return local_config.SupabaseConfigLocal.key;
     }
     // Fall back to environment variable
     return const String.fromEnvironment('SUPABASE_ANON_KEY');
