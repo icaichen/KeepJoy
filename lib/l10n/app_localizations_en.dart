@@ -1066,6 +1066,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareApp => 'Share KeepJoy';
 
   @override
+  String get notificationsPermissionDenied =>
+      'Notifications are disabled for KeepJoy. Enable them in Settings to continue.';
+
+  @override
+  String get reminderGeneralTitle => 'KeepJoy Reminder';
+
+  @override
+  String get reminderJoyNudge1 =>
+      'Pause and thank an item today—ready for a Joy Declutter session?';
+
+  @override
+  String get reminderJoyNudge2 =>
+      'Your space misses a spark of joy. Let\'s gently tidy a corner together.';
+
+  @override
+  String get reminderJoyNudge3 =>
+      'Small steps bring clarity. Capture one item with Joy Declutter now.';
+
+  @override
+  String get reminderPendingTask1 =>
+      'You still have declutter plans waiting. Schedule a session to stay on track.';
+
+  @override
+  String get reminderPendingTask2 =>
+      'Unfinished goals deserve attention—pick a time to continue your declutter journey.';
+
+  @override
+  String get reminderActiveSessionTitle => 'Deep cleaning in progress';
+
+  @override
+  String get reminderActiveSessionBody =>
+      'Your deep cleaning session is still running. Come back to finish and log your progress.';
+
+  @override
+  String get memoryNoDescription => 'No additional notes for this memory.';
+
+  @override
+  String get premiumRequiredTitle => 'KeepJoy Premium';
+
+  @override
+  String get premiumRequiredMessage =>
+      'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.';
+
+  @override
+  String get premiumLockedOverlay => 'Upgrade to view full insights';
+
+  @override
   String get premiumMembership => 'Premium Membership';
 
   @override

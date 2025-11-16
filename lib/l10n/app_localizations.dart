@@ -2046,6 +2046,84 @@ abstract class AppLocalizations {
   /// **'Share KeepJoy'**
   String get shareApp;
 
+  /// No description provided for @notificationsPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are disabled for KeepJoy. Enable them in Settings to continue.'**
+  String get notificationsPermissionDenied;
+
+  /// No description provided for @reminderGeneralTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'KeepJoy Reminder'**
+  String get reminderGeneralTitle;
+
+  /// No description provided for @reminderJoyNudge1.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause and thank an item today—ready for a Joy Declutter session?'**
+  String get reminderJoyNudge1;
+
+  /// No description provided for @reminderJoyNudge2.
+  ///
+  /// In en, this message translates to:
+  /// **'Your space misses a spark of joy. Let\'s gently tidy a corner together.'**
+  String get reminderJoyNudge2;
+
+  /// No description provided for @reminderJoyNudge3.
+  ///
+  /// In en, this message translates to:
+  /// **'Small steps bring clarity. Capture one item with Joy Declutter now.'**
+  String get reminderJoyNudge3;
+
+  /// No description provided for @reminderPendingTask1.
+  ///
+  /// In en, this message translates to:
+  /// **'You still have declutter plans waiting. Schedule a session to stay on track.'**
+  String get reminderPendingTask1;
+
+  /// No description provided for @reminderPendingTask2.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfinished goals deserve attention—pick a time to continue your declutter journey.'**
+  String get reminderPendingTask2;
+
+  /// No description provided for @reminderActiveSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep cleaning in progress'**
+  String get reminderActiveSessionTitle;
+
+  /// No description provided for @reminderActiveSessionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your deep cleaning session is still running. Come back to finish and log your progress.'**
+  String get reminderActiveSessionBody;
+
+  /// No description provided for @memoryNoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No additional notes for this memory.'**
+  String get memoryNoDescription;
+
+  /// No description provided for @premiumRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'KeepJoy Premium'**
+  String get premiumRequiredTitle;
+
+  /// No description provided for @premiumRequiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.'**
+  String get premiumRequiredMessage;
+
+  /// No description provided for @premiumLockedOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to view full insights'**
+  String get premiumLockedOverlay;
+
   /// No description provided for @premiumMembership.
   ///
   /// In en, this message translates to:

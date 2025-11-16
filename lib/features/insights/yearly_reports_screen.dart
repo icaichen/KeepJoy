@@ -4,11 +4,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:keepjoy_app/features/dashboard/widgets/cleaning_area_legend.dart';
+import 'package:keepjoy_app/features/dashboard/widgets/declutter_results_distribution_card.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 import 'package:keepjoy_app/widgets/auto_scale_text.dart';
+import 'package:keepjoy_app/l10n/app_localizations.dart';
 
 class YearlyReportsScreen extends StatefulWidget {
   const YearlyReportsScreen({
@@ -607,6 +609,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
+    final l10n = AppLocalizations.of(context)!;
 
     final now = DateTime.now();
     final yearStart = DateTime(now.year, 1, 1);
@@ -724,19 +727,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
 
     // Disposal method counts
-    final resellCount = yearlyItems
-        .where((item) => item.status == DeclutterStatus.resell)
-        .length;
-    final recycleCount = yearlyItems
-        .where((item) => item.status == DeclutterStatus.recycle)
-        .length;
-    final donateCount = yearlyItems
-        .where((item) => item.status == DeclutterStatus.donate)
-        .length;
-    final discardCount = yearlyItems
-        .where((item) => item.status == DeclutterStatus.discard)
-        .length;
-
     // Calculate scroll-based animations
     const titleAreaHeight = 120.0;
     final scrollProgress = (_scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
@@ -1241,91 +1231,31 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 ),
                                 const SizedBox(height: 20),
 
-                                // Letting Go Details (Disposal Methods) with Pie Chart
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(24),
+                                DeclutterResultsDistributionCard(
+                                  items: yearlyItems,
+                                  title: isChinese
+                                      ? '整理结果分布'
+                                      : 'Declutter Results Distribution',
+                                  subtitle: isChinese
+                                      ? '年初至今的整理结果'
+                                      : 'Year-to-date declutter results',
+                                  keptLabel: DeclutterStatus.keep.label(
+                                    context,
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        isChinese
-                                            ? '放手详情'
-                                            : 'Letting Go Details',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.black87,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 20),
-
-                                      // Pie Chart
-                                      Center(
-                                        child: SizedBox(
-                                          width: 200,
-                                          height: 200,
-                                          child: CustomPaint(
-                                            painter: _PieChartPainter(
-                                              resellCount: resellCount,
-                                              recycleCount: recycleCount,
-                                              donateCount: donateCount,
-                                              discardCount: discardCount,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 20),
-
-                                      // Legend
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          _buildDisposalItem(
-                                            context,
-                                            label: isChinese ? '出售' : 'Sell',
-                                            count: resellCount,
-                                            color: const Color(0xFFFFD93D),
-                                          ),
-                                          _buildDisposalItem(
-                                            context,
-                                            label: isChinese ? '回收' : 'Recycle',
-                                            count: recycleCount,
-                                            color: const Color(0xFF5ECFB8),
-                                          ),
-                                          _buildDisposalItem(
-                                            context,
-                                            label: isChinese ? '捐赠' : 'Donate',
-                                            count: donateCount,
-                                            color: const Color(0xFFFF9AA2),
-                                          ),
-                                          _buildDisposalItem(
-                                            context,
-                                            label: isChinese ? '丢弃' : 'Discard',
-                                            count: discardCount,
-                                            color: const Color(0xFF9E9E9E),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                  resellLabel: DeclutterStatus.resell.label(
+                                    context,
                                   ),
-                                ),
-                                const SizedBox(height: 20),
-
-                                // Declutter outcomes bar chart
-                                _buildDeclutterOutcomeCard(
-                                  context,
-                                  isChinese,
-                                  yearlyItems,
+                                  recycleLabel: DeclutterStatus.recycle.label(
+                                    context,
+                                  ),
+                                  donateLabel: DeclutterStatus.donate.label(
+                                    context,
+                                  ),
+                                  discardLabel: DeclutterStatus.discard.label(
+                                    context,
+                                  ),
+                                  totalItemsLabel: l10n.totalItemsDecluttered,
+                                  isChinese: isChinese,
                                 ),
                                 const SizedBox(height: 20),
 
@@ -1461,37 +1391,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDisposalItem(
-    BuildContext context, {
-    required String label,
-    required int count,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(height: 4),
-        AutoScaleText(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.black87),
-        ),
-        AutoScaleText(
-          count.toString(),
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Colors.black54,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 
@@ -2053,177 +1952,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       ],
     );
   }
-
-  Widget _buildDeclutterOutcomeCard(
-    BuildContext context,
-    bool isChinese,
-    List<DeclutterItem> yearlyItems,
-  ) {
-    final statusOrder = [
-      DeclutterStatus.keep,
-      DeclutterStatus.donate,
-      DeclutterStatus.recycle,
-      DeclutterStatus.resell,
-      DeclutterStatus.discard,
-    ];
-
-    final statusCounts = {
-      for (final status in statusOrder)
-        status: yearlyItems.where((item) => item.status == status).length,
-    };
-
-    final totalItems = yearlyItems.length;
-    final kept = statusCounts[DeclutterStatus.keep] ?? 0;
-    final letGo = totalItems - kept;
-
-    final summaryText = isChinese
-        ? '今年共整理 $totalItems 件物品，其中 $kept 件保留，$letGo 件成功放手。'
-        : 'You handled $totalItems items this year — kept $kept and gave $letGo a new path.';
-
-    final categories = statusOrder
-        .map((status) => status.label(context))
-        .toList();
-    final counts = {
-      for (final status in statusOrder)
-        status.label(context): statusCounts[status] ?? 0,
-    };
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            isChinese ? '整理去向分析' : 'Declutter Outcomes',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            summaryText,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: const Color(0xFF6B7280),
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            height: 220,
-            child: CustomPaint(
-              painter: _DeclutterOutcomeBarPainter(
-                categories: categories,
-                counts: counts,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// Pie Chart Painter for disposal methods
-class _PieChartPainter extends CustomPainter {
-  final int resellCount;
-  final int recycleCount;
-  final int donateCount;
-  final int discardCount;
-
-  _PieChartPainter({
-    required this.resellCount,
-    required this.recycleCount,
-    required this.donateCount,
-    required this.discardCount,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    final total = resellCount + recycleCount + donateCount + discardCount;
-
-    // If no data, show empty circle
-    if (total == 0) {
-      final paint = Paint()
-        ..color = const Color(0xFFE5E5EA)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(center, radius, paint);
-      return;
-    }
-
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    double startAngle = -90 * (3.14159 / 180); // Start from top
-
-    // Draw resell segment (yellow)
-    if (resellCount > 0) {
-      final sweepAngle = (resellCount / total) * 2 * 3.14159;
-      paint.color = const Color(0xFFFFD93D);
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        true,
-        paint,
-      );
-      startAngle += sweepAngle;
-    }
-
-    // Draw recycle segment (teal)
-    if (recycleCount > 0) {
-      final sweepAngle = (recycleCount / total) * 2 * 3.14159;
-      paint.color = const Color(0xFF5ECFB8);
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        true,
-        paint,
-      );
-      startAngle += sweepAngle;
-    }
-
-    // Draw donate segment (pink)
-    if (donateCount > 0) {
-      final sweepAngle = (donateCount / total) * 2 * 3.14159;
-      paint.color = const Color(0xFFFF9AA2);
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        true,
-        paint,
-      );
-      startAngle += sweepAngle;
-    }
-
-    // Draw discard segment (grey)
-    if (discardCount > 0) {
-      final sweepAngle = (discardCount / total) * 2 * 3.14159;
-      paint.color = const Color(0xFF9E9E9E);
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        true,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-// Joy trend chart painter (line chart)
 class _JoyTrendChartPainter extends CustomPainter {
   final Map<int, double> weeklyData; // week index -> value (percent or count)
   final int maxWeeks;
@@ -2397,114 +2127,6 @@ class _JoyTrendChartPainter extends CustomPainter {
           size.height - bottomPadding + 10,
         ),
       );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-class _DeclutterOutcomeBarPainter extends CustomPainter {
-  _DeclutterOutcomeBarPainter({required this.categories, required this.counts});
-
-  final List<String> categories;
-  final Map<String, int> counts;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const padding = 16.0;
-    const labelWidth = 110.0;
-    final chartWidth = size.width - labelWidth - padding * 2;
-    final barHeight = (size.height - padding * 2) / categories.length;
-    final actualBarHeight = barHeight * 0.55;
-
-    final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
-    final colors = [
-      const Color(0xFF5ECFB8),
-      const Color(0xFFFF9AA2),
-      const Color(0xFF89CFF0),
-      const Color(0xFFFFD93D),
-      const Color(0xFF9CA3AF),
-    ];
-
-    final maxCount = counts.values.isEmpty
-        ? 0
-        : counts.values.reduce((a, b) => a > b ? a : b);
-
-    for (int i = 0; i < categories.length; i++) {
-      final category = categories[i];
-      final count = counts[category] ?? 0;
-      final y = padding + (i * barHeight);
-
-      // Draw label
-      textPainter.text = TextSpan(
-        text: category,
-        style: const TextStyle(
-          color: Color(0xFF4B5563),
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      );
-      textPainter.layout(maxWidth: labelWidth - 8);
-      textPainter.paint(
-        canvas,
-        Offset(padding, y + (barHeight - textPainter.height) / 2),
-      );
-
-      // Draw background bar
-      final barX = padding + labelWidth;
-      final bgPaint = Paint()..color = const Color(0xFFF5F5F5);
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(
-            barX,
-            y + (barHeight - actualBarHeight) / 2,
-            chartWidth,
-            actualBarHeight,
-          ),
-          const Radius.circular(8),
-        ),
-        bgPaint,
-      );
-
-      if (maxCount == 0) {
-        continue;
-      }
-
-      // Draw value bar
-      final barWidth = maxCount == 0 ? 0.0 : (count / maxCount) * chartWidth;
-      final valuePaint = Paint()..color = colors[i % colors.length];
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(
-            barX,
-            y + (barHeight - actualBarHeight) / 2,
-            barWidth,
-            actualBarHeight,
-          ),
-          const Radius.circular(8),
-        ),
-        valuePaint,
-      );
-
-      // Draw count text
-      textPainter.text = TextSpan(
-        text: count.toString(),
-        style: TextStyle(
-          color: barWidth > 40 ? Colors.white : const Color(0xFF1F2937),
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
-      );
-      textPainter.layout();
-      final textY = y + barHeight / 2 - textPainter.height / 2;
-      final textX = barWidth > 40
-          ? barX + barWidth - textPainter.width - 8
-          : barX + barWidth + 8;
-      canvas.drawRect(Rect.fromLTWH(barX, textY, 0, 0), Paint());
-      textPainter.paint(canvas, Offset(textX, textY));
     }
   }
 

@@ -36,27 +36,19 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F7),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827)),
+          icon: const Icon(Icons.close_rounded, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          l10n.memoryDetailTitle,
-          style: const TextStyle(
-            fontFamily: 'SF Pro Display',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF111827),
-          ),
-        ),
-        centerTitle: false,
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Color(0xFF111827)),
+            icon: const Icon(Icons.more_vert, color: Colors.white),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -91,7 +83,11 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
                 value: 'delete',
                 child: Row(
                   children: [
-                    const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                    const Icon(
+                      Icons.delete_outline,
+                      color: Colors.red,
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       l10n.memoryDeleteMemory,
@@ -109,72 +105,84 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
         ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPhotoSection(l10n),
+                const SizedBox(height: 16),
+                _buildDetailSheet(l10n),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoSection(AppLocalizations l10n) {
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            // Photo section
-            _buildPhotoSection(),
-
-            // Content section
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title (item name)
-                  if (_currentMemory.itemName != null)
-                    Text(
-                      _currentMemory.itemName!,
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Display',
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                        height: 1.2,
-                      ),
+            _currentMemory.hasPhoto
+                ? Hero(
+                    tag: 'memory_photo_${_currentMemory.id}',
+                    child: Image.file(
+                      _currentMemory.photoFile!,
+                      fit: BoxFit.cover,
                     ),
-                  const SizedBox(height: 12),
-
-                  // Date
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  )
+                : Container(
+                    color: const Color(0xFF1F1F1F),
+                    alignment: Alignment.center,
                     child: Text(
-                      l10n.memoryCreatedOn(_formatDate(_currentMemory.createdAt)),
+                      _currentMemory.type.icon,
                       style: const TextStyle(
-                        fontFamily: 'SF Pro Text',
-                        fontSize: 14,
-                        color: Color(0xFF6B7280),
-                        fontWeight: FontWeight.w500,
+                        fontSize: 64,
+                        color: Colors.white70,
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 20),
-
-                  // Description
-                  if (_currentMemory.description != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE5E7EA)),
-                      ),
-                      child: Text(
-                        _currentMemory.description!,
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          fontSize: 16,
-                          height: 1.6,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black54],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 24,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _currentMemory.itemName ?? l10n.memoryDetailTitle,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.memoryCreatedOn(_formatDate(_currentMemory.createdAt)),
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -184,57 +192,45 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
     );
   }
 
-  Widget _buildPhotoSection() {
+  Widget _buildDetailSheet(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
-      height: 400,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
         boxShadow: const [
           BoxShadow(
             color: Color(0x14000000),
-            blurRadius: 20,
-            offset: Offset(0, 8),
+            blurRadius: 24,
+            offset: Offset(0, 12),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: _currentMemory.hasPhoto
-            ? GestureDetector(
-                onTap: () => _openPhotoViewer(),
-                child: Hero(
-                  tag: 'memory_photo_${_currentMemory.id}',
-                  child: Image.file(
-                    _currentMemory.photoFile!,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              )
-            : Container(
-                color: const Color(0xFFF3F4F6),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _currentMemory.type.icon,
-                        style: const TextStyle(fontSize: 64),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'No photo available',
-                        style: TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          fontSize: 16,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_currentMemory.description != null &&
+              _currentMemory.description!.trim().isNotEmpty)
+            Text(
+              _currentMemory.description!,
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 16,
+                height: 1.6,
+                color: Color(0xFF111827),
               ),
+            )
+          else
+            Text(
+              l10n.memoryNoDescription,
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 15,
+                color: Color(0xFF9CA3AF),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -244,12 +240,8 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          l10n.memoryDeleteMemory,
-        ),
-        content: Text(
-          l10n.memoryDeleteConfirm,
-        ),
+        title: Text(l10n.memoryDeleteMemory),
+        content: Text(l10n.memoryDeleteConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -268,9 +260,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
                 ),
               );
             },
-            child: const Text(
-              'Delete',
-            ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -287,63 +277,21 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
     );
   }
 
-  void _openPhotoViewer() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PhotoViewerPage(
-          photoPath: _currentMemory.photoPath!,
-          memoryTitle: _currentMemory.itemName ?? _currentMemory.title,
-        ),
-      ),
-    );
-  }
-
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
-}
-
-/// Full-screen photo viewer
-class PhotoViewerPage extends StatelessWidget {
-  const PhotoViewerPage({
-    super.key,
-    required this.photoPath,
-    required this.memoryTitle,
-  });
-
-  final String photoPath;
-  final String memoryTitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          memoryTitle,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        centerTitle: false,
-      ),
-      body: Center(
-        child: InteractiveViewer(
-          minScale: 0.5,
-          maxScale: 3.0,
-          child: Hero(
-            tag: 'memory_photo_${photoPath.hashCode}',
-            child: Image.file(
-              File(photoPath),
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

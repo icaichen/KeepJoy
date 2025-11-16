@@ -8,6 +8,8 @@ import '../../l10n/app_localizations.dart';
 import '../../services/app_feedback_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/data_repository.dart';
+import '../../services/notification_preferences_service.dart';
+import '../../services/reminder_service.dart';
 import '../../models/declutter_item.dart';
 import '../../ui/paywall/paywall_page.dart';
 import 'edit_profile_page.dart';
@@ -23,6 +25,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final _authService = AuthService();
+  bool _notificationsEnabled = false;
+  bool _notificationsLoading = true;
 
   String get _userEmail =>
       _authService.currentUser?.email ?? 'user@example.com';
@@ -45,6 +49,47 @@ class _ProfilePageState extends State<ProfilePage> {
       return _userName[0].toUpperCase();
     }
     return 'U';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationPreference();
+  }
+
+  Future<void> _loadNotificationPreference() async {
+    final enabled =
+        await NotificationPreferencesService.areNotificationsEnabled();
+    if (!mounted) return;
+    setState(() {
+      _notificationsEnabled = enabled;
+      _notificationsLoading = false;
+    });
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    if (_notificationsLoading) return;
+    setState(() {
+      _notificationsLoading = true;
+    });
+
+    if (value) {
+      final success = await ReminderService.enableGeneralReminders(context);
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = success ? true : _notificationsEnabled;
+          _notificationsLoading = false;
+        });
+      }
+    } else {
+      await ReminderService.disableGeneralReminders();
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = false;
+          _notificationsLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -191,9 +236,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   _SettingsTile(
                     icon: Icons.notifications_outlined,
                     title: l10n.notifications,
-                    onTap: () {
-                      // TODO: Implement notifications settings
-                    },
+                    onTap: () {},
+                    trailing: Switch(
+                      value: _notificationsEnabled,
+                      onChanged: _notificationsLoading
+                          ? null
+                          : _toggleNotifications,
+                      activeColor: const Color(0xFFB794F6),
+                    ),
                   ),
                 ],
               ),
@@ -1073,12 +1123,14 @@ class _SettingsTile extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
   final Color? textColor;
+  final Widget? trailing;
 
   const _SettingsTile({
     required this.icon,
     required this.title,
     required this.onTap,
     this.textColor,
+    this.trailing,
   });
 
   @override
@@ -1103,7 +1155,12 @@ class _SettingsTile extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.chevron_right, color: const Color(0xFF9CA3AF), size: 20),
+            trailing ??
+                const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF9CA3AF),
+                  size: 20,
+                ),
           ],
         ),
       ),

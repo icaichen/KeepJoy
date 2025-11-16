@@ -25,7 +25,13 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
+import 'services/notification_service_stub.dart'
+    if (dart.library.io) 'services/notification_service_mobile.dart';
+import 'package:keepjoy_app/services/reminder_service.dart';
 import 'package:keepjoy_app/services/subscription_service.dart';
+import 'services/trial_service.dart';
+import 'services/premium_access_service.dart';
+import 'ui/paywall/paywall_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +39,8 @@ void main() async {
   // Initialize Supabase
   await AuthService.initialize();
   await SubscriptionService.configure();
+  await NotificationService.instance.ensureInitialized();
+  await TrialService.ensureInitialized();
 
   runApp(const KeepJoyApp());
 }
@@ -97,7 +105,8 @@ class MainNavigator extends StatefulWidget {
   State<MainNavigator> createState() => _MainNavigatorState();
 }
 
-class _MainNavigatorState extends State<MainNavigator> {
+class _MainNavigatorState extends State<MainNavigator>
+    with WidgetsBindingObserver {
   final _authService = AuthService();
   int _selectedIndex = 0;
   DeepCleaningSession? _activeSession;
@@ -109,6 +118,41 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<ActivityEntry> _activityHistory = [];
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
+  bool _hasFullAccess = true;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refreshPremiumAccess();
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _refreshPremiumAccess() async {
+    final hasAccess = await PremiumAccessService.hasPremiumAccess();
+    if (!mounted) return;
+    setState(() {
+      _hasFullAccess = hasAccess;
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      if (_activeSession != null) {
+        ReminderService.scheduleActiveSessionReminder(context);
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      ReminderService.cancelActiveSessionReminder();
+      unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
+      _refreshPremiumAccess();
+    }
+  }
 
   String get _currentUserId {
     final userId = _authService.currentUserId;
@@ -270,6 +314,9 @@ class _MainNavigatorState extends State<MainNavigator> {
         }
         _activeSession = null;
       });
+
+      ReminderService.cancelActiveSessionReminder();
+      unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
     }
   }
 
@@ -298,6 +345,8 @@ class _MainNavigatorState extends State<MainNavigator> {
 
       // Note: Memory creation is now manual via Create Memory button or prompt after Joy Declutter
     });
+
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
   void _onItemCompleted(DeclutterItem item) {
@@ -350,6 +399,33 @@ class _MainNavigatorState extends State<MainNavigator> {
     });
   }
 
+  Future<void> _showUpgradeDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.premiumRequiredTitle),
+        content: Text(l10n.premiumRequiredMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const PaywallPage()));
+              _refreshPremiumAccess();
+            },
+            child: Text(l10n.upgradeToPremium),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openQuickDeclutter(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -398,12 +474,16 @@ class _MainNavigatorState extends State<MainNavigator> {
         session,
       ); // Add to beginning so it shows up first
     });
+
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
   void _deletePlannedSession(PlannedSession session) {
     setState(() {
       _plannedSessions.removeWhere((s) => s.id == session.id);
     });
+
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
   void _togglePlannedSession(PlannedSession session) {
@@ -416,6 +496,7 @@ class _MainNavigatorState extends State<MainNavigator> {
         );
       }
     });
+    unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
   @override
@@ -443,6 +524,8 @@ class _MainNavigatorState extends State<MainNavigator> {
         resellItems: _resellItems,
         deepCleaningSessions: _completedSessions,
         onMemoryCreated: _onMemoryCreated,
+        hasFullAccess: _hasFullAccess,
+        onRequestUpgrade: () => _showUpgradeDialog(),
       ),
       ItemsScreen(
         items: List.unmodifiable(_declutteredItems),
@@ -590,6 +673,11 @@ class _MainNavigatorState extends State<MainNavigator> {
                                   Color(0xFF0BBF75),
                                 ],
                                 onTap: () {
+                                  if (!_hasFullAccess) {
+                                    Navigator.pop(sheetContext);
+                                    _showUpgradeDialog();
+                                    return;
+                                  }
                                   Navigator.pop(sheetContext);
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
