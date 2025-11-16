@@ -2106,6 +2106,24 @@ abstract class AppLocalizations {
   /// **'No additional notes for this memory.'**
   String get memoryNoDescription;
 
+  /// No description provided for @premiumRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'KeepJoy Premium'**
+  String get premiumRequiredTitle;
+
+  /// No description provided for @premiumRequiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.'**
+  String get premiumRequiredMessage;
+
+  /// No description provided for @premiumLockedOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to view full insights'**
+  String get premiumLockedOverlay;
+
   /// No description provided for @premiumMembership.
   ///
   /// In en, this message translates to:

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
@@ -23,6 +24,14 @@ class _PaywallPageState extends State<PaywallPage> {
   }
 
   Future<void> _loadOfferings() async {
+    if (kIsWeb) {
+      setState(() {
+        _offerings = null;
+        _isLoading = false;
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -130,17 +139,25 @@ class _PaywallPageState extends State<PaywallPage> {
   }
 
   Widget _buildUnavailable(AppLocalizations l10n) {
+    final message = kIsWeb
+        ? '订阅购买仅支持移动设备，请在 iOS / Android 设备上升级。'
+        : l10n.paywallUnavailable;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            l10n.paywallUnavailable,
+            message,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadOfferings, child: Text(l10n.tryAgain)),
+          if (!kIsWeb)
+            ElevatedButton(
+              onPressed: _loadOfferings,
+              child: Text(l10n.tryAgain),
+            ),
         ],
       ),
     );

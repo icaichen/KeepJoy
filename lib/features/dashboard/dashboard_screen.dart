@@ -66,6 +66,8 @@ class DashboardScreen extends StatefulWidget {
   final List<ResellItem> resellItems;
   final List<DeepCleaningSession> deepCleaningSessions;
   final Function(Memory) onMemoryCreated;
+  final bool hasFullAccess;
+  final VoidCallback onRequestUpgrade;
 
   const DashboardScreen({
     super.key,
@@ -88,6 +90,8 @@ class DashboardScreen extends StatefulWidget {
     required this.resellItems,
     required this.deepCleaningSessions,
     required this.onMemoryCreated,
+    required this.hasFullAccess,
+    required this.onRequestUpgrade,
   });
 
   @override
@@ -1639,6 +1643,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _startSessionFromPlanned(PlannedSession session) {
     switch (session.mode) {
       case SessionMode.deepCleaning:
+        if (!widget.hasFullAccess) {
+          widget.onRequestUpgrade();
+          return;
+        }
         // For deep cleaning, navigate directly to before photo page with area pre-filled
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -2710,74 +2718,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                   child: Column(
                     children: [
-                      _buildReportCard(
+                      _wrapPremiumCard(
                         context,
-                        icon: Icons.trending_up_rounded,
-                        iconColor: const Color(0xFFFFD93D),
-                        bgColors: [
-                          const Color(0xFFFFF9E6),
-                          const Color(0xFFFFECB3),
-                        ],
-                        title: l10n.dashboardResellReportTitle,
-                        subtitle: l10n.dashboardResellReportSubtitle,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ResellAnalysisReportScreen(
-                                resellItems: widget.resellItems,
-                                declutteredItems: widget.declutteredItems,
+                        _buildReportCard(
+                          context,
+                          icon: Icons.trending_up_rounded,
+                          iconColor: const Color(0xFFFFD93D),
+                          bgColors: const [
+                            Color(0xFFFFF9E6),
+                            Color(0xFFFFECB3),
+                          ],
+                          title: l10n.dashboardResellReportTitle,
+                          subtitle: l10n.dashboardResellReportSubtitle,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ResellAnalysisReportScreen(
+                                      resellItems: widget.resellItems,
+                                      declutteredItems: widget.declutteredItems,
+                                    ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      _buildReportCard(
+                      _wrapPremiumCard(
                         context,
-                        icon: Icons.photo_library_rounded,
-                        iconColor: const Color(0xFFFF9AA2),
-                        bgColors: [
-                          const Color(0xFFFFEEF0),
-                          const Color(0xFFFFDDE0),
-                        ],
-                        title: l10n.dashboardMemoryLaneTitle,
-                        subtitle: l10n.dashboardMemoryLaneSubtitle,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MemoryLaneReportScreen(
-                                memories: widget.memories,
+                        _buildReportCard(
+                          context,
+                          icon: Icons.photo_library_rounded,
+                          iconColor: const Color(0xFFFF9AA2),
+                          bgColors: const [
+                            Color(0xFFFFEEF0),
+                            Color(0xFFFFDDE0),
+                          ],
+                          title: l10n.dashboardMemoryLaneTitle,
+                          subtitle: l10n.dashboardMemoryLaneSubtitle,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MemoryLaneReportScreen(
+                                  memories: widget.memories,
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      _buildReportCard(
+                      _wrapPremiumCard(
                         context,
-                        icon: Icons.calendar_today_rounded,
-                        iconColor: const Color(0xFF89CFF0),
-                        bgColors: [
-                          const Color(0xFFE6F4F9),
-                          const Color(0xFFD4E9F3),
-                        ],
-                        title: l10n.dashboardYearlyReportsTitle,
-                        subtitle: l10n.dashboardYearlyReportsSubtitle,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => YearlyReportsScreen(
-                                declutteredItems: widget.declutteredItems,
-                                resellItems: widget.resellItems,
-                                deepCleaningSessions:
-                                    widget.deepCleaningSessions,
+                        _buildReportCard(
+                          context,
+                          icon: Icons.calendar_today_rounded,
+                          iconColor: const Color(0xFF89CFF0),
+                          bgColors: const [
+                            Color(0xFFE6F4F9),
+                            Color(0xFFD4E9F3),
+                          ],
+                          title: l10n.dashboardYearlyReportsTitle,
+                          subtitle: l10n.dashboardYearlyReportsSubtitle,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => YearlyReportsScreen(
+                                  declutteredItems: widget.declutteredItems,
+                                  resellItems: widget.resellItems,
+                                  deepCleaningSessions:
+                                      widget.deepCleaningSessions,
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -3001,6 +3019,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _wrapPremiumCard(BuildContext context, Widget child) {
+    if (widget.hasFullAccess == true) {
+      return child;
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+
+    return Stack(
+      children: [
+        Opacity(opacity: 0.6, child: child),
+        Positioned.fill(
+          child: Material(
+            color: Colors.black.withOpacity(0.45),
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: widget.onRequestUpgrade,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock_outline, color: Colors.white, size: 24),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.premiumLockedOverlay,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.upgradeToPremium,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

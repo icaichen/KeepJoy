@@ -29,6 +29,9 @@ import 'services/notification_service_stub.dart'
     if (dart.library.io) 'services/notification_service_mobile.dart';
 import 'package:keepjoy_app/services/reminder_service.dart';
 import 'package:keepjoy_app/services/subscription_service.dart';
+import 'services/trial_service.dart';
+import 'services/premium_access_service.dart';
+import 'ui/paywall/paywall_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +40,7 @@ void main() async {
   await AuthService.initialize();
   await SubscriptionService.configure();
   await NotificationService.instance.ensureInitialized();
+  await TrialService.ensureInitialized();
 
   runApp(const KeepJoyApp());
 }
@@ -114,10 +118,12 @@ class _MainNavigatorState extends State<MainNavigator>
   final List<ActivityEntry> _activityHistory = [];
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
+  bool _hasFullAccess = true;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _refreshPremiumAccess();
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
@@ -125,6 +131,14 @@ class _MainNavigatorState extends State<MainNavigator>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  Future<void> _refreshPremiumAccess() async {
+    final hasAccess = await PremiumAccessService.hasPremiumAccess();
+    if (!mounted) return;
+    setState(() {
+      _hasFullAccess = hasAccess;
+    });
   }
 
   @override
@@ -136,6 +150,7 @@ class _MainNavigatorState extends State<MainNavigator>
     } else if (state == AppLifecycleState.resumed) {
       ReminderService.cancelActiveSessionReminder();
       unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
+      _refreshPremiumAccess();
     }
   }
 
@@ -384,6 +399,33 @@ class _MainNavigatorState extends State<MainNavigator>
     });
   }
 
+  Future<void> _showUpgradeDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.premiumRequiredTitle),
+        content: Text(l10n.premiumRequiredMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const PaywallPage()));
+              _refreshPremiumAccess();
+            },
+            child: Text(l10n.upgradeToPremium),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openQuickDeclutter(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -482,6 +524,8 @@ class _MainNavigatorState extends State<MainNavigator>
         resellItems: _resellItems,
         deepCleaningSessions: _completedSessions,
         onMemoryCreated: _onMemoryCreated,
+        hasFullAccess: _hasFullAccess,
+        onRequestUpgrade: () => _showUpgradeDialog(),
       ),
       ItemsScreen(
         items: List.unmodifiable(_declutteredItems),
@@ -629,6 +673,11 @@ class _MainNavigatorState extends State<MainNavigator>
                                   Color(0xFF0BBF75),
                                 ],
                                 onTap: () {
+                                  if (!_hasFullAccess) {
+                                    Navigator.pop(sheetContext);
+                                    _showUpgradeDialog();
+                                    return;
+                                  }
                                   Navigator.pop(sheetContext);
                                   Navigator.of(context).push(
                                     MaterialPageRoute(

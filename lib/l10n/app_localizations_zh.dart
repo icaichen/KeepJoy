@@ -1068,6 +1068,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get memoryNoDescription => '这段回忆目前还没有补充说明。';
 
   @override
+  String get premiumRequiredTitle => 'KeepJoy 高级版';
+
+  @override
+  String get premiumRequiredMessage => '7 天试用已结束，升级即可继续使用深度整理流程、完整报表与提醒功能。';
+
+  @override
+  String get premiumLockedOverlay => '升级以查看完整洞察';
+
+  @override
   String get premiumMembership => '高级会员';
 
   @override

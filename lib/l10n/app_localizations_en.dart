@@ -1103,6 +1103,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get memoryNoDescription => 'No additional notes for this memory.';
 
   @override
+  String get premiumRequiredTitle => 'KeepJoy Premium';
+
+  @override
+  String get premiumRequiredMessage =>
+      'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.';
+
+  @override
+  String get premiumLockedOverlay => 'Upgrade to view full insights';
+
+  @override
   String get premiumMembership => 'Premium Membership';
 
   @override
