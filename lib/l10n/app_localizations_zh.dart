@@ -1116,6 +1116,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String get paywallRestoreFailure => '暂时没有可恢复的购买记录。';
 
   @override
+  String get restorePurchases => '恢复购买';
+
+  @override
+  String get mostPopular => '最受欢迎';
+
+  @override
+  String get recommended => '推荐';
+
+  @override
+  String get noOfferingsAvailable => '暂无订阅选项';
+
+  @override
+  String get selectPlan => '选择方案';
+
+  @override
+  String get purchaseSuccessful => '购买成功';
+
+  @override
+  String get purchasesRestored => '购买已恢复';
+
+  @override
+  String get freeTrial => '免费试用';
+
+  @override
+  String get featureAnnualReports => '年度报告';
+
+  @override
+  String get featureMonthlyReports => '月度报告';
+
+  @override
+  String get featureDeepReports => '深度清洁报告';
+
+  @override
+  String get featureMemoriesPage => '无限回忆';
+
+  @override
+  String get featureExportData => '导出数据';
+
+  @override
+  String get featureAdvancedInsights => '高级洞察';
+
+  @override
+  String get featureCustomReminders => '自定义提醒';
+
+  @override
+  String get featureSessionResume => '恢复会话';
+
+  @override
+  String get startSubscription => '开始订阅';
+
+  @override
+  String get subscriptionTerms => '订阅将自动续订，除非在当前周期结束前至少24小时关闭自动续订。';
+
+  @override
+  String get subscriptionSuccess => '订阅成功！';
+
+  @override
   String get data => '数据管理';
 
   @override

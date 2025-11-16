@@ -1,18 +1,20 @@
-import 'package:keepjoy_app/services/subscription_service.dart';
-
 import 'trial_service.dart';
+import 'subscription_service.dart';
 
 class PremiumAccessService {
   PremiumAccessService._();
 
   static Future<bool> hasPremiumAccess() async {
     try {
+      // Check trial first
       final trialActive = await TrialService.isTrialActive();
       if (trialActive) {
         return true;
       }
-      final premium = await SubscriptionService.isPremium();
-      return premium;
+
+      // Then check RevenueCat subscription
+      final subscriptionActive = await SubscriptionService.isPremium();
+      return subscriptionActive;
     } catch (_) {
       return false;
     }

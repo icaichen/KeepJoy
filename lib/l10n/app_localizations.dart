@@ -2202,6 +2202,120 @@ abstract class AppLocalizations {
   /// **'No purchases to restore right now.'**
   String get paywallRestoreFailure;
 
+  /// No description provided for @restorePurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Purchases'**
+  String get restorePurchases;
+
+  /// No description provided for @mostPopular.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Popular'**
+  String get mostPopular;
+
+  /// No description provided for @recommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get recommended;
+
+  /// No description provided for @noOfferingsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No subscription options available'**
+  String get noOfferingsAvailable;
+
+  /// No description provided for @selectPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Plan'**
+  String get selectPlan;
+
+  /// No description provided for @purchaseSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase Successful'**
+  String get purchaseSuccessful;
+
+  /// No description provided for @purchasesRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases Restored'**
+  String get purchasesRestored;
+
+  /// No description provided for @freeTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Trial'**
+  String get freeTrial;
+
+  /// No description provided for @featureAnnualReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Reports'**
+  String get featureAnnualReports;
+
+  /// No description provided for @featureMonthlyReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Reports'**
+  String get featureMonthlyReports;
+
+  /// No description provided for @featureDeepReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Cleaning Reports'**
+  String get featureDeepReports;
+
+  /// No description provided for @featureMemoriesPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited Memories'**
+  String get featureMemoriesPage;
+
+  /// No description provided for @featureExportData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Data'**
+  String get featureExportData;
+
+  /// No description provided for @featureAdvancedInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Insights'**
+  String get featureAdvancedInsights;
+
+  /// No description provided for @featureCustomReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Reminders'**
+  String get featureCustomReminders;
+
+  /// No description provided for @featureSessionResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume Sessions'**
+  String get featureSessionResume;
+
+  /// No description provided for @startSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Subscription'**
+  String get startSubscription;
+
+  /// No description provided for @subscriptionTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period.'**
+  String get subscriptionTerms;
+
+  /// No description provided for @subscriptionSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription Successful!'**
+  String get subscriptionSuccess;
+
   /// No description provided for @data.
   ///
   /// In en, this message translates to:

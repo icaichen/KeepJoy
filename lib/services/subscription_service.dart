@@ -1,140 +1,166 @@
-import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-
 import '../config/revenuecat_config.dart';
 
+/// Service for managing RevenueCat subscriptions
 class SubscriptionService {
   SubscriptionService._();
 
-  static bool _isConfigured = false;
-
-  /// Configure RevenueCat once during app startup.
+  /// Initialize RevenueCat with platform-specific API keys
   static Future<void> configure() async {
-    await _tryConfigure();
-  }
-
-  /// Fetch available offerings for the current user.
-  static Future<Offerings?> getOfferings() async {
-    final configured = await _ensureConfigured();
-    if (!configured) return null;
-
     try {
-      return await Purchases.getOfferings();
-    } catch (_) {
-      return null;
-    }
-  }
+      // Enable debug logging in development
+      await Purchases.setLogLevel(LogLevel.debug);
 
-  /// Purchase a selected package from the paywall.
-  static Future<CustomerInfo?> purchasePackage(Package package) async {
-    final configured = await _ensureConfigured();
-    if (!configured) return null;
-
-    try {
-      final customerInfo = await Purchases.purchasePackage(package);
-      return customerInfo;
-    } on PlatformException catch (error) {
-      final errorCode = PurchasesErrorHelper.getErrorCode(error);
-      if (kDebugMode) {
-        debugPrint('RevenueCat purchase failed: $errorCode');
+      // Get API key based on platform
+      final String apiKey;
+      if (Platform.isIOS) {
+        apiKey = RevenueCatConfig.iosApiKey;
+      } else if (Platform.isAndroid) {
+        apiKey = RevenueCatConfig.androidApiKey;
+      } else {
+        print('⚠️ RevenueCat: Platform not supported');
+        return;
       }
-      return null;
-    } catch (_) {
+
+      // Configure RevenueCat
+      final configuration = PurchasesConfiguration(apiKey);
+      await Purchases.configure(configuration);
+
+      print('✅ RevenueCat configured successfully');
+    } catch (e) {
+      print('❌ RevenueCat configuration error: $e');
+    }
+  }
+
+  /// Check if user has active premium subscription
+  static Future<bool> isPremium() async {
+    try {
+      final customerInfo = await Purchases.getCustomerInfo();
+      final entitlement = customerInfo
+          .entitlements.all[RevenueCatConfig.premiumEntitlementId];
+      
+      return entitlement != null && entitlement.isActive;
+    } catch (e) {
+      print('Error checking premium status: $e');
+      return false;
+    }
+  }
+
+  /// Get customer info
+  static Future<CustomerInfo> getCustomerInfo() async {
+    try {
+      return await Purchases.getCustomerInfo();
+    } catch (e) {
+      print('Error getting customer info: $e');
+      rethrow;
+    }
+  }
+
+  /// Get available offerings (products)
+  static Future<Offerings?> getOfferings() async {
+    try {
+      final offerings = await Purchases.getOfferings();
+      if (offerings.current == null) {
+        print('⚠️ No offerings available');
+      }
+      return offerings;
+    } on PlatformException catch (e) {
+      print('Error fetching offerings: $e');
       return null;
     }
   }
 
-  /// Restore previous purchases, typically exposed behind a button.
-  static Future<CustomerInfo?> restorePurchases() async {
-    final configured = await _ensureConfigured();
-    if (!configured) return null;
+  /// Purchase a package
+  static Future<CustomerInfo> purchasePackage(Package package) async {
+    try {
+      final purchaseResult = await Purchases.purchasePackage(package);
+      return purchaseResult.customerInfo;
+    } on PlatformException catch (e) {
+      final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
+        print('User cancelled purchase');
+      } else if (errorCode == PurchasesErrorCode.productAlreadyPurchasedError) {
+        print('Product already purchased');
+      }
+      rethrow;
+    }
+  }
 
+  /// Restore previous purchases
+  static Future<CustomerInfo> restorePurchases() async {
     try {
       final customerInfo = await Purchases.restorePurchases();
       return customerInfo;
-    } catch (_) {
+    } catch (e) {
+      print('Error restoring purchases: $e');
+      rethrow;
+    }
+  }
+
+  /// Check if user is in trial period
+  static Future<bool> isInTrialPeriod() async {
+    try {
+      final customerInfo = await Purchases.getCustomerInfo();
+      final entitlement = customerInfo
+          .entitlements.all[RevenueCatConfig.premiumEntitlementId];
+      
+      if (entitlement == null || !entitlement.isActive) {
+        return false;
+      }
+
+      // Check if it's a trial
+      return entitlement.willRenew && entitlement.periodType == PeriodType.trial;
+    } catch (e) {
+      print('Error checking trial status: $e');
+      return false;
+    }
+  }
+
+  /// Get subscription expiration date
+  static Future<DateTime?> getSubscriptionExpirationDate() async {
+    try {
+      final customerInfo = await Purchases.getCustomerInfo();
+      final entitlement = customerInfo
+          .entitlements.all[RevenueCatConfig.premiumEntitlementId];
+      
+      final expDate = entitlement?.expirationDate;
+      if (expDate is String) {
+        return DateTime.tryParse(expDate);
+      } else if (expDate is DateTime) {
+        return expDate;
+      }
+      return null;
+    } catch (e) {
+      print('Error getting expiration date: $e');
       return null;
     }
   }
 
-  /// Check if the user currently has access to the premium entitlement.
-  static Future<bool> isPremium() async {
-    final configured = await _ensureConfigured();
-    if (!configured) return false;
-
+  /// Check if subscription will renew
+  static Future<bool> willRenew() async {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
-      final entitlement =
-          customerInfo.entitlements.all[RevenueCatConfig.premiumEntitlementId];
-      return entitlement?.isActive ?? false;
-    } catch (_) {
+      final entitlement = customerInfo
+          .entitlements.all[RevenueCatConfig.premiumEntitlementId];
+      
+      return entitlement?.willRenew ?? false;
+    } catch (e) {
+      print('Error checking renewal status: $e');
       return false;
     }
   }
 
-  /// Optional listener hook so higher-level state can react to changes.
-  static void listenCustomerInfoUpdates(
-    void Function(CustomerInfo customerInfo) onUpdated,
-  ) {
-    if (kIsWeb) {
-      if (kDebugMode) {
-        debugPrint(
-          'RevenueCat listeners are disabled on web because purchases_flutter is not supported.',
-        );
-      }
-      return;
-    }
-    Purchases.addCustomerInfoUpdateListener(onUpdated);
-  }
-
-  static Future<bool> _ensureConfigured() async {
-    if (_isConfigured) return true;
-    return _tryConfigure();
-  }
-
-  static Future<bool> _tryConfigure() async {
-    if (_isConfigured) {
-      return true;
-    }
-
-    // Skip configuration on web platform (RevenueCat doesn't support web)
-    if (kIsWeb) {
-      if (kDebugMode) {
-        debugPrint(
-          '⚠️ RevenueCat is not supported on web platform. Skipping configuration.',
-        );
-      }
-      return false;
-    }
-
-    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
-    final apiKey = isIOS
-        ? RevenueCatConfig.iosApiKey
-        : RevenueCatConfig.androidApiKey;
-
-    if (apiKey.startsWith('#TODO')) {
-      if (kDebugMode) {
-        debugPrint(
-          'RevenueCat API key is still a placeholder. '
-          'Configure a real key in RevenueCatConfig before enabling subscriptions.',
-        );
-      }
-      return false;
-    }
-
-    try {
-      final PurchasesConfiguration configuration = PurchasesConfiguration(
-        apiKey,
-      );
-      await Purchases.configure(configuration);
-      _isConfigured = true;
-      return true;
-    } catch (error) {
-      if (kDebugMode) {
-        debugPrint('Failed to configure RevenueCat: $error');
-      }
-      return false;
-    }
+  /// Listen to customer info updates
+  /// Get stream of customer info updates
+  /// Note: In newer versions of purchases_flutter, use Purchases.addCustomerInfoUpdateListener
+  static Stream<CustomerInfo> get customerInfoStream async* {
+    // Initial customer info
+    yield await Purchases.getCustomerInfo();
+    
+    // Listen for updates - requires manual polling or using the listener callback
+    // For now, just yield initial state
   }
 }
+

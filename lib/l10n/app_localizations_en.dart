@@ -1156,6 +1156,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paywallRestoreFailure => 'No purchases to restore right now.';
 
   @override
+  String get restorePurchases => 'Restore Purchases';
+
+  @override
+  String get mostPopular => 'Most Popular';
+
+  @override
+  String get recommended => 'Recommended';
+
+  @override
+  String get noOfferingsAvailable => 'No subscription options available';
+
+  @override
+  String get selectPlan => 'Select Plan';
+
+  @override
+  String get purchaseSuccessful => 'Purchase Successful';
+
+  @override
+  String get purchasesRestored => 'Purchases Restored';
+
+  @override
+  String get freeTrial => 'Free Trial';
+
+  @override
+  String get featureAnnualReports => 'Annual Reports';
+
+  @override
+  String get featureMonthlyReports => 'Monthly Reports';
+
+  @override
+  String get featureDeepReports => 'Deep Cleaning Reports';
+
+  @override
+  String get featureMemoriesPage => 'Unlimited Memories';
+
+  @override
+  String get featureExportData => 'Export Data';
+
+  @override
+  String get featureAdvancedInsights => 'Advanced Insights';
+
+  @override
+  String get featureCustomReminders => 'Custom Reminders';
+
+  @override
+  String get featureSessionResume => 'Resume Sessions';
+
+  @override
+  String get startSubscription => 'Start Subscription';
+
+  @override
+  String get subscriptionTerms =>
+      'Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period.';
+
+  @override
+  String get subscriptionSuccess => 'Subscription Successful!';
+
+  @override
   String get data => 'Data Management';
 
   @override

@@ -783,24 +783,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           child: Row(
                             children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  gradient: LinearGradient(
-                                    colors: _modeMeta(
-                                      selectedMode,
-                                      l10n,
-                                    ).colors,
-                                  ),
-                                ),
-                                child: Icon(
-                                  _modeMeta(selectedMode, l10n).icon,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,

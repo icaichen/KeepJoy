@@ -1007,9 +1007,9 @@ class _SummaryPage extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: CreateMemoryPage(
-              item: item,
-              photoPath: photoPath,
-              itemName: itemName,
+            item: item,
+            photoPath: photoPath,
+            itemName: itemName,
               isModal: true,
             ),
           ),

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KeepJoy — Spark Joy, Keep Memories</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f5f7;
+        --fg: #0f172a;
+        --muted: #475467;
+        --accent: #7c4dff;
+        --card: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        padding: 32px clamp(20px, 6vw, 80px) 0;
+      }
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      nav a {
+        text-decoration: none;
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .cta {
+        border-radius: 999px;
+        background: var(--accent);
+        color: white;
+        padding: 12px 20px;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+      }
+      main {
+        flex: 1;
+        padding: clamp(30px, 7vw, 110px);
+        display: grid;
+        gap: clamp(24px, 6vw, 64px);
+      }
+      .hero {
+        display: grid;
+        gap: 24px;
+        max-width: 720px;
+      }
+      .hero h1 {
+        font-size: clamp(42px, 8vw, 72px);
+        line-height: 1.05;
+        margin: 0;
+      }
+      .hero p {
+        font-size: clamp(18px, 3vw, 22px);
+        color: var(--muted);
+        margin: 0;
+      }
+      .grid {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+      .card {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      footer {
+        padding: 32px clamp(20px, 6vw, 80px);
+        color: var(--muted);
+        font-size: 14px;
+      }
+      @media (max-width: 640px) {
+        nav {
+          flex-direction: column;
+          gap: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="#">KeepJoy</a>
+        <button class="cta">Download App</button>
+      </nav>
+    </header>
+    <main>
+      <section class="hero">
+        <h1>Organize intentionally. Capture memories that spark joy.</h1>
+        <p>
+          KeepJoy blends mindful decluttering with guided reports, before/after
+          stories, and effortless session planning. See what stays, let go with
+          gratitude, and keep the moments that matter.
+        </p>
+        <div>
+          <button class="cta">Start Decluttering</button>
+        </div>
+      </section>
+      <section class="grid">
+        <article class="card">
+          <h3>Live dashboard</h3>
+          <p>
+            Track active sessions, outcome distributions, and declutter wins at
+            a glance with a calming, spacious design.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Before & after</h3>
+          <p>
+            Record messiness, focus, and joy scores to see how each deep clean
+            transforms your spaces over time.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Memory lane</h3>
+          <p>
+            Turn sentimental farewells into stories, photos, and gratitude notes
+            you can revisit anytime.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Guided flows</h3>
+          <p>
+            Choose quick sweeps, joy checks, or deep cleaning plans that fit
+            your current energy and schedule.
+          </p>
+        </article>
+      </section>
+    </main>
+    <footer>© <span id="year"></span> KeepJoy. Designed for calm progress.</footer>
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -11,6 +13,7 @@ import '../../services/data_repository.dart';
 import '../../services/notification_preferences_service.dart';
 import '../../services/reminder_service.dart';
 import '../../models/declutter_item.dart';
+import '../../providers/subscription_provider.dart';
 import '../../ui/paywall/paywall_page.dart';
 import 'edit_profile_page.dart';
 
@@ -253,58 +256,39 @@ class _ProfilePageState extends State<ProfilePage> {
             // Premium Section
             _buildSectionTitle(context, l10n.premiumMembership),
             const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.upgradeToPremium,
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Display',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                      ),
+            Consumer<SubscriptionProvider>(
+              builder: (context, subscriptionProvider, _) {
+                if (subscriptionProvider.isLoading) {
+                  return Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.premiumMembershipDescription,
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Text',
-                        fontSize: 14,
-                        color: Color(0xFF6B7280),
-                      ),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const PaywallPage(),
-                            ),
-                          );
-                        },
-                        child: Text(l10n.upgradeToPremium),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  );
+                }
+
+                if (subscriptionProvider.isPremium) {
+                  return _buildPremiumActiveCard(
+                    context,
+                    l10n,
+                    subscriptionProvider.isInTrial,
+                    subscriptionProvider.expirationDate,
+                  );
+                } else {
+                  return _buildUpgradeCard(context, l10n);
+                }
+              },
             ),
             const SizedBox(height: 32),
 
@@ -473,6 +457,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
 
   void _showLanguageDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -837,7 +822,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _openHelpSupport() async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
-      path: 'support@keepjoy.app',
+      path: 'contact.keepjoy@gmail.com',
       query: 'subject=Help & Support',
     );
 
@@ -853,7 +838,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _openPrivacyPolicy() async {
-    final Uri url = Uri.parse('https://keepjoy.app/privacy');
+    final Uri url = Uri.parse('https://keepjoy-site.vercel.app/privacy.html');
 
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -867,7 +852,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _openTermsOfService() async {
-    final Uri url = Uri.parse('https://keepjoy.app/terms');
+    final Uri url = Uri.parse('https://keepjoy-site.vercel.app/terms.html');
 
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -1116,6 +1101,151 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
   }
+
+  Widget _buildPremiumActiveCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isInTrial,
+    DateTime? expirationDate,
+  ) {
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    String statusText = isInTrial ? 'Trial Active' : 'Premium Active';
+    String expiryText = expirationDate != null
+        ? 'Renews on ${dateFormat.format(expirationDate)}'
+        : '';
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const PaywallPage()),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0EA5E9), Color(0xFF06B6D4)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0EA5E9).withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white, size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      statusText,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Display',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (expiryText.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        expiryText,
+                        style: TextStyle(
+                          fontFamily: 'SF Pro Text',
+                          fontSize: 14,
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpgradeCard(BuildContext context, AppLocalizations l10n) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const PaywallPage()),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0EA5E9).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.star,
+                  color: Color(0xFF0EA5E9),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.upgradeToPremium,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Display',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.premiumMembershipDescription,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: Color(0xFF9CA3AF), size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _SettingsTile extends StatelessWidget {
@@ -1224,4 +1354,5 @@ class _LanguageOption extends StatelessWidget {
       ),
     );
   }
+
 }

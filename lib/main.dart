@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import 'package:provider/provider.dart';
 
 import 'features/deep_cleaning/deep_cleaning_flow.dart';
 import 'features/joy_declutter/joy_declutter_flow.dart';
@@ -16,6 +17,7 @@ import 'features/resell/resell_screen.dart';
 import 'features/memories/create_memory_page.dart';
 import 'features/auth/welcome_page.dart';
 import 'features/auth/login_page.dart';
+import 'ui/paywall/paywall_page.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/typography.dart';
 import 'package:keepjoy_app/models/activity_entry.dart';
@@ -28,19 +30,21 @@ import 'package:keepjoy_app/services/auth_service.dart';
 import 'services/notification_service_stub.dart'
     if (dart.library.io) 'services/notification_service_mobile.dart';
 import 'package:keepjoy_app/services/reminder_service.dart';
-import 'package:keepjoy_app/services/subscription_service.dart';
 import 'services/trial_service.dart';
 import 'services/premium_access_service.dart';
-import 'ui/paywall/paywall_page.dart';
+import 'services/subscription_service.dart';
+import 'providers/subscription_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Supabase
   await AuthService.initialize();
-  await SubscriptionService.configure();
   await NotificationService.instance.ensureInitialized();
   await TrialService.ensureInitialized();
+  
+  // Initialize RevenueCat
+  await SubscriptionService.configure();
 
   runApp(const KeepJoyApp());
 }
@@ -64,34 +68,37 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'KeepJoy',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
-        fontFamily: AppTypography.primaryFont,
-        fontFamilyFallback: AppTypography.chineseFallbacks,
-        textTheme: AppTypography.textTheme,
+    return ChangeNotifierProvider(
+      create: (_) => SubscriptionProvider(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'KeepJoy',
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+          fontFamily: AppTypography.primaryFont,
+          fontFamilyFallback: AppTypography.chineseFallbacks,
+          textTheme: AppTypography.textTheme,
+        ),
+        locale: _locale,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en'), // English
+          Locale('zh'), // Chinese
+        ],
+        // Check if user is already authenticated
+        initialRoute: _authService.isAuthenticated ? '/home' : '/welcome',
+        routes: {
+          '/welcome': (context) => const WelcomePage(),
+          '/login': (context) => const LoginPage(),
+          '/home': (context) => MainNavigator(onLocaleChange: _setLocale),
+        },
       ),
-      locale: _locale,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en'), // English
-        Locale('zh'), // Chinese
-      ],
-      // Check if user is already authenticated
-      initialRoute: _authService.isAuthenticated ? '/home' : '/welcome',
-      routes: {
-        '/welcome': (context) => const WelcomePage(),
-        '/login': (context) => const LoginPage(),
-        '/home': (context) => MainNavigator(onLocaleChange: _setLocale),
-      },
     );
   }
 }
@@ -414,9 +421,9 @@ class _MainNavigatorState extends State<MainNavigator>
           FilledButton(
             onPressed: () async {
               Navigator.of(dialogContext).pop();
-              await Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const PaywallPage()));
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PaywallPage()),
+              );
               _refreshPremiumAccess();
             },
             child: Text(l10n.upgradeToPremium),
