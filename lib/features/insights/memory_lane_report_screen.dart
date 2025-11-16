@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/memory.dart';
+import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 
 class MemoryLaneReportScreen extends StatefulWidget {
   const MemoryLaneReportScreen({super.key, required this.memories});
@@ -22,38 +23,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         _scrollOffset = _scrollController.offset;
       });
     });
-  }
-
-  Color _getHeatmapColor(double intensity) {
-    if (intensity == 0) {
-      return const Color(0xFFE0E0E0);
-    } else if (intensity <= 0.25) {
-      return const Color(0xFFE8D9F7);
-    } else if (intensity <= 0.5) {
-      return const Color(0xFFD4B6F0);
-    } else if (intensity <= 0.75) {
-      return const Color(0xFFC39BE8);
-    } else {
-      return const Color(0xFFB794F6);
-    }
-  }
-
-  String _getMonthAbbrev(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
   }
 
   @override
@@ -229,7 +198,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     );
   }
 
-  // 1. EMOTION DISTRIBUTION CHART
+  // 1. VERTICAL BAR CHART for emotions
   Widget _buildEmotionDistribution(BuildContext context, bool isChinese) {
     final sentimentCounts = <MemorySentiment, int>{};
     for (final memory in widget.memories) {
@@ -272,10 +241,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       },
     ];
 
-    final maxCount = sentimentCounts.values.isEmpty
-        ? 1
-        : sentimentCounts.values.reduce((a, b) => a > b ? a : b);
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -306,14 +271,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               context,
             ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           SizedBox(
-            height: 200,
+            height: 250,
+            width: double.infinity,
             child: CustomPaint(
-              painter: _EmotionBarChartPainter(
+              painter: _VerticalBarChartPainter(
                 emotions: emotions,
                 sentimentCounts: sentimentCounts,
-                maxCount: maxCount,
                 isChinese: isChinese,
               ),
             ),
@@ -398,261 +363,125 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 20),
-          // Heatmap: 12 months in 2 rows x 6 columns
-          Column(
-            children: [
-              // First row (6 most recent months)
-              Row(
-                children: List.generate(6, (index) {
-                  final now = DateTime.now();
-                  final monthDate = DateTime(
-                    now.year,
-                    now.month - (11 - index),
-                    1,
-                  );
-                  final monthKey =
-                      '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
-                  final count = monthlyData[monthKey] ?? 0;
-                  final intensity = maxCount > 0 ? (count / maxCount) : 0.0;
-
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: _getHeatmapColor(intensity),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            isChinese
-                                ? '${monthDate.month}月'
-                                : _getMonthAbbrev(monthDate.month),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFF6B7280),
-                                  fontSize: 11,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
+          ClipRRect(
+            child: SizedBox(
+              width: double.infinity,
+              height: 160,
+              child: CustomPaint(
+                painter: _MonthlyHeatmapPainter(
+                  monthlyData: monthlyData,
+                  maxCount: maxCount,
+                  isChinese: isChinese,
+                ),
               ),
-              const SizedBox(height: 4),
-              // Second row (6 older months)
-              Row(
-                children: List.generate(6, (index) {
-                  final now = DateTime.now();
-                  final monthDate = DateTime(
-                    now.year,
-                    now.month - (5 - index),
-                    1,
-                  );
-                  final monthKey =
-                      '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
-                  final count = monthlyData[monthKey] ?? 0;
-                  final intensity = maxCount > 0 ? (count / maxCount) : 0.0;
-
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: _getHeatmapColor(intensity),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            isChinese
-                                ? '${monthDate.month}月'
-                                : _getMonthAbbrev(monthDate.month),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFF6B7280),
-                                  fontSize: 11,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 20),
-          // Color legend with counts
+          const SizedBox(height: 16),
+          // Legend
           Row(
             children: [
               Text(
-                isChinese ? '较少' : 'Less',
+                isChinese ? '少' : 'Less',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12,
-                    ),
+                  color: Colors.black54,
+                  fontSize: 10,
+                ),
               ),
               const SizedBox(width: 8),
-              ...List.generate(5, (index) {
-                final rangeLabel = index == 0
-                    ? '0'
-                    : index == 1
-                        ? '1-2'
-                        : index == 2
-                            ? '3-4'
-                            : index == 3
-                                ? '5-7'
-                                : '8+';
-                return Expanded(
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        height: 16,
-                        margin: const EdgeInsets.symmetric(horizontal: 2),
-                        decoration: BoxDecoration(
-                          color: _getHeatmapColor(index / 4),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+              ...List.generate(5, (i) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Color.lerp(
+                        const Color(0xFFE0E0E0),
+                        const Color(0xFFB794F6),
+                        i / 4,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        rangeLabel,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF9CA3AF),
-                              fontSize: 10,
-                            ),
-                      ),
-                    ],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 );
               }),
               const SizedBox(width: 8),
               Text(
-                isChinese ? '较多' : 'More',
+                isChinese ? '多' : 'More',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12,
-                    ),
+                  color: Colors.black54,
+                  fontSize: 10,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          // Stats - All in one row
-          Row(
+          const SizedBox(height: 16),
+          // Stats
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
             children: [
-              Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(
-                    minHeight: 96,
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '最活跃' : 'Most Active',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
-                              fontSize: 11,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        mostActiveMonth != null
-                            ? (isChinese
-                                ? '${mostActiveMonth!.split('-')[1]}月'
-                                : mostActiveMonth!.split('-')[1])
-                            : (isChinese ? '无' : 'N/A'),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
+              _buildStatChip(
+                context,
+                isChinese ? '最活跃月份' : 'Most Active',
+                mostActiveMonth != null
+                    ? (isChinese
+                          ? '${mostActiveMonth!.split('-')[1]}月'
+                          : mostActiveMonth!.split('-')[1])
+                    : (isChinese ? '无' : 'N/A'),
+                isChinese,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(
-                    minHeight: 96,
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '最长连续' : 'Longest Streak',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
-                              fontSize: 11,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isChinese ? '$longestStreak 个月' : '$longestStreak months',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
+              _buildStatChip(
+                context,
+                isChinese ? '最长连续' : 'Longest Streak',
+                '$longestStreak ${isChinese ? '月' : 'months'}',
+                isChinese,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(
-                    minHeight: 96,
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '峰值活动' : 'Peak Activity',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
-                              fontSize: 11,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isChinese ? '$maxMonthCount 个' : '$maxMonthCount items',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
+              _buildStatChip(
+                context,
+                isChinese ? '高峰活动' : 'Peak Activity',
+                '$maxMonthCount ${isChinese ? '个' : 'items'}',
+                isChinese,
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatChip(
+    BuildContext context,
+    String label,
+    String value,
+    bool isChinese,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AutoScaleText(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.black54,
+              fontSize: 10,
+            ),
+            textAlign: TextAlign.left,
+          ),
+          const SizedBox(width: 4),
+          AutoScaleText(
+            value,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.black87,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.left,
           ),
         ],
       ),
@@ -985,116 +814,208 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   }
 }
 
-// EMOTION BAR CHART PAINTER
-class _EmotionBarChartPainter extends CustomPainter {
+// PROPER VERTICAL BAR CHART PAINTER
+class _VerticalBarChartPainter extends CustomPainter {
   final List<Map<String, dynamic>> emotions;
   final Map<MemorySentiment, int> sentimentCounts;
-  final int maxCount;
   final bool isChinese;
 
-  _EmotionBarChartPainter({
+  _VerticalBarChartPainter({
     required this.emotions,
     required this.sentimentCounts,
-    required this.maxCount,
     required this.isChinese,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
+    const labelColumnWidth = 92.0;
+    const countColumnWidth = 40.0;
     const leftPadding = 20.0;
-    const rightPadding = 20.0;
-    const topPadding = 10.0;
-    const bottomPadding = 10.0;
+    const rightPadding = 24.0;
+    const topPadding = 24.0;
+    const bottomPadding = 24.0;
 
+    final barStartX = leftPadding + labelColumnWidth + countColumnWidth + 12;
+    final chartWidth = size.width - barStartX - rightPadding;
     final chartHeight = size.height - topPadding - bottomPadding;
+
+    final maxCount = sentimentCounts.values.isEmpty
+        ? 1
+        : sentimentCounts.values.reduce((a, b) => a > b ? a : b);
+
     final barSpacing = chartHeight / emotions.length;
-    final barHeight = barSpacing * 0.6;
+    final barHeight = barSpacing * 0.55;
 
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+    // Grid only across bar area
+    final gridPaint = Paint()
+      ..color = const Color(0xFFE5E7EB)
+      ..strokeWidth = 1;
+    for (int i = 0; i <= 4; i++) {
+      final x = barStartX + (chartWidth * i / 4);
+      canvas.drawLine(
+        Offset(x, topPadding),
+        Offset(x, size.height - bottomPadding),
+        gridPaint,
+      );
+    }
 
     for (int i = 0; i < emotions.length; i++) {
       final emotion = emotions[i];
       final sentiment = emotion['sentiment'] as MemorySentiment;
       final count = sentimentCounts[sentiment] ?? 0;
       final color = emotion['color'] as Color;
-      final label = emotion['label'] as String;
 
+      final normalizedWidth = maxCount > 0 ? (count / maxCount) : 0.0;
+      final proposedWidth = normalizedWidth * chartWidth;
+      final barWidth = count == 0 ? 8.0 : proposedWidth.clamp(18.0, chartWidth);
       final y = topPadding + (i * barSpacing) + (barSpacing - barHeight) / 2;
 
-      // Draw dot
-      final dotX = leftPadding;
-      canvas.drawCircle(
-        Offset(dotX, y + barHeight / 2),
-        4,
-        Paint()..color = color,
+      final barRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(barStartX, y, barWidth, barHeight),
+        const Radius.circular(8),
       );
+      canvas.drawRRect(barRect, Paint()..color = color);
 
-      // Draw label
+      // dot
+      final dotCenter = Offset(leftPadding + 6, y + barHeight / 2);
+      canvas.drawCircle(dotCenter, 5, Paint()..color = color);
+
+      // label text
+      final label = emotion['label'] as String;
       textPainter.text = TextSpan(
         text: label,
         style: TextStyle(
-          color: const Color(0xFF6B7280),
-          fontSize: isChinese ? 13 : 12,
+          color: const Color(0xFF4B5563),
+          fontSize: isChinese ? 12 : 11,
+          fontWeight: FontWeight.w600,
+        ),
+      );
+      textPainter.layout(maxWidth: labelColumnWidth - 16);
+      textPainter.paint(
+        canvas,
+        Offset(dotCenter.dx + 10, y + (barHeight - textPainter.height) / 2),
+      );
+
+      // count column
+      final countText = count.toString();
+      final fitsInside = barWidth > 50;
+      textPainter.text = TextSpan(
+        text: countText,
+        style: TextStyle(
+          color: fitsInside ? Colors.white : const Color(0xFF1F2937),
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      );
+      textPainter.layout();
+
+      final countX = fitsInside
+          ? barStartX + barWidth - textPainter.width - 8
+          : barStartX + barWidth + 8;
+      final countY = y + (barHeight - textPainter.height) / 2;
+      textPainter.paint(canvas, Offset(countX, countY));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+// MONTHLY HEATMAP PAINTER (12 squares, 2 rows x 6 cols)
+class _MonthlyHeatmapPainter extends CustomPainter {
+  final Map<String, int> monthlyData;
+  final int maxCount;
+  final bool isChinese;
+
+  _MonthlyHeatmapPainter({
+    required this.monthlyData,
+    required this.maxCount,
+    required this.isChinese,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cellSize = 40.0;
+    const cellGap = 8.0;
+    const monthsToShow = 12;
+    const cols = 6; // 6 months per row, 2 rows total
+
+    final now = DateTime.now();
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+    // Calculate starting position to center the grid
+    final totalWidth = (cellSize * cols) + (cellGap * (cols - 1));
+    final startX = (size.width - totalWidth) / 2;
+
+    // Draw 12 month squares in 2 rows, 6 columns
+    for (int i = 0; i < monthsToShow; i++) {
+      final monthDate = DateTime(
+        now.year,
+        now.month - (monthsToShow - 1 - i),
+        1,
+      );
+      final monthKey =
+          '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
+      final count = monthlyData[monthKey] ?? 0;
+
+      // Calculate row and column
+      final row = i ~/ cols;
+      final col = i % cols;
+
+      // Calculate position
+      final x = startX + (col * (cellSize + cellGap));
+      final y = 10.0 + (row * (cellSize + cellGap + 20)); // 20 extra for label
+
+      // Calculate color intensity
+      final intensity = maxCount > 0 ? (count / maxCount).toDouble() : 0.0;
+      final color = Color.lerp(
+        const Color(0xFFE0E0E0),
+        const Color(0xFFB794F6),
+        intensity,
+      )!;
+
+      // Draw cell
+      final paint = Paint()..color = color;
+      final rect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, y, cellSize, cellSize),
+        const Radius.circular(8),
+      );
+      canvas.drawRRect(rect, paint);
+
+      // Draw month label below
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      final monthLabel = isChinese
+          ? '${monthDate.month}月'
+          : months[monthDate.month - 1];
+
+      textPainter.text = TextSpan(
+        text: monthLabel,
+        style: const TextStyle(
+          color: Color(0xFF666666),
+          fontSize: 10,
           fontWeight: FontWeight.w500,
         ),
       );
       textPainter.layout();
       textPainter.paint(
         canvas,
-        Offset(dotX + 10, y + (barHeight - textPainter.height) / 2),
+        Offset(x + (cellSize - textPainter.width) / 2, y + cellSize + 8),
       );
-
-      // Calculate bar width
-      final labelWidth = textPainter.width + 20;
-      final availableWidth = size.width - leftPadding - rightPadding - labelWidth;
-      final normalizedWidth = maxCount > 0 ? (count / maxCount) : 0.0;
-      final barWidth = (normalizedWidth * availableWidth * 0.9).clamp(0.0, availableWidth);
-
-      // Draw bar
-      if (barWidth > 0) {
-        final barX = leftPadding + labelWidth;
-        final barRect = RRect.fromRectAndRadius(
-          Rect.fromLTWH(barX, y, barWidth, barHeight),
-          const Radius.circular(6),
-        );
-        canvas.drawRRect(barRect, Paint()..color = color);
-
-        // Draw count
-        textPainter.text = TextSpan(
-          text: count.toString(),
-          style: TextStyle(
-            color: barWidth > 30 ? Colors.white : const Color(0xFF111827),
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-          ),
-        );
-        textPainter.layout();
-        final countX = barWidth > 30
-            ? barX + barWidth - textPainter.width - 8
-            : barX + barWidth + 8;
-        textPainter.paint(
-          canvas,
-          Offset(countX, y + (barHeight - textPainter.height) / 2),
-        );
-      } else {
-        // Draw count outside when no bar
-        textPainter.text = TextSpan(
-          text: '0',
-          style: const TextStyle(
-            color: Color(0xFFD1D5DB),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        );
-        textPainter.layout();
-        textPainter.paint(
-          canvas,
-          Offset(
-            leftPadding + labelWidth + 8,
-            y + (barHeight - textPainter.height) / 2,
-          ),
-        );
-      }
     }
   }
 
