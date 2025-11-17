@@ -532,36 +532,48 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           ),
           const SizedBox(height: 20),
           // Color legend
-          Row(
-            children: [
-              Text(
-                isChinese ? '较少' : 'Less',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              children: [
+                Text(
+                  isChinese ? '较少' : 'Less',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 12,
+                      ),
+                ),
+                const SizedBox(width: 8),
+                ...List.generate(5, (index) {
+                  return Container(
+                    width: 16,
+                    height: 16,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: _getHeatmapColor(index / 4),
+                      borderRadius: BorderRadius.circular(4),
                     ),
-              ),
-              const SizedBox(width: 8),
-              ...List.generate(5, (index) {
-                return Container(
-                  width: 16,
-                  height: 16,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    color: _getHeatmapColor(index / 4),
-                    borderRadius: BorderRadius.circular(4),
+                  );
+                }),
+                const SizedBox(width: 8),
+                Text(
+                  isChinese ? '较多' : 'More',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 12,
+                      ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => _showHeatmapLegendDialog(context, isChinese),
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 18,
+                    color: const Color(0xFF6B7280),
                   ),
-                );
-              }),
-              const SizedBox(width: 8),
-              Text(
-                isChinese ? '较多' : 'More',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12,
-                    ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
           // Statistics
@@ -1004,6 +1016,87 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     } else {
       return const Color(0xFFB794F6);
     }
+  }
+
+  Color _getHeatmapColorByCount(int count) {
+    if (count == 0) {
+      return const Color(0xFFE0E0E0); // Gray
+    } else if (count <= 3) {
+      return const Color(0xFFE8D9F7); // Super light purple
+    } else if (count <= 6) {
+      return const Color(0xFFD4B6F0); // Light purple
+    } else if (count <= 9) {
+      return const Color(0xFFC39BE8); // Medium purple
+    } else {
+      return const Color(0xFFB794F6); // Dark purple
+    }
+  }
+
+  void _showHeatmapLegendDialog(BuildContext context, bool isChinese) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (BuildContext context) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    isChinese ? '活动等级' : 'Activity Levels',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ...[
+                  {'range': '0', 'count': 0},
+                  {'range': '1-3', 'count': 2},
+                  {'range': '4-6', 'count': 5},
+                  {'range': '7-9', 'count': 8},
+                  {'range': '10+', 'count': 10},
+                ].map((item) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: _getHeatmapColorByCount(item['count'] as int),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          item['range'] as String,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   String _getMonthAbbrev(int month) {
