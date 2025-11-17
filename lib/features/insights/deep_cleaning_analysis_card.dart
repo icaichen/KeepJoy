@@ -24,44 +24,6 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (sessions.isEmpty) {
-      return Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFE5E7EA)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              emptyStateMessage ?? 'No deep cleaning records yet.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-            ),
-          ],
-        ),
-      );
-    }
-
     // Calculate metrics
     final deepCleaningCount = sessions.length;
     final cleanedItemsCount = sessions
@@ -244,6 +206,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
           _buildComparisonsSection(context, l10n, sessions),
         ],
       ),
@@ -255,18 +218,9 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     AppLocalizations l10n,
     List<DeepCleaningSession> sessions,
   ) {
-    if (sessions.isEmpty) {
-      return Text(
-        l10n.deepCleaningComparisonsEmpty,
-        style: Theme.of(context)
-            .textTheme
-            .bodyMedium
-            ?.copyWith(color: Colors.black54),
-      );
-    }
-
-    final sortedSessions = [...sessions]
-      ..sort((a, b) => b.startTime.compareTo(a.startTime));
+    final sortedSessions = sessions.isEmpty
+        ? <DeepCleaningSession>[]
+        : ([...sessions]..sort((a, b) => b.startTime.compareTo(a.startTime)));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,9 +233,18 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 12),
-        ...sortedSessions.map(
-          (session) => _buildComparisonRow(context, l10n, session),
-        ),
+        if (sessions.isEmpty)
+          Text(
+            l10n.deepCleaningComparisonsEmpty,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Colors.black54),
+          )
+        else
+          ...sortedSessions.map(
+            (session) => _buildComparisonRow(context, l10n, session),
+          ),
       ],
     );
   }

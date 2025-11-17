@@ -2078,6 +2078,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         content: Text(l10n.memoryCreated),
                                       ),
                                     );
+
+                                    // Ask if user wants to let go of the item
+                                    await _showLetGoPrompt(context, memory);
                                   }
                                 },
                                 width: double.infinity,
@@ -3069,6 +3072,100 @@ class _DashboardScreenState extends State<DashboardScreen> {
       emptyStateMessage: isChinese
           ? '本月还没有深度整理记录，开始一次专注的整理吧。'
           : 'No deep cleaning records yet this month. Start your first focused session.',
+    );
+  }
+
+  Future<void> _showLetGoPrompt(BuildContext context, Memory memory) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
+
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (dialogContext) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isChinese ? '让物品离开？' : 'Let it go?',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese
+                      ? '既然已经记录了这份美好回忆，是否考虑让这件物品离开，给新的心动物品腾出空间？'
+                      : 'Now that you\'ve captured this beautiful memory, would you consider letting this item go to make room for new joy?',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF6B7280),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: Color(0xFFE5E7EB)),
+                          ),
+                        ),
+                        child: Text(
+                          isChinese ? '暂不' : 'Not Yet',
+                          style: const TextStyle(
+                            color: Color(0xFF6B7280),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                          // Navigate to declutter page
+                          // TODO: Implement navigation to declutter item creation
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: const Color(0xFFB794F6),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          isChinese ? '开始整理' : 'Start Declutter',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

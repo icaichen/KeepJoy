@@ -4,7 +4,7 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 
 enum TrendMetric {
-  resellItems('转卖数量', 'Resell Items'),
+  soldItems('已售物品', 'Sold Items'),
   listedDays('平均上架天数', 'Avg Listed Days'),
   resellValue('转卖价值', 'Resell Value');
 
@@ -46,7 +46,7 @@ enum CategoryMetric {
 
 class _ResellAnalysisReportScreenState
     extends State<ResellAnalysisReportScreen> {
-  TrendMetric _selectedMetric = TrendMetric.resellItems;
+  TrendMetric _selectedMetric = TrendMetric.soldItems;
   CategoryMetric _selectedCategoryMetric = CategoryMetric.revenue;
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
@@ -314,76 +314,101 @@ class _ResellAnalysisReportScreenState
                                           color: Colors.black87,
                                         ),
                                   ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    isChinese
+                                        ? '转卖表现随时间的变化趋势'
+                                        : 'Resell performance over time',
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(color: Colors.black54),
+                                  ),
                                   const SizedBox(height: 16),
 
                                   // Metric selector
-                                  Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF5F5F5),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      children: TrendMetric.values.map((
-                                        metric,
-                                      ) {
-                                        final isSelected =
-                                            _selectedMetric == metric;
-                                        return Expanded(
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                _selectedMetric = metric;
-                                              });
-                                            },
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 12,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: isSelected
-                                                    ? Colors.white
-                                                    : Colors.transparent,
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                boxShadow: isSelected
-                                                    ? [
-                                                        BoxShadow(
-                                                          color: Colors.black
-                                                              .withValues(
-                                                                alpha: 0.1,
-                                                              ),
-                                                          blurRadius: 8,
-                                                          offset: const Offset(
-                                                            0,
-                                                            2,
-                                                          ),
-                                                        ),
-                                                      ]
-                                                    : [],
-                                              ),
-                                              child: Text(
-                                                metric.label(isChinese),
-                                                textAlign: TextAlign.center,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.copyWith(
-                                                      color: isSelected
-                                                          ? Colors.black87
-                                                          : Colors.black54,
-                                                      fontWeight: isSelected
-                                                          ? FontWeight.w600
-                                                          : FontWeight.w500,
-                                                      fontSize: 11,
-                                                    ),
-                                              ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        isChinese ? '趋势指标' : 'Trend Metric',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: const Color(0xFF6B7280),
+                                              fontWeight: FontWeight.w500,
                                             ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF5F5F5),
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
-                                        );
-                                      }).toList(),
-                                    ),
+                                          child: Row(
+                                            children: TrendMetric.values.map((
+                                              metric,
+                                            ) {
+                                              final isSelected =
+                                                  _selectedMetric == metric;
+                                              return Expanded(
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _selectedMetric = metric;
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: isSelected
+                                                          ? Colors.white
+                                                          : Colors.transparent,
+                                                      borderRadius:
+                                                          BorderRadius.circular(8),
+                                                      boxShadow: isSelected
+                                                          ? [
+                                                              BoxShadow(
+                                                                color: Colors.black
+                                                                    .withValues(
+                                                                      alpha: 0.1,
+                                                                    ),
+                                                                blurRadius: 8,
+                                                                offset: const Offset(
+                                                                  0,
+                                                                  2,
+                                                                ),
+                                                              ),
+                                                            ]
+                                                          : [],
+                                                    ),
+                                                    child: Text(
+                                                      metric.label(isChinese),
+                                                      textAlign: TextAlign.center,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall
+                                                          ?.copyWith(
+                                                            color: isSelected
+                                                                ? Colors.black87
+                                                                : Colors.black54,
+                                                            fontWeight: isSelected
+                                                                ? FontWeight.w600
+                                                                : FontWeight.w500,
+                                                            fontSize: 11,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
 
                                   const SizedBox(height: 24),
@@ -677,52 +702,66 @@ class _ResellAnalysisReportScreenState
     return Column(
       children: [
         // Metric selector
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: CategoryMetric.values.map((metric) {
-              final isSelected = _selectedCategoryMetric == metric;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedCategoryMetric = metric;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.white : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : [],
-                    ),
-                    child: Text(
-                      metric.label(isChinese),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: isSelected ? Colors.black87 : Colors.black54,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ),
+        Row(
+          children: [
+            Text(
+              isChinese ? '表现指标' : 'Performance Metric',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF6B7280),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              );
-            }).toList(),
-          ),
+                child: Row(
+                  children: CategoryMetric.values.map((metric) {
+                    final isSelected = _selectedCategoryMetric == metric;
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategoryMetric = metric;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.white : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: Text(
+                            metric.label(isChinese),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: isSelected ? Colors.black87 : Colors.black54,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 24),
 
@@ -1157,8 +1196,11 @@ class _ResellAnalysisReportScreenState
         monthlyData.putIfAbsent(monthsAgo, () => []);
 
         switch (_selectedMetric) {
-          case TrendMetric.resellItems:
-            monthlyData[monthsAgo]!.add(1); // Count items
+          case TrendMetric.soldItems:
+            // Only count sold items
+            if (item.status == ResellStatus.sold) {
+              monthlyData[monthsAgo]!.add(1);
+            }
             break;
           case TrendMetric.listedDays:
             if (item.status == ResellStatus.sold && item.soldDate != null) {
@@ -1182,7 +1224,7 @@ class _ResellAnalysisReportScreenState
     final result = <int, double>{};
     monthlyData.forEach((month, values) {
       if (values.isNotEmpty) {
-        if (_selectedMetric == TrendMetric.resellItems) {
+        if (_selectedMetric == TrendMetric.soldItems) {
           result[month] = values.length.toDouble(); // Total count
         } else if (_selectedMetric == TrendMetric.resellValue) {
           result[month] = values.reduce((a, b) => a + b); // Total value
