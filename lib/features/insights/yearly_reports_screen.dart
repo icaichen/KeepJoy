@@ -760,11 +760,13 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                   ),
                 ),
                 // Content on top
-                Column(
-                  children: [
-                    // Top spacing + title
-                    SizedBox(
-                      height: 120,
+                SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    children: [
+                      // Top spacing + title
+                      SizedBox(
+                        height: 120,
                       child: Padding(
                         padding: EdgeInsets.only(
                           left: 24,
@@ -796,15 +798,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
                     // Content
                     Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
                                 // Year-to-date metrics summary
                                 const SizedBox(height: 12),
                                 Row(
@@ -1275,13 +1272,11 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 _buildJoyIndexCard(context, isChinese),
                                 const SizedBox(height: 20),
                                 const SizedBox(height: 32),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
