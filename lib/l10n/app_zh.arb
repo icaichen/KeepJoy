@@ -445,6 +445,16 @@
   "purchaseSuccessful": "购买成功",
   "purchasesRestored": "购买已恢复",
   "freeTrial": "免费试用",
+  "trialActive": "试用中",
+  "premiumActive": "高级版已激活",
+  "renewsOn": "续订日期：{date}",
+  "@renewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "featureMemoriesPage": "心动回忆",
   "featureMemoriesPageDesc": "记录并珍藏你的断舍离回忆",
   "featureMemoryLane": "年度记忆",

@@ -1095,9 +1095,9 @@ class _ProfilePageState extends State<ProfilePage> {
     DateTime? expirationDate,
   ) {
     final dateFormat = DateFormat('MMM dd, yyyy');
-    String statusText = isInTrial ? 'Trial Active' : 'Premium Active';
+    String statusText = isInTrial ? l10n.trialActive : l10n.premiumActive;
     String expiryText = expirationDate != null
-        ? 'Renews on ${dateFormat.format(expirationDate)}'
+        ? l10n.renewsOn(dateFormat.format(expirationDate))
         : '';
 
     return GestureDetector(
@@ -1112,14 +1112,14 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Container(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF0EA5E9), Color(0xFF06B6D4)],
+            colors: [Color(0xFF5ECFB8), Color(0xFFB794F6)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0EA5E9).withValues(alpha: 0.3),
+              color: const Color(0xFF5ECFB8).withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -1129,8 +1129,6 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.all(20),
           child: Row(
             children: [
-              const Icon(Icons.check_circle, color: Colors.white, size: 32),
-              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

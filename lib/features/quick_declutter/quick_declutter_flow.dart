@@ -642,251 +642,209 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final size = MediaQuery.of(context).size;
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.quickDeclutterTitle), centerTitle: false),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          // Photo
-          Card(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: widget.photoPath.isEmpty
-                  ? Container(
-                      height: size.height * 0.3,
-                      alignment: Alignment.center,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.photo, size: 48),
-                    )
-                  : Image.file(
-                      File(widget.photoPath),
-                      height: size.height * 0.3,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Item details - Compact version
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: l10n.itemName,
-                      hintText: l10n.itemName,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onChanged: (_) {
-                      if (_isAISuggested) {
-                        setState(() => _isAISuggested = false);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<DeclutterCategory>(
-                    value: _selectedCategory,
-                    decoration: InputDecoration(
-                      labelText: l10n.category,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    items: DeclutterCategory.values
-                        .map(
-                          (category) => DropdownMenuItem(
-                            value: category,
-                            child: Text(category.label(context)),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _selectedCategory = value);
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Joy Decision Section (only show if not decided yet)
-          if (_decision == null) ...[
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Text(
-                        isChinese ? '这件物品让你心动吗？' : 'Does it spark joy?',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF111827),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-
-                    // Joy Yes/No buttons - directly trigger actions
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _handleLetGo,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 24),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xFFEF4444),
-                                    Color(0xFFFCA5A5),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFFEF4444,
-                                    ).withValues(alpha: 0.3),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  const Icon(
-                                    Icons.heart_broken_rounded,
-                                    size: 48,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    isChinese ? '不心动' : 'No',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    isChinese ? '让它离开' : 'Let it go',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.9,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _handleKeep,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 24),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xFF10B981),
-                                    Color(0xFF6EE7B7),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFF10B981,
-                                    ).withValues(alpha: 0.3),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  const Icon(
-                                    Icons.favorite_rounded,
-                                    size: 48,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    isChinese ? '心动' : 'Yes',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    isChinese ? '留下它' : 'Keep it',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.9,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+      backgroundColor: const Color(0xFFF5F5F7),
+      appBar: AppBar(
+        title: Text(l10n.quickDeclutterTitle),
+        centerTitle: false,
+        backgroundColor: const Color(0xFFF5F5F7),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: ListView(
+            children: [
+              // Photo and item details wrapped in single card - Match Joy Declutter style
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x11000000),
+                      blurRadius: 20,
+                      offset: Offset(0, 12),
                     ),
                   ],
                 ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: AspectRatio(
+                          aspectRatio: 4 / 3,
+                          child: widget.photoPath.isEmpty
+                              ? Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(
+                                    Icons.photo_camera_outlined,
+                                    size: 80,
+                                    color: Colors.black45,
+                                  ),
+                                )
+                              : Image.file(
+                                  File(widget.photoPath),
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: l10n.itemName,
+                          hintText: l10n.itemName,
+                          suffixIcon: _isIdentifying
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(12),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : _isAISuggested
+                              ? Tooltip(
+                                  message: l10n.aiSuggested,
+                                  child: const Icon(
+                                    Icons.auto_awesome,
+                                    size: 20,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        onChanged: (_) {
+                          if (_isAISuggested) {
+                            setState(() => _isAISuggested = false);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownMenu<DeclutterCategory>(
+                        expandedInsets: EdgeInsets.zero,
+                        initialSelection: _selectedCategory,
+                        label: Text(l10n.category),
+                        dropdownMenuEntries: DeclutterCategory.values
+                            .map(
+                              (category) => DropdownMenuEntry(
+                                value: category,
+                                label: category.label(context),
+                              ),
+                            )
+                            .toList(),
+                        onSelected: (value) {
+                          if (value != null) {
+                            setState(() => _selectedCategory = value);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            // Retake button (only before decision)
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: _retake,
-                child: Text(l10n.retakePhoto),
-              ),
-            ),
-          ],
+              const SizedBox(height: 32),
+
+              // Joy Decision Section (only show if not decided yet)
+              if (_decision == null) ...[
+                Center(
+                  child: Text(
+                    isChinese ? '这件物品让你心动吗？' : 'Does it spark joy?',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Joy Yes/No buttons - Simple icon design
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: _handleLetGo,
+                      child: Column(
+                        children: [
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [
+                                Color(0xFFEF4444),
+                                Color(0xFFDC2626),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ).createShader(bounds),
+                            child: const Icon(
+                              Icons.heart_broken_rounded,
+                              color: Colors.white,
+                              size: 72,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isChinese ? '不心动' : 'No',
+                            style: const TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 60),
+                    GestureDetector(
+                      onTap: _handleKeep,
+                      child: Column(
+                        children: [
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [
+                                Color(0xFF10B981),
+                                Color(0xFF059669),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ).createShader(bounds),
+                            child: const Icon(
+                              Icons.favorite_rounded,
+                              color: Colors.white,
+                              size: 72,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isChinese ? '心动' : 'Yes',
+                            style: const TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Retake button (only before decision)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _retake,
+                    child: Text(l10n.retakePhoto),
+                  ),
+                ),
+              ],
 
           // After decision: Show Continue button
           if (_decision != null) ...[
@@ -954,6 +912,8 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
             ),
           ],
         ],
+      ),
+        ),
       ),
     );
   }

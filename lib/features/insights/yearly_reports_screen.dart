@@ -811,7 +811,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     icon: Icons.cleaning_services_rounded,
                                     iconColor: const Color(0xFFB794F6),
                                     value: yearlySessions.length.toString(),
-                                    label: isChinese ? '大扫除' : 'Deep Reset',
+                                    label: isChinese ? '大扫除' : 'Clean Sweep',
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -1122,12 +1122,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             ),
                             const SizedBox(height: 20),
 
-                            // Deep Reset Analysis (Yearly)
+                            // Clean Sweep Analysis (Yearly)
                             DeepCleaningAnalysisCard(
                               sessions: yearlySessions,
                               title: isChinese
                                   ? '大扫除分析'
-                                  : 'Deep Reset Analysis',
+                                  : 'Clean Sweep Analysis',
                               emptyStateMessage: isChinese
                                   ? '今年还没有大扫除记录，开始一次专注的整理吧。'
                                   : 'No deep cleaning records yet this year. Start your first focused session.',
@@ -1468,8 +1468,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
     // Initialize all 12 months (1-12)
     final monthlyJoyData = <int, List<int>>{}; // month -> list of joy levels
-    final monthlyJoyCount = <int, int>{}; // month -> count of items with joy
-    final monthlyTotalCount = <int, int>{}; // month -> total items decluttered
+    final monthlyJoyCount = <int, int>{}; // month -> count of joy clicks
+    final monthlyTotalCount =
+        <int, int>{}; // month -> items answered joy question
 
     for (int month = 1; month <= 12; month++) {
       monthlyJoyData[month] = [];
@@ -1478,13 +1479,13 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     }
 
     for (final item in widget.declutteredItems) {
-      // Only include items from current year
-      if (item.createdAt.year == now.year) {
+      // Only include items from current year AND only quick declutter items that have a joy answer
+      if (item.createdAt.year == now.year && item.joyLevel != null) {
         final month = item.createdAt.month; // 1-12
 
         monthlyTotalCount[month] = (monthlyTotalCount[month] ?? 0) + 1;
 
-        if (item.joyLevel != null && item.joyLevel! > 0) {
+        if (item.joyLevel! >= 6) {
           monthlyJoyData.putIfAbsent(month, () => []).add(item.joyLevel!);
           monthlyJoyCount[month] = (monthlyJoyCount[month] ?? 0) + 1;
         }
@@ -1509,7 +1510,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
     // Calculate total joy count
     final itemsWithJoy = widget.declutteredItems
-        .where((item) => item.joyLevel != null && item.joyLevel! > 0)
+        .where((item) => item.createdAt.year == now.year)
+        .where((item) => item.joyLevel != null && item.joyLevel! >= 6)
         .toList();
     final totalJoyCount = itemsWithJoy.length;
 
@@ -1561,20 +1563,43 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
-          Text(
-            isChinese ? '心动指数趋势' : 'Joy Index Trend',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF111827),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF6B7280)),
+          // Title with inline info
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isChinese ? '心动指数趋势' : 'Joy Index Trend',
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF111827),
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(
+                  Icons.info_outline_rounded,
+                  size: 20,
+                  color: Color(0xFF9CA3AF),
+                ),
+                tooltip: isChinese ? '数据说明' : 'Data info',
+                onPressed: () => _showJoyInfo(context, isChinese),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
 
@@ -1764,6 +1789,72 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showJoyInfo(BuildContext context, bool isChinese) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(isChinese ? '心动数据说明' : 'About Joy Data'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline,
+                    color: Color(0xFF5ECFB8),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      isChinese
+                          ? '仅统计快速整理中回答“是否心动”的物品，心动次数=选择心动的物品数量。'
+                          : 'Only items answered in Quick Declutter are counted. Joy Count = items you marked as bringing joy.',
+                      style: const TextStyle(
+                        color: Color(0xFF4B5563),
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.percent_rounded, color: Color(0xFF8B5CF6)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      isChinese
+                          ? '心动比例 = 心动物品数 ÷ 快速整理已回答心动问题的总物品数。'
+                          : 'Joy Percent = Joy Count ÷ all Quick Declutter items with a joy answer.',
+                      style: const TextStyle(
+                        color: Color(0xFF4B5563),
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(isChinese ? '知道了' : 'Got it'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -2027,11 +2118,16 @@ class _JoyTrendChartPainter extends CustomPainter {
     final chartHeight = size.height - topPadding - bottomPadding;
 
     // Find max value for scaling
-    double maxValue = isPercent
-        ? 100.0
-        : monthlyData.values.reduce((a, b) => a > b ? a : b);
-    if (maxValue == 0) maxValue = 10; // Default when no data
-    if (!isPercent) maxValue = maxValue * 1.2; // Add 20% padding for count
+    double maxValue;
+    if (isPercent) {
+      maxValue = 100.0; // percent always 0-100
+    } else {
+      final maxRaw = monthlyData.values.isEmpty
+          ? 0
+          : monthlyData.values.reduce((a, b) => a > b ? a : b);
+      maxValue = maxRaw == 0 ? 5 : maxRaw.toDouble();
+      maxValue = (maxValue * 1.25).clamp(5.0, double.infinity); // add headroom
+    }
 
     // Draw Y-axis
     canvas.drawLine(
@@ -2056,8 +2152,8 @@ class _JoyTrendChartPainter extends CustomPainter {
         gridPaint,
       );
 
-      // Y-axis labels
-      final value = maxValue * (1 - i / 5);
+      // Y-axis labels - corrected to show values from max at top to 0 at bottom
+      final value = maxValue * (5 - i) / 5;
       textPainter.text = TextSpan(
         text: value.toStringAsFixed(0),
         style: const TextStyle(

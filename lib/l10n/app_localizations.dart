@@ -455,7 +455,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningAnalysisTitle.
   ///
   /// In en, this message translates to:
-  /// **'Deep Reset Analysis'**
+  /// **'Clean Sweep Analysis'**
   String get deepCleaningAnalysisTitle;
 
   /// No description provided for @dashboardSessionsLabel.
@@ -1629,7 +1629,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningTitle.
   ///
   /// In en, this message translates to:
-  /// **'Deep Reset'**
+  /// **'Clean Sweep'**
   String get deepCleaningTitle;
 
   /// No description provided for @continueButton.
@@ -1689,7 +1689,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningSessionCompleted.
   ///
   /// In en, this message translates to:
-  /// **'Deep Reset session completed'**
+  /// **'Clean Sweep session completed'**
   String get deepCleaningSessionCompleted;
 
   /// No description provided for @memoriesTitle.
@@ -2103,7 +2103,7 @@ abstract class AppLocalizations {
   /// No description provided for @reminderActiveSessionBody.
   ///
   /// In en, this message translates to:
-  /// **'Your deep reset session is still running. Come back to finish and log your progress.'**
+  /// **'Your clean sweep session is still running. Come back to finish and log your progress.'**
   String get reminderActiveSessionBody;
 
   /// No description provided for @memoryNoDescription.
@@ -2121,7 +2121,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumRequiredMessage.
   ///
   /// In en, this message translates to:
-  /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue deep reset sessions, unlock full reports, and keep reminders active.'**
+  /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue clean sweep sessions, unlock full reports, and keep reminders active.'**
   String get premiumRequiredMessage;
 
   /// No description provided for @premiumExpiredMessage.
@@ -2267,6 +2267,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Free Trial'**
   String get freeTrial;
+
+  /// No description provided for @trialActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial Active'**
+  String get trialActive;
+
+  /// No description provided for @premiumActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Active'**
+  String get premiumActive;
+
+  /// No description provided for @renewsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews on {date}'**
+  String renewsOn(String date);
 
   /// No description provided for @featureMemoriesPage.
   ///
@@ -3171,7 +3189,7 @@ abstract class AppLocalizations {
   /// No description provided for @todaysTip1.
   ///
   /// In en, this message translates to:
-  /// **'Deep Reset Mode: Tap \'Deep Reset\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!'**
+  /// **'Clean Sweep Mode: Tap \'Clean Sweep\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!'**
   String get todaysTip1;
 
   /// No description provided for @todaysTip2.
@@ -3423,7 +3441,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaning.
   ///
   /// In en, this message translates to:
-  /// **'Deep Reset'**
+  /// **'Clean Sweep'**
   String get deepCleaning;
 
   /// No description provided for @cleaningAreas.
@@ -3489,7 +3507,7 @@ abstract class AppLocalizations {
   /// No description provided for @startDeepCleaning.
   ///
   /// In en, this message translates to:
-  /// **'Start Deep Reset'**
+  /// **'Start Clean Sweep'**
   String get startDeepCleaning;
 
   /// No description provided for @schedule.

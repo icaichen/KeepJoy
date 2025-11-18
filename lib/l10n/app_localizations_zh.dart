@@ -1149,6 +1149,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get freeTrial => '免费试用';
 
   @override
+  String get trialActive => '试用中';
+
+  @override
+  String get premiumActive => '高级版已激活';
+
+  @override
+  String renewsOn(String date) {
+    return '续订日期：$date';
+  }
+
+  @override
   String get featureMemoriesPage => '心动回忆';
 
   @override

@@ -192,7 +192,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardNoSessionsForDay => 'No sessions on this day';
 
   @override
-  String get deepCleaningAnalysisTitle => 'Deep Reset Analysis';
+  String get deepCleaningAnalysisTitle => 'Clean Sweep Analysis';
 
   @override
   String get dashboardSessionsLabel => 'Sessions';
@@ -842,7 +842,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get finishDeclutter => 'Finish declutter';
 
   @override
-  String get deepCleaningTitle => 'Deep Reset';
+  String get deepCleaningTitle => 'Clean Sweep';
 
   @override
   String get continueButton => 'Continue';
@@ -876,7 +876,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get deepCleaningSessionCompleted => 'Deep Reset session completed';
+  String get deepCleaningSessionCompleted => 'Clean Sweep session completed';
 
   @override
   String get memoriesTitle => 'Memories';
@@ -1100,7 +1100,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderActiveSessionBody =>
-      'Your deep reset session is still running. Come back to finish and log your progress.';
+      'Your clean sweep session is still running. Come back to finish and log your progress.';
 
   @override
   String get memoryNoDescription => 'No additional notes for this memory.';
@@ -1110,7 +1110,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumRequiredMessage =>
-      'Your trial has ended. Upgrade to KeepJoy Premium to continue deep reset sessions, unlock full reports, and keep reminders active.';
+      'Your trial has ended. Upgrade to KeepJoy Premium to continue clean sweep sessions, unlock full reports, and keep reminders active.';
 
   @override
   String get premiumExpiredMessage =>
@@ -1188,6 +1188,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get freeTrial => 'Free Trial';
+
+  @override
+  String get trialActive => 'Trial Active';
+
+  @override
+  String get premiumActive => 'Premium Active';
+
+  @override
+  String renewsOn(String date) {
+    return 'Renews on $date';
+  }
 
   @override
   String get featureMemoriesPage => 'Memories Page';
@@ -1674,7 +1685,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todaysTip1 =>
-      'Deep Reset Mode: Tap \'Deep Reset\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!';
+      'Clean Sweep Mode: Tap \'Clean Sweep\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!';
 
   @override
   String get todaysTip2 =>
@@ -1810,7 +1821,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get declutterRhythmOverview => 'Declutter Rhythm & Achievements';
 
   @override
-  String get deepCleaning => 'Deep Reset';
+  String get deepCleaning => 'Clean Sweep';
 
   @override
   String get cleaningAreas => 'Cleaning Areas';
@@ -1845,7 +1856,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get markAsComplete => 'Mark as Complete';
 
   @override
-  String get startDeepCleaning => 'Start Deep Reset';
+  String get startDeepCleaning => 'Start Clean Sweep';
 
   @override
   String get schedule => 'Schedule';

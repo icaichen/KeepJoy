@@ -219,7 +219,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
               final stats = categoryStats[category] ?? {'total': 0, 'kept': 0};
               return GestureDetector(
                 onTap: () {
-                  debugPrint('📱 Items: Category tapped - ${category.label(context)}');
+                  debugPrint(
+                    '📱 Items: Category tapped - ${category.label(context)}',
+                  );
                   _showCategoryItems(category, isChinese);
                 },
                 child: _buildCategoryCard(
@@ -1150,21 +1152,8 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                           );
                         }
 
-                        // Kept items - clickable to start joy assessment
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => _JoyQuestionPage(
-                                  item: item,
-                                  onItemCompleted: widget.onItemCompleted,
-                                  onMemoryCreated: widget.onMemoryCreated,
-                                ),
-                              ),
-                            );
-                          },
-                          child: _buildItemCard(item),
-                        );
+                        // Kept items - no navigation needed
+                        return _buildItemCard(item);
                       },
                     ),
             ),

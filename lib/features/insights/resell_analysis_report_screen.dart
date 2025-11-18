@@ -346,7 +346,9 @@ class _ResellAnalysisReportScreenState
                                           padding: const EdgeInsets.all(4),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFF5F5F5),
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                           ),
                                           child: Row(
                                             children: TrendMetric.values.map((
@@ -371,36 +373,46 @@ class _ResellAnalysisReportScreenState
                                                           ? Colors.white
                                                           : Colors.transparent,
                                                       borderRadius:
-                                                          BorderRadius.circular(8),
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
                                                       boxShadow: isSelected
                                                           ? [
                                                               BoxShadow(
-                                                                color: Colors.black
+                                                                color: Colors
+                                                                    .black
                                                                     .withValues(
-                                                                      alpha: 0.1,
+                                                                      alpha:
+                                                                          0.1,
                                                                     ),
                                                                 blurRadius: 8,
-                                                                offset: const Offset(
-                                                                  0,
-                                                                  2,
-                                                                ),
+                                                                offset:
+                                                                    const Offset(
+                                                                      0,
+                                                                      2,
+                                                                    ),
                                                               ),
                                                             ]
                                                           : [],
                                                     ),
                                                     child: Text(
                                                       metric.label(isChinese),
-                                                      textAlign: TextAlign.center,
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .bodySmall
                                                           ?.copyWith(
                                                             color: isSelected
                                                                 ? Colors.black87
-                                                                : Colors.black54,
-                                                            fontWeight: isSelected
-                                                                ? FontWeight.w600
-                                                                : FontWeight.w500,
+                                                                : Colors
+                                                                      .black54,
+                                                            fontWeight:
+                                                                isSelected
+                                                                ? FontWeight
+                                                                      .w600
+                                                                : FontWeight
+                                                                      .w500,
                                                             fontSize: 11,
                                                           ),
                                                     ),
@@ -422,10 +434,7 @@ class _ResellAnalysisReportScreenState
                                       height: 250,
                                       width: double.infinity,
                                       child: CustomPaint(
-                                        size: const Size(
-                                          double.infinity,
-                                          250,
-                                        ),
+                                        size: const Size(double.infinity, 250),
                                         painter: _TrendChartPainter(
                                           trendData: trendData,
                                           selectedMetric: _selectedMetric,
@@ -721,14 +730,21 @@ class _ResellAnalysisReportScreenState
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.white : Colors.transparent,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.1),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -738,12 +754,15 @@ class _ResellAnalysisReportScreenState
                           child: AutoScaleText(
                             metric.label(isChinese),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: isSelected ? Colors.black87 : Colors.black54,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: isSelected
+                                      ? Colors.black87
+                                      : Colors.black54,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                ),
                           ),
                         ),
                       ),
@@ -1284,8 +1303,11 @@ class _TrendChartPainter extends CustomPainter {
 
     // Find max value (ensure at least 1 to avoid division by zero)
     double maxValue = trendData.values.reduce((a, b) => a > b ? a : b);
-    if (maxValue == 0) maxValue = 10; // Default max when no data
-    maxValue = maxValue * 1.2;
+    if (maxValue == 0) {
+      maxValue = 5; // default minimum
+    } else {
+      maxValue = maxValue * 1.25;
+    }
 
     // Draw Y-axis
     canvas.drawLine(
@@ -1310,8 +1332,8 @@ class _TrendChartPainter extends CustomPainter {
         gridPaint,
       );
 
-      // Y-axis labels
-      final value = maxValue * (1 - i / 5);
+      // Y-axis labels - corrected to show values from max at top to 0 at bottom
+      final value = maxValue * (5 - i) / 5;
       textPainter.text = TextSpan(
         text: value.toStringAsFixed(0),
         style: const TextStyle(
@@ -1323,10 +1345,7 @@ class _TrendChartPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(
         canvas,
-        Offset(
-          leftPadding - textPainter.width - 8,
-          y - textPainter.height / 2,
-        ),
+        Offset(leftPadding - textPainter.width - 8, y - textPainter.height / 2),
       );
     }
 

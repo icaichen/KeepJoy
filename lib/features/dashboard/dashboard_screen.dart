@@ -3140,6 +3140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required IconData icon,
     required String title,
     required String detail,
+    required bool isChinese,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3167,7 +3168,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                detail,
+                isChinese
+                    ? detail
+                          .replaceAll('Joy Declutter', '心动整理')
+                          .replaceAll('Quick Declutter', '快速整理')
+                    : detail,
                 style: const TextStyle(
                   fontSize: 13,
                   color: Color(0xFF4B5563),
@@ -3330,8 +3335,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         icon: Icons.inventory_2_outlined,
                         title: isChinese ? '已整理物品' : 'Decluttered Items',
                         detail: isChinese
-                            ? '来自 Joy Declutter 与 Quick Declutter 的所有物品记录。'
+                            ? '来自心动整理与快速整理的所有物品记录。'
                             : 'Includes every item logged via Joy Declutter or Quick Declutter.',
+                        isChinese: isChinese,
                       ),
                       const SizedBox(height: 12),
                       _buildMonthlyInfoRow(
@@ -3339,7 +3345,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         title: isChinese ? '成果分布' : 'Outcome Distribution',
                         detail: isChinese
                             ? '基于每件已整理物品所选择的去向（保留、捐赠、转卖、丢弃等）汇总，展示你让物品离开的方式。'
-                            : 'Aggregates each decluttered item’s outcome tag (keep, donate, resell, discard, etc.) so you can see how you let things go.',
+                            : 'Aggregates each decluttered item\'s outcome tag (keep, donate, resell, discard, etc.) so you can see how you let things go.',
+                        isChinese: isChinese,
                       ),
                     ],
                   ),

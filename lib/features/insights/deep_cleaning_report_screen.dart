@@ -5,19 +5,18 @@ import '../../models/deep_cleaning_session.dart';
 class DeepCleaningReportScreen extends StatelessWidget {
   final List<DeepCleaningSession> sessions;
 
-  const DeepCleaningReportScreen({
-    super.key,
-    required this.sessions,
-  });
+  const DeepCleaningReportScreen({super.key, required this.sessions});
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
 
     // Filter sessions that have focus and mood data
-    final sessionsWithData = sessions.where((s) =>
-      s.focusIndex != null && s.moodIndex != null
-    ).toList();
+    final sessionsWithData = sessions
+        .where((s) => s.focusIndex != null && s.moodIndex != null)
+        .toList();
 
     if (sessionsWithData.isEmpty) {
       return Scaffold(
@@ -26,7 +25,7 @@ class DeepCleaningReportScreen extends StatelessWidget {
           backgroundColor: const Color(0xFFF5F5F7),
           elevation: 0,
           title: Text(
-            isChinese ? '大扫除分析' : 'Deep Reset Analytics',
+            isChinese ? '大扫除分析' : 'Clean Sweep Analytics',
             style: const TextStyle(
               fontFamily: 'SF Pro Display',
               fontSize: 20,
@@ -39,11 +38,7 @@ class DeepCleaningReportScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.analytics_outlined,
-                size: 64,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.analytics_outlined, size: 64, color: Colors.grey[400]),
               const SizedBox(height: 16),
               Text(
                 isChinese ? '暂无数据' : 'No Data Available',
@@ -55,11 +50,10 @@ class DeepCleaningReportScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                isChinese ? '完成更多大扫除任务以查看分析' : 'Complete more deep cleaning sessions to view analytics',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF9CA3AF),
-                ),
+                isChinese
+                    ? '完成更多大扫除任务以查看分析'
+                    : 'Complete more deep cleaning sessions to view analytics',
+                style: const TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -69,17 +63,23 @@ class DeepCleaningReportScreen extends StatelessWidget {
     }
 
     // Calculate statistics
-    final avgFocus = sessionsWithData.map((s) => s.focusIndex!).reduce((a, b) => a + b) / sessionsWithData.length;
-    final avgMood = sessionsWithData.map((s) => s.moodIndex!).reduce((a, b) => a + b) / sessionsWithData.length;
-    final totalItems = sessionsWithData.map((s) => s.itemsCount ?? 0).reduce((a, b) => a + b);
-    final totalTime = sessionsWithData.map((s) => s.elapsedSeconds ?? 0).reduce((a, b) => a + b);
+    final avgFocus =
+        sessionsWithData.map((s) => s.focusIndex!).reduce((a, b) => a + b) /
+        sessionsWithData.length;
+    final avgMood =
+        sessionsWithData.map((s) => s.moodIndex!).reduce((a, b) => a + b) /
+        sessionsWithData.length;
+    final totalItems = sessionsWithData
+        .map((s) => s.itemsCount ?? 0)
+        .reduce((a, b) => a + b);
 
     // Find most productive session (highest focus + most items)
     DeepCleaningSession? mostProductive;
     double highestProductivity = 0;
     for (var session in sessionsWithData) {
       final itemCount = session.itemsCount ?? 0;
-      final productivity = (session.focusIndex ?? 0).toDouble() + itemCount * 0.1;
+      final productivity =
+          (session.focusIndex ?? 0).toDouble() + itemCount * 0.1;
       if (productivity > highestProductivity) {
         highestProductivity = productivity;
         mostProductive = session;
@@ -92,7 +92,7 @@ class DeepCleaningReportScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF5F5F7),
         elevation: 0,
         title: Text(
-          isChinese ? '大扫除分析' : 'Deep Reset Analytics',
+          isChinese ? '大扫除分析' : 'Clean Sweep Analytics',
           style: const TextStyle(
             fontFamily: 'SF Pro Display',
             fontSize: 20,
@@ -141,26 +141,14 @@ class DeepCleaningReportScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.timer_outlined,
-                    iconColor: const Color(0xFF89CFF0),
-                    value: _formatTotalTime(totalTime, isChinese),
-                    label: isChinese ? '总时长' : 'Total Time',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.timeline_rounded,
-                    iconColor: const Color(0xFFFFD93D),
-                    value: avgFocus.toStringAsFixed(1),
-                    label: isChinese ? '平均专注度' : 'Avg Focus',
-                  ),
-                ),
-              ],
+            SizedBox(
+              width: double.infinity,
+              child: _StatCard(
+                icon: Icons.timeline_rounded,
+                iconColor: const Color(0xFFFFD93D),
+                value: avgFocus.toStringAsFixed(1),
+                label: isChinese ? '平均专注度' : 'Avg Focus',
+              ),
             ),
 
             const SizedBox(height: 32),
@@ -239,7 +227,9 @@ class DeepCleaningReportScreen extends StatelessWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFB794F6).withValues(alpha: 0.2),
+                            color: const Color(
+                              0xFFB794F6,
+                            ).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -262,8 +252,9 @@ class DeepCleaningReportScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                DateFormat(isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy')
-                                    .format(mostProductive.startTime),
+                                DateFormat(
+                                  isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                                ).format(mostProductive.startTime),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Color(0xFF6B7280),
@@ -351,8 +342,9 @@ class DeepCleaningReportScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                DateFormat(isChinese ? 'M月d日' : 'MMM d')
-                                    .format(session.startTime),
+                                DateFormat(
+                                  isChinese ? 'M月d日' : 'MMM d',
+                                ).format(session.startTime),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Color(0xFF6B7280),
@@ -439,10 +431,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF6B7280),
-            ),
+            style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -520,10 +509,7 @@ class _MiniStat extends StatelessWidget {
   final String label;
   final String value;
 
-  const _MiniStat({
-    required this.label,
-    required this.value,
-  });
+  const _MiniStat({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -540,10 +526,7 @@ class _MiniStat extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF6B7280),
-          ),
+          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
         ),
       ],
     );
@@ -555,11 +538,7 @@ class _Badge extends StatelessWidget {
   final String value;
   final Color color;
 
-  const _Badge({
-    required this.icon,
-    required this.value,
-    required this.color,
-  });
+  const _Badge({required this.icon, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
