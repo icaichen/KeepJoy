@@ -2118,6 +2118,12 @@ abstract class AppLocalizations {
   /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.'**
   String get premiumRequiredMessage;
 
+  /// No description provided for @premiumExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription has expired or needs to be restored. Please renew or restore your purchases to continue using premium features.'**
+  String get premiumExpiredMessage;
+
   /// No description provided for @premiumLockedOverlay.
   ///
   /// In en, this message translates to:

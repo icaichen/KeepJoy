@@ -1074,6 +1074,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumRequiredMessage => '7 天试用已结束，升级即可继续使用深度整理流程、完整报表与提醒功能。';
 
   @override
+  String get premiumExpiredMessage => '您的订阅已过期或需要恢复。请续订或恢复购买以继续使用高级功能。';
+
+  @override
   String get premiumLockedOverlay => '升级以查看完整洞察';
 
   @override

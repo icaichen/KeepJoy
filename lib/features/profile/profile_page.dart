@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
@@ -678,20 +679,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Clear all data from repository
                 await repository.clearAllData();
 
+                // Sign out the user - auth listener in main.dart will handle navigation
+                await _authService.signOut();
+
                 // Close loading dialog
                 if (mounted) {
                   Navigator.pop(context);
-                }
-
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        isChinese ? '所有数据已清除' : 'All data has been cleared',
-                      ),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
                 }
               } catch (e) {
                 // Close loading dialog
@@ -782,15 +775,8 @@ class _ProfilePageState extends State<ProfilePage> {
               }
 
               try {
-                // Perform logout
+                // Perform logout - auth listener in main.dart will handle navigation
                 await _authService.signOut();
-
-                // Navigate to welcome screen and remove all previous routes
-                if (mounted && context.mounted) {
-                  // Use the root navigator to ensure we clear everything
-                  Navigator.of(context, rootNavigator: true)
-                      .pushNamedAndRemoveUntil('/welcome', (route) => false);
-                }
               } catch (e) {
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -1117,7 +1103,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const PaywallPage()),
+          CupertinoPageRoute(
+            builder: (_) => const PaywallPage(),
+            fullscreenDialog: true,
+          ),
         );
       },
       child: Container(
@@ -1181,7 +1170,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const PaywallPage()),
+          CupertinoPageRoute(
+            builder: (_) => const PaywallPage(),
+            fullscreenDialog: true,
+          ),
         );
       },
       child: Container(

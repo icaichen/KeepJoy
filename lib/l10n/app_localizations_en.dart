@@ -1110,6 +1110,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.';
 
   @override
+  String get premiumExpiredMessage =>
+      'Your subscription has expired or needs to be restored. Please renew or restore your purchases to continue using premium features.';
+
+  @override
   String get premiumLockedOverlay => 'Upgrade to view full insights';
 
   @override

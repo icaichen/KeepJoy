@@ -327,15 +327,18 @@ class _ResellAnalysisReportScreenState
                                   // Metric selector
                                   Row(
                                     children: [
-                                      Text(
-                                        isChinese ? '趋势指标' : 'Trend Metric',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: const Color(0xFF6B7280),
-                                              fontWeight: FontWeight.w500,
-                                            ),
+                                      SizedBox(
+                                        width: 60,
+                                        child: Text(
+                                          isChinese ? '指标' : 'Metric',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                color: const Color(0xFF6B7280),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -689,11 +692,14 @@ class _ResellAnalysisReportScreenState
         // Metric selector
         Row(
           children: [
-            Text(
-              isChinese ? '表现指标' : 'Performance Metric',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF6B7280),
-                fontWeight: FontWeight.w500,
+            SizedBox(
+              width: 60,
+              child: Text(
+                isChinese ? '指标' : 'Metric',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF6B7280),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -1171,23 +1177,20 @@ class _ResellAnalysisReportScreenState
     final monthlyData = <int, List<double>>{};
 
     // Initialize all 12 months with empty lists
-    for (int i = 0; i < 12; i++) {
+    for (int i = 1; i <= 12; i++) {
       monthlyData[i] = [];
     }
 
-    // Group data by month (last 12 months)
+    // Group data by month (year to date - January to current month)
     for (final item in widget.resellItems) {
-      final monthsAgo =
-          ((now.year - item.createdAt.year) * 12 +
-                  (now.month - item.createdAt.month))
-              .clamp(0, 11);
-
-      if (monthsAgo < 12) {
+      // Only include items from current year
+      if (item.createdAt.year == now.year) {
+        final month = item.createdAt.month; // 1-12
         switch (_selectedMetric) {
           case TrendMetric.soldItems:
             // Only count sold items
             if (item.status == ResellStatus.sold) {
-              monthlyData[monthsAgo]!.add(1);
+              monthlyData[month]!.add(1);
             }
             break;
           case TrendMetric.listedDays:
@@ -1196,12 +1199,12 @@ class _ResellAnalysisReportScreenState
                   .difference(item.createdAt)
                   .inDays
                   .toDouble();
-              monthlyData[monthsAgo]!.add(days);
+              monthlyData[month]!.add(days);
             }
             break;
           case TrendMetric.resellValue:
             if (item.status == ResellStatus.sold && item.soldPrice != null) {
-              monthlyData[monthsAgo]!.add(item.soldPrice!);
+              monthlyData[month]!.add(item.soldPrice!);
             }
             break;
         }
@@ -1272,8 +1275,8 @@ class _TrendChartPainter extends CustomPainter {
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     // Dimensions with space for Y-axis labels
-    const leftPadding = 50.0;
-    const rightPadding = 10.0;
+    const leftPadding = 20.0;
+    const rightPadding = 20.0;
     const topPadding = 20.0;
     const bottomPadding = 40.0;
     final chartWidth = size.width - leftPadding - rightPadding;
@@ -1327,24 +1330,19 @@ class _TrendChartPainter extends CustomPainter {
       );
     }
 
-    // Prepare data points for all 12 months (reverse order so month 0 is on the right)
+    // Prepare data points for all 12 months (1-12, January to December)
     final points = <Offset>[];
     final labels = <String>[];
-    final sortedMonths = List.generate(12, (index) => 11 - index); // 11, 10, 9, ..., 0
 
-    final now = DateTime.now();
-    for (int i = 0; i < sortedMonths.length; i++) {
-      final month = sortedMonths[i];
+    for (int month = 1; month <= 12; month++) {
       final value = trendData[month] ?? 0.0;
 
-      final x = leftPadding + (chartWidth * i / 11);
+      final x = leftPadding + (chartWidth * (month - 1) / 11);
       final normalizedValue = value / maxValue;
       final y = topPadding + (chartHeight * (1 - normalizedValue));
 
       points.add(Offset(x, y));
-
-      final monthDate = DateTime(now.year, now.month - month, 1);
-      labels.add('${monthDate.month}');
+      labels.add('$month');
     }
 
     if (points.isEmpty) return;

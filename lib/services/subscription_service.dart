@@ -38,12 +38,31 @@ class SubscriptionService {
   static Future<bool> isPremium() async {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
+
+      // Debug: Print all available entitlements
+      print('🔍 All Entitlements: ${customerInfo.entitlements.all.keys.toList()}');
+      print('🔍 Active Entitlements: ${customerInfo.entitlements.active.keys.toList()}');
+
+      // Check if user has ANY active entitlement (in case the ID is wrong)
+      if (customerInfo.entitlements.active.isNotEmpty) {
+        print('✅ User has active entitlements: ${customerInfo.entitlements.active.keys.toList()}');
+        // Return true if ANY entitlement is active
+        return true;
+      }
+
+      // Fallback: Check specific premium entitlement
       final entitlement = customerInfo
           .entitlements.all[RevenueCatConfig.premiumEntitlementId];
-      
-      return entitlement != null && entitlement.isActive;
+
+      if (entitlement != null) {
+        print('📦 Premium entitlement found - isActive: ${entitlement.isActive}');
+        return entitlement.isActive;
+      }
+
+      print('⚠️ No premium entitlement found with ID: ${RevenueCatConfig.premiumEntitlementId}');
+      return false;
     } catch (e) {
-      print('Error checking premium status: $e');
+      print('❌ Error checking premium status: $e');
       return false;
     }
   }

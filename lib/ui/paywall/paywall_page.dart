@@ -551,12 +551,21 @@ class _PaywallPageState extends State<PaywallPage> {
     });
 
     try {
-      await SubscriptionService.purchasePackage(_selectedPackage!);
+      final customerInfo = await SubscriptionService.purchasePackage(_selectedPackage!);
+
+      print('🎉 Purchase completed!');
+      print('📱 Customer Info after purchase:');
+      print('   - All Entitlements: ${customerInfo.entitlements.all.keys.toList()}');
+      print('   - Active Entitlements: ${customerInfo.entitlements.active.keys.toList()}');
 
       if (mounted) {
         // Refresh subscription status
         await Provider.of<SubscriptionProvider>(context, listen: false)
             .refreshSubscriptionStatus();
+
+        // Double-check premium status
+        final isPremium = await SubscriptionService.isPremium();
+        print('✅ Premium status after purchase: $isPremium');
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -565,6 +574,9 @@ class _PaywallPageState extends State<PaywallPage> {
             backgroundColor: const Color(0xFF10B981),
           ),
         );
+
+        // Wait a moment for state to propagate
+        await Future.delayed(const Duration(milliseconds: 500));
 
         // Close paywall
         Navigator.of(context).pop();

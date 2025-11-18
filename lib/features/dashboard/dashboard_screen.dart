@@ -2402,29 +2402,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   color: const Color(0xFFE5E7EA),
                                 ),
                               ),
-                              padding: const EdgeInsets.all(32),
+                              padding: const EdgeInsets.all(20),
                               child: Center(
                                 child: Column(
                                   children: [
                                     Icon(
                                       Icons.check_circle_outline,
-                                      size: 48,
+                                      size: 32,
                                       color: Colors.grey[400],
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     Text(
                                       l10n.dashboardNoTodosTitle,
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFF6B7280),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 4),
                                     Text(
                                       l10n.dashboardNoTodosSubtitle,
                                       style: const TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         color: Color(0xFF9CA3AF),
                                       ),
                                       textAlign: TextAlign.center,

@@ -327,15 +327,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       }
     });
 
-    // Calculate longest streak
+    // Calculate longest streak (year to date)
     final now = DateTime.now();
     int longestStreak = 0;
     int currentStreak = 0;
 
-    for (int i = 0; i < 12; i++) {
-      final monthDate = DateTime(now.year, now.month - i, 1);
+    for (int month = 1; month <= now.month; month++) {
       final monthKey =
-          '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
+          '${now.year}-${month.toString().padLeft(2, '0')}';
       if ((monthlyData[monthKey] ?? 0) > 0) {
         currentStreak++;
         if (currentStreak > longestStreak) {
@@ -373,7 +372,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            isChinese ? '过去12个月的活动' : 'Activity in past 12 months',
+            isChinese ? '本年度活动' : 'Activity this year',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: const Color(0xFF6B7280),
                 ),
@@ -382,14 +381,11 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           // 2 rows of 6 months each
           Column(
             children: [
-              // First row
+              // First row (months 1-6: January to June)
               Row(
                 children: List.generate(6, (index) {
-                  final monthDate = DateTime(
-                    now.year,
-                    now.month - (11 - index),
-                    1,
-                  );
+                  final month = index + 1; // 1-6
+                  final monthDate = DateTime(now.year, month, 1);
                   final monthKey =
                       '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
                   final count = monthlyData[monthKey] ?? 0;
@@ -424,14 +420,11 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 }),
               ),
               const SizedBox(height: 4),
-              // Second row
+              // Second row (months 7-12: July to December)
               Row(
                 children: List.generate(6, (index) {
-                  final monthDate = DateTime(
-                    now.year,
-                    now.month - (5 - index),
-                    1,
-                  );
+                  final month = index + 7; // 7-12
+                  final monthDate = DateTime(now.year, month, 1);
                   final monthKey =
                       '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
                   final count = monthlyData[monthKey] ?? 0;
@@ -1334,13 +1327,10 @@ class _MonthlyHeatmapPainter extends CustomPainter {
     final totalWidth = (cellSize * cols) + (cellGap * (cols - 1));
     final startX = (size.width - totalWidth) / 2;
 
-    // Draw 12 month squares in 2 rows, 6 columns
+    // Draw 12 month squares in 2 rows, 6 columns (months 1-12)
     for (int i = 0; i < monthsToShow; i++) {
-      final monthDate = DateTime(
-        now.year,
-        now.month - (monthsToShow - 1 - i),
-        1,
-      );
+      final month = i + 1; // 1-12
+      final monthDate = DateTime(now.year, month, 1);
       final monthKey =
           '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
       final count = monthlyData[monthKey] ?? 0;

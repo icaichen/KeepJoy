@@ -1534,42 +1534,40 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   }
 
   Widget _buildJoyIndexCard(BuildContext context, bool isChinese) {
-    // Calculate joy index trend over past 12 months
+    // Calculate joy index trend year-to-date (January to current month)
     final now = DateTime.now();
 
-    // Initialize all 12 months
+    // Initialize all 12 months (1-12)
     final monthlyJoyData = <int, List<int>>{}; // month -> list of joy levels
     final monthlyJoyCount = <int, int>{}; // month -> count of items with joy
     final monthlyTotalCount = <int, int>{}; // month -> total items decluttered
 
-    for (int i = 0; i < 12; i++) {
-      monthlyJoyData[i] = [];
-      monthlyJoyCount[i] = 0;
-      monthlyTotalCount[i] = 0;
+    for (int month = 1; month <= 12; month++) {
+      monthlyJoyData[month] = [];
+      monthlyJoyCount[month] = 0;
+      monthlyTotalCount[month] = 0;
     }
 
     for (final item in widget.declutteredItems) {
-      final monthsAgo =
-          ((now.year - item.createdAt.year) * 12 +
-                  (now.month - item.createdAt.month))
-              .clamp(0, 11);
+      // Only include items from current year
+      if (item.createdAt.year == now.year) {
+        final month = item.createdAt.month; // 1-12
 
-      if (monthsAgo < 12) {
-        monthlyTotalCount[monthsAgo] = (monthlyTotalCount[monthsAgo] ?? 0) + 1;
+        monthlyTotalCount[month] = (monthlyTotalCount[month] ?? 0) + 1;
 
         if (item.joyLevel != null && item.joyLevel! > 0) {
-          monthlyJoyData.putIfAbsent(monthsAgo, () => []).add(item.joyLevel!);
-          monthlyJoyCount[monthsAgo] = (monthlyJoyCount[monthsAgo] ?? 0) + 1;
+          monthlyJoyData.putIfAbsent(month, () => []).add(item.joyLevel!);
+          monthlyJoyCount[month] = (monthlyJoyCount[month] ?? 0) + 1;
         }
       }
     }
 
     // Calculate monthly joy percent for all 12 months
     final monthlyJoyPercent = <int, double>{};
-    for (int i = 0; i < 12; i++) {
-      final total = monthlyTotalCount[i] ?? 0;
-      final joyCount = monthlyJoyCount[i] ?? 0;
-      monthlyJoyPercent[i] = total > 0 ? (joyCount / total * 100) : 0.0;
+    for (int month = 1; month <= 12; month++) {
+      final total = monthlyTotalCount[month] ?? 0;
+      final joyCount = monthlyJoyCount[month] ?? 0;
+      monthlyJoyPercent[month] = total > 0 ? (joyCount / total * 100) : 0.0;
     }
 
     // Calculate average joy percent (excluding months with no data)
@@ -1589,11 +1587,15 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     String trendIcon;
     Color trendColor;
 
-    if (monthlyJoyPercent.length >= 6) {
-      // Average of first 3 months (most recent)
-      final recentAvg = (monthlyJoyPercent[0]! + monthlyJoyPercent[1]! + monthlyJoyPercent[2]!) / 3;
-      // Average of months 9-11 (3 months ago)
-      final olderAvg = (monthlyJoyPercent[9]! + monthlyJoyPercent[10]! + monthlyJoyPercent[11]!) / 3;
+    if (now.month >= 6) {
+      // Average of most recent 3 months
+      final month1 = monthlyJoyPercent[now.month] ?? 0;
+      final month2 = monthlyJoyPercent[now.month - 1] ?? 0;
+      final month3 = monthlyJoyPercent[now.month - 2] ?? 0;
+      final recentAvg = (month1 + month2 + month3) / 3;
+
+      // Average of first 3 months (January-March)
+      final olderAvg = (monthlyJoyPercent[1]! + monthlyJoyPercent[2]! + monthlyJoyPercent[3]!) / 3;
 
       if (recentAvg > olderAvg) {
         trendText = isChinese ? '上升' : 'Rising';
@@ -1644,11 +1646,14 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           // Toggle between Joy Percent and Joy Count
           Row(
             children: [
-              Text(
-                isChinese ? '趋势指标' : 'Trend Metric',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B7280),
-                  fontWeight: FontWeight.w500,
+              SizedBox(
+                width: 60,
+                child: Text(
+                  isChinese ? '指标' : 'Metric',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF6B7280),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -2079,8 +2084,8 @@ class _JoyTrendChartPainter extends CustomPainter {
     final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
 
     // Calculate dimensions with space for Y-axis labels
-    const leftPadding = 50.0;
-    const rightPadding = 10.0;
+    const leftPadding = 20.0;
+    const rightPadding = 20.0;
     const topPadding = 20.0;
     const bottomPadding = 40.0;
     final chartWidth = size.width - leftPadding - rightPadding;
@@ -2136,24 +2141,19 @@ class _JoyTrendChartPainter extends CustomPainter {
       );
     }
 
-    // Prepare data points for all 12 months (reverse order so month 0 is on the right)
+    // Prepare data points for all 12 months (1-12, January to December)
     final points = <Offset>[];
     final labels = <String>[];
-    final sortedMonths = List.generate(12, (index) => 11 - index); // 11, 10, 9, ..., 0
 
-    final now = DateTime.now();
-    for (int i = 0; i < sortedMonths.length; i++) {
-      final month = sortedMonths[i];
+    for (int month = 1; month <= 12; month++) {
       final value = monthlyData[month] ?? 0.0;
 
-      final x = leftPadding + (chartWidth * i / 11);
+      final x = leftPadding + (chartWidth * (month - 1) / 11);
       final normalizedValue = value / maxValue;
       final y = topPadding + (chartHeight * (1 - normalizedValue));
 
       points.add(Offset(x, y));
-
-      final monthDate = DateTime(now.year, now.month - month, 1);
-      labels.add('${monthDate.month}');
+      labels.add('$month');
     }
 
     if (points.isEmpty) return;

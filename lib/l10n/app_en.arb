@@ -522,6 +522,7 @@
   "memoryNoDescription": "No additional notes for this memory.",
   "premiumRequiredTitle": "KeepJoy Premium",
   "premiumRequiredMessage": "Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.",
+  "premiumExpiredMessage": "Your subscription has expired or needs to be restored. Please renew or restore your purchases to continue using premium features.",
   "premiumLockedOverlay": "Upgrade to view full insights",
   "premiumMembership": "Premium Membership",
   "premiumMembershipDescription": "Unlock exclusive rituals, deeper insights, and advanced automation.",

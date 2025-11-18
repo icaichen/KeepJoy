@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
@@ -57,6 +58,25 @@ class KeepJoyApp extends StatefulWidget {
 class _KeepJoyAppState extends State<KeepJoyApp> {
   Locale? _locale;
   final _authService = AuthService();
+  StreamSubscription? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to auth state changes
+    _authSubscription = _authService.authStateChanges?.listen((event) {
+      // Rebuild when auth state changes
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 
   void _setLocale(Locale locale) {
     setState(() {
@@ -89,8 +109,10 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
           Locale('en'), // English
           Locale('zh'), // Chinese
         ],
-        // Check if user is already authenticated
-        initialRoute: _authService.isAuthenticated ? '/home' : '/welcome',
+        // Use home instead of initialRoute so it rebuilds on auth state change
+        home: _authService.isAuthenticated
+            ? MainNavigator(onLocaleChange: _setLocale)
+            : const WelcomePage(),
         routes: {
           '/welcome': (context) => const WelcomePage(),
           '/login': (context) => const LoginPage(),
@@ -123,13 +145,27 @@ class _MainNavigatorState extends State<MainNavigator>
   final List<ActivityEntry> _activityHistory = [];
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
-  bool _hasFullAccess = true;
+  bool _hasFullAccess = false; // Default to false until verified
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _refreshPremiumAccess();
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
+
+    // Listen to subscription provider changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final subscriptionProvider = Provider.of<SubscriptionProvider>(context, listen: false);
+      subscriptionProvider.addListener(() {
+        if (mounted) {
+          setState(() {
+            _hasFullAccess = subscriptionProvider.isPremium;
+          });
+          print('🔄 Premium status updated from provider: ${subscriptionProvider.isPremium}');
+        }
+      });
+    });
   }
 
   @override
@@ -140,6 +176,27 @@ class _MainNavigatorState extends State<MainNavigator>
 
   Future<void> _refreshPremiumAccess() async {
     final hasAccess = await PremiumAccessService.hasPremiumAccess();
+    print('🔒 Premium Access Check: $hasAccess');
+
+    // Add detailed debugging
+    try {
+      final customerInfo = await SubscriptionService.getCustomerInfo();
+      print('📱 Customer Info - All Entitlements: ${customerInfo.entitlements.all}');
+      print('📱 Customer Info - Active Entitlements: ${customerInfo.entitlements.active}');
+      final premiumEntitlement = customerInfo.entitlements.all['premium'];
+      if (premiumEntitlement != null) {
+        print('✅ Premium Entitlement Found:');
+        print('   - isActive: ${premiumEntitlement.isActive}');
+        print('   - willRenew: ${premiumEntitlement.willRenew}');
+        print('   - periodType: ${premiumEntitlement.periodType}');
+        print('   - expirationDate: ${premiumEntitlement.expirationDate}');
+      } else {
+        print('❌ No premium entitlement found');
+      }
+    } catch (e) {
+      print('❌ Error getting customer info: $e');
+    }
+
     if (!mounted) return;
     setState(() {
       _hasFullAccess = hasAccess;
@@ -408,21 +465,44 @@ class _MainNavigatorState extends State<MainNavigator>
 
   Future<void> _showUpgradeDialog() async {
     final l10n = AppLocalizations.of(context)!;
-    await showDialog<void>(
+
+    // Get current subscription status to show appropriate message
+    String message;
+    try {
+      final customerInfo = await SubscriptionService.getCustomerInfo();
+      final premiumEntitlement = customerInfo.entitlements.all['premium'];
+
+      if (premiumEntitlement != null && !premiumEntitlement.isActive) {
+        // Had premium but it expired
+        message = l10n.premiumExpiredMessage;
+      } else {
+        // Never had premium or trial ended
+        message = l10n.premiumRequiredMessage;
+      }
+    } catch (e) {
+      print('Error fetching subscription status for dialog: $e');
+      message = l10n.premiumRequiredMessage;
+    }
+
+    await showCupertinoDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (dialogContext) => CupertinoAlertDialog(
         title: Text(l10n.premiumRequiredTitle),
-        content: Text(l10n.premiumRequiredMessage),
+        content: Text(message),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(l10n.cancel),
           ),
-          FilledButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () async {
               Navigator.of(dialogContext).pop();
               await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PaywallPage()),
+                CupertinoPageRoute(
+                  builder: (_) => const PaywallPage(),
+                  fullscreenDialog: true,
+                ),
               );
               _refreshPremiumAccess();
             },
