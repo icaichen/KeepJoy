@@ -51,5 +51,9 @@
 	<string>This app needs access to your photo library to select photos of items.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs access to the microphone for video recording.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

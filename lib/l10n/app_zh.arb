@@ -435,6 +435,7 @@
   "paywallRestoreSuccess": "已恢复之前的购买。",
   "paywallRestoreFailure": "暂时没有可恢复的购买记录。",
   "restorePurchases": "恢复购买",
+  "subscribeNow": "立即订阅",
   "mostPopular": "最受欢迎",
   "recommended": "推荐",
   "noOfferingsAvailable": "暂无订阅选项",

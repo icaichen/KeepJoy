@@ -537,6 +537,7 @@
   "paywallRestoreSuccess": "Purchases restored.",
   "paywallRestoreFailure": "No purchases to restore right now.",
   "restorePurchases": "Restore Purchases",
+  "subscribeNow": "Subscribe Now",
   "mostPopular": "Most Popular",
   "recommended": "Recommended",
   "noOfferingsAvailable": "No subscription options available",

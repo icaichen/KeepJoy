@@ -106,11 +106,15 @@ Widget _buildJoySurface({
 class JoyDeclutterFlowPage extends StatefulWidget {
   final Function(DeclutterItem) onItemCompleted;
   final Function(Memory) onMemoryCreated;
+  final bool hasFullAccess;
+  final VoidCallback onRequestUpgrade;
 
   const JoyDeclutterFlowPage({
     super.key,
     required this.onItemCompleted,
     required this.onMemoryCreated,
+    required this.hasFullAccess,
+    required this.onRequestUpgrade,
   });
 
   @override
@@ -137,6 +141,8 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
               photoPath: photo.path,
               onItemCompleted: widget.onItemCompleted,
               onMemoryCreated: widget.onMemoryCreated,
+              hasFullAccess: widget.hasFullAccess,
+              onRequestUpgrade: widget.onRequestUpgrade,
             ),
           ),
         );
@@ -301,11 +307,15 @@ class _PhotoReviewPage extends StatefulWidget {
   final String photoPath;
   final Function(DeclutterItem) onItemCompleted;
   final Function(Memory) onMemoryCreated;
+  final bool hasFullAccess;
+  final VoidCallback onRequestUpgrade;
 
   const _PhotoReviewPage({
     required this.photoPath,
     required this.onItemCompleted,
     required this.onMemoryCreated,
+    required this.hasFullAccess,
+    required this.onRequestUpgrade,
   });
 
   @override
@@ -378,6 +388,8 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
               photoPath: photo.path,
               onItemCompleted: widget.onItemCompleted,
               onMemoryCreated: widget.onMemoryCreated,
+              hasFullAccess: widget.hasFullAccess,
+              onRequestUpgrade: widget.onRequestUpgrade,
             ),
           ),
         );
@@ -412,6 +424,8 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
           category: _selectedCategory,
           onItemCompleted: widget.onItemCompleted,
           onMemoryCreated: widget.onMemoryCreated,
+          hasFullAccess: widget.hasFullAccess,
+          onRequestUpgrade: widget.onRequestUpgrade,
         ),
       ),
     );
@@ -585,6 +599,8 @@ Widget _createJoyQuestionPage({
   required DeclutterCategory category,
   required Function(DeclutterItem) onItemCompleted,
   required Function(Memory) onMemoryCreated,
+  required bool hasFullAccess,
+  required VoidCallback onRequestUpgrade,
 }) {
   final definition = _joyQuestionDefinition(questionIndex);
   return _JoyQuestionPage(
@@ -604,6 +620,8 @@ Widget _createJoyQuestionPage({
               category: category,
               onItemCompleted: onItemCompleted,
               onMemoryCreated: onMemoryCreated,
+              hasFullAccess: hasFullAccess,
+              onRequestUpgrade: onRequestUpgrade,
             ),
           ),
         );
@@ -618,6 +636,8 @@ Widget _createJoyQuestionPage({
               answers: answers,
               onItemCompleted: onItemCompleted,
               onMemoryCreated: onMemoryCreated,
+              hasFullAccess: hasFullAccess,
+              onRequestUpgrade: onRequestUpgrade,
             ),
           ),
         );
@@ -819,6 +839,8 @@ class _SummaryPage extends StatelessWidget {
   final _JoyAnswers answers;
   final Function(DeclutterItem) onItemCompleted;
   final Function(Memory) onMemoryCreated;
+  final bool hasFullAccess;
+  final VoidCallback onRequestUpgrade;
 
   const _SummaryPage({
     required this.photoPath,
@@ -828,6 +850,8 @@ class _SummaryPage extends StatelessWidget {
     required this.answers,
     required this.onItemCompleted,
     required this.onMemoryCreated,
+    required this.hasFullAccess,
+    required this.onRequestUpgrade,
   });
 
   List<String> _getInsights(bool isChinese) {
@@ -985,6 +1009,16 @@ class _SummaryPage extends StatelessWidget {
     onItemCompleted(item);
 
     if (!context.mounted) return;
+
+    // Show memory prompt only if user has premium access
+    if (!hasFullAccess) {
+      // Show upgrade dialog instead
+      onRequestUpgrade();
+      if (context.mounted) {
+        popToHome(context);
+      }
+      return;
+    }
 
     // Show memory prompt
     final shouldCreateMemory = await showCreateMemoryPromptSheet(

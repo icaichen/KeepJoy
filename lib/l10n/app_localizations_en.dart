@@ -1159,6 +1159,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restorePurchases => 'Restore Purchases';
 
   @override
+  String get subscribeNow => 'Subscribe Now';
+
+  @override
   String get mostPopular => 'Most Popular';
 
   @override

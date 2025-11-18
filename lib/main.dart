@@ -448,6 +448,8 @@ class _MainNavigatorState extends State<MainNavigator>
         builder: (_) => JoyDeclutterFlowPage(
           onItemCompleted: _addDeclutteredItem,
           onMemoryCreated: _onMemoryCreated,
+          hasFullAccess: _hasFullAccess,
+          onRequestUpgrade: _showUpgradeDialog,
         ),
       ),
     );
@@ -736,7 +738,13 @@ class _MainNavigatorState extends State<MainNavigator>
                   label: l10n.items,
                   index: 1,
                   isActive: _selectedIndex == 1,
-                  onTap: () => setState(() => _selectedIndex = 1),
+                  onTap: () {
+                    if (!_hasFullAccess) {
+                      _showUpgradeDialog();
+                      return;
+                    }
+                    setState(() => _selectedIndex = 1);
+                  },
                 ),
               ),
               const SizedBox(width: 80), // Space for FAB
@@ -747,7 +755,13 @@ class _MainNavigatorState extends State<MainNavigator>
                   label: l10n.memories,
                   index: 3,
                   isActive: _selectedIndex == 3,
-                  onTap: () => setState(() => _selectedIndex = 3),
+                  onTap: () {
+                    if (!_hasFullAccess) {
+                      _showUpgradeDialog();
+                      return;
+                    }
+                    setState(() => _selectedIndex = 3);
+                  },
                 ),
               ),
               Expanded(
@@ -757,7 +771,13 @@ class _MainNavigatorState extends State<MainNavigator>
                   label: l10n.routeResell,
                   index: 4,
                   isActive: _selectedIndex == 4,
-                  onTap: () => setState(() => _selectedIndex = 4),
+                  onTap: () {
+                    if (!_hasFullAccess) {
+                      _showUpgradeDialog();
+                      return;
+                    }
+                    setState(() => _selectedIndex = 4);
+                  },
                 ),
               ),
             ],

@@ -85,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     } else {
-      await ReminderService.disableGeneralReminders();
+      await ReminderService.disableGeneralReminders(context);
       if (mounted) {
         setState(() {
           _notificationsEnabled = false;

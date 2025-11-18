@@ -1119,6 +1119,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restorePurchases => '恢复购买';
 
   @override
+  String get subscribeNow => '立即订阅';
+
+  @override
   String get mostPopular => '最受欢迎';
 
   @override

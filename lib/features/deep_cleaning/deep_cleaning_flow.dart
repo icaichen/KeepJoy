@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../models/deep_cleaning_session.dart';
 import '../../services/messiness_analysis_service.dart';
 import '../../utils/navigation.dart';
 
@@ -127,18 +128,11 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
-    final areas = isChinese
-        ? ['客厅', '卧室', '衣柜', '书柜', '厨房', '书桌']
-        : [
-            'Living Room',
-            'Bedroom',
-            'Wardrobe',
-            'Bookshelf',
-            'Kitchen',
-            'Desk',
-          ];
 
-    final selectedArea = _areaController.text.trim();
+    // Get all cleaning areas from enum
+    final areas = CleaningArea.values;
+
+    final selectedAreaKey = _areaController.text.trim();
 
     return Scaffold(
       backgroundColor: _deepCleaningBackgroundColor,
@@ -176,12 +170,11 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                         runSpacing: screenHeight * 0.05,
                         children: areas
                             .map(
-                              (label) => _buildCircle(
+                              (area) => _buildCircle(
+                                context,
                                 screenWidth,
-                                label,
-                                isSelected:
-                                    label.toLowerCase() ==
-                                    selectedArea.toLowerCase(),
+                                area,
+                                isSelected: area.key == selectedAreaKey,
                               ),
                             )
                             .toList(),
@@ -290,31 +283,32 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
   }
 
   Widget _buildCircle(
+    BuildContext context,
     double screenWidth,
-    String label, {
+    CleaningArea area, {
     required bool isSelected,
   }) {
     final diameter = screenWidth * 0.22;
 
     // Map areas to icons
-    IconData getIconForArea(String area) {
-      final areaLower = area.toLowerCase();
-      if (areaLower.contains('living') || area == '客厅') {
-        return Icons.weekend_outlined; // Sofa icon
-      } else if (areaLower.contains('bedroom') || area == '卧室') {
-        return Icons.bed_outlined;
-      } else if (areaLower.contains('wardrobe') || area == '衣柜') {
-        return Icons.checkroom_outlined;
-      } else if (areaLower.contains('bookshelf') || area == '书柜') {
-        return Icons.book_outlined;
-      } else if (areaLower.contains('kitchen') || area == '厨房') {
-        return Icons.kitchen_outlined;
-      } else if (areaLower.contains('desk') || area == '书桌') {
-        return Icons.desk_outlined;
-      } else {
-        return Icons.home_outlined; // Default icon
+    IconData getIconForArea(CleaningArea area) {
+      switch (area) {
+        case CleaningArea.livingRoom:
+          return Icons.weekend_outlined;
+        case CleaningArea.bedroom:
+          return Icons.bed_outlined;
+        case CleaningArea.wardrobe:
+          return Icons.checkroom_outlined;
+        case CleaningArea.bookshelf:
+          return Icons.book_outlined;
+        case CleaningArea.kitchen:
+          return Icons.kitchen_outlined;
+        case CleaningArea.desk:
+          return Icons.desk_outlined;
       }
     }
+
+    final label = area.label(context);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -322,7 +316,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
         InkWell(
           onTap: () {
             setState(() {
-              _areaController.text = label;
+              _areaController.text = area.key; // Store the key instead of localized label
             });
           },
           borderRadius: BorderRadius.circular(diameter / 2),
@@ -350,7 +344,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
             ),
             alignment: Alignment.center,
             child: Icon(
-              getIconForArea(label),
+              getIconForArea(area),
               size: 26,
               color: isSelected ? Colors.white : const Color(0xFF1F2937),
             ),

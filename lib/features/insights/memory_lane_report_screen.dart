@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/memory.dart';
+import 'package:keepjoy_app/models/declutter_item.dart';
 
 class MemoryLaneReportScreen extends StatefulWidget {
   const MemoryLaneReportScreen({super.key, required this.memories});
@@ -681,21 +682,25 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
 
   // 3. HORIZONTAL BAR CHART by category
   Widget _buildEmotionByCategory(BuildContext context, bool isChinese) {
-    // Group memories by category (category is a String)
-    final categoryGroups = <String, List<Memory>>{};
+    // Initialize all categories with 0 count
+    final categoryCounts = <DeclutterCategory, int>{};
+    for (final category in DeclutterCategory.values) {
+      categoryCounts[category] = 0;
+    }
 
+    // Count memories by category
     for (final memory in widget.memories) {
       if (memory.category != null && memory.category!.isNotEmpty) {
-        categoryGroups.putIfAbsent(memory.category!, () => []).add(memory);
+        // Find matching enum category
+        final declutterCategory = DeclutterCategory.values.firstWhere(
+          (cat) => cat.english == memory.category || cat.chinese == memory.category,
+          orElse: () => DeclutterCategory.miscellaneous,
+        );
+        categoryCounts[declutterCategory] = (categoryCounts[declutterCategory] ?? 0) + 1;
       }
     }
 
-    // Calculate count per category (since memories don't have joy levels)
-    final categoryCounts = <String, int>{};
-    categoryGroups.forEach((category, memories) {
-      categoryCounts[category] = memories.length;
-    });
-
+    // Sort categories by count (descending)
     final sortedCategories = categoryCounts.keys.toList()
       ..sort((a, b) => categoryCounts[b]!.compareTo(categoryCounts[a]!));
 
@@ -730,32 +735,19 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 20),
-          if (sortedCategories.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Text(
-                  isChinese ? '暂无分类数据' : 'No category data yet',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-                ),
-              ),
-            )
-          else
-            ClipRRect(
-              child: SizedBox(
-                width: double.infinity,
-                height: 260,
-                child: CustomPaint(
-                  painter: _CategoryVerticalBarChartPainter(
-                    categories: sortedCategories,
-                    counts: categoryCounts,
-                    isChinese: isChinese,
-                  ),
+          ClipRRect(
+            child: SizedBox(
+              width: double.infinity,
+              height: 260,
+              child: CustomPaint(
+                painter: _CategoryVerticalBarChartPainter(
+                  categories: sortedCategories,
+                  counts: categoryCounts,
+                  isChinese: isChinese,
                 ),
               ),
             ),
+          ),
         ],
       ),
     );
@@ -1329,8 +1321,8 @@ class _MonthlyHeatmapPainter extends CustomPainter {
 
 // CATEGORY VERTICAL BAR CHART PAINTER
 class _CategoryVerticalBarChartPainter extends CustomPainter {
-  final List<String> categories;
-  final Map<String, int> counts;
+  final List<DeclutterCategory> categories;
+  final Map<DeclutterCategory, int> counts;
   final bool isChinese;
 
   _CategoryVerticalBarChartPainter({
@@ -1417,7 +1409,7 @@ class _CategoryVerticalBarChartPainter extends CustomPainter {
 
       // Category label
       textPainter.text = TextSpan(
-        text: category,
+        text: isChinese ? category.chinese : category.english,
         style: const TextStyle(
           color: Color(0xFF666666),
           fontSize: 10,

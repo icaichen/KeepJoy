@@ -1,3 +1,58 @@
+import 'package:flutter/material.dart';
+
+enum CleaningArea {
+  livingRoom('Living Room', '客厅', 'living_room'),
+  bedroom('Bedroom', '卧室', 'bedroom'),
+  wardrobe('Wardrobe', '衣柜', 'wardrobe'),
+  bookshelf('Bookshelf', '书柜', 'bookshelf'),
+  kitchen('Kitchen', '厨房', 'kitchen'),
+  desk('Desk', '书桌', 'desk');
+
+  const CleaningArea(this.english, this.chinese, this.key);
+  final String english;
+  final String chinese;
+  final String key;
+
+  String label(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode.toLowerCase().startsWith('zh')) {
+      return chinese;
+    }
+    return english;
+  }
+
+  static CleaningArea? fromString(String value) {
+    // Try to match by key first
+    for (final area in CleaningArea.values) {
+      if (area.key == value) return area;
+    }
+    // Handle old keys for backward compatibility
+    if (value == 'closet') return CleaningArea.wardrobe;
+    if (value == 'study') return CleaningArea.bookshelf;
+    if (value == 'bathroom') return null; // Bathroom was removed, no direct mapping
+
+    // Try to match by English or Chinese name (for backward compatibility)
+    for (final area in CleaningArea.values) {
+      if (area.english == value || area.chinese == value) return area;
+    }
+
+    // Additional backward compatibility for old string values
+    if (value == 'Closet' || value == '衣柜') return CleaningArea.wardrobe;
+    if (value == 'Study' || value == '书房') return CleaningArea.bookshelf;
+
+    return null;
+  }
+
+  static String getDisplayName(String storedValue, BuildContext context) {
+    final area = fromString(storedValue);
+    if (area != null) {
+      return area.label(context);
+    }
+    // Fallback to stored value if no match found
+    return storedValue;
+  }
+}
+
 class DeepCleaningSession {
   final String id;
   final String userId; // Foreign key to auth.users

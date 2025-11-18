@@ -2063,6 +2063,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 18),
                               GradientButton(
                                 onPressed: () async {
+                                  if (!widget.hasFullAccess) {
+                                    widget.onRequestUpgrade();
+                                    return;
+                                  }
                                   final memory = await Navigator.of(context)
                                       .push<Memory>(
                                         MaterialPageRoute(
@@ -3079,7 +3083,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
 
-    await showDialog<void>(
+    final shouldLetGo = await showDialog<bool>(
       context: context,
       barrierColor: Colors.black54,
       builder: (dialogContext) {
@@ -3095,7 +3099,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  isChinese ? '让物品离开？' : 'Let it go?',
+                  isChinese ? '让物品离开？' : 'Let this item go?',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -3118,7 +3122,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: () => Navigator.pop(dialogContext),
+                        onPressed: () => Navigator.pop(dialogContext, false),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -3138,11 +3142,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextButton(
-                        onPressed: () {
-                          Navigator.pop(dialogContext);
-                          // Navigate to declutter page
-                          // TODO: Implement navigation to declutter item creation
-                        },
+                        onPressed: () => Navigator.pop(dialogContext, true),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           backgroundColor: const Color(0xFFB794F6),
@@ -3151,7 +3151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                         child: Text(
-                          isChinese ? '开始整理' : 'Start Declutter',
+                          isChinese ? '是的' : 'Yes',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
@@ -3166,6 +3166,167 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       },
+    );
+
+    if (shouldLetGo == true && context.mounted) {
+      await _showDeclutterRouteOptions(context, memory);
+    }
+  }
+
+  Future<void> _showDeclutterRouteOptions(BuildContext context, Memory memory) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
+
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (dialogContext) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isChinese ? '选择离开方式' : 'Choose Route',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese
+                      ? '你想如何让这件物品离开？'
+                      : 'How would you like to let this item go?',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF6B7280),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                _buildRouteOption(
+                  context: dialogContext,
+                  icon: Icons.shopping_bag_outlined,
+                  title: isChinese ? '转卖' : 'Resell',
+                  description: isChinese ? '通过二手平台出售' : 'Sell on secondhand platform',
+                  color: const Color(0xFFFFD93D),
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    // TODO: Navigate to resell item creation
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildRouteOption(
+                  context: dialogContext,
+                  icon: Icons.favorite_outline,
+                  title: isChinese ? '赠送' : 'Gift',
+                  description: isChinese ? '送给需要的人' : 'Give to someone who needs it',
+                  color: const Color(0xFFFF9AA2),
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    // TODO: Navigate to gift item creation
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildRouteOption(
+                  context: dialogContext,
+                  icon: Icons.recycling_outlined,
+                  title: isChinese ? '捐赠/回收' : 'Donate/Recycle',
+                  description: isChinese ? '捐给公益或回收' : 'Donate or recycle',
+                  color: const Color(0xFF5ECFB8),
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    // TODO: Navigate to donate/recycle item creation
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildRouteOption(
+                  context: dialogContext,
+                  icon: Icons.delete_outline,
+                  title: isChinese ? '丢弃' : 'Discard',
+                  description: isChinese ? '直接扔掉' : 'Throw away',
+                  color: const Color(0xFF9CA3AF),
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    // TODO: Navigate to discard item creation
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRouteOption({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF9CA3AF),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

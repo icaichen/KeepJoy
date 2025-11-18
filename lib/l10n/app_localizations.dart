@@ -2208,6 +2208,12 @@ abstract class AppLocalizations {
   /// **'Restore Purchases'**
   String get restorePurchases;
 
+  /// No description provided for @subscribeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe Now'**
+  String get subscribeNow;
+
   /// No description provided for @mostPopular.
   ///
   /// In en, this message translates to:

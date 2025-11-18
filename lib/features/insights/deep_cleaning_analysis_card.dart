@@ -36,35 +36,24 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         .fold(0, (sum, session) => sum + session.elapsedSeconds!);
     final totalTimeHours = totalTimeSeconds / 3600;
 
-    // Group sessions by area
-    final sessionsByArea = <String, List<DeepCleaningSession>>{};
-    for (final session in sessions) {
-      sessionsByArea.update(
-        session.area,
-        (list) => list..add(session),
-        ifAbsent: () => [session],
-      );
-    }
-
-    // Common areas
-    final commonAreas = [
-      l10n.kitchen,
-      l10n.bedroom,
-      l10n.livingRoom,
-      l10n.bathroom,
-      l10n.study,
-      l10n.closet,
-    ];
-
-    // Combine common areas with custom areas
-    final areaSet = <String>{...commonAreas, ...sessionsByArea.keys};
-
-    // Calculate area counts for heatmap
+    // Start with all standard areas from CleaningArea enum, count = 0
     final areaCounts = <String, int>{
-      for (final area in areaSet) area: sessionsByArea[area]?.length ?? 0,
+      for (final area in CleaningArea.values) area.key: 0,
     };
 
-    final allAreas = areaSet.toList()
+    // Count sessions for each area
+    for (final session in sessions) {
+      final cleaningArea = CleaningArea.fromString(session.area);
+      if (cleaningArea != null) {
+        // Standard area - use its key
+        areaCounts[cleaningArea.key] = (areaCounts[cleaningArea.key] ?? 0) + 1;
+      } else {
+        // Custom area entered by user - use the raw string
+        areaCounts[session.area] = (areaCounts[session.area] ?? 0) + 1;
+      }
+    }
+
+    final allAreas = areaCounts.keys.toList()
       ..sort((a, b) {
         final countB = areaCounts[b] ?? 0;
         final countA = areaCounts[a] ?? 0;
@@ -172,37 +161,43 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                 );
               },
             ),
-            child: SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: allAreas.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final area = allAreas[index];
-                  final count = areaCounts[area] ?? 0;
-                  final entry = CleaningAreaLegend.forCount(count);
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: entry.color,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Calculate button width to fit 3 per row with proper spacing
+                final buttonWidth = (constraints.maxWidth - 16) / 3; // 16 = 2 gaps of 8px
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.start,
+                  children: allAreas.map((area) {
+                    final count = areaCounts[area] ?? 0;
+                    final entry = CleaningAreaLegend.forCount(count);
+                    final displayName = CleaningArea.getDisplayName(area, context);
+                    return Container(
+                      width: buttonWidth,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: entry.color,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Text(
-                        '$area ($count)',
+                        '$displayName ($count)',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: entry.textColor,
                           fontWeight: FontWeight.w500,
+                          fontSize: 13,
                         ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  );
-                },
-              ),
+                    );
+                  }).toList(),
+                );
+              },
             ),
           ),
           const SizedBox(height: 24),
@@ -282,9 +277,9 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                   color: const Color(0xFFF3F4F6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.compare_rounded,
-                  color: Color(0xFF6B7280),
+                child: Icon(
+                  _getIconForArea(session.area),
+                  color: const Color(0xFF6B7280),
                 ),
               ),
               const SizedBox(width: 12),
@@ -293,7 +288,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      session.area,
+                      CleaningArea.getDisplayName(session.area, context),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -361,7 +356,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '${session.area} · ${_formatSessionDate(session.startTime, l10n)}',
+                  '${CleaningArea.getDisplayName(session.area, context)} · ${_formatSessionDate(session.startTime, l10n)}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -684,7 +679,28 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         ],
       );
     }
+
+  IconData _getIconForArea(String areaValue) {
+    final area = CleaningArea.fromString(areaValue);
+    if (area != null) {
+      switch (area) {
+        case CleaningArea.livingRoom:
+          return Icons.weekend_outlined;
+        case CleaningArea.bedroom:
+          return Icons.bed_outlined;
+        case CleaningArea.wardrobe:
+          return Icons.checkroom_outlined;
+        case CleaningArea.bookshelf:
+          return Icons.book_outlined;
+        case CleaningArea.kitchen:
+          return Icons.kitchen_outlined;
+        case CleaningArea.desk:
+          return Icons.desk_outlined;
+      }
+    }
+    return Icons.home_outlined; // Default icon
   }
+}
 
 class _PhotoSlide {
   final String label;

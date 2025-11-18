@@ -19,26 +19,62 @@ class ReminderService {
       return false;
     }
 
-    final granted = await NotificationService.instance.ensurePermissions();
-    if (!granted) {
+    try {
+      final granted = await NotificationService.instance.ensurePermissions();
+      if (!granted) {
+        final l10n = AppLocalizations.of(context);
+        final isChinese = l10n?.localeName.startsWith('zh') ?? false;
+        _showSnackBar(
+          context,
+          isChinese
+              ? '无法启用通知。请在系统设置中允许通知权限。'
+              : 'Unable to enable notifications. Please allow notification permissions in system settings.',
+        );
+        return false;
+      }
+
+      await NotificationPreferencesService.setNotificationsEnabled(true);
+      await evaluateAndScheduleGeneralReminder(context);
+
+      final l10n = AppLocalizations.of(context);
+      final isChinese = l10n?.localeName.startsWith('zh') ?? false;
       _showSnackBar(
         context,
-        AppLocalizations.of(context)?.notificationsPermissionDenied ??
-            'Unable to enable notifications.',
+        isChinese ? '通知已启用' : 'Notifications enabled',
+      );
+      return true;
+    } catch (e) {
+      final l10n = AppLocalizations.of(context);
+      final isChinese = l10n?.localeName.startsWith('zh') ?? false;
+      _showSnackBar(
+        context,
+        isChinese ? '启用通知失败：$e' : 'Failed to enable notifications: $e',
       );
       return false;
     }
-
-    await NotificationPreferencesService.setNotificationsEnabled(true);
-    await evaluateAndScheduleGeneralReminder(context);
-    return true;
   }
 
-  static Future<void> disableGeneralReminders() async {
+  static Future<void> disableGeneralReminders(BuildContext context) async {
     if (kIsWeb) return;
-    await NotificationPreferencesService.setNotificationsEnabled(false);
-    await NotificationService.instance.cancelGeneralReminder();
-    await NotificationService.instance.cancelActiveSessionReminder();
+    try {
+      await NotificationPreferencesService.setNotificationsEnabled(false);
+      await NotificationService.instance.cancelGeneralReminder();
+      await NotificationService.instance.cancelActiveSessionReminder();
+
+      final l10n = AppLocalizations.of(context);
+      final isChinese = l10n?.localeName.startsWith('zh') ?? false;
+      _showSnackBar(
+        context,
+        isChinese ? '通知已关闭' : 'Notifications disabled',
+      );
+    } catch (e) {
+      final l10n = AppLocalizations.of(context);
+      final isChinese = l10n?.localeName.startsWith('zh') ?? false;
+      _showSnackBar(
+        context,
+        isChinese ? '关闭通知失败：$e' : 'Failed to disable notifications: $e',
+      );
+    }
   }
 
   static Future<void> evaluateAndScheduleGeneralReminder(
