@@ -30,7 +30,6 @@ import 'package:keepjoy_app/services/auth_service.dart';
 import 'services/notification_service_stub.dart'
     if (dart.library.io) 'services/notification_service_mobile.dart';
 import 'package:keepjoy_app/services/reminder_service.dart';
-import 'services/trial_service.dart';
 import 'services/premium_access_service.dart';
 import 'services/subscription_service.dart';
 import 'providers/subscription_provider.dart';
@@ -41,9 +40,8 @@ void main() async {
   // Initialize Supabase
   await AuthService.initialize();
   await NotificationService.instance.ensureInitialized();
-  await TrialService.ensureInitialized();
-  
-  // Initialize RevenueCat
+
+  // Initialize RevenueCat (handles both subscriptions and trials)
   await SubscriptionService.configure();
 
   runApp(const KeepJoyApp());
@@ -738,13 +736,7 @@ class _MainNavigatorState extends State<MainNavigator>
                   label: l10n.items,
                   index: 1,
                   isActive: _selectedIndex == 1,
-                  onTap: () {
-                    if (!_hasFullAccess) {
-                      _showUpgradeDialog();
-                      return;
-                    }
-                    setState(() => _selectedIndex = 1);
-                  },
+                  onTap: () => setState(() => _selectedIndex = 1),
                 ),
               ),
               const SizedBox(width: 80), // Space for FAB
@@ -771,13 +763,7 @@ class _MainNavigatorState extends State<MainNavigator>
                   label: l10n.routeResell,
                   index: 4,
                   isActive: _selectedIndex == 4,
-                  onTap: () {
-                    if (!_hasFullAccess) {
-                      _showUpgradeDialog();
-                      return;
-                    }
-                    setState(() => _selectedIndex = 4);
-                  },
+                  onTap: () => setState(() => _selectedIndex = 4),
                 ),
               ),
             ],

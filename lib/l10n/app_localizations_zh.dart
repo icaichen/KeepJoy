@@ -1143,16 +1143,70 @@ class AppLocalizationsZh extends AppLocalizations {
   String get freeTrial => '免费试用';
 
   @override
-  String get featureAnnualReports => '年度报告';
+  String get featureMemoriesPage => '心动回忆';
 
   @override
-  String get featureMonthlyReports => '月度报告';
+  String get featureMemoriesPageDesc => '记录并珍藏你的断舍离回忆';
 
   @override
-  String get featureDeepReports => '深度清洁报告';
+  String get featureMemoryLane => '心动记忆';
 
   @override
-  String get featureMemoriesPage => '无限回忆';
+  String get featureMemoryLaneDesc => '可视化你的整理旅程时光线';
+
+  @override
+  String get featureResellTrends => '二手趋势';
+
+  @override
+  String get featureResellTrendsDesc => '追踪物品的潜在转售价值';
+
+  @override
+  String get featureYearlyChronicle => '心动年鉴';
+
+  @override
+  String get featureYearlyChronicleDesc => '深度清理的详细分析报告';
+
+  @override
+  String trialDays(String days) {
+    return '$days天免费试用';
+  }
+
+  @override
+  String startFreeTrial(String days) {
+    return '开始$days天免费试用';
+  }
+
+  @override
+  String get billedYearlyAfterTrial => '试用结束后按年计费';
+
+  @override
+  String get billedMonthlyAfterTrial => '试用结束后按月计费';
+
+  @override
+  String get unlockPremium => '解锁高级功能';
+
+  @override
+  String get premiumFeatures => '高级功能';
+
+  @override
+  String savePercent(String percent) {
+    return '节省$percent%';
+  }
+
+  @override
+  String get perMonth => '/月';
+
+  @override
+  String get perYear => '/年';
+
+  @override
+  String get monthlyPlan => '月度方案';
+
+  @override
+  String get annualPlan => '年度方案';
+
+  @override
+  String get changePlansAnytime => '随时更改或取消订阅';
 
   @override
   String get featureExportData => '导出数据';

@@ -1183,16 +1183,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeTrial => 'Free Trial';
 
   @override
-  String get featureAnnualReports => 'Annual Reports';
+  String get featureMemoriesPage => 'Memories Page';
 
   @override
-  String get featureMonthlyReports => 'Monthly Reports';
+  String get featureMemoriesPageDesc =>
+      'Create and cherish memories of items you let go';
 
   @override
-  String get featureDeepReports => 'Deep Cleaning Reports';
+  String get featureMemoryLane => 'Memory Lane';
 
   @override
-  String get featureMemoriesPage => 'Unlimited Memories';
+  String get featureMemoryLaneDesc =>
+      'Visualize your decluttering journey over time';
+
+  @override
+  String get featureResellTrends => 'Resell Trends';
+
+  @override
+  String get featureResellTrendsDesc =>
+      'Track potential value of items for resale';
+
+  @override
+  String get featureYearlyChronicle => 'Yearly Chronicle';
+
+  @override
+  String get featureYearlyChronicleDesc =>
+      'Detailed insights on your cleaning sessions';
+
+  @override
+  String trialDays(String days) {
+    return '$days-Day Free Trial';
+  }
+
+  @override
+  String startFreeTrial(String days) {
+    return 'Start $days-Day Free Trial';
+  }
+
+  @override
+  String get billedYearlyAfterTrial => 'Billed yearly after free trial';
+
+  @override
+  String get billedMonthlyAfterTrial => 'Billed monthly after free trial';
+
+  @override
+  String get unlockPremium => 'Unlock Premium Features';
+
+  @override
+  String get premiumFeatures => 'Premium Features';
+
+  @override
+  String savePercent(String percent) {
+    return 'Save $percent%';
+  }
+
+  @override
+  String get perMonth => '/mo';
+
+  @override
+  String get perYear => '/yr';
+
+  @override
+  String get monthlyPlan => 'Monthly';
+
+  @override
+  String get annualPlan => 'Annual';
+
+  @override
+  String get changePlansAnytime => 'Change plans or cancel anytime';
 
   @override
   String get featureExportData => 'Export Data';

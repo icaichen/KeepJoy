@@ -443,10 +443,47 @@
   "purchaseSuccessful": "购买成功",
   "purchasesRestored": "购买已恢复",
   "freeTrial": "免费试用",
-  "featureAnnualReports": "年度报告",
-  "featureMonthlyReports": "月度报告", 
-  "featureDeepReports": "深度清洁报告",
-  "featureMemoriesPage": "无限回忆",
+  "featureMemoriesPage": "心动回忆",
+  "featureMemoriesPageDesc": "记录并珍藏你的断舍离回忆",
+  "featureMemoryLane": "心动记忆",
+  "featureMemoryLaneDesc": "可视化你的整理旅程时光线",
+  "featureResellTrends": "二手趋势",
+  "featureResellTrendsDesc": "追踪物品的潜在转售价值",
+  "featureYearlyChronicle": "心动年鉴",
+  "featureYearlyChronicleDesc": "深度清理的详细分析报告",
+  "trialDays": "{days}天免费试用",
+  "@trialDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "startFreeTrial": "开始{days}天免费试用",
+  "@startFreeTrial": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "billedYearlyAfterTrial": "试用结束后按年计费",
+  "billedMonthlyAfterTrial": "试用结束后按月计费",
+  "unlockPremium": "解锁高级功能",
+  "premiumFeatures": "高级功能",
+  "savePercent": "节省{percent}%",
+  "@savePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "perMonth": "/月",
+  "perYear": "/年",
+  "monthlyPlan": "月度方案",
+  "annualPlan": "年度方案",
+  "changePlansAnytime": "随时更改或取消订阅",
   "featureExportData": "导出数据",
   "featureAdvancedInsights": "高级洞察",
   "featureCustomReminders": "自定义提醒",

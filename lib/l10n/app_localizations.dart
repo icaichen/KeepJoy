@@ -2256,29 +2256,125 @@ abstract class AppLocalizations {
   /// **'Free Trial'**
   String get freeTrial;
 
-  /// No description provided for @featureAnnualReports.
-  ///
-  /// In en, this message translates to:
-  /// **'Annual Reports'**
-  String get featureAnnualReports;
-
-  /// No description provided for @featureMonthlyReports.
-  ///
-  /// In en, this message translates to:
-  /// **'Monthly Reports'**
-  String get featureMonthlyReports;
-
-  /// No description provided for @featureDeepReports.
-  ///
-  /// In en, this message translates to:
-  /// **'Deep Cleaning Reports'**
-  String get featureDeepReports;
-
   /// No description provided for @featureMemoriesPage.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited Memories'**
+  /// **'Memories Page'**
   String get featureMemoriesPage;
+
+  /// No description provided for @featureMemoriesPageDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create and cherish memories of items you let go'**
+  String get featureMemoriesPageDesc;
+
+  /// No description provided for @featureMemoryLane.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Lane'**
+  String get featureMemoryLane;
+
+  /// No description provided for @featureMemoryLaneDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Visualize your decluttering journey over time'**
+  String get featureMemoryLaneDesc;
+
+  /// No description provided for @featureResellTrends.
+  ///
+  /// In en, this message translates to:
+  /// **'Resell Trends'**
+  String get featureResellTrends;
+
+  /// No description provided for @featureResellTrendsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Track potential value of items for resale'**
+  String get featureResellTrendsDesc;
+
+  /// No description provided for @featureYearlyChronicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly Chronicle'**
+  String get featureYearlyChronicle;
+
+  /// No description provided for @featureYearlyChronicleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed insights on your cleaning sessions'**
+  String get featureYearlyChronicleDesc;
+
+  /// No description provided for @trialDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-Day Free Trial'**
+  String trialDays(String days);
+
+  /// No description provided for @startFreeTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Start {days}-Day Free Trial'**
+  String startFreeTrial(String days);
+
+  /// No description provided for @billedYearlyAfterTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed yearly after free trial'**
+  String get billedYearlyAfterTrial;
+
+  /// No description provided for @billedMonthlyAfterTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed monthly after free trial'**
+  String get billedMonthlyAfterTrial;
+
+  /// No description provided for @unlockPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Premium Features'**
+  String get unlockPremium;
+
+  /// No description provided for @premiumFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Features'**
+  String get premiumFeatures;
+
+  /// No description provided for @savePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {percent}%'**
+  String savePercent(String percent);
+
+  /// No description provided for @perMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'/mo'**
+  String get perMonth;
+
+  /// No description provided for @perYear.
+  ///
+  /// In en, this message translates to:
+  /// **'/yr'**
+  String get perYear;
+
+  /// No description provided for @monthlyPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthlyPlan;
+
+  /// No description provided for @annualPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual'**
+  String get annualPlan;
+
+  /// No description provided for @changePlansAnytime.
+  ///
+  /// In en, this message translates to:
+  /// **'Change plans or cancel anytime'**
+  String get changePlansAnytime;
 
   /// No description provided for @featureExportData.
   ///

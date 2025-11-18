@@ -545,10 +545,47 @@
   "purchaseSuccessful": "Purchase Successful",
   "purchasesRestored": "Purchases Restored",
   "freeTrial": "Free Trial",
-  "featureAnnualReports": "Annual Reports",
-  "featureMonthlyReports": "Monthly Reports", 
-  "featureDeepReports": "Deep Cleaning Reports",
-  "featureMemoriesPage": "Unlimited Memories",
+  "featureMemoriesPage": "Memories Page",
+  "featureMemoriesPageDesc": "Create and cherish memories of items you let go",
+  "featureMemoryLane": "Memory Lane",
+  "featureMemoryLaneDesc": "Visualize your decluttering journey over time",
+  "featureResellTrends": "Resell Trends",
+  "featureResellTrendsDesc": "Track potential value of items for resale",
+  "featureYearlyChronicle": "Yearly Chronicle",
+  "featureYearlyChronicleDesc": "Detailed insights on your cleaning sessions",
+  "trialDays": "{days}-Day Free Trial",
+  "@trialDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "startFreeTrial": "Start {days}-Day Free Trial",
+  "@startFreeTrial": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "billedYearlyAfterTrial": "Billed yearly after free trial",
+  "billedMonthlyAfterTrial": "Billed monthly after free trial",
+  "unlockPremium": "Unlock Premium Features",
+  "premiumFeatures": "Premium Features",
+  "savePercent": "Save {percent}%",
+  "@savePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "perMonth": "/mo",
+  "perYear": "/yr",
+  "monthlyPlan": "Monthly",
+  "annualPlan": "Annual",
+  "changePlansAnytime": "Change plans or cancel anytime",
   "featureExportData": "Export Data",
   "featureAdvancedInsights": "Advanced Insights",
   "featureCustomReminders": "Custom Reminders",
