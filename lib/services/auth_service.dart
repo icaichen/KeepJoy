@@ -101,7 +101,17 @@ class AuthService {
   /// Sign out
   Future<void> signOut() async {
     if (client == null) return;
-    await client!.auth.signOut();
+
+    try {
+      // Sign out from Supabase with scope: 'local' to clear local session
+      await client!.auth.signOut(scope: SignOutScope.local);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error during sign out: $e');
+      }
+      // Rethrow to let caller handle
+      rethrow;
+    }
   }
 
   /// Reset password (send reset email)
