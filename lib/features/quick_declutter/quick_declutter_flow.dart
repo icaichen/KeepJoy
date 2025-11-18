@@ -944,6 +944,24 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => popToHome(context),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  side: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                child: Text(
+                  isChinese ? '完成整理' : 'Finish Organizing',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ),
+            ),
           ],
         ],
       ),

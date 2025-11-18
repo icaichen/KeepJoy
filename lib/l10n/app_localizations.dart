@@ -2802,6 +2802,18 @@ abstract class AppLocalizations {
   /// **'What did this item bring you?'**
   String get whatDidThisItemBring;
 
+  /// No description provided for @haveYouLetGoOfThisItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Have you let go of this item?'**
+  String get haveYouLetGoOfThisItem;
+
+  /// No description provided for @selectStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Select item status'**
+  String get selectStatus;
+
   /// No description provided for @chooseFromGallery.
   ///
   /// In en, this message translates to:
@@ -3375,7 +3387,7 @@ abstract class AppLocalizations {
   /// No description provided for @whatBroughtYouJoy.
   ///
   /// In en, this message translates to:
-  /// **'What brought you joy today?'**
+  /// **'Which items sparked joy and are worth remembering?'**
   String get whatBroughtYouJoy;
 
   /// No description provided for @shareYourJoy.

@@ -132,7 +132,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
     // Get all cleaning areas from enum
     final areas = CleaningArea.values;
 
-    final selectedAreaKey = _areaController.text.trim();
+    final selectedAreaText = _areaController.text.trim();
 
     return Scaffold(
       backgroundColor: _deepCleaningBackgroundColor,
@@ -174,7 +174,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                                 context,
                                 screenWidth,
                                 area,
-                                isSelected: area.key == selectedAreaKey,
+                                isSelected: area.label(context) == selectedAreaText,
                               ),
                             )
                             .toList(),
@@ -316,7 +316,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
         InkWell(
           onTap: () {
             setState(() {
-              _areaController.text = area.key; // Store the key instead of localized label
+              _areaController.text = area.label(context); // Store the localized label
             });
           },
           borderRadius: BorderRadius.circular(diameter / 2),

@@ -1471,6 +1471,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatDidThisItemBring => 'What did this item bring you?';
 
   @override
+  String get haveYouLetGoOfThisItem => 'Have you let go of this item?';
+
+  @override
+  String get selectStatus => 'Select item status';
+
+  @override
   String get chooseFromGallery => 'Choose from Gallery';
 
   @override
@@ -1784,7 +1790,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickTip => 'Quick Tip';
 
   @override
-  String get whatBroughtYouJoy => 'What brought you joy today?';
+  String get whatBroughtYouJoy =>
+      'Which items sparked joy and are worth remembering?';
 
   @override
   String get shareYourJoy => 'Share Your Joy';

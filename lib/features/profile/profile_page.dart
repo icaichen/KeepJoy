@@ -785,14 +785,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Perform logout
                 await _authService.signOut();
 
-                // Navigate to welcome screen
-                if (mounted) {
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/welcome', (route) => false);
+                // Navigate to welcome screen and remove all previous routes
+                if (mounted && context.mounted) {
+                  // Use the root navigator to ensure we clear everything
+                  Navigator.of(context, rootNavigator: true)
+                      .pushNamedAndRemoveUntil('/welcome', (route) => false);
                 }
               } catch (e) {
-                if (mounted) {
+                if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(

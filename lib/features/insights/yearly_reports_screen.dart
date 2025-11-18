@@ -842,12 +842,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 ),
                                 const SizedBox(height: 20),
 
-                                // Your Joyful Journey (Yearly Insights)
-                                if (_hasYearlyActivity())
-                                  _buildYearlyInsightsCard(isChinese),
-                                if (_hasYearlyActivity())
-                                  const SizedBox(height: 20),
-
                                 // Declutter Heatmap (Past 12 months)
                                 Container(
                                   padding: const EdgeInsets.all(24),
@@ -901,11 +895,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                               final activity =
                                                   past12MonthsActivity[monthKey] ??
                                                   0;
-                                              final intensity =
-                                                  maxActivityPast12 > 0
-                                                  ? (activity /
-                                                        maxActivityPast12)
-                                                  : 0.0;
 
                                               return Expanded(
                                                 child: Padding(
@@ -920,7 +909,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                                         decoration: BoxDecoration(
                                                           color:
                                                               _getHeatmapColor(
-                                                                intensity,
+                                                                activity,
                                                               ),
                                                           borderRadius:
                                                               BorderRadius.circular(
@@ -965,11 +954,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                               final activity =
                                                   past12MonthsActivity[monthKey] ??
                                                   0;
-                                              final intensity =
-                                                  maxActivityPast12 > 0
-                                                  ? (activity /
-                                                        maxActivityPast12)
-                                                  : 0.0;
 
                                               return Expanded(
                                                 child: Padding(
@@ -984,7 +968,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                                         decoration: BoxDecoration(
                                                           color:
                                                               _getHeatmapColor(
-                                                                intensity,
+                                                                activity,
                                                               ),
                                                           borderRadius:
                                                               BorderRadius.circular(
@@ -1048,7 +1032,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: _getHeatmapColor(
-                                                    index / 4,
+                                                    (index * 3) + 1, // Demo colors: 1, 4, 7, 10, 13
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(4),
@@ -1283,6 +1267,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 // Joy Index Trend
                                 _buildJoyIndexCard(context, isChinese),
                                 const SizedBox(height: 20),
+
+                                // Your Joyful Journey (Yearly Insights)
+                                if (_hasYearlyActivity())
+                                  _buildYearlyInsightsCard(isChinese),
+                                if (_hasYearlyActivity())
+                                  const SizedBox(height: 20),
                                 const SizedBox(height: 32),
                         ],
                       ),
@@ -1401,33 +1391,35 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
-  Color _getHeatmapColor(double intensity) {
-    if (intensity == 0) {
+  Color _getHeatmapColor(int count) {
+    // Use actual count instead of relative intensity for consistent colors
+    if (count == 0) {
       return const Color(0xFFE5E7EB); // Gray for no activity
-    } else if (intensity <= 0.2) {
-      return const Color(0xFFDDD6FE); // Very light purple
-    } else if (intensity <= 0.4) {
-      return const Color(0xFFC4B5FD); // Light purple
-    } else if (intensity <= 0.6) {
-      return const Color(0xFFA78BFA); // Medium purple
-    } else if (intensity <= 0.8) {
-      return const Color(0xFF8B5CF6); // Dark purple
+    } else if (count <= 3) {
+      return const Color(0xFFD4E9F7); // Very light blue
+    } else if (count <= 6) {
+      return const Color(0xFFA8D8F0); // Light blue
+    } else if (count <= 9) {
+      return const Color(0xFF7BC8E8); // Medium blue
+    } else if (count <= 12) {
+      return const Color(0xFF4FB8E0); // Dark blue
     } else {
-      return const Color(0xFF7C3AED); // Darkest purple
+      return const Color(0xFF23A7D8); // Darkest blue
     }
   }
 
   Color _getHeatmapColorByCount(int count) {
+    // Same logic as _getHeatmapColor for legend consistency
     if (count == 0) {
       return const Color(0xFFE5E7EB); // Gray
     } else if (count <= 3) {
-      return const Color(0xFFDDD6FE); // Super light purple
+      return const Color(0xFFD4E9F7); // Very light blue
     } else if (count <= 6) {
-      return const Color(0xFFC4B5FD); // Light purple
+      return const Color(0xFFA8D8F0); // Light blue
     } else if (count <= 9) {
-      return const Color(0xFFA78BFA); // Medium purple
+      return const Color(0xFF7BC8E8); // Medium blue
     } else {
-      return const Color(0xFF8B5CF6); // Dark purple
+      return const Color(0xFF4FB8E0); // Dark blue (for 10+)
     }
   }
 
@@ -1484,6 +1476,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           style: const TextStyle(
                             fontSize: 15,
                             color: Color(0xFF374151),
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ],
@@ -1541,44 +1534,49 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   }
 
   Widget _buildJoyIndexCard(BuildContext context, bool isChinese) {
-    // Calculate joy index trend over past 30 days
+    // Calculate joy index trend over past 12 months
     final now = DateTime.now();
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
 
-    // Group items by week
-    final weeklyJoyData = <int, List<int>>{}; // week -> list of joy levels
-    final weeklyJoyCount = <int, int>{}; // week -> count of items with joy
-    final weeklyTotalCount = <int, int>{}; // week -> total items decluttered
+    // Initialize all 12 months
+    final monthlyJoyData = <int, List<int>>{}; // month -> list of joy levels
+    final monthlyJoyCount = <int, int>{}; // month -> count of items with joy
+    final monthlyTotalCount = <int, int>{}; // month -> total items decluttered
+
+    for (int i = 0; i < 12; i++) {
+      monthlyJoyData[i] = [];
+      monthlyJoyCount[i] = 0;
+      monthlyTotalCount[i] = 0;
+    }
 
     for (final item in widget.declutteredItems) {
-      if (item.createdAt.isAfter(thirtyDaysAgo)) {
-        final weekIndex =
-            now.difference(item.createdAt).inDays ~/
-            7; // 0 = this week, 1 = last week, etc.
-        if (weekIndex < 5) {
-          // Only last 5 weeks
-          weeklyTotalCount[weekIndex] = (weeklyTotalCount[weekIndex] ?? 0) + 1;
+      final monthsAgo =
+          ((now.year - item.createdAt.year) * 12 +
+                  (now.month - item.createdAt.month))
+              .clamp(0, 11);
 
-          if (item.joyLevel != null && item.joyLevel! > 0) {
-            weeklyJoyData.putIfAbsent(weekIndex, () => []).add(item.joyLevel!);
-            weeklyJoyCount[weekIndex] = (weeklyJoyCount[weekIndex] ?? 0) + 1;
-          }
+      if (monthsAgo < 12) {
+        monthlyTotalCount[monthsAgo] = (monthlyTotalCount[monthsAgo] ?? 0) + 1;
+
+        if (item.joyLevel != null && item.joyLevel! > 0) {
+          monthlyJoyData.putIfAbsent(monthsAgo, () => []).add(item.joyLevel!);
+          monthlyJoyCount[monthsAgo] = (monthlyJoyCount[monthsAgo] ?? 0) + 1;
         }
       }
     }
 
-    // Calculate weekly joy percent
-    final weeklyJoyPercent = <int, double>{};
-    weeklyTotalCount.forEach((week, total) {
-      final joyCount = weeklyJoyCount[week] ?? 0;
-      weeklyJoyPercent[week] = total > 0 ? (joyCount / total * 100) : 0.0;
-    });
+    // Calculate monthly joy percent for all 12 months
+    final monthlyJoyPercent = <int, double>{};
+    for (int i = 0; i < 12; i++) {
+      final total = monthlyTotalCount[i] ?? 0;
+      final joyCount = monthlyJoyCount[i] ?? 0;
+      monthlyJoyPercent[i] = total > 0 ? (joyCount / total * 100) : 0.0;
+    }
 
-    // Calculate average joy percent
-    final avgJoyPercent = weeklyJoyPercent.isEmpty
+    // Calculate average joy percent (excluding months with no data)
+    final monthsWithData = monthlyJoyPercent.values.where((v) => v > 0).toList();
+    final avgJoyPercent = monthsWithData.isEmpty
         ? 0.0
-        : weeklyJoyPercent.values.reduce((a, b) => a + b) /
-              weeklyJoyPercent.length;
+        : monthsWithData.reduce((a, b) => a + b) / monthsWithData.length;
 
     // Calculate total joy count
     final itemsWithJoy = widget.declutteredItems
@@ -1586,21 +1584,22 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
         .toList();
     final totalJoyCount = itemsWithJoy.length;
 
-    // Determine trend
+    // Determine trend (compare recent 3 months vs older 3 months)
     String trendText;
     String trendIcon;
     Color trendColor;
 
-    if (weeklyJoyPercent.length >= 2) {
-      final weeks = weeklyJoyPercent.keys.toList()..sort();
-      final recentWeek = weeklyJoyPercent[weeks.first] ?? 0;
-      final olderWeek = weeklyJoyPercent[weeks.last] ?? 0;
+    if (monthlyJoyPercent.length >= 6) {
+      // Average of first 3 months (most recent)
+      final recentAvg = (monthlyJoyPercent[0]! + monthlyJoyPercent[1]! + monthlyJoyPercent[2]!) / 3;
+      // Average of months 9-11 (3 months ago)
+      final olderAvg = (monthlyJoyPercent[9]! + monthlyJoyPercent[10]! + monthlyJoyPercent[11]!) / 3;
 
-      if (recentWeek > olderWeek) {
+      if (recentAvg > olderAvg) {
         trendText = isChinese ? '上升' : 'Rising';
         trendIcon = '↑';
         trendColor = const Color(0xFF4CAF50);
-      } else if (recentWeek < olderWeek) {
+      } else if (recentAvg < olderAvg) {
         trendText = isChinese ? '下降' : 'Falling';
         trendIcon = '↓';
         trendColor = const Color(0xFFF44336);
@@ -1755,34 +1754,21 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
           const SizedBox(height: 20),
 
-          // Chart
-          if (weeklyJoyPercent.isEmpty && weeklyJoyCount.isEmpty)
-            Container(
-              height: 150,
-              alignment: Alignment.center,
-              child: Text(
-                isChinese
-                    ? '还没有足够的数据来显示趋势'
-                    : 'Not enough data to show trend yet',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B7280),
-                ),
-              ),
-            )
-          else
-            SizedBox(
-              height: 200,
-              child: CustomPaint(
-                painter: _JoyTrendChartPainter(
-                  weeklyData: _showJoyPercent
-                      ? weeklyJoyPercent
-                      : weeklyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
-                  maxWeeks: 5,
-                  isPercent: _showJoyPercent,
-                  isChinese: isChinese,
-                ),
+          // Chart (always show with 12 months)
+          SizedBox(
+            height: 250,
+            child: CustomPaint(
+              size: const Size(double.infinity, 250),
+              painter: _JoyTrendChartPainter(
+                monthlyData: _showJoyPercent
+                    ? monthlyJoyPercent
+                    : monthlyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
+                maxMonths: 12,
+                isPercent: _showJoyPercent,
+                isChinese: isChinese,
               ),
             ),
+          ),
 
           const SizedBox(height: 20),
 
@@ -2043,21 +2029,21 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 }
 
 class _JoyTrendChartPainter extends CustomPainter {
-  final Map<int, double> weeklyData; // week index -> value (percent or count)
-  final int maxWeeks;
+  final Map<int, double> monthlyData; // month index -> value (percent or count)
+  final int maxMonths;
   final bool isPercent;
   final bool isChinese;
 
   _JoyTrendChartPainter({
-    required this.weeklyData,
-    required this.maxWeeks,
+    required this.monthlyData,
+    required this.maxMonths,
     required this.isPercent,
     required this.isChinese,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (weeklyData.isEmpty) return;
+    if (monthlyData.isEmpty) return;
 
     final paint = Paint()
       ..color = const Color(0xFFFF9AA2)
@@ -2078,57 +2064,88 @@ class _JoyTrendChartPainter extends CustomPainter {
       ..color = const Color(0xFFE0E0E0)
       ..strokeWidth = 1;
 
-    final textPaint = TextPainter(textDirection: ui.TextDirection.ltr);
+    final axisPaint = Paint()
+      ..color = const Color(0xFF9E9E9E)
+      ..strokeWidth = 2;
 
-    // Calculate dimensions
-    final padding = 30.0;
-    final bottomPadding = 40.0;
-    final chartWidth = size.width - (padding * 2);
-    final chartHeight = size.height - padding - bottomPadding;
+    final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
+
+    // Calculate dimensions with space for Y-axis labels
+    const leftPadding = 50.0;
+    const rightPadding = 10.0;
+    const topPadding = 20.0;
+    const bottomPadding = 40.0;
+    final chartWidth = size.width - leftPadding - rightPadding;
+    final chartHeight = size.height - topPadding - bottomPadding;
 
     // Find max value for scaling
-    final maxValue = isPercent
+    double maxValue = isPercent
         ? 100.0
-        : weeklyData.values.reduce((a, b) => a > b ? a : b) *
-              1.2; // Add 20% padding for count
+        : monthlyData.values.reduce((a, b) => a > b ? a : b);
+    if (maxValue == 0) maxValue = 10; // Default when no data
+    if (!isPercent) maxValue = maxValue * 1.2; // Add 20% padding for count
 
-    // Draw horizontal grid lines
+    // Draw Y-axis
+    canvas.drawLine(
+      Offset(leftPadding, topPadding),
+      Offset(leftPadding, size.height - bottomPadding),
+      axisPaint,
+    );
+
+    // Draw X-axis
+    canvas.drawLine(
+      Offset(leftPadding, size.height - bottomPadding),
+      Offset(size.width - rightPadding, size.height - bottomPadding),
+      axisPaint,
+    );
+
+    // Draw horizontal grid lines and Y-axis labels
     for (int i = 0; i <= 5; i++) {
-      final y = padding + (chartHeight * i / 5);
+      final y = topPadding + (chartHeight * i / 5);
       canvas.drawLine(
-        Offset(padding, y),
-        Offset(size.width - padding, y),
+        Offset(leftPadding, y),
+        Offset(size.width - rightPadding, y),
         gridPaint,
+      );
+
+      // Y-axis labels
+      final value = maxValue * (1 - i / 5);
+      textPainter.text = TextSpan(
+        text: value.toStringAsFixed(0),
+        style: const TextStyle(
+          color: Color(0xFF9E9E9E),
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          leftPadding - textPainter.width - 8,
+          y - textPainter.height / 2,
+        ),
       );
     }
 
-    // Prepare data points (reverse order so week 0 is on the right)
+    // Prepare data points for all 12 months (reverse order so month 0 is on the right)
     final points = <Offset>[];
     final labels = <String>[];
-    final sortedWeeks = weeklyData.keys.toList()
-      ..sort((a, b) => b.compareTo(a)); // Descending order
+    final sortedMonths = List.generate(12, (index) => 11 - index); // 11, 10, 9, ..., 0
 
-    // Generate month labels
     final now = DateTime.now();
-    for (int i = 0; i < sortedWeeks.length; i++) {
-      final week = sortedWeeks[i];
-      final value = weeklyData[week]!;
+    for (int i = 0; i < sortedMonths.length; i++) {
+      final month = sortedMonths[i];
+      final value = monthlyData[month] ?? 0.0;
 
-      // X position: spread evenly across chart width
-      final x =
-          padding +
-          (chartWidth * i / (sortedWeeks.length - 1).clamp(1, double.infinity));
-
-      // Y position: scale based on max value
+      final x = leftPadding + (chartWidth * i / 11);
       final normalizedValue = value / maxValue;
-      final y = padding + (chartHeight * (1 - normalizedValue));
+      final y = topPadding + (chartHeight * (1 - normalizedValue));
 
       points.add(Offset(x, y));
 
-      // Calculate which month this week belongs to
-      final weekDate = now.subtract(Duration(days: week * 7));
-      final monthLabel = '${weekDate.month}${isChinese ? '月' : 'M'}';
-      labels.add(monthLabel);
+      final monthDate = DateTime(now.year, now.month - month, 1);
+      labels.add('${monthDate.month}');
     }
 
     if (points.isEmpty) return;
@@ -2199,7 +2216,7 @@ class _JoyTrendChartPainter extends CustomPainter {
       canvas.drawCircle(point, 3, Paint()..color = Colors.white);
 
       // Draw month label below
-      textPaint.text = TextSpan(
+      textPainter.text = TextSpan(
         text: labels[i],
         style: const TextStyle(
           color: Color(0xFF9E9E9E),
@@ -2207,11 +2224,11 @@ class _JoyTrendChartPainter extends CustomPainter {
           fontWeight: FontWeight.w500,
         ),
       );
-      textPaint.layout();
-      textPaint.paint(
+      textPainter.layout();
+      textPainter.paint(
         canvas,
         Offset(
-          point.dx - textPaint.width / 2,
+          point.dx - textPainter.width / 2,
           size.height - bottomPadding + 10,
         ),
       );

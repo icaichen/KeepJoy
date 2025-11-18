@@ -560,6 +560,8 @@
   "createMemory": "创建回忆",
   "createMemoryTitle": "创建回忆",
   "whatDidThisItemBring": "这件物品给你带来了什么？",
+  "haveYouLetGoOfThisItem": "你是否已经放手这件物品？",
+  "selectStatus": "选择物品状态",
   "chooseFromGallery": "从相册选择",
   "addPhoto": "添加照片",
   "captureSpecialMoment": "捕捉这个特别的时刻",
@@ -684,7 +686,7 @@
   "resetPasswordEmailSent": "密码重置邮件已发送！请检查您的收件箱。",
 
   "quickTip": "快速提示",
-  "whatBroughtYouJoy": "今天什么让你快乐？",
+  "whatBroughtYouJoy": "哪些物品值得为其创建回忆？",
   "shareYourJoy": "分享你的快乐",
 
   "monthlyReport": "本月整理报告",

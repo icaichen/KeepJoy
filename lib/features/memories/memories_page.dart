@@ -52,7 +52,7 @@ class _MemoriesPageState extends State<MemoriesPage> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate scroll-based animations
-    const headerHeight = 120.0;
+    const headerHeight = 100.0;
     final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
     final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
     final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
@@ -135,74 +135,54 @@ class _MemoriesPageState extends State<MemoriesPage> {
             left: 0,
             right: 0,
             child: SizedBox(
-              height: headerHeight,
+              height: 100,
               child: Padding(
                 padding: EdgeInsets.only(
                   left: 24,
-                  right: 16,
+                  right: 24,
                   top: topPadding + 12,
                 ),
-                child: Opacity(
-                  opacity: headerOpacity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      pageName,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1C1C1E),
+                        letterSpacing: -0.5,
+                        height: 1.0,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Container(
+                      height: 40,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            pageName,
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1C1C1E),
-                              letterSpacing: -0.5,
-                              height: 1.0,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          _buildViewModeButton(
+                            icon: Icons.grid_view_rounded,
+                            mode: MemoryViewMode.grid,
+                            isSelected: _viewMode == MemoryViewMode.grid,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.joyfulMemories,
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Display',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xFF6B7280),
-                              letterSpacing: 0,
-                            ),
+                          const SizedBox(width: 4),
+                          _buildViewModeButton(
+                            icon: Icons.timeline_rounded,
+                            mode: MemoryViewMode.timeline,
+                            isSelected: _viewMode == MemoryViewMode.timeline,
                           ),
                         ],
                       ),
-                      Container(
-                        height: 40,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildViewModeButton(
-                              icon: Icons.grid_view_rounded,
-                              mode: MemoryViewMode.grid,
-                              isSelected: _viewMode == MemoryViewMode.grid,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildViewModeButton(
-                              icon: Icons.timeline_rounded,
-                              mode: MemoryViewMode.timeline,
-                              isSelected: _viewMode == MemoryViewMode.timeline,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -263,7 +243,7 @@ class _GridView extends StatelessWidget {
       itemCount: memories.length,
       itemBuilder: (context, index) {
         final memory = memories[index];
-        return _MemoryGridItem(memory: memory);
+        return _MemoryGridItem(key: ValueKey(memory.id), memory: memory);
       },
     );
   }
@@ -290,14 +270,14 @@ class _GridViewWrapper extends StatelessWidget {
       itemCount: memories.length,
       itemBuilder: (context, index) {
         final memory = memories[index];
-        return _MemoryGridItem(memory: memory);
+        return _MemoryGridItem(key: ValueKey(memory.id), memory: memory);
       },
     );
   }
 }
 
 class _MemoryGridItem extends StatelessWidget {
-  const _MemoryGridItem({required this.memory});
+  const _MemoryGridItem({super.key, required this.memory});
 
   final Memory memory;
 
@@ -306,7 +286,18 @@ class _MemoryGridItem extends StatelessWidget {
     return GestureDetector(
       onTap: () => _openMemoryDetail(context),
       child: memory.hasPhoto
-          ? Image.file(memory.photoFile!, fit: BoxFit.cover)
+          ? ClipRect(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Image.file(
+                  memory.photoFile!,
+                  fit: BoxFit.cover,
+                  gaplessPlayback: true,
+                  cacheWidth: 400,
+                  cacheHeight: 400,
+                ),
+              ),
+            )
           : Container(
               color: Colors.grey[200],
               child: Center(
@@ -405,6 +396,7 @@ class _TimelineDateSection extends StatelessWidget {
         ...memories.asMap().entries.map((entry) {
           final isLastMemory = entry.key == memories.length - 1 && isLast;
           return _TimelineMemoryItem(
+            key: ValueKey(entry.value.id),
             memory: entry.value,
             showLine: !isLastMemory,
           );
@@ -418,7 +410,7 @@ class _TimelineMemoryItem extends StatelessWidget {
   final Memory memory;
   final bool showLine;
 
-  const _TimelineMemoryItem({required this.memory, required this.showLine});
+  const _TimelineMemoryItem({super.key, required this.memory, required this.showLine});
 
   @override
   Widget build(BuildContext context) {
@@ -554,6 +546,9 @@ class _TimelineMemoryItem extends StatelessWidget {
                           width: double.infinity,
                           height: 200,
                           fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                          cacheWidth: 800,
+                          cacheHeight: 400,
                         ),
                       ),
                       const SizedBox(height: 12),

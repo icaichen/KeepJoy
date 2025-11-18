@@ -66,6 +66,7 @@ class DashboardScreen extends StatefulWidget {
   final List<ResellItem> resellItems;
   final List<DeepCleaningSession> deepCleaningSessions;
   final Function(Memory) onMemoryCreated;
+  final Function(DeclutterItem) onAddItem;
   final bool hasFullAccess;
   final VoidCallback onRequestUpgrade;
 
@@ -90,6 +91,7 @@ class DashboardScreen extends StatefulWidget {
     required this.resellItems,
     required this.deepCleaningSessions,
     required this.onMemoryCreated,
+    required this.onAddItem,
     required this.hasFullAccess,
     required this.onRequestUpgrade,
   });
@@ -1087,6 +1089,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           eventLoader: getEventsForDay,
                           calendarFormat: CalendarFormat.month,
                           startingDayOfWeek: StartingDayOfWeek.monday,
+                          locale: l10n.localeName,
                           headerStyle: HeaderStyle(
                             formatButtonVisible: false,
                             titleCentered: true,
@@ -1581,11 +1584,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   IconData _getIconForMode(SessionMode mode) {
     switch (mode) {
       case SessionMode.deepCleaning:
-        return Icons.spa_rounded;
+        return Icons.cleaning_services_rounded;
       case SessionMode.joyDeclutter:
         return Icons.auto_awesome_rounded;
       case SessionMode.quickDeclutter:
         return Icons.bolt_rounded;
+    }
+  }
+
+  Color _getModeColorForSession(PlannedSession session) {
+    switch (session.mode) {
+      case SessionMode.deepCleaning:
+        return const Color(0xFF10B981); // Green
+      case SessionMode.joyDeclutter:
+        return const Color(0xFF3B82F6); // Blue
+      case SessionMode.quickDeclutter:
+        return const Color(0xFFF59E0B); // Orange
     }
   }
 
@@ -2067,15 +2081,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     widget.onRequestUpgrade();
                                     return;
                                   }
-                                  final memory = await Navigator.of(context)
-                                      .push<Memory>(
+                                  final result = await Navigator.of(context)
+                                      .push<Map<String, dynamic>>(
                                         MaterialPageRoute(
                                           builder: (_) =>
-                                              const CreateMemoryPage(),
+                                              const CreateMemoryPage(
+                                                showStatusSelector: true,
+                                              ),
                                         ),
                                       );
 
-                                  if (memory != null && context.mounted) {
+                                  if (result != null && context.mounted) {
+                                    final memory = result['memory'] as Memory;
+                                    final status = result['status'] as DeclutterStatus?;
+
                                     widget.onMemoryCreated(memory);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -2083,8 +2102,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     );
 
-                                    // Ask if user wants to let go of the item
-                                    await _showLetGoPrompt(context, memory);
+                                    // If user selected a status, create the item
+                                    if (status != null) {
+                                      final item = DeclutterItem(
+                                        id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                                        name: memory.itemName ?? memory.title,
+                                        category: memory.category != null
+                                            ? DeclutterCategory.values.firstWhere(
+                                                (c) => c.name == memory.category,
+                                                orElse: () => DeclutterCategory.miscellaneous,
+                                              )
+                                            : DeclutterCategory.miscellaneous,
+                                        createdAt: DateTime.now(),
+                                        status: status,
+                                        photoPath: memory.photoPath,
+                                      );
+                                      widget.onAddItem(item);
+                                    }
                                   }
                                 },
                                 width: double.infinity,
@@ -2454,17 +2488,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           width: 48,
                                           height: 48,
                                           decoration: BoxDecoration(
-                                            color:
-                                                session.area == 'General' &&
-                                                    session.isCompleted
-                                                ? const Color(0xFF10B981)
+                                            color: session.isCompleted
+                                                ? _getModeColorForSession(session).withValues(alpha: 0.2)
                                                 : const Color(0xFFF3F4F6),
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
-                                            border:
-                                                session.area == 'General' &&
-                                                    session.isCompleted
+                                            border: session.isCompleted
                                                 ? null
                                                 : Border.all(
                                                     color: const Color(
@@ -2473,15 +2503,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                   ),
                                           ),
                                           child: Icon(
-                                            session.area == 'General'
-                                                ? (session.isCompleted
-                                                      ? Icons.check_rounded
-                                                      : Icons.flag_outlined)
-                                                : Icons.calendar_month_rounded,
-                                            color:
-                                                session.area == 'General' &&
-                                                    session.isCompleted
-                                                ? Colors.white
+                                            session.isCompleted
+                                                ? Icons.check_rounded
+                                                : _getIconForMode(session.mode),
+                                            color: session.isCompleted
+                                                ? _getModeColorForSession(session)
                                                 : const Color(0xFF6B7280),
                                             size: 24,
                                           ),
@@ -2493,7 +2519,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                session.goal ?? session.area,
+                                                session.goal ?? (session.mode == SessionMode.deepCleaning
+                                                    ? session.area
+                                                    : session.mode.displayName(l10n)),
                                                 style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -2501,9 +2529,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                     0xFF1C1C1E,
                                                   ),
                                                   decoration:
-                                                      session.area ==
-                                                              'General' &&
-                                                          session.isCompleted
+                                                      session.isCompleted
                                                       ? TextDecoration
                                                             .lineThrough
                                                       : null,
@@ -2536,21 +2562,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),
-                                            activeColor: const Color(
-                                              0xFF10B981,
-                                            ),
+                                            activeColor: _getModeColorForSession(session),
                                           )
                                         else
-                                          GradientButton(
+                                          ElevatedButton(
                                             onPressed: () {
                                               _startSessionFromPlanned(session);
                                             },
-                                            height: 36,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 6,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFF1C1C1E),
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 8,
+                                              ),
+                                              minimumSize: const Size(0, 36),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              elevation: 0,
                                             ),
-                                            child: Text(l10n.dashboardStartNow),
+                                            child: Text(
+                                              l10n.dashboardStartNow,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
                                           ),
                                       ],
                                     ),

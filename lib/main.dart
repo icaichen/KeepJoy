@@ -162,6 +162,8 @@ class _MainNavigatorState extends State<MainNavigator>
   String get _currentUserId {
     final userId = _authService.currentUserId;
     if (userId == null) {
+      debugPrint('❌ ERROR: _currentUserId called but user is null! Stack trace:');
+      debugPrint(StackTrace.current.toString());
       throw StateError(
         'MainNavigator requires an authenticated Supabase user.',
       );
@@ -510,6 +512,9 @@ class _MainNavigatorState extends State<MainNavigator>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    // Debug: Log when MainNavigator rebuilds
+    debugPrint('🔄 MainNavigator build - selectedIndex: $_selectedIndex, authenticated: ${_authService.isAuthenticated}');
+
     final pages = [
       DashboardScreen(
         activeSession: _activeSession,
@@ -531,6 +536,7 @@ class _MainNavigatorState extends State<MainNavigator>
         resellItems: _resellItems,
         deepCleaningSessions: _completedSessions,
         onMemoryCreated: _onMemoryCreated,
+        onAddItem: _addDeclutteredItem,
         hasFullAccess: _hasFullAccess,
         onRequestUpgrade: () => _showUpgradeDialog(),
       ),
@@ -542,17 +548,17 @@ class _MainNavigatorState extends State<MainNavigator>
       ),
       // Placeholder for center button (not used)
       Center(child: Text(l10n.add)),
-      MemoriesPage(
-        memories: List.unmodifiable(_memories),
-        onMemoryDeleted: _onMemoryDeleted,
-        onMemoryUpdated: _onMemoryUpdated,
-        onMemoryCreated: _onMemoryCreated,
-      ),
       ResellScreen(
         items: List.unmodifiable(_declutteredItems),
         resellItems: List.unmodifiable(_resellItems),
         onUpdateResellItem: _updateResellItem,
         onDeleteItem: _deleteDeclutterItem,
+      ),
+      MemoriesPage(
+        memories: List.unmodifiable(_memories),
+        onMemoryDeleted: _onMemoryDeleted,
+        onMemoryUpdated: _onMemoryUpdated,
+        onMemoryCreated: _onMemoryCreated,
       ),
     ];
 
@@ -742,28 +748,28 @@ class _MainNavigatorState extends State<MainNavigator>
               const SizedBox(width: 80), // Space for FAB
               Expanded(
                 child: _buildNavBarItem(
+                  icon: Icons.sell_outlined,
+                  activeIcon: Icons.sell,
+                  label: l10n.routeResell,
+                  index: 3,
+                  isActive: _selectedIndex == 3,
+                  onTap: () => setState(() => _selectedIndex = 3),
+                ),
+              ),
+              Expanded(
+                child: _buildNavBarItem(
                   icon: Icons.bookmark_border,
                   activeIcon: Icons.bookmark,
                   label: l10n.memories,
-                  index: 3,
-                  isActive: _selectedIndex == 3,
+                  index: 4,
+                  isActive: _selectedIndex == 4,
                   onTap: () {
                     if (!_hasFullAccess) {
                       _showUpgradeDialog();
                       return;
                     }
-                    setState(() => _selectedIndex = 3);
+                    setState(() => _selectedIndex = 4);
                   },
-                ),
-              ),
-              Expanded(
-                child: _buildNavBarItem(
-                  icon: Icons.sell_outlined,
-                  activeIcon: Icons.sell,
-                  label: l10n.routeResell,
-                  index: 4,
-                  isActive: _selectedIndex == 4,
-                  onTap: () => setState(() => _selectedIndex = 4),
                 ),
               ),
             ],

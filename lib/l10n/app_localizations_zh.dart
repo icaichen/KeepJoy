@@ -1424,6 +1424,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get whatDidThisItemBring => '这件物品给你带来了什么？';
 
   @override
+  String get haveYouLetGoOfThisItem => '你是否已经放手这件物品？';
+
+  @override
+  String get selectStatus => '选择物品状态';
+
+  @override
   String get chooseFromGallery => '从相册选择';
 
   @override
@@ -1728,7 +1734,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickTip => '快速提示';
 
   @override
-  String get whatBroughtYouJoy => '今天什么让你快乐？';
+  String get whatBroughtYouJoy => '哪些物品值得为其创建回忆？';
 
   @override
   String get shareYourJoy => '分享你的快乐';

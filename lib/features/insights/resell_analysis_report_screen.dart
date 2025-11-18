@@ -413,39 +413,24 @@ class _ResellAnalysisReportScreenState
 
                                   const SizedBox(height: 24),
 
-                                  // Chart
-                                  if (trendData.isEmpty)
-                                    Container(
-                                      height: 200,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        isChinese
-                                            ? '暂无数据'
-                                            : 'No data available',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(color: Colors.black54),
-                                      ),
-                                    )
-                                  else
-                                    ClipRect(
-                                      child: SizedBox(
-                                        height: 250,
-                                        width: double.infinity,
-                                        child: CustomPaint(
-                                          size: const Size(
-                                            double.infinity,
-                                            250,
-                                          ),
-                                          painter: _TrendChartPainter(
-                                            trendData: trendData,
-                                            selectedMetric: _selectedMetric,
-                                            isChinese: isChinese,
-                                          ),
+                                  // Chart (always show, even with no data)
+                                  ClipRect(
+                                    child: SizedBox(
+                                      height: 250,
+                                      width: double.infinity,
+                                      child: CustomPaint(
+                                        size: const Size(
+                                          double.infinity,
+                                          250,
+                                        ),
+                                        painter: _TrendChartPainter(
+                                          trendData: trendData,
+                                          selectedMetric: _selectedMetric,
+                                          isChinese: isChinese,
                                         ),
                                       ),
                                     ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -730,7 +715,7 @@ class _ResellAnalysisReportScreenState
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                           decoration: BoxDecoration(
                             color: isSelected ? Colors.white : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
@@ -744,7 +729,7 @@ class _ResellAnalysisReportScreenState
                                   ]
                                 : [],
                           ),
-                          child: Text(
+                          child: AutoScaleText(
                             metric.label(isChinese),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -1185,16 +1170,19 @@ class _ResellAnalysisReportScreenState
     final now = DateTime.now();
     final monthlyData = <int, List<double>>{};
 
-    // Group data by month (last 6 months)
+    // Initialize all 12 months with empty lists
+    for (int i = 0; i < 12; i++) {
+      monthlyData[i] = [];
+    }
+
+    // Group data by month (last 12 months)
     for (final item in widget.resellItems) {
       final monthsAgo =
           ((now.year - item.createdAt.year) * 12 +
                   (now.month - item.createdAt.month))
-              .clamp(0, 5);
+              .clamp(0, 11);
 
-      if (monthsAgo < 6) {
-        monthlyData.putIfAbsent(monthsAgo, () => []);
-
+      if (monthsAgo < 12) {
         switch (_selectedMetric) {
           case TrendMetric.soldItems:
             // Only count sold items
@@ -1220,7 +1208,7 @@ class _ResellAnalysisReportScreenState
       }
     }
 
-    // Calculate aggregate values
+    // Calculate aggregate values for all 12 months
     final result = <int, double>{};
     monthlyData.forEach((month, values) {
       if (values.isNotEmpty) {
@@ -1232,6 +1220,9 @@ class _ResellAnalysisReportScreenState
           result[month] =
               values.reduce((a, b) => a + b) / values.length; // Average
         }
+      } else {
+        // Set zero for months with no data
+        result[month] = 0.0;
       }
     });
 
@@ -1274,50 +1265,86 @@ class _TrendChartPainter extends CustomPainter {
       ..color = const Color(0xFFE0E0E0)
       ..strokeWidth = 1;
 
+    final axisPaint = Paint()
+      ..color = const Color(0xFF9E9E9E)
+      ..strokeWidth = 2;
+
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
-    // Dimensions
-    const padding = 40.0;
-    const bottomPadding = 50.0;
-    final chartWidth = size.width - (padding * 2);
-    final chartHeight = size.height - padding - bottomPadding;
+    // Dimensions with space for Y-axis labels
+    const leftPadding = 50.0;
+    const rightPadding = 10.0;
+    const topPadding = 20.0;
+    const bottomPadding = 40.0;
+    final chartWidth = size.width - leftPadding - rightPadding;
+    final chartHeight = size.height - topPadding - bottomPadding;
 
-    // Find max value
-    final maxValue = trendData.values.reduce((a, b) => a > b ? a : b) * 1.2;
+    // Find max value (ensure at least 1 to avoid division by zero)
+    double maxValue = trendData.values.reduce((a, b) => a > b ? a : b);
+    if (maxValue == 0) maxValue = 10; // Default max when no data
+    maxValue = maxValue * 1.2;
 
-    // Draw horizontal grid lines
+    // Draw Y-axis
+    canvas.drawLine(
+      Offset(leftPadding, topPadding),
+      Offset(leftPadding, size.height - bottomPadding),
+      axisPaint,
+    );
+
+    // Draw X-axis
+    canvas.drawLine(
+      Offset(leftPadding, size.height - bottomPadding),
+      Offset(size.width - rightPadding, size.height - bottomPadding),
+      axisPaint,
+    );
+
+    // Draw horizontal grid lines and Y-axis labels
     for (int i = 0; i <= 5; i++) {
-      final y = padding + (chartHeight * i / 5);
+      final y = topPadding + (chartHeight * i / 5);
       canvas.drawLine(
-        Offset(padding, y),
-        Offset(size.width - padding, y),
+        Offset(leftPadding, y),
+        Offset(size.width - rightPadding, y),
         gridPaint,
+      );
+
+      // Y-axis labels
+      final value = maxValue * (1 - i / 5);
+      textPainter.text = TextSpan(
+        text: value.toStringAsFixed(0),
+        style: const TextStyle(
+          color: Color(0xFF9E9E9E),
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          leftPadding - textPainter.width - 8,
+          y - textPainter.height / 2,
+        ),
       );
     }
 
-    // Prepare data points (reverse order so month 0 is on the right)
+    // Prepare data points for all 12 months (reverse order so month 0 is on the right)
     final points = <Offset>[];
     final labels = <String>[];
-    final sortedMonths = trendData.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
+    final sortedMonths = List.generate(12, (index) => 11 - index); // 11, 10, 9, ..., 0
 
     final now = DateTime.now();
     for (int i = 0; i < sortedMonths.length; i++) {
       final month = sortedMonths[i];
-      final value = trendData[month]!;
+      final value = trendData[month] ?? 0.0;
 
-      final x =
-          padding +
-          (chartWidth *
-              i /
-              (sortedMonths.length - 1).clamp(1, double.infinity));
+      final x = leftPadding + (chartWidth * i / 11);
       final normalizedValue = value / maxValue;
-      final y = padding + (chartHeight * (1 - normalizedValue));
+      final y = topPadding + (chartHeight * (1 - normalizedValue));
 
       points.add(Offset(x, y));
 
       final monthDate = DateTime(now.year, now.month - month, 1);
-      labels.add('${monthDate.month}${isChinese ? '月' : 'M'}');
+      labels.add('${monthDate.month}');
     }
 
     if (points.isEmpty) return;

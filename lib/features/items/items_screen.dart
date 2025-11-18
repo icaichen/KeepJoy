@@ -218,7 +218,10 @@ class _ItemsScreenState extends State<ItemsScreen> {
               final category = DeclutterCategory.values[index];
               final stats = categoryStats[category] ?? {'total': 0, 'kept': 0};
               return GestureDetector(
-                onTap: () => _showCategoryItems(category, isChinese),
+                onTap: () {
+                  debugPrint('📱 Items: Category tapped - ${category.label(context)}');
+                  _showCategoryItems(category, isChinese);
+                },
                 child: _buildCategoryCard(
                   category,
                   stats['total']!,
@@ -640,7 +643,6 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                 ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
           ],
         ),
       ),
@@ -1235,11 +1237,6 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                 ),
               ],
             ),
-          ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: Color(0xFFD1D5DB),
-            size: 20,
           ),
         ],
       ),

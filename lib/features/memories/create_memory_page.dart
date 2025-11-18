@@ -16,12 +16,14 @@ class CreateMemoryPage extends StatefulWidget {
     this.photoPath,
     this.itemName,
     this.isModal = false,
+    this.showStatusSelector = false,
   });
 
   final DeclutterItem? item;
   final String? photoPath;
   final String? itemName;
   final bool isModal;
+  final bool showStatusSelector;
 
   @override
   State<CreateMemoryPage> createState() => _CreateMemoryPageState();
@@ -34,6 +36,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
   final ImagePicker _picker = ImagePicker();
   DeclutterCategory? _selectedCategory;
   MemorySentiment? _selectedSentiment;
+  DeclutterStatus? _selectedStatus;
   bool _isLoading = false;
   String? _capturedPhotoPath;
 
@@ -184,8 +187,15 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
       sentiment: _selectedSentiment,
     );
 
-    // Return the memory to the caller
-    Navigator.of(context).pop(memory);
+    // Return the memory (and status if showing status selector) to the caller
+    if (widget.showStatusSelector) {
+      Navigator.of(context).pop({
+        'memory': memory,
+        'status': _selectedStatus,
+      });
+    } else {
+      Navigator.of(context).pop(memory);
+    }
   }
 
   String? _currentUserIdOrWarn() {
@@ -568,6 +578,76 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                         );
                       },
                     ),
+
+                    // Item Status (Have you let go of this item?) - only show when called from dashboard
+                    if (widget.showStatusSelector) ...[
+                      const SizedBox(height: 20),
+                      Text(
+                        l10n.haveYouLetGoOfThisItem,
+                        style: const TextStyle(
+                          fontFamily: 'SF Pro Text',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAFAFA),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE5E7EA)),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<DeclutterStatus>(
+                            value: _selectedStatus,
+                            hint: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                l10n.selectStatus,
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  color: Color(0xFF9CA3AF),
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            isExpanded: true,
+                            icon: const Padding(
+                              padding: EdgeInsets.only(right: 16),
+                              child: Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: Color(0xFF6B7280),
+                                size: 24,
+                              ),
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            dropdownColor: Colors.white,
+                            items: DeclutterStatus.values.map((status) {
+                              return DropdownMenuItem<DeclutterStatus>(
+                                value: status,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  child: Text(
+                                    status.label(context),
+                                    style: const TextStyle(
+                                      fontFamily: 'SF Pro Text',
+                                      fontSize: 16,
+                                      color: Color(0xFF111827),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedStatus = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
             ),

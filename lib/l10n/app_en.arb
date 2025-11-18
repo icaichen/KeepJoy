@@ -669,6 +669,8 @@
   "createMemory": "Create Memory",
   "createMemoryTitle": "Create a Memory",
   "whatDidThisItemBring": "What did this item bring you?",
+  "haveYouLetGoOfThisItem": "Have you let go of this item?",
+  "selectStatus": "Select item status",
   "chooseFromGallery": "Choose from Gallery",
   "addPhoto": "Add Photo",
   "captureSpecialMoment": "Capture this special moment",
@@ -793,7 +795,7 @@
   "resetPasswordEmailSent": "Password reset email sent! Please check your inbox.",
 
   "quickTip": "Quick Tip",
-  "whatBroughtYouJoy": "What brought you joy today?",
+  "whatBroughtYouJoy": "Which items sparked joy and are worth remembering?",
   "shareYourJoy": "Share Your Joy",
 
   "monthlyReport": "Monthly Report",

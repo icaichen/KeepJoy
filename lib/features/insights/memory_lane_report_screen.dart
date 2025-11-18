@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -110,10 +111,10 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                     // Content sections
                     Column(
                       children: [
-                        // 1. Emotion Distribution (Vertical Bar Chart)
+                        // 1. Category Statistics (moved to top)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          child: _buildEmotionDistribution(context, isChinese),
+                          child: _buildEmotionByCategory(context, isChinese),
                         ),
                         const SizedBox(height: 20),
 
@@ -124,10 +125,10 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // 3. Emotion by Category (Horizontal Bar Chart)
+                        // 3. Emotion Distribution (moved under heatmap)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _buildEmotionByCategory(context, isChinese),
+                          child: _buildEmotionDistribution(context, isChinese),
                         ),
                         const SizedBox(height: 20),
 
@@ -198,7 +199,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     );
   }
 
-  // 1. VERTICAL BAR CHART for emotions
+  // 1. PIE CHART for emotions
   Widget _buildEmotionDistribution(BuildContext context, bool isChinese) {
     final sentimentCounts = <MemorySentiment, int>{};
     for (final memory in widget.memories) {
@@ -241,14 +242,15 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       },
     ];
 
-    final maxCount = sentimentCounts.values.isEmpty
-        ? 1
-        : sentimentCounts.values.reduce((a, b) => a > b ? a : b);
+    final totalCount = sentimentCounts.values.fold<int>(0, (sum, count) => sum + count);
+    final hasData = totalCount > 0;
 
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -268,96 +270,33 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             isChinese ? '每个回忆都是珍贵的' : 'Every memory is precious',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.black54,
+            ),
           ),
           const SizedBox(height: 24),
-          ...emotions.map((emotion) {
-            final sentiment = emotion['sentiment'] as MemorySentiment;
-            final count = sentimentCounts[sentiment] ?? 0;
-            final color = emotion['color'] as Color;
-            final label = emotion['label'] as String;
-            final normalizedWidth = maxCount > 0 ? (count / maxCount) : 0.0;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 80,
-                    child: Text(
-                      label,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF4B5563),
-                            fontWeight: FontWeight.w500,
-                          ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Container(
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF3F4F6),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        if (count > 0)
-                          FractionallySizedBox(
-                            widthFactor: normalizedWidth,
-                            child: Container(
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: color,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 8),
-                              child: Text(
-                                count.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (count == 0)
-                          Container(
-                            height: 32,
-                            alignment: Alignment.centerLeft,
-                            padding: const EdgeInsets.only(left: 8),
-                            child: Text(
-                              '0',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+          Center(
+            child: _buildEmotionDonut(
+              context: context,
+              chartSize: 220,
+              emotions: emotions,
+              sentimentCounts: sentimentCounts,
+              totalCount: totalCount,
+              hasData: hasData,
+              isChinese: isChinese,
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildEmotionLegend(
+            emotions: emotions,
+            sentimentCounts: sentimentCounts,
+            totalCount: totalCount,
+            isChinese: isChinese,
+            context: context,
+          ),
         ],
       ),
     );
@@ -412,9 +351,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       final parts = mostActiveMonth!.split('-');
       if (parts.length < 2) return mostActiveMonth!;
       final month = int.tryParse(parts[1]);
-      final year = parts[0];
       if (month == null) return mostActiveMonth!;
-      return isChinese ? '$month月 $year' : '${_getMonthAbbrev(month)} $year';
+      return isChinese ? '$month月' : _getMonthAbbrev(month);
     }
 
     return Container(
@@ -455,7 +393,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   final monthKey =
                       '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
                   final count = monthlyData[monthKey] ?? 0;
-                  final intensity = maxCount > 0 ? (count / maxCount) : 0.0;
 
                   return Expanded(
                     child: Padding(
@@ -466,7 +403,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                             width: double.infinity,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: _getHeatmapColor(intensity),
+                              color: _getHeatmapColor(count),
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
@@ -498,7 +435,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   final monthKey =
                       '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
                   final count = monthlyData[monthKey] ?? 0;
-                  final intensity = maxCount > 0 ? (count / maxCount) : 0.0;
 
                   return Expanded(
                     child: Padding(
@@ -509,7 +445,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                             width: double.infinity,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: _getHeatmapColor(intensity),
+                              color: _getHeatmapColor(count),
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
@@ -551,7 +487,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                     height: 16,
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: _getHeatmapColor(index / 4),
+                      color: _getHeatmapColor((index * 3) + 1), // Demo colors: 1, 4, 7, 10, 13
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -996,31 +932,35 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
-  Color _getHeatmapColor(double intensity) {
-    if (intensity == 0) {
-      return const Color(0xFFE0E0E0);
-    } else if (intensity <= 0.25) {
-      return const Color(0xFFE8D9F7);
-    } else if (intensity <= 0.5) {
-      return const Color(0xFFD4B6F0);
-    } else if (intensity <= 0.75) {
-      return const Color(0xFFC39BE8);
+  Color _getHeatmapColor(int count) {
+    // Use actual count instead of relative intensity for consistent colors
+    if (count == 0) {
+      return const Color(0xFFE5E7EB); // Gray for no activity
+    } else if (count <= 3) {
+      return const Color(0xFFD4E9F7); // Very light blue
+    } else if (count <= 6) {
+      return const Color(0xFFA8D8F0); // Light blue
+    } else if (count <= 9) {
+      return const Color(0xFF7BC8E8); // Medium blue
+    } else if (count <= 12) {
+      return const Color(0xFF4FB8E0); // Dark blue
     } else {
-      return const Color(0xFFB794F6);
+      return const Color(0xFF23A7D8); // Darkest blue
     }
   }
 
   Color _getHeatmapColorByCount(int count) {
+    // Same logic as _getHeatmapColor for legend consistency
     if (count == 0) {
-      return const Color(0xFFE0E0E0); // Gray
+      return const Color(0xFFE5E7EB); // Gray
     } else if (count <= 3) {
-      return const Color(0xFFE8D9F7); // Super light purple
+      return const Color(0xFFD4E9F7); // Very light blue
     } else if (count <= 6) {
-      return const Color(0xFFD4B6F0); // Light purple
+      return const Color(0xFFA8D8F0); // Light blue
     } else if (count <= 9) {
-      return const Color(0xFFC39BE8); // Medium purple
+      return const Color(0xFF7BC8E8); // Medium blue
     } else {
-      return const Color(0xFFB794F6); // Dark purple
+      return const Color(0xFF4FB8E0); // Dark blue (for 10+)
     }
   }
 
@@ -1077,6 +1017,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                           style: const TextStyle(
                             fontSize: 15,
                             color: Color(0xFF374151),
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ],
@@ -1107,6 +1048,154 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       'Dec',
     ];
     return months[month - 1];
+  }
+
+  Widget _buildEmotionDonut({
+    required BuildContext context,
+    required double chartSize,
+    required List<Map<String, dynamic>> emotions,
+    required Map<MemorySentiment, int> sentimentCounts,
+    required int totalCount,
+    required bool hasData,
+    required bool isChinese,
+  }) {
+    final theme = Theme.of(context);
+    final emptyTitle = isChinese ? '暂无回忆数据' : 'No memories yet';
+    final emptySubtitle = isChinese
+        ? '创建一些回忆后即可看到情绪分布。'
+        : 'Create some memories to see the emotion breakdown.';
+    final totalLabel = isChinese ? '条回忆' : 'memories';
+
+    final innerWidth = chartSize * 0.65;
+
+    // Create slices list with only emotions that have count > 0
+    final slices = hasData
+        ? emotions.where((emotion) {
+            final sentiment = emotion['sentiment'] as MemorySentiment;
+            final count = sentimentCounts[sentiment] ?? 0;
+            return count > 0;
+          }).toList()
+        : <Map<String, dynamic>>[];
+
+    return SizedBox(
+      width: chartSize,
+      height: chartSize,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: Size.square(chartSize),
+            painter: _EmotionDonutPainter(
+              emotions: slices,
+              sentimentCounts: sentimentCounts,
+              totalCount: totalCount,
+            ),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: hasData
+                ? SizedBox(
+                    key: const ValueKey('emotionData'),
+                    width: innerWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$totalCount',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          totalLabel,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : SizedBox(
+                    key: const ValueKey('emotionEmpty'),
+                    width: innerWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          emptyTitle,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF374151),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          emptySubtitle,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmotionLegend({
+    required List<Map<String, dynamic>> emotions,
+    required Map<MemorySentiment, int> sentimentCounts,
+    required int totalCount,
+    required bool isChinese,
+    required BuildContext context,
+  }) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (final emotion in emotions)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: emotion['color'] as Color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    emotion['label'] as String,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 
@@ -1333,13 +1422,13 @@ class _CategoryVerticalBarChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const padding = 32.0;
+    const padding = 16.0;
     const bottomPadding = 80.0;
     final chartWidth = size.width - padding * 2;
     final chartHeight = size.height - padding - bottomPadding;
     final double barWidth = categories.isEmpty
         ? 0.0
-        : (chartWidth / categories.length) * 0.5;
+        : (chartWidth / categories.length) * 0.7;
     final double barSpacing = categories.isEmpty
         ? 0.0
         : chartWidth / categories.length;
@@ -1425,6 +1514,155 @@ class _CategoryVerticalBarChartPainter extends CustomPainter {
         ),
       );
     }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+// Donut Chart Painter for Emotion Distribution
+class _EmotionDonutPainter extends CustomPainter {
+  final List<Map<String, dynamic>> emotions;
+  final Map<MemorySentiment, int> sentimentCounts;
+  final int totalCount;
+
+  _EmotionDonutPainter({
+    required this.emotions,
+    required this.sentimentCounts,
+    required this.totalCount,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final strokeWidth = radius * 0.32;
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
+
+    final basePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..color = const Color(0xFFE7EAF6);
+
+    canvas.drawArc(rect, 0, math.pi * 2, false, basePaint);
+
+    if (totalCount == 0) {
+      return;
+    }
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    double startAngle = -math.pi / 2;
+
+    for (final emotion in emotions) {
+      final sentiment = emotion['sentiment'] as MemorySentiment;
+      final count = sentimentCounts[sentiment] ?? 0;
+      if (count <= 0) continue;
+      final sweepAngle = (count / totalCount) * math.pi * 2;
+      if (sweepAngle <= 0) continue;
+
+      final color = emotion['color'] as Color;
+      paint.shader = SweepGradient(
+        startAngle: startAngle,
+        endAngle: startAngle + sweepAngle,
+        colors: [color.withValues(alpha: 0.65), color],
+      ).createShader(rect);
+
+      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _EmotionPieChartPainter extends CustomPainter {
+  final List<Map<String, dynamic>> emotions;
+  final Map<MemorySentiment, int> sentimentCounts;
+  final int totalCount;
+  final bool hasData;
+
+  _EmotionPieChartPainter({
+    required this.emotions,
+    required this.sentimentCounts,
+    required this.totalCount,
+    required this.hasData,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) / 2;
+
+    if (!hasData) {
+      // Draw gray circle when no data
+      final grayPaint = Paint()
+        ..color = const Color(0xFFE5E7EB)
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(center, radius, grayPaint);
+    } else {
+      double startAngle = -math.pi / 2; // Start from top
+
+      for (final emotion in emotions) {
+        final sentiment = emotion['sentiment'] as MemorySentiment;
+        final count = sentimentCounts[sentiment] ?? 0;
+        final color = emotion['color'] as Color;
+
+        if (count == 0) continue;
+
+        final sweepAngle = (count / totalCount) * 2 * math.pi;
+
+        final paint = Paint()
+          ..color = color
+          ..style = PaintingStyle.fill;
+
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius),
+          startAngle,
+          sweepAngle,
+          true,
+          paint,
+        );
+
+        startAngle += sweepAngle;
+      }
+    }
+
+    // Draw white circle in center to create donut effect
+    final centerCirclePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(center, radius * 0.5, centerCirclePaint);
+
+    // Draw total count in center
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: totalCount.toString(),
+        style: const TextStyle(
+          color: Color(0xFF111827),
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        center.dx - textPainter.width / 2,
+        center.dy - textPainter.height / 2,
+      ),
+    );
   }
 
   @override
