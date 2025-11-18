@@ -286,15 +286,14 @@ class _MemoryGridItem extends StatelessWidget {
     return GestureDetector(
       onTap: () => _openMemoryDetail(context),
       child: memory.hasPhoto
-          ? ClipRect(
-              child: AspectRatio(
-                aspectRatio: 1,
+          ? AspectRatio(
+              aspectRatio: 1.0,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
                 child: Image.file(
                   memory.photoFile!,
                   fit: BoxFit.cover,
                   gaplessPlayback: true,
-                  cacheWidth: 400,
-                  cacheHeight: 400,
                 ),
               ),
             )
@@ -539,16 +538,15 @@ class _TimelineMemoryItem extends StatelessWidget {
 
                     // Photo if present
                     if (memory.hasPhoto) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          memory.photoFile!,
-                          width: double.infinity,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          gaplessPlayback: true,
-                          cacheWidth: 800,
-                          cacheHeight: 400,
+                      AspectRatio(
+                        aspectRatio: 1.0,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            memory.photoFile!,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),

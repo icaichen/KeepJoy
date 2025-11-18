@@ -604,12 +604,18 @@ class _PaywallPageState extends State<PaywallPage> {
     });
 
     try {
-      await SubscriptionService.restorePurchases();
+      final customerInfo = await SubscriptionService.restorePurchases();
+      print('🔄 Restore result - Active entitlements: ${customerInfo.entitlements.active}');
 
       if (mounted) {
         // Refresh subscription status
         await Provider.of<SubscriptionProvider>(context, listen: false)
             .refreshSubscriptionStatus();
+
+        // Check premium status after refresh
+        final provider =
+            Provider.of<SubscriptionProvider>(context, listen: false);
+        print('✅ Premium status after restore: ${provider.isPremium}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -619,13 +625,12 @@ class _PaywallPageState extends State<PaywallPage> {
         );
 
         // Close paywall if premium now
-        final provider =
-            Provider.of<SubscriptionProvider>(context, listen: false);
         if (provider.isPremium) {
           Navigator.of(context).pop();
         }
       }
     } catch (e) {
+      print('❌ Restore error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
