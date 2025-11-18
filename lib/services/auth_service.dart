@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:keepjoy_app/config/supabase_config.dart';
+import 'package:keepjoy_app/services/subscription_service.dart';
 
 /// Authentication Service
 /// Handles user authentication, registration, and session management
@@ -75,10 +76,25 @@ class AuthService {
         'Please configure SUPABASE_URL and SUPABASE_ANON_KEY to use authentication.',
       );
     }
-    return await client!.auth.signUp(
+
+    final response = await client!.auth.signUp(
       email: email,
       password: password,
     );
+
+    // Login to RevenueCat with Supabase user ID to link subscription
+    if (response.user != null) {
+      try {
+        await SubscriptionService.loginUser(response.user!.id);
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('Warning: Failed to login to RevenueCat: $e');
+        }
+        // Don't fail the signup if RevenueCat fails
+      }
+    }
+
+    return response;
   }
 
   /// Sign in with email and password
@@ -92,10 +108,25 @@ class AuthService {
         'Please configure SUPABASE_URL and SUPABASE_ANON_KEY to use authentication.',
       );
     }
-    return await client!.auth.signInWithPassword(
+
+    final response = await client!.auth.signInWithPassword(
       email: email,
       password: password,
     );
+
+    // Login to RevenueCat with Supabase user ID to link subscription
+    if (response.user != null) {
+      try {
+        await SubscriptionService.loginUser(response.user!.id);
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('Warning: Failed to login to RevenueCat: $e');
+        }
+        // Don't fail the login if RevenueCat fails
+      }
+    }
+
+    return response;
   }
 
   /// Sign out
@@ -103,6 +134,9 @@ class AuthService {
     if (client == null) return;
 
     try {
+      // Logout from RevenueCat first
+      await SubscriptionService.logoutUser();
+
       // Sign out from Supabase with scope: 'local' to clear local session
       await client!.auth.signOut(scope: SignOutScope.local);
     } catch (e) {

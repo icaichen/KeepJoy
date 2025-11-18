@@ -45,6 +45,17 @@ void main() async {
   // Initialize RevenueCat (handles both subscriptions and trials)
   await SubscriptionService.configure();
 
+  // If user is already logged in, login to RevenueCat
+  final authService = AuthService();
+  final currentUserId = authService.currentUserId;
+  if (currentUserId != null) {
+    try {
+      await SubscriptionService.loginUser(currentUserId);
+    } catch (e) {
+      print('Warning: Failed to login to RevenueCat on startup: $e');
+    }
+  }
+
   runApp(const KeepJoyApp());
 }
 

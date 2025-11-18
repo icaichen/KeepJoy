@@ -34,6 +34,28 @@ class SubscriptionService {
     }
   }
 
+  /// Login user to RevenueCat with Supabase user ID
+  /// This ensures subscription is tied to the user account
+  static Future<void> loginUser(String userId) async {
+    try {
+      await Purchases.logIn(userId);
+      print('✅ RevenueCat user logged in: $userId');
+    } catch (e) {
+      print('❌ RevenueCat login error: $e');
+      rethrow;
+    }
+  }
+
+  /// Logout user from RevenueCat
+  static Future<void> logoutUser() async {
+    try {
+      await Purchases.logOut();
+      print('✅ RevenueCat user logged out');
+    } catch (e) {
+      print('❌ RevenueCat logout error: $e');
+    }
+  }
+
   /// Check if user has active premium subscription
   static Future<bool> isPremium() async {
     try {
