@@ -340,77 +340,79 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
               top: 12,
               bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '${CleaningArea.getDisplayName(session.area, context)} · ${_formatSessionDate(session.startTime, l10n)}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+                  const SizedBox(height: 16),
+                  Text(
+                    '${CleaningArea.getDisplayName(session.area, context)} · ${_formatSessionDate(session.startTime, l10n)}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatSessionTime(session.startTime, l10n),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatSessionTime(session.startTime, l10n),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _buildPhotoCarousel(context, l10n, session),
-                const SizedBox(height: 18),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  const SizedBox(height: 16),
+                  _buildPhotoCarousel(context, l10n, session),
+                  const SizedBox(height: 18),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                    ),
+                    child: _buildSessionDetailList(
+                      l10n: l10n,
+                      colon: l10n.localeName.toLowerCase().startsWith('zh') ? '：' : ':',
+                      itemsValue: session.itemsCount?.toString() ?? '--',
+                      durationValue: session.elapsedSeconds != null
+                          ? _formatDuration(session.elapsedSeconds!, l10n)
+                          : '--',
+                      beforeValue: session.beforeMessinessIndex != null
+                          ? session.beforeMessinessIndex!.toStringAsFixed(1)
+                          : '--',
+                      afterValue: session.afterMessinessIndex != null
+                          ? session.afterMessinessIndex!.toStringAsFixed(1)
+                          : '--',
+                      improvementValue: improvement != null
+                          ? '${improvement.toStringAsFixed(0)}%'
+                          : '--',
+                      focusValue: session.focusIndex?.toString() ?? '--',
+                      joyValue: session.moodIndex?.toString() ?? '--',
+                    ),
                   ),
-                  child: _buildSessionDetailList(
-                    l10n: l10n,
-                    colon: l10n.localeName.toLowerCase().startsWith('zh') ? '：' : ':',
-                    itemsValue: session.itemsCount?.toString() ?? '--',
-                    durationValue: session.elapsedSeconds != null
-                        ? _formatDuration(session.elapsedSeconds!, l10n)
-                        : '--',
-                    beforeValue: session.beforeMessinessIndex != null
-                        ? session.beforeMessinessIndex!.toStringAsFixed(1)
-                        : '--',
-                    afterValue: session.afterMessinessIndex != null
-                        ? session.afterMessinessIndex!.toStringAsFixed(1)
-                        : '--',
-                    improvementValue: improvement != null
-                        ? '${improvement.toStringAsFixed(0)}%'
-                        : '--',
-                    focusValue: session.focusIndex?.toString() ?? '--',
-                    joyValue: session.moodIndex?.toString() ?? '--',
+                  const SizedBox(height: 18),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      child: Text(l10n.close),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 18),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(sheetContext),
-                    child: Text(l10n.close),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

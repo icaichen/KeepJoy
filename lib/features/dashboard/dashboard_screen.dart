@@ -2147,7 +2147,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             color: Colors.white,
                                             letterSpacing: 0,
                                           ),
-                                      overflow: TextOverflow.visible,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
