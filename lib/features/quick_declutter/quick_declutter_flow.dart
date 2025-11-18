@@ -285,16 +285,6 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                isChinese
-                    ? '快速拍攝多個物品,稍後再決定去留。'
-                    : 'Quickly capture multiple items—decide later.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
             ],
           ),
         ),

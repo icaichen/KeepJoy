@@ -26,7 +26,7 @@ class DeepCleaningReportScreen extends StatelessWidget {
           backgroundColor: const Color(0xFFF5F5F7),
           elevation: 0,
           title: Text(
-            isChinese ? '深度整理分析' : 'Deep Cleaning Analytics',
+            isChinese ? '大扫除分析' : 'Deep Reset Analytics',
             style: const TextStyle(
               fontFamily: 'SF Pro Display',
               fontSize: 20,
@@ -55,7 +55,7 @@ class DeepCleaningReportScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                isChinese ? '完成更多深度整理任务以查看分析' : 'Complete more deep cleaning sessions to view analytics',
+                isChinese ? '完成更多大扫除任务以查看分析' : 'Complete more deep cleaning sessions to view analytics',
                 style: const TextStyle(
                   fontSize: 14,
                   color: Color(0xFF9CA3AF),
@@ -92,7 +92,7 @@ class DeepCleaningReportScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF5F5F7),
         elevation: 0,
         title: Text(
-          isChinese ? '深度整理分析' : 'Deep Cleaning Analytics',
+          isChinese ? '大扫除分析' : 'Deep Reset Analytics',
           style: const TextStyle(
             fontFamily: 'SF Pro Display',
             fontSize: 20,

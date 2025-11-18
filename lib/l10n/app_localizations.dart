@@ -137,13 +137,13 @@ abstract class AppLocalizations {
   /// No description provided for @joyDeclutterFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Keep only what sparks joy'**
+  /// **'Help you make difficult decision'**
   String get joyDeclutterFlowDescription;
 
   /// No description provided for @quickDeclutterFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Fast pass: clear a spot in minutes'**
+  /// **'Only keep items that bring joys'**
   String get quickDeclutterFlowDescription;
 
   /// No description provided for @deepCleaningFlowDescription.
@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'Monthly Progress'**
   String get dashboardMonthlyProgress;
 
+  /// No description provided for @dashboardYearlyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly Progress'**
+  String get dashboardYearlyProgress;
+
   /// No description provided for @dashboardDeclutteredLabel.
   ///
   /// In en, this message translates to:
@@ -359,37 +365,37 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardResellReportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Second-hand Trends'**
+  /// **'Resale Insights'**
   String get dashboardResellReportTitle;
 
   /// No description provided for @dashboardResellReportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'View full report'**
+  /// **'Track second-hand performance'**
   String get dashboardResellReportSubtitle;
 
   /// No description provided for @dashboardMemoryLaneTitle.
   ///
   /// In en, this message translates to:
-  /// **'Heartfelt Memories'**
+  /// **'Annual Memory'**
   String get dashboardMemoryLaneTitle;
 
   /// No description provided for @dashboardMemoryLaneSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Revisit your journey'**
+  /// **'Revisit your yearly highlights'**
   String get dashboardMemoryLaneSubtitle;
 
   /// No description provided for @dashboardYearlyReportsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Heartfelt Chronicles'**
+  /// **'Year in Review'**
   String get dashboardYearlyReportsTitle;
 
   /// No description provided for @dashboardYearlyReportsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'View annual summary'**
+  /// **'See year-round insights'**
   String get dashboardYearlyReportsSubtitle;
 
   /// No description provided for @dashboardCurrentStreakTitle.
@@ -449,7 +455,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningAnalysisTitle.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning Analysis'**
+  /// **'Deep Reset Analysis'**
   String get deepCleaningAnalysisTitle;
 
   /// No description provided for @dashboardSessionsLabel.
@@ -1593,7 +1599,7 @@ abstract class AppLocalizations {
   /// No description provided for @captureItemToStart.
   ///
   /// In en, this message translates to:
-  /// **'Capture an item to start decluttering'**
+  /// **'Capture an item and let us guide you through the decision'**
   String get captureItemToStart;
 
   /// No description provided for @takePicture.
@@ -1623,7 +1629,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningTitle.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning'**
+  /// **'Deep Reset'**
   String get deepCleaningTitle;
 
   /// No description provided for @continueButton.
@@ -1683,7 +1689,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningSessionCompleted.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning session completed'**
+  /// **'Deep Reset session completed'**
   String get deepCleaningSessionCompleted;
 
   /// No description provided for @memoriesTitle.
@@ -2097,7 +2103,7 @@ abstract class AppLocalizations {
   /// No description provided for @reminderActiveSessionBody.
   ///
   /// In en, this message translates to:
-  /// **'Your deep cleaning session is still running. Come back to finish and log your progress.'**
+  /// **'Your deep reset session is still running. Come back to finish and log your progress.'**
   String get reminderActiveSessionBody;
 
   /// No description provided for @memoryNoDescription.
@@ -2115,7 +2121,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumRequiredMessage.
   ///
   /// In en, this message translates to:
-  /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.'**
+  /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue deep reset sessions, unlock full reports, and keep reminders active.'**
   String get premiumRequiredMessage;
 
   /// No description provided for @premiumExpiredMessage.
@@ -2277,7 +2283,7 @@ abstract class AppLocalizations {
   /// No description provided for @featureMemoryLane.
   ///
   /// In en, this message translates to:
-  /// **'Memory Lane'**
+  /// **'Annual Memory'**
   String get featureMemoryLane;
 
   /// No description provided for @featureMemoryLaneDesc.
@@ -3165,7 +3171,7 @@ abstract class AppLocalizations {
   /// No description provided for @todaysTip1.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning Mode: Tap \'Deep Cleaning\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!'**
+  /// **'Deep Reset Mode: Tap \'Deep Reset\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!'**
   String get todaysTip1;
 
   /// No description provided for @todaysTip2.
@@ -3417,7 +3423,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaning.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning'**
+  /// **'Deep Reset'**
   String get deepCleaning;
 
   /// No description provided for @cleaningAreas.
@@ -3483,7 +3489,7 @@ abstract class AppLocalizations {
   /// No description provided for @startDeepCleaning.
   ///
   /// In en, this message translates to:
-  /// **'Start Deep Cleaning'**
+  /// **'Start Deep Reset'**
   String get startDeepCleaning;
 
   /// No description provided for @schedule.

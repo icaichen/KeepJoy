@@ -252,15 +252,6 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                isChinese
-                    ? '拍攝物品，我們會陪你完成怦然心動檢查。'
-                    : 'Capture one item—we will guide you through the decision.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
             ],
           ),
         ),
@@ -539,6 +530,7 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                           ),
                           const SizedBox(height: 16),
                           DropdownMenu<DeclutterCategory>(
+                            expandedInsets: EdgeInsets.zero,
                             initialSelection: _selectedCategory,
                             label: Text(l10n.category),
                             dropdownMenuEntries: DeclutterCategory.values

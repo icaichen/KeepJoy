@@ -39,7 +39,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     ).languageCode.toLowerCase().startsWith('zh');
 
     final topPadding = MediaQuery.of(context).padding.top;
-    final pageName = isChinese ? '记忆长廊' : 'Memory Lane';
+    final pageName = isChinese ? '年度记忆' : 'Annual Memory';
 
     // Calculate scroll-based animations
     const titleAreaHeight = 120.0;
@@ -242,7 +242,10 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       },
     ];
 
-    final totalCount = sentimentCounts.values.fold<int>(0, (sum, count) => sum + count);
+    final totalCount = sentimentCounts.values.fold<int>(
+      0,
+      (sum, count) => sum + count,
+    );
     final hasData = totalCount > 0;
 
     return Container(
@@ -273,9 +276,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           const SizedBox(height: 8),
           Text(
             isChinese ? '每个回忆都是珍贵的' : 'Every memory is precious',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.black54,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
           ),
           const SizedBox(height: 24),
           Center(
@@ -333,8 +336,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     int currentStreak = 0;
 
     for (int month = 1; month <= now.month; month++) {
-      final monthKey =
-          '${now.year}-${month.toString().padLeft(2, '0')}';
+      final monthKey = '${now.year}-${month.toString().padLeft(2, '0')}';
       if ((monthlyData[monthKey] ?? 0) > 0) {
         currentStreak++;
         if (currentStreak > longestStreak) {
@@ -366,16 +368,16 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           Text(
             isChinese ? '回忆热力图' : 'Memory Heatmap',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
-                ),
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF111827),
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             isChinese ? '本年度活动' : 'Activity this year',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B7280),
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF6B7280)),
           ),
           const SizedBox(height: 24),
           // 2 rows of 6 months each
@@ -408,7 +410,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                             isChinese
                                 ? '${monthDate.month}月'
                                 : _getMonthAbbrev(monthDate.month),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: const Color(0xFF6B7280),
                                   fontSize: 11,
                                 ),
@@ -447,7 +450,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                             isChinese
                                 ? '${monthDate.month}月'
                                 : _getMonthAbbrev(monthDate.month),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: const Color(0xFF6B7280),
                                   fontSize: 11,
                                 ),
@@ -469,9 +473,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 Text(
                   isChinese ? '较少' : 'Less',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 12,
-                      ),
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 ...List.generate(5, (index) {
@@ -480,7 +484,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                     height: 16,
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: _getHeatmapColor((index * 3) + 1), // Demo colors: 1, 4, 7, 10, 13
+                      color: _getHeatmapColor(
+                        (index * 3) + 1,
+                      ), // Demo colors: 1, 4, 7, 10, 13
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -489,9 +495,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 Text(
                   isChinese ? '较多' : 'More',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 12,
-                      ),
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12,
+                  ),
                 ),
                 const Spacer(),
                 GestureDetector(
@@ -510,95 +516,30 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           Row(
             children: [
               Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 96),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '最活跃' : 'Most Active',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
-                              fontSize: 11,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        formatMostActiveLabel(),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                      ),
-                    ],
-                  ),
+                child: _buildStatCard(
+                  title: isChinese ? '最活跃' : 'Most Active',
+                  value: formatMostActiveLabel(),
+                  context: context,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 96),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '最长连续' : 'Longest Streak',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
-                              fontSize: 11,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isChinese ? '$longestStreak 个月' : '$longestStreak months',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                      ),
-                    ],
-                  ),
+                child: _buildStatCard(
+                  title: isChinese ? '最长连续' : 'Longest Streak',
+                  value: isChinese
+                      ? '$longestStreak 个月'
+                      : '$longestStreak months',
+                  context: context,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 96),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isChinese ? '峰值活动' : 'Peak Activity',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
-                              fontSize: 11,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isChinese ? '$maxMonthCount 次' : '$maxMonthCount entries',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                      ),
-                    ],
-                  ),
+                child: _buildStatCard(
+                  title: isChinese ? '峰值活动' : 'Peak Activity',
+                  value: isChinese
+                      ? '$maxMonthCount 次'
+                      : '$maxMonthCount entries',
+                  context: context,
                 ),
               ),
             ],
@@ -608,6 +549,63 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     );
   }
 
+  Widget _buildStatCard({
+    required BuildContext context,
+    required String title,
+    required String value,
+  }) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 116),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 32,
+            child: Center(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: const Color(0xFF6B7280),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                  fontSize: 12,
+                  height: 1.2,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 40,
+            child: Center(
+              child: Text(
+                value,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.clip,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0F172A),
+                  fontSize: 18,
+                  height: 1.2,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // 3. HORIZONTAL BAR CHART by category
   Widget _buildEmotionByCategory(BuildContext context, bool isChinese) {
@@ -622,10 +620,12 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       if (memory.category != null && memory.category!.isNotEmpty) {
         // Find matching enum category
         final declutterCategory = DeclutterCategory.values.firstWhere(
-          (cat) => cat.english == memory.category || cat.chinese == memory.category,
+          (cat) =>
+              cat.english == memory.category || cat.chinese == memory.category,
           orElse: () => DeclutterCategory.miscellaneous,
         );
-        categoryCounts[declutterCategory] = (categoryCounts[declutterCategory] ?? 0) + 1;
+        categoryCounts[declutterCategory] =
+            (categoryCounts[declutterCategory] ?? 0) + 1;
       }
     }
 
@@ -1000,7 +1000,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: _getHeatmapColorByCount(item['count'] as int),
+                            color: _getHeatmapColorByCount(
+                              item['count'] as int,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),

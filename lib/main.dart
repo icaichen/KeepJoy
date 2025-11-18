@@ -689,9 +689,10 @@ class _MainNavigatorState extends State<MainNavigator>
                         top: false,
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
                               Container(
                                 width: 44,
                                 height: 4,
@@ -783,6 +784,7 @@ class _MainNavigatorState extends State<MainNavigator>
                                 },
                               ),
                             ],
+                            ),
                           ),
                         ),
                       ),
@@ -931,7 +933,7 @@ class _MainNavigatorState extends State<MainNavigator>
                   ),
                   child: Icon(icon, color: Colors.white, size: 24),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -951,7 +953,7 @@ class _MainNavigatorState extends State<MainNavigator>
                         subtitle,
                         style: const TextStyle(
                           fontFamily: 'SF Pro Text',
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: Colors.white70,
                           height: 1.3,
@@ -960,35 +962,10 @@ class _MainNavigatorState extends State<MainNavigator>
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        buttonLabel,
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ],
-                  ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 18,
                 ),
               ],
             ),
@@ -2157,7 +2134,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Top row: "Active Session" and "Deep Cleaning"
+                                // Top row: "Active Session" and current mode
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -2175,7 +2152,7 @@ class _HomeScreenState extends State<_HomeScreen> {
                                           ),
                                     ),
                                     Text(
-                                      'Deep Cleaning',
+                                      l10n.deepCleaningTitle,
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelLarge

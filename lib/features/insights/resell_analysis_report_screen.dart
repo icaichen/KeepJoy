@@ -6,7 +6,7 @@ import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 enum TrendMetric {
   soldItems('已售物品', 'Sold Items'),
   listedDays('平均上架天数', 'Avg Listed Days'),
-  resellValue('转卖价值', 'Resell Value');
+  resellValue('二手收益', 'Resell Value');
 
   const TrendMetric(this.chinese, this.english);
   final String chinese;
@@ -114,7 +114,7 @@ class _ResellAnalysisReportScreenState
     final trendData = _calculateTrendData();
 
     final topPadding = MediaQuery.of(context).padding.top;
-    final pageName = isChinese ? '转卖分析' : 'Resell Analysis';
+    final pageName = isChinese ? '二手洞察' : 'Resale Insights';
 
     // Calculate scroll-based animations
     const titleAreaHeight = 120.0;
