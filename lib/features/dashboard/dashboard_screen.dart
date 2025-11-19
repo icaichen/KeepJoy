@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:uuid/uuid.dart';
 import 'package:keepjoy_app/features/deep_cleaning/deep_cleaning_flow.dart';
 import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
@@ -358,8 +359,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               }
 
                               final newSession = PlannedSession(
-                                id: DateTime.now().millisecondsSinceEpoch
-                                    .toString(),
+                                id: const Uuid().v4(),
                                 title: goalController.text.trim(),
                                 area: 'General',
                                 scheduledDate: selectedDate,
@@ -935,8 +935,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 }
 
                                 final newSession = PlannedSession(
-                                  id: DateTime.now().millisecondsSinceEpoch
-                                      .toString(),
+                                  id: const Uuid().v4(),
                                   title:
                                       selectedMode == SessionMode.deepCleaning
                                       ? '${areaController.text} ${selectedMode.displayName(l10n)}'
@@ -2107,7 +2106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     // If user selected a status, create the item
                                     if (status != null) {
                                       final item = DeclutterItem(
-                                        id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                                        id: const Uuid().v4(),
                                         name: memory.itemName ?? memory.title,
                                         category: memory.category != null
                                             ? DeclutterCategory.values

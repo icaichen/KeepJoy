@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -885,7 +886,7 @@ class _SummaryPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final item = DeclutterItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      id: const Uuid().v4(),
       name: itemName,
       nameLocalizations: nameLocalizations,
       category: category,
@@ -989,7 +990,7 @@ class _SummaryPage extends StatelessWidget {
     }
 
     final item = DeclutterItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      id: const Uuid().v4(),
       name: itemName,
       nameLocalizations: nameLocalizations,
       category: category,

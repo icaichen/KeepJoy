@@ -273,9 +273,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: const Center(child: CircularProgressIndicator()),
                   );
                 }
 
@@ -458,7 +456,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
 
   void _showLanguageDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -679,12 +676,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Clear all data from repository
                 await repository.clearAllData();
 
-                // Sign out the user - auth listener in main.dart will handle navigation
+                // Sign out the user
                 await _authService.signOut();
 
                 // Close loading dialog
                 if (mounted) {
                   Navigator.pop(context);
+                }
+
+                // CRITICAL: Navigate to welcome page and clear all previous routes
+                if (mounted && context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/welcome',
+                    (route) => false, // Remove all previous routes
+                  );
                 }
               } catch (e) {
                 // Close loading dialog
@@ -775,8 +780,17 @@ class _ProfilePageState extends State<ProfilePage> {
               }
 
               try {
-                // Perform logout - auth listener in main.dart will handle navigation
+                // Perform logout
                 await _authService.signOut();
+
+                // CRITICAL: Navigate to welcome page and clear all previous routes
+                // This ensures the user cannot go back to authenticated screens
+                if (mounted && context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/welcome',
+                    (route) => false, // Remove all previous routes
+                  );
+                }
               } catch (e) {
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -1156,7 +1170,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white,
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -1229,7 +1247,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Color(0xFF9CA3AF), size: 16),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xFF9CA3AF),
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -1344,5 +1366,4 @@ class _LanguageOption extends StatelessWidget {
       ),
     );
   }
-
 }

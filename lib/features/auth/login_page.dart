@@ -24,6 +24,20 @@ class _LoginPageState extends State<LoginPage> {
   final _authService = AuthService();
 
   @override
+  void initState() {
+    super.initState();
+    // Get arguments passed from WelcomePage
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['isSignUp'] != null) {
+        setState(() {
+          _isSignUp = args['isSignUp'] as bool;
+        });
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -397,81 +411,6 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(_isSignUp ? l10n.signUp : l10n.signIn),
                       ),
 
-                      const SizedBox(height: 20),
-
-                      // Divider
-                      Row(
-                        children: [
-                          const Expanded(child: Divider(color: Color(0xFFE5E7EA))),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              l10n.orContinueWith,
-                              style: const TextStyle(
-                                fontFamily: 'SF Pro Text',
-                                color: Color(0xFF9CA3AF),
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                          const Expanded(child: Divider(color: Color(0xFFE5E7EA))),
-                        ],
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Social login buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                // TODO: Implement Google sign in
-                              },
-                              icon: const Icon(Icons.g_mobiledata, size: 28, color: Color(0xFF414B5A)),
-                              label: Text(
-                                l10n.google,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF414B5A),
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                side: const BorderSide(color: Color(0xFFE5E7EA)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                // TODO: Implement Apple sign in
-                              },
-                              icon: const Icon(Icons.apple, size: 24, color: Color(0xFF414B5A)),
-                              label: Text(
-                                l10n.apple,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF414B5A),
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                side: const BorderSide(color: Color(0xFFE5E7EA)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),

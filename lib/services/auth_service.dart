@@ -134,14 +134,31 @@ class AuthService {
     if (client == null) return;
 
     try {
+      if (kDebugMode) {
+        debugPrint('🔐 Starting logout process...');
+      }
+
       // Logout from RevenueCat first
       await SubscriptionService.logoutUser();
 
-      // Sign out from Supabase with scope: 'local' to clear local session
-      await client!.auth.signOut(scope: SignOutScope.local);
+      // Sign out from Supabase with scope: 'global' to clear ALL sessions
+      // This ensures the user is completely logged out and cannot access the app
+      await client!.auth.signOut(scope: SignOutScope.global);
+
+      // Force verify logout worked
+      final currentUser = client!.auth.currentUser;
+      if (kDebugMode) {
+        debugPrint(
+          '✅ User signed out successfully. Current user: $currentUser',
+        );
+      }
+
+      if (currentUser != null) {
+        throw StateError('Logout failed - user still authenticated');
+      }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('Error during sign out: $e');
+        debugPrint('❌ Error during sign out: $e');
       }
       // Rethrow to let caller handle
       rethrow;
@@ -157,9 +174,7 @@ class AuthService {
   /// Update password (when user is logged in)
   Future<UserResponse?> updatePassword(String newPassword) async {
     if (client == null) return null;
-    return await client!.auth.updateUser(
-      UserAttributes(password: newPassword),
-    );
+    return await client!.auth.updateUser(UserAttributes(password: newPassword));
   }
 
   /// Delete account

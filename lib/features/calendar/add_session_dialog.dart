@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
@@ -70,7 +71,7 @@ class _AddSessionDialogState extends State<AddSessionDialog> {
       if (userId == null) return;
 
       final session = PlannedSession(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: const Uuid().v4(),
         userId: userId,
         title: '${_areaController.text} declutter',
         area: _areaController.text,

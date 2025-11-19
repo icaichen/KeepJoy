@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -426,7 +427,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
     final nameLocalizations = _buildNameLocalizations(locale, name);
 
     final item = DeclutterItem(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       userId: userId,
       name: name,
       nameLocalizations: nameLocalizations,
@@ -545,7 +546,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
     final nameLocalizations = _buildNameLocalizations(locale, name);
 
     final item = DeclutterItem(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       userId: userId,
       name: name,
       nameLocalizations: nameLocalizations,

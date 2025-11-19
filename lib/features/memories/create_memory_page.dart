@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -175,7 +176,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
     setState(() => _isLoading = true);
 
     final memory = Memory.fromDeclutteredItem(
-      id: 'memory_${DateTime.now().millisecondsSinceEpoch}',
+      id: const Uuid().v4(),
       userId: userId,
       itemName: _itemNameController.text.trim(),
       category: _selectedCategory!.name,

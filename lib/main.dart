@@ -28,6 +28,7 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
+import 'package:keepjoy_app/services/data_repository.dart';
 import 'services/notification_service_stub.dart'
     if (dart.library.io) 'services/notification_service_mobile.dart';
 import 'package:keepjoy_app/services/reminder_service.dart';
@@ -70,12 +71,21 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
   Locale? _locale;
   final _authService = AuthService();
   StreamSubscription? _authSubscription;
+  final _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
     // Listen to auth state changes
     _authSubscription = _authService.authStateChanges?.listen((event) {
+      // When user logs out (session becomes null), navigate to welcome
+      if (event.session == null && mounted) {
+        // User logged out - navigate to welcome and clear stack
+        _navigatorKey.currentState?.pushNamedAndRemoveUntil(
+          '/welcome',
+          (route) => false,
+        );
+      }
       // Rebuild when auth state changes
       if (mounted) {
         setState(() {});
@@ -100,6 +110,7 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
     return ChangeNotifierProvider(
       create: (_) => SubscriptionProvider(),
       child: MaterialApp(
+        navigatorKey: _navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'KeepJoy',
         theme: ThemeData(
@@ -163,20 +174,65 @@ class _MainNavigatorState extends State<MainNavigator>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _refreshPremiumAccess();
+    _loadUserData(); // 加载用户数据
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
 
     // Listen to subscription provider changes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final subscriptionProvider = Provider.of<SubscriptionProvider>(context, listen: false);
+      final subscriptionProvider = Provider.of<SubscriptionProvider>(
+        context,
+        listen: false,
+      );
       subscriptionProvider.addListener(() {
         if (mounted) {
           setState(() {
             _hasFullAccess = subscriptionProvider.isPremium;
           });
-          print('🔄 Premium status updated from provider: ${subscriptionProvider.isPremium}');
+          print(
+            '🔄 Premium status updated from provider: ${subscriptionProvider.isPremium}',
+          );
         }
       });
     });
+  }
+
+  /// 从数据库加载所有用户数据
+  Future<void> _loadUserData() async {
+    try {
+      final repository = DataRepository();
+
+      // 并行加载所有数据
+      final results = await Future.wait([
+        repository.fetchDeclutterItems(),
+        repository.fetchMemories(),
+        repository.fetchResellItems(),
+        repository.fetchDeepCleaningSessions(),
+        // repository.fetchPlannedSessions(), // 如果你有这个方法的话
+      ]);
+
+      if (mounted) {
+        setState(() {
+          _declutteredItems.clear();
+          _declutteredItems.addAll(results[0] as List<DeclutterItem>);
+
+          _memories.clear();
+          _memories.addAll(results[1] as List<Memory>);
+
+          _resellItems.clear();
+          _resellItems.addAll(results[2] as List<ResellItem>);
+
+          _completedSessions.clear();
+          _completedSessions.addAll(results[3] as List<DeepCleaningSession>);
+        });
+
+        debugPrint(
+          '✅ 用户数据加载成功: ${_declutteredItems.length} 个物品, ${_memories.length} 个回忆',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ 加载用户数据失败: $e');
+      // 不抛出错误，让应用继续运行
+    }
   }
 
   @override
@@ -192,8 +248,12 @@ class _MainNavigatorState extends State<MainNavigator>
     // Add detailed debugging
     try {
       final customerInfo = await SubscriptionService.getCustomerInfo();
-      print('📱 Customer Info - All Entitlements: ${customerInfo.entitlements.all}');
-      print('📱 Customer Info - Active Entitlements: ${customerInfo.entitlements.active}');
+      print(
+        '📱 Customer Info - All Entitlements: ${customerInfo.entitlements.all}',
+      );
+      print(
+        '📱 Customer Info - Active Entitlements: ${customerInfo.entitlements.active}',
+      );
       final premiumEntitlement = customerInfo.entitlements.all['premium'];
       if (premiumEntitlement != null) {
         print('✅ Premium Entitlement Found:');
@@ -230,8 +290,20 @@ class _MainNavigatorState extends State<MainNavigator>
   String get _currentUserId {
     final userId = _authService.currentUserId;
     if (userId == null) {
-      debugPrint('❌ ERROR: _currentUserId called but user is null! Stack trace:');
+      debugPrint(
+        '❌ ERROR: _currentUserId called but user is null! Stack trace:',
+      );
       debugPrint(StackTrace.current.toString());
+
+      // User is logged out - immediately navigate to welcome
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && context.mounted) {
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/welcome', (route) => false);
+        }
+      });
+
       throw StateError(
         'MainNavigator requires an authenticated Supabase user.',
       );
@@ -339,7 +411,7 @@ class _MainNavigatorState extends State<MainNavigator>
     });
   }
 
-  void _stopSession({
+  Future<void> _stopSession({
     String? afterPhotoPath,
     int? elapsedSeconds,
     int? itemsCount,
@@ -347,7 +419,7 @@ class _MainNavigatorState extends State<MainNavigator>
     int? moodIndex,
     double? beforeMessinessIndex,
     double? afterMessinessIndex,
-  }) {
+  }) async {
     final session = _activeSession;
     if (session != null) {
       // Update session with metrics
@@ -368,34 +440,53 @@ class _MainNavigatorState extends State<MainNavigator>
         itemCount: updatedSession.itemsCount,
       );
 
-      setState(() {
-        // Save the completed session with metrics
-        _completedSessions.insert(0, updatedSession);
-
-        // Mark corresponding planned session as completed
-        final plannedSessionIndex = _plannedSessions.indexWhere(
-          (s) =>
-              !s.isCompleted &&
-              s.area == updatedSession.area &&
-              s.mode == SessionMode.deepCleaning,
+      // 保存到数据库
+      try {
+        final repository = DataRepository();
+        final savedSession = await repository.createDeepCleaningSession(
+          updatedSession,
         );
 
-        if (plannedSessionIndex != -1) {
-          _plannedSessions[plannedSessionIndex] =
-              _plannedSessions[plannedSessionIndex].copyWith(
-                isCompleted: true,
-                completedAt: DateTime.now(),
-              );
-        }
-        _activeSession = null;
-      });
+        setState(() {
+          _completedSessions.insert(0, savedSession);
+
+          // Mark corresponding planned session as completed
+          final plannedSessionIndex = _plannedSessions.indexWhere(
+            (s) =>
+                !s.isCompleted &&
+                s.area == updatedSession.area &&
+                s.mode == SessionMode.deepCleaning,
+          );
+
+          if (plannedSessionIndex != -1) {
+            final completedPlannedSession =
+                _plannedSessions[plannedSessionIndex].copyWith(
+                  isCompleted: true,
+                  completedAt: DateTime.now(),
+                );
+            _plannedSessions[plannedSessionIndex] = completedPlannedSession;
+            // 保存 PlannedSession 更新
+            unawaited(repository.updatePlannedSession(completedPlannedSession));
+          }
+          _activeSession = null;
+        });
+
+        debugPrint('✅ 深度清洁会话已保存: ${savedSession.id}');
+      } catch (e) {
+        debugPrint('❌ 保存深度清洁会话失败: $e');
+        // 失败时仍然保存到本地
+        setState(() {
+          _completedSessions.insert(0, updatedSession);
+          _activeSession = null;
+        });
+      }
 
       ReminderService.cancelActiveSessionReminder();
       unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
     }
   }
 
-  void _addDeclutteredItem(DeclutterItem item) {
+  Future<void> _addDeclutteredItem(DeclutterItem item) async {
     // Record activity based on which flow created the item
     final localizedName = item.displayName(context);
     _recordActivity(
@@ -403,75 +494,121 @@ class _MainNavigatorState extends State<MainNavigator>
       description: localizedName,
       itemCount: 1,
     );
-    setState(() {
-      _declutteredItems.insert(0, item);
 
-      // If item is marked for resell, create a ResellItem
-      if (item.status == DeclutterStatus.resell) {
-        final resellItem = ResellItem(
-          id: 'resell_${DateTime.now().millisecondsSinceEpoch}',
-          userId: _currentUserId,
-          declutterItemId: item.id,
-          status: ResellStatus.toSell,
-          createdAt: DateTime.now(),
-        );
-        _resellItems.insert(0, resellItem);
-      }
+    // 保存到数据库
+    try {
+      final repository = DataRepository();
+      final savedItem = await repository.createDeclutterItem(item);
 
-      // Note: Memory creation is now manual via Create Memory button or prompt after Joy Declutter
-    });
+      setState(() {
+        _declutteredItems.insert(0, savedItem);
+
+        // If item is marked for resell, create a ResellItem
+        if (savedItem.status == DeclutterStatus.resell) {
+          final resellItem = ResellItem(
+            id: const Uuid().v4(),
+            userId: _currentUserId,
+            declutterItemId: savedItem.id,
+            status: ResellStatus.toSell,
+            createdAt: DateTime.now(),
+          );
+          _resellItems.insert(0, resellItem);
+          // 同时保存 resell item 到数据库
+          unawaited(repository.createResellItem(resellItem));
+        }
+      });
+
+      debugPrint('✅ 物品已保存到数据库: ${savedItem.id}');
+    } catch (e) {
+      debugPrint('❌ 保存物品失败: $e');
+      // 如果保存失败，仍然添加到本地列表
+      setState(() {
+        _declutteredItems.insert(0, item);
+      });
+    }
 
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
-  void _onItemCompleted(DeclutterItem item) {
-    // Handle item reassessment from Items page
-    // All items are now in _declutteredItems, just update in place
-    setState(() {
-      final index = _declutteredItems.indexWhere((i) => i.id == item.id);
-      if (index != -1) {
-        _declutteredItems[index] = item;
+  Future<void> _onItemCompleted(DeclutterItem item) async {
+    try {
+      final repository = DataRepository();
+      await repository.updateDeclutterItem(item);
 
-        // If status changed to resell, create ResellItem if not exists
-        if (item.status == DeclutterStatus.resell) {
-          final hasResellItem = _resellItems.any(
-            (r) => r.declutterItemId == item.id,
-          );
-          if (!hasResellItem) {
-            final resellItem = ResellItem(
-              id: 'resell_${DateTime.now().millisecondsSinceEpoch}',
-              userId: _currentUserId,
-              declutterItemId: item.id,
-              status: ResellStatus.toSell,
-              createdAt: DateTime.now(),
+      setState(() {
+        final index = _declutteredItems.indexWhere((i) => i.id == item.id);
+        if (index != -1) {
+          _declutteredItems[index] = item;
+
+          // If status changed to resell, create ResellItem if not exists
+          if (item.status == DeclutterStatus.resell) {
+            final hasResellItem = _resellItems.any(
+              (r) => r.declutterItemId == item.id,
             );
-            _resellItems.insert(0, resellItem);
+            if (!hasResellItem) {
+              final resellItem = ResellItem(
+                id: const Uuid().v4(),
+                userId: _currentUserId,
+                declutterItemId: item.id,
+                status: ResellStatus.toSell,
+                createdAt: DateTime.now(),
+              );
+              _resellItems.insert(0, resellItem);
+              unawaited(repository.createResellItem(resellItem));
+            }
           }
         }
-      }
-    });
+      });
+      debugPrint('✅ 物品已更新: ${item.id}');
+    } catch (e) {
+      debugPrint('❌ 更新物品失败: $e');
+    }
   }
 
-  void _updateResellItem(ResellItem item) {
-    setState(() {
-      final index = _resellItems.indexWhere((r) => r.id == item.id);
-      if (index != -1) {
-        _resellItems[index] = item;
-      }
-    });
+  Future<void> _updateResellItem(ResellItem item) async {
+    try {
+      final repository = DataRepository();
+      await repository.updateResellItem(item);
+
+      setState(() {
+        final index = _resellItems.indexWhere((r) => r.id == item.id);
+        if (index != -1) {
+          _resellItems[index] = item;
+        }
+      });
+      debugPrint('✅ 转售物品已更新: ${item.id}');
+    } catch (e) {
+      debugPrint('❌ 更新转售物品失败: $e');
+    }
   }
 
-  void _deleteResellItem(ResellItem item) {
-    setState(() {
-      _resellItems.removeWhere((r) => r.id == item.id);
-    });
+  Future<void> _deleteResellItem(ResellItem item) async {
+    try {
+      final repository = DataRepository();
+      await repository.deleteResellItem(item.id);
+
+      setState(() {
+        _resellItems.removeWhere((r) => r.id == item.id);
+      });
+      debugPrint('✅ 转售物品已删除: ${item.id}');
+    } catch (e) {
+      debugPrint('❌ 删除转售物品失败: $e');
+    }
   }
 
-  void _deleteDeclutterItem(String itemId) {
-    setState(() {
-      _declutteredItems.removeWhere((item) => item.id == itemId);
-      _resellItems.removeWhere((r) => r.declutterItemId == itemId);
-    });
+  Future<void> _deleteDeclutterItem(String itemId) async {
+    try {
+      final repository = DataRepository();
+      await repository.deleteDeclutterItem(itemId);
+
+      setState(() {
+        _declutteredItems.removeWhere((item) => item.id == itemId);
+        _resellItems.removeWhere((r) => r.declutterItemId == itemId);
+      });
+      debugPrint('✅ 物品已删除: $itemId');
+    } catch (e) {
+      debugPrint('❌ 删除物品失败: $e');
+    }
   }
 
   Future<void> _showUpgradeDialog() async {
@@ -546,56 +683,111 @@ class _MainNavigatorState extends State<MainNavigator>
     );
   }
 
-  void _onMemoryDeleted(Memory memory) {
-    setState(() {
-      _memories.removeWhere((m) => m.id == memory.id);
-    });
+  Future<void> _onMemoryDeleted(Memory memory) async {
+    try {
+      final repository = DataRepository();
+      await repository.deleteMemory(memory.id);
+
+      setState(() {
+        _memories.removeWhere((m) => m.id == memory.id);
+      });
+      debugPrint('✅ 回忆已删除: ${memory.id}');
+    } catch (e) {
+      debugPrint('❌ 删除回忆失败: $e');
+    }
   }
 
-  void _onMemoryUpdated(Memory memory) {
-    setState(() {
-      final index = _memories.indexWhere((m) => m.id == memory.id);
-      if (index != -1) {
-        _memories[index] = memory;
-      }
-    });
+  Future<void> _onMemoryUpdated(Memory memory) async {
+    try {
+      final repository = DataRepository();
+      await repository.updateMemory(memory);
+
+      setState(() {
+        final index = _memories.indexWhere((m) => m.id == memory.id);
+        if (index != -1) {
+          _memories[index] = memory;
+        }
+      });
+      debugPrint('✅ 回忆已更新: ${memory.id}');
+    } catch (e) {
+      debugPrint('❌ 更新回忆失败: $e');
+    }
   }
 
-  void _onMemoryCreated(Memory memory) {
-    setState(() {
-      _memories.insert(0, memory);
-    });
+  Future<void> _onMemoryCreated(Memory memory) async {
+    try {
+      final repository = DataRepository();
+      final savedMemory = await repository.createMemory(memory);
+
+      setState(() {
+        _memories.insert(0, savedMemory);
+      });
+      debugPrint('✅ 回忆已保存: ${savedMemory.id}');
+    } catch (e) {
+      debugPrint('❌ 保存回忆失败: $e');
+      // 失败时仍然添加到本地
+      setState(() {
+        _memories.insert(0, memory);
+      });
+    }
   }
 
-  void _addPlannedSession(PlannedSession session) {
-    setState(() {
-      _plannedSessions.insert(
-        0,
-        session,
-      ); // Add to beginning so it shows up first
-    });
+  Future<void> _addPlannedSession(PlannedSession session) async {
+    try {
+      final repository = DataRepository();
+      final savedSession = await repository.createPlannedSession(session);
+
+      setState(() {
+        _plannedSessions.insert(0, savedSession);
+      });
+      debugPrint('✅ 计划任务已保存: ${savedSession.id}');
+    } catch (e) {
+      debugPrint('❌ 保存计划任务失败: $e');
+      // 失败时仍然添加到本地
+      setState(() {
+        _plannedSessions.insert(0, session);
+      });
+    }
 
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
-  void _deletePlannedSession(PlannedSession session) {
-    setState(() {
-      _plannedSessions.removeWhere((s) => s.id == session.id);
-    });
+  Future<void> _deletePlannedSession(PlannedSession session) async {
+    try {
+      final repository = DataRepository();
+      await repository.deletePlannedSession(session.id);
+
+      setState(() {
+        _plannedSessions.removeWhere((s) => s.id == session.id);
+      });
+      debugPrint('✅ 计划任务已删除: ${session.id}');
+    } catch (e) {
+      debugPrint('❌ 删除计划任务失败: $e');
+    }
 
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
-  void _togglePlannedSession(PlannedSession session) {
-    setState(() {
-      final index = _plannedSessions.indexWhere((s) => s.id == session.id);
-      if (index != -1) {
-        _plannedSessions[index] = session.copyWith(
-          isCompleted: !session.isCompleted,
-          completedAt: !session.isCompleted ? DateTime.now() : null,
-        );
-      }
-    });
+  Future<void> _togglePlannedSession(PlannedSession session) async {
+    try {
+      final repository = DataRepository();
+      final updatedSession = session.copyWith(
+        isCompleted: !session.isCompleted,
+        completedAt: !session.isCompleted ? DateTime.now() : null,
+      );
+      await repository.updatePlannedSession(updatedSession);
+
+      setState(() {
+        final index = _plannedSessions.indexWhere((s) => s.id == session.id);
+        if (index != -1) {
+          _plannedSessions[index] = updatedSession;
+        }
+      });
+      debugPrint('✅ 计划任务状态已更新: ${session.id}');
+    } catch (e) {
+      debugPrint('❌ 更新计划任务状态失败: $e');
+    }
+
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
 
@@ -604,7 +796,26 @@ class _MainNavigatorState extends State<MainNavigator>
     final l10n = AppLocalizations.of(context)!;
 
     // Debug: Log when MainNavigator rebuilds
-    debugPrint('🔄 MainNavigator build - selectedIndex: $_selectedIndex, authenticated: ${_authService.isAuthenticated}');
+    debugPrint(
+      '🔄 MainNavigator build - selectedIndex: $_selectedIndex, authenticated: ${_authService.isAuthenticated}',
+    );
+
+    // CRITICAL: If user is not authenticated, don't build MainNavigator
+    // Navigate to welcome immediately
+    if (!_authService.isAuthenticated) {
+      debugPrint(
+        '❌ User not authenticated in MainNavigator - navigating to welcome',
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && context.mounted) {
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/welcome', (route) => false);
+        }
+      });
+      // Return empty scaffold while navigating
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     final pages = [
       DashboardScreen(
@@ -704,97 +915,97 @@ class _MainNavigatorState extends State<MainNavigator>
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                              Container(
-                                width: 44,
-                                height: 4,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE5E7EA),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  l10n.chooseFlowTitle,
-                                  style: const TextStyle(
-                                    fontFamily: 'SF Pro Display',
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1C1C1E),
+                                Container(
+                                  width: 44,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE5E7EA),
+                                    borderRadius: BorderRadius.circular(999),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  l10n.chooseFlowSubtitle,
-                                  style: const TextStyle(
-                                    fontFamily: 'SF Pro Text',
-                                    fontSize: 14,
-                                    color: Color(0xFF6B7280),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              _buildCleaningModeButton(
-                                icon: Icons.flash_on_rounded,
-                                title: l10n.quickDeclutterTitle,
-                                subtitle: l10n.quickDeclutterFlowDescription,
-                                buttonLabel: l10n.startAction,
-                                colors: const [
-                                  Color(0xFFFF8A65),
-                                  Color(0xFFFFB74D),
-                                ],
-                                onTap: () {
-                                  Navigator.pop(sheetContext);
-                                  _openQuickDeclutter(context);
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              _buildCleaningModeButton(
-                                icon: Icons.auto_awesome_rounded,
-                                title: l10n.joyDeclutterTitle,
-                                subtitle: l10n.joyDeclutterFlowDescription,
-                                buttonLabel: l10n.startAction,
-                                colors: const [
-                                  Color(0xFF5B8CFF),
-                                  Color(0xFF61D1FF),
-                                ],
-                                onTap: () {
-                                  Navigator.pop(sheetContext);
-                                  _openJoyDeclutter(context);
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              _buildCleaningModeButton(
-                                icon: Icons.cleaning_services_rounded,
-                                title: l10n.deepCleaningTitle,
-                                subtitle: l10n.deepCleaningFlowDescription,
-                                buttonLabel: l10n.startAction,
-                                colors: const [
-                                  Color(0xFF34E27A),
-                                  Color(0xFF0BBF75),
-                                ],
-                                onTap: () {
-                                  if (!_hasFullAccess) {
-                                    Navigator.pop(sheetContext);
-                                    _showUpgradeDialog();
-                                    return;
-                                  }
-                                  Navigator.pop(sheetContext);
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => DeepCleaningFlowPage(
-                                        onStartSession: _startSession,
-                                        onStopSession: _stopSession,
-                                      ),
+                                const SizedBox(height: 20),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    l10n.chooseFlowTitle,
+                                    style: const TextStyle(
+                                      fontFamily: 'SF Pro Display',
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1C1C1E),
                                     ),
-                                  );
-                                },
-                              ),
-                            ],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    l10n.chooseFlowSubtitle,
+                                    style: const TextStyle(
+                                      fontFamily: 'SF Pro Text',
+                                      fontSize: 14,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                _buildCleaningModeButton(
+                                  icon: Icons.flash_on_rounded,
+                                  title: l10n.quickDeclutterTitle,
+                                  subtitle: l10n.quickDeclutterFlowDescription,
+                                  buttonLabel: l10n.startAction,
+                                  colors: const [
+                                    Color(0xFFFF8A65),
+                                    Color(0xFFFFB74D),
+                                  ],
+                                  onTap: () {
+                                    Navigator.pop(sheetContext);
+                                    _openQuickDeclutter(context);
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                _buildCleaningModeButton(
+                                  icon: Icons.auto_awesome_rounded,
+                                  title: l10n.joyDeclutterTitle,
+                                  subtitle: l10n.joyDeclutterFlowDescription,
+                                  buttonLabel: l10n.startAction,
+                                  colors: const [
+                                    Color(0xFF5B8CFF),
+                                    Color(0xFF61D1FF),
+                                  ],
+                                  onTap: () {
+                                    Navigator.pop(sheetContext);
+                                    _openJoyDeclutter(context);
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                _buildCleaningModeButton(
+                                  icon: Icons.cleaning_services_rounded,
+                                  title: l10n.deepCleaningTitle,
+                                  subtitle: l10n.deepCleaningFlowDescription,
+                                  buttonLabel: l10n.startAction,
+                                  colors: const [
+                                    Color(0xFF34E27A),
+                                    Color(0xFF0BBF75),
+                                  ],
+                                  onTap: () {
+                                    if (!_hasFullAccess) {
+                                      Navigator.pop(sheetContext);
+                                      _showUpgradeDialog();
+                                      return;
+                                    }
+                                    Navigator.pop(sheetContext);
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => DeepCleaningFlowPage(
+                                          onStartSession: _startSession,
+                                          onStopSession: _stopSession,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         ),
