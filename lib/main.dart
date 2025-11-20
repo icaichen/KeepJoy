@@ -29,6 +29,9 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
 import 'package:keepjoy_app/services/data_repository.dart';
+import 'package:keepjoy_app/services/hive_service.dart';
+import 'package:keepjoy_app/services/connectivity_service.dart';
+import 'package:keepjoy_app/services/sync_service.dart';
 import 'services/notification_service_stub.dart'
     if (dart.library.io) 'services/notification_service_mobile.dart';
 import 'package:keepjoy_app/services/reminder_service.dart';
@@ -39,6 +42,12 @@ import 'providers/subscription_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Hive local database
+  await HiveService.instance.init();
+
+  // Initialize connectivity monitoring
+  await ConnectivityService.instance.init();
+
   // Initialize Supabase
   await AuthService.initialize();
   await NotificationService.instance.ensureInitialized();
@@ -46,7 +55,7 @@ void main() async {
   // Initialize RevenueCat (handles both subscriptions and trials)
   await SubscriptionService.configure();
 
-  // If user is already logged in, login to RevenueCat
+  // If user is already logged in, login to RevenueCat and start sync
   final authService = AuthService();
   final currentUserId = authService.currentUserId;
   if (currentUserId != null) {
@@ -55,6 +64,11 @@ void main() async {
     } catch (e) {
       print('Warning: Failed to login to RevenueCat on startup: $e');
     }
+
+    // Initialize sync service and trigger initial sync
+    await SyncService.instance.init();
+    // Trigger initial sync immediately (connectivity is already initialized)
+    SyncService.instance.syncAll();
   }
 
   runApp(const KeepJoyApp());
@@ -168,6 +182,7 @@ class _MainNavigatorState extends State<MainNavigator>
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
   bool _hasFullAccess = false; // Default to false until verified
+  StreamSubscription<SyncStatus>? _syncSubscription;
 
   @override
   void initState() {
@@ -176,6 +191,14 @@ class _MainNavigatorState extends State<MainNavigator>
     _refreshPremiumAccess();
     _loadUserData(); // 加载用户数据
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
+
+    // Listen to sync status changes - auto-refresh UI when sync completes
+    _syncSubscription = SyncService.instance.statusStream.listen((status) {
+      if (status == SyncStatus.success && mounted) {
+        debugPrint('🔄 Sync completed successfully, refreshing UI data...');
+        _loadUserData();
+      }
+    });
 
     // Listen to subscription provider changes
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -207,7 +230,7 @@ class _MainNavigatorState extends State<MainNavigator>
         repository.fetchMemories(),
         repository.fetchResellItems(),
         repository.fetchDeepCleaningSessions(),
-        // repository.fetchPlannedSessions(), // 如果你有这个方法的话
+        repository.fetchPlannedSessions(),
       ]);
 
       if (mounted) {
@@ -223,10 +246,13 @@ class _MainNavigatorState extends State<MainNavigator>
 
           _completedSessions.clear();
           _completedSessions.addAll(results[3] as List<DeepCleaningSession>);
+
+          _plannedSessions.clear();
+          _plannedSessions.addAll(results[4] as List<PlannedSession>);
         });
 
         debugPrint(
-          '✅ 用户数据加载成功: ${_declutteredItems.length} 个物品, ${_memories.length} 个回忆',
+          '✅ 用户数据加载成功: ${_declutteredItems.length} 个物品, ${_memories.length} 个回忆, ${_plannedSessions.length} 个计划',
         );
       }
     } catch (e) {
@@ -238,6 +264,7 @@ class _MainNavigatorState extends State<MainNavigator>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _syncSubscription?.cancel();
     super.dispose();
   }
 
@@ -406,7 +433,8 @@ class _MainNavigatorState extends State<MainNavigator>
         userId: _currentUserId,
         area: area,
         startTime: DateTime.now(),
-        beforePhotoPath: beforePhotoPath,
+        localBeforePhotoPath: beforePhotoPath,
+        remoteBeforePhotoPath: null,
       );
     });
   }
@@ -424,7 +452,8 @@ class _MainNavigatorState extends State<MainNavigator>
     if (session != null) {
       // Update session with metrics
       final updatedSession = session.copyWith(
-        afterPhotoPath: afterPhotoPath,
+        localAfterPhotoPath: afterPhotoPath,
+        remoteAfterPhotoPath: null,
         elapsedSeconds: elapsedSeconds,
         itemsCount: itemsCount,
         focusIndex: focusIndex,
@@ -864,219 +893,227 @@ class _MainNavigatorState extends State<MainNavigator>
       ),
     ];
 
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: pages),
-      floatingActionButton: Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5ECFB8), Color(0xFF4EBAA8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF5ECFB8).withValues(alpha: 0.4),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        // Prevent back navigation
+        if (didPop) return;
+      },
+      child: Scaffold(
+        body: IndexedStack(index: _selectedIndex, children: pages),
+        floatingActionButton: Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF5ECFB8), Color(0xFF4EBAA8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              // Show cleaning mode selection
-              showModalBottomSheet<void>(
-                context: context,
-                backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-                builder: (sheetContext) {
-                  final bottomPadding = MediaQuery.of(
-                    sheetContext,
-                  ).viewPadding.bottom;
-                  return FractionallySizedBox(
-                    heightFactor: 0.68,
-                    child: Container(
-                      margin: EdgeInsets.only(bottom: bottomPadding),
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(28),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF5ECFB8).withValues(alpha: 0.4),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                // Show cleaning mode selection
+                showModalBottomSheet<void>(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (sheetContext) {
+                    final bottomPadding = MediaQuery.of(
+                      sheetContext,
+                    ).viewPadding.bottom;
+                    return FractionallySizedBox(
+                      heightFactor: 0.68,
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: bottomPadding),
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(28),
+                          ),
+                          color: Colors.white,
                         ),
-                        color: Colors.white,
-                      ),
-                      child: SafeArea(
-                        top: false,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE5E7EA),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    l10n.chooseFlowTitle,
-                                    style: const TextStyle(
-                                      fontFamily: 'SF Pro Display',
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF1C1C1E),
+                        child: SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE5E7EA),
+                                      borderRadius: BorderRadius.circular(999),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    l10n.chooseFlowSubtitle,
-                                    style: const TextStyle(
-                                      fontFamily: 'SF Pro Text',
-                                      fontSize: 14,
-                                      color: Color(0xFF6B7280),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                _buildCleaningModeButton(
-                                  icon: Icons.flash_on_rounded,
-                                  title: l10n.quickDeclutterTitle,
-                                  subtitle: l10n.quickDeclutterFlowDescription,
-                                  buttonLabel: l10n.startAction,
-                                  colors: const [
-                                    Color(0xFFFF8A65),
-                                    Color(0xFFFFB74D),
-                                  ],
-                                  onTap: () {
-                                    Navigator.pop(sheetContext);
-                                    _openQuickDeclutter(context);
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                _buildCleaningModeButton(
-                                  icon: Icons.auto_awesome_rounded,
-                                  title: l10n.joyDeclutterTitle,
-                                  subtitle: l10n.joyDeclutterFlowDescription,
-                                  buttonLabel: l10n.startAction,
-                                  colors: const [
-                                    Color(0xFF5B8CFF),
-                                    Color(0xFF61D1FF),
-                                  ],
-                                  onTap: () {
-                                    Navigator.pop(sheetContext);
-                                    _openJoyDeclutter(context);
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                _buildCleaningModeButton(
-                                  icon: Icons.cleaning_services_rounded,
-                                  title: l10n.deepCleaningTitle,
-                                  subtitle: l10n.deepCleaningFlowDescription,
-                                  buttonLabel: l10n.startAction,
-                                  colors: const [
-                                    Color(0xFF34E27A),
-                                    Color(0xFF0BBF75),
-                                  ],
-                                  onTap: () {
-                                    if (!_hasFullAccess) {
-                                      Navigator.pop(sheetContext);
-                                      _showUpgradeDialog();
-                                      return;
-                                    }
-                                    Navigator.pop(sheetContext);
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => DeepCleaningFlowPage(
-                                          onStartSession: _startSession,
-                                          onStopSession: _stopSession,
-                                        ),
+                                  const SizedBox(height: 20),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      l10n.chooseFlowTitle,
+                                      style: const TextStyle(
+                                        fontFamily: 'SF Pro Display',
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF1C1C1E),
                                       ),
-                                    );
-                                  },
-                                ),
-                              ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      l10n.chooseFlowSubtitle,
+                                      style: const TextStyle(
+                                        fontFamily: 'SF Pro Text',
+                                        fontSize: 14,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _buildCleaningModeButton(
+                                    icon: Icons.flash_on_rounded,
+                                    title: l10n.quickDeclutterTitle,
+                                    subtitle:
+                                        l10n.quickDeclutterFlowDescription,
+                                    buttonLabel: l10n.startAction,
+                                    colors: const [
+                                      Color(0xFFFF8A65),
+                                      Color(0xFFFFB74D),
+                                    ],
+                                    onTap: () {
+                                      Navigator.pop(sheetContext);
+                                      _openQuickDeclutter(context);
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildCleaningModeButton(
+                                    icon: Icons.auto_awesome_rounded,
+                                    title: l10n.joyDeclutterTitle,
+                                    subtitle: l10n.joyDeclutterFlowDescription,
+                                    buttonLabel: l10n.startAction,
+                                    colors: const [
+                                      Color(0xFF5B8CFF),
+                                      Color(0xFF61D1FF),
+                                    ],
+                                    onTap: () {
+                                      Navigator.pop(sheetContext);
+                                      _openJoyDeclutter(context);
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildCleaningModeButton(
+                                    icon: Icons.cleaning_services_rounded,
+                                    title: l10n.deepCleaningTitle,
+                                    subtitle: l10n.deepCleaningFlowDescription,
+                                    buttonLabel: l10n.startAction,
+                                    colors: const [
+                                      Color(0xFF34E27A),
+                                      Color(0xFF0BBF75),
+                                    ],
+                                    onTap: () {
+                                      if (!_hasFullAccess) {
+                                        Navigator.pop(sheetContext);
+                                        _showUpgradeDialog();
+                                        return;
+                                      }
+                                      Navigator.pop(sheetContext);
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => DeepCleaningFlowPage(
+                                            onStartSession: _startSession,
+                                            onStopSession: _stopSession,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              );
-            },
-            customBorder: const CircleBorder(),
-            child: const Icon(Icons.add, color: Colors.white, size: 32),
+                    );
+                  },
+                );
+              },
+              customBorder: const CircleBorder(),
+              child: const Icon(Icons.add, color: Colors.white, size: 32),
+            ),
           ),
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        color: Colors.white,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildNavBarItem(
-                  icon: Icons.home_outlined,
-                  activeIcon: Icons.home,
-                  label: l10n.home,
-                  index: 0,
-                  isActive: _selectedIndex == 0,
-                  onTap: () => setState(() => _selectedIndex = 0),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 8,
+          color: Colors.white,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildNavBarItem(
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home,
+                    label: l10n.home,
+                    index: 0,
+                    isActive: _selectedIndex == 0,
+                    onTap: () => setState(() => _selectedIndex = 0),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _buildNavBarItem(
-                  icon: Icons.grid_view_outlined,
-                  activeIcon: Icons.grid_view,
-                  label: l10n.items,
-                  index: 1,
-                  isActive: _selectedIndex == 1,
-                  onTap: () => setState(() => _selectedIndex = 1),
+                Expanded(
+                  child: _buildNavBarItem(
+                    icon: Icons.grid_view_outlined,
+                    activeIcon: Icons.grid_view,
+                    label: l10n.items,
+                    index: 1,
+                    isActive: _selectedIndex == 1,
+                    onTap: () => setState(() => _selectedIndex = 1),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 80), // Space for FAB
-              Expanded(
-                child: _buildNavBarItem(
-                  icon: Icons.sell_outlined,
-                  activeIcon: Icons.sell,
-                  label: l10n.routeResell,
-                  index: 3,
-                  isActive: _selectedIndex == 3,
-                  onTap: () => setState(() => _selectedIndex = 3),
+                const SizedBox(width: 80), // Space for FAB
+                Expanded(
+                  child: _buildNavBarItem(
+                    icon: Icons.sell_outlined,
+                    activeIcon: Icons.sell,
+                    label: l10n.routeResell,
+                    index: 3,
+                    isActive: _selectedIndex == 3,
+                    onTap: () => setState(() => _selectedIndex = 3),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _buildNavBarItem(
-                  icon: Icons.bookmark_border,
-                  activeIcon: Icons.bookmark,
-                  label: l10n.memories,
-                  index: 4,
-                  isActive: _selectedIndex == 4,
-                  onTap: () {
-                    if (!_hasFullAccess) {
-                      _showUpgradeDialog();
-                      return;
-                    }
-                    setState(() => _selectedIndex = 4);
-                  },
+                Expanded(
+                  child: _buildNavBarItem(
+                    icon: Icons.bookmark_border,
+                    activeIcon: Icons.bookmark,
+                    label: l10n.memories,
+                    index: 4,
+                    isActive: _selectedIndex == 4,
+                    onTap: () {
+                      if (!_hasFullAccess) {
+                        _showUpgradeDialog();
+                        return;
+                      }
+                      setState(() => _selectedIndex = 4);
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -2458,7 +2495,8 @@ class _HomeScreenState extends State<_HomeScreen> {
                                                             .area,
                                                         beforePhotoPath: widget
                                                             .activeSession!
-                                                            .beforePhotoPath,
+                                                            .localBeforePhotoPath ??
+                                                            widget.activeSession!.remoteBeforePhotoPath,
                                                         onStopSession: widget
                                                             .onStopSession,
                                                       ),
@@ -2520,7 +2558,8 @@ class _HomeScreenState extends State<_HomeScreen> {
                                                           .area,
                                                       beforePhotoPath: widget
                                                           .activeSession!
-                                                          .beforePhotoPath,
+                                                          .localBeforePhotoPath ??
+                                                          widget.activeSession!.remoteBeforePhotoPath,
                                                       onStopSession:
                                                           widget.onStopSession,
                                                     ),

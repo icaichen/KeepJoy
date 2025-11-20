@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -126,6 +128,28 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
   bool _isProcessing = false;
   final ImagePicker _picker = ImagePicker();
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final itemsDir = Directory('${appDir.path}/items');
+      if (!await itemsDir.exists()) {
+        await itemsDir.create(recursive: true);
+      }
+
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(itemsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _takePicture() async {
     setState(() => _isProcessing = true);
 
@@ -136,17 +160,21 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
       );
 
       if (photo != null && mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => _PhotoReviewPage(
-              photoPath: photo.path,
-              onItemCompleted: widget.onItemCompleted,
-              onMemoryCreated: widget.onMemoryCreated,
-              hasFullAccess: widget.hasFullAccess,
-              onRequestUpgrade: widget.onRequestUpgrade,
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => _PhotoReviewPage(
+                photoPath: permanentPath,
+                onItemCompleted: widget.onItemCompleted,
+                onMemoryCreated: widget.onMemoryCreated,
+                hasFullAccess: widget.hasFullAccess,
+                onRequestUpgrade: widget.onRequestUpgrade,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -366,6 +394,28 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
     }
   }
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final itemsDir = Directory('${appDir.path}/items');
+      if (!await itemsDir.exists()) {
+        await itemsDir.create(recursive: true);
+      }
+
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(itemsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _retakePicture() async {
     try {
       final XFile? photo = await _picker.pickImage(
@@ -374,17 +424,21 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
       );
 
       if (photo != null && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => _PhotoReviewPage(
-              photoPath: photo.path,
-              onItemCompleted: widget.onItemCompleted,
-              onMemoryCreated: widget.onMemoryCreated,
-              hasFullAccess: widget.hasFullAccess,
-              onRequestUpgrade: widget.onRequestUpgrade,
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => _PhotoReviewPage(
+                photoPath: permanentPath,
+                onItemCompleted: widget.onItemCompleted,
+                onMemoryCreated: widget.onMemoryCreated,
+                hasFullAccess: widget.hasFullAccess,
+                onRequestUpgrade: widget.onRequestUpgrade,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -892,7 +946,8 @@ class _SummaryPage extends StatelessWidget {
       category: category,
       createdAt: DateTime.now(),
       status: DeclutterStatus.keep,
-      photoPath: photoPath,
+      localPhotoPath: photoPath,
+      remotePhotoPath: null,
     );
 
     onItemCompleted(item);
@@ -996,7 +1051,8 @@ class _SummaryPage extends StatelessWidget {
       category: category,
       createdAt: DateTime.now(),
       status: status,
-      photoPath: photoPath,
+      localPhotoPath: photoPath,
+      remotePhotoPath: null,
     );
 
     onItemCompleted(item);
@@ -1034,9 +1090,9 @@ class _SummaryPage extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: CreateMemoryPage(
-            item: item,
-            photoPath: photoPath,
-            itemName: itemName,
+              item: item,
+              photoPath: photoPath,
+              itemName: itemName,
               isModal: true,
             ),
           ),

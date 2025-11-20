@@ -52,8 +52,9 @@ class GradientButton extends StatelessWidget {
                   ? null
                   : [
                       BoxShadow(
-                        color: (gradientColors?.first ?? const Color(0xFF80D4C8))
-                            .withValues(alpha: 0.3),
+                        color:
+                            (gradientColors?.first ?? const Color(0xFF80D4C8))
+                                .withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -68,7 +69,9 @@ class GradientButton extends StatelessWidget {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       ),
                     )

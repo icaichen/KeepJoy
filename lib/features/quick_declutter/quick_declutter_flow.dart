@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -122,6 +124,28 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
   bool _isProcessing = false;
   int _itemsCaptured = 0;
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final itemsDir = Directory('${appDir.path}/items');
+      if (!await itemsDir.exists()) {
+        await itemsDir.create(recursive: true);
+      }
+
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(itemsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _takePicture() async {
     setState(() => _isProcessing = true);
 
@@ -132,17 +156,21 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
       );
 
       if (photo != null && mounted) {
-        final result = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            builder: (_) => _QuickItemReviewPage(
-              photoPath: photo.path,
-              onItemCreated: widget.onItemCreated,
-              pendingItems: widget.pendingItems,
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          final result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => _QuickItemReviewPage(
+                photoPath: permanentPath,
+                onItemCreated: widget.onItemCreated,
+                pendingItems: widget.pendingItems,
+              ),
             ),
-          ),
-        );
-        if (result == true && mounted) {
-          setState(() => _itemsCaptured += 1);
+          );
+          if (result == true && mounted) {
+            setState(() => _itemsCaptured += 1);
+          }
         }
       }
     } catch (e) {
@@ -434,7 +462,8 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
       category: _selectedCategory,
       createdAt: DateTime.now(),
       status: DeclutterStatus.keep,
-      photoPath: widget.photoPath,
+      localPhotoPath: widget.photoPath,
+      remotePhotoPath: null,
       joyLevel: 8, // Set joy level to 8 for "Yes, it sparks joy"
     );
 
@@ -454,6 +483,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
     final status = await showModalBottomSheet<DeclutterStatus>(
       context: context,
       backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -465,70 +495,72 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.timeToLetGo,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.timeToLetGo,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.joyQuestionDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.4,
-                    color: Colors.black.withValues(alpha: 0.7),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.joyQuestionDescription,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      height: 1.4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                _buildLetGoOption(
-                  sheetContext,
-                  icon: Icons.delete_outline,
-                  label: l10n.routeDiscard,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
-                ),
-                _buildLetGoOption(
-                  sheetContext,
-                  icon: Icons.volunteer_activism_outlined,
-                  label: l10n.routeDonation,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
-                ),
-                _buildLetGoOption(
-                  sheetContext,
-                  icon: Icons.recycling_outlined,
-                  label: l10n.routeRecycle,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
-                ),
-                _buildLetGoOption(
-                  sheetContext,
-                  icon: Icons.attach_money_outlined,
-                  label: l10n.routeResell,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
-                ),
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(),
-                  child: Text(l10n.cancel),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  _buildLetGoOption(
+                    sheetContext,
+                    icon: Icons.delete_outline,
+                    label: l10n.routeDiscard,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                  ),
+                  _buildLetGoOption(
+                    sheetContext,
+                    icon: Icons.volunteer_activism_outlined,
+                    label: l10n.routeDonation,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                  ),
+                  _buildLetGoOption(
+                    sheetContext,
+                    icon: Icons.recycling_outlined,
+                    label: l10n.routeRecycle,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                  ),
+                  _buildLetGoOption(
+                    sheetContext,
+                    icon: Icons.attach_money_outlined,
+                    label: l10n.routeResell,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                  ),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: Text(l10n.cancel),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -553,7 +585,8 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
       category: _selectedCategory,
       createdAt: DateTime.now(),
       status: status,
-      photoPath: widget.photoPath,
+      localPhotoPath: widget.photoPath,
+      remotePhotoPath: null,
       joyLevel: 3, // Set joy level to 3 for "No, doesn't spark joy"
     );
 
@@ -568,13 +601,15 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
   String? _currentUserIdOrWarn() {
     final userId = _authService.currentUserId;
     if (userId == null) {
-      final isChinese =
-          Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
-      final message =
-          isChinese ? '请先登录以保存数据' : 'Please sign in to save your data.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      final isChinese = Localizations.localeOf(
+        context,
+      ).languageCode.toLowerCase().startsWith('zh');
+      final message = isChinese
+          ? '请先登录以保存数据'
+          : 'Please sign in to save your data.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
     return userId;
   }
@@ -777,10 +812,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                         children: [
                           ShaderMask(
                             shaderCallback: (bounds) => const LinearGradient(
-                              colors: [
-                                Color(0xFFEF4444),
-                                Color(0xFFDC2626),
-                              ],
+                              colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                             ).createShader(bounds),
@@ -809,10 +841,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                         children: [
                           ShaderMask(
                             shaderCallback: (bounds) => const LinearGradient(
-                              colors: [
-                                Color(0xFF10B981),
-                                Color(0xFF059669),
-                              ],
+                              colors: [Color(0xFF10B981), Color(0xFF059669)],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                             ).createShader(bounds),
@@ -847,73 +876,72 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                 ),
               ],
 
-          // After decision: Show Continue button
-          if (_decision != null) ...[
-            Card(
-              color: const Color(0xFFF0FDF4),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Icon(
-                      _decision == DeclutterStatus.keep
-                          ? Icons.check_circle_rounded
-                          : Icons.cancel_rounded,
-                      size: 48,
-                      color: _decision == DeclutterStatus.keep
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444),
+              // After decision: Show Continue button
+              if (_decision != null) ...[
+                Card(
+                  color: const Color(0xFFF0FDF4),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Icon(
+                          _decision == DeclutterStatus.keep
+                              ? Icons.check_circle_rounded
+                              : Icons.cancel_rounded,
+                          size: 48,
+                          color: _decision == DeclutterStatus.keep
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFEF4444),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _decision == DeclutterStatus.keep
+                              ? (isChinese ? '已保留' : 'Kept')
+                              : (isChinese ? '已决定放手' : 'Decided to let go'),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _decision == DeclutterStatus.keep
-                          ? (isChinese ? '已保留' : 'Kept')
-                          : (isChinese ? '已决定放手' : 'Decided to let go'),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _continue,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF5ECFB8),
-                  minimumSize: const Size.fromHeight(52),
-                ),
-                icon: const Icon(Icons.arrow_forward_rounded),
-                label: Text(
-                  isChinese ? '拍摄下一件' : 'Capture Next Item',
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => popToHome(context),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                  side: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                child: Text(
-                  isChinese ? '完成整理' : 'Finish Organizing',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF6B7280),
                   ),
                 ),
-              ),
-            ),
-          ],
-        ],
-      ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _continue,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF5ECFB8),
+                      minimumSize: const Size.fromHeight(52),
+                    ),
+                    icon: const Icon(Icons.arrow_forward_rounded),
+                    label: Text(
+                      isChinese ? '拍摄下一件' : 'Capture Next Item',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => popToHome(context),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                    ),
+                    child: Text(
+                      isChinese ? '完成整理' : 'Finish Organizing',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -950,7 +978,8 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
       category: widget.item.category,
       createdAt: widget.item.createdAt,
       status: DeclutterStatus.keep,
-      photoPath: widget.item.photoPath,
+      localPhotoPath: widget.item.localPhotoPath,
+      remotePhotoPath: widget.item.remotePhotoPath,
       joyLevel: _joyLevel,
     );
 
@@ -1021,6 +1050,7 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
     final status = await showModalBottomSheet<DeclutterStatus>(
       context: context,
       backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -1032,70 +1062,72 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.timeToLetGo,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.timeToLetGo,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.joyQuestionDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.4,
-                    color: Colors.black.withValues(alpha: 0.7),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.joyQuestionDescription,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      height: 1.4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                _buildLetGoOption(
-                  sheetContext,
-                  icon: Icons.delete_outline,
-                  label: l10n.routeDiscard,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
-                ),
-                _buildLetGoOption(
-                  sheetContext,
-                  icon: Icons.volunteer_activism_outlined,
-                  label: l10n.routeDonation,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
-                ),
-                _buildLetGoOption(
-                  sheetContext,
-                  icon: Icons.recycling_outlined,
-                  label: l10n.routeRecycle,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
-                ),
-                _buildLetGoOption(
-                  sheetContext,
-                  icon: Icons.attach_money_outlined,
-                  label: l10n.routeResell,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
-                ),
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(),
-                  child: Text(l10n.cancel),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  _buildLetGoOption(
+                    sheetContext,
+                    icon: Icons.delete_outline,
+                    label: l10n.routeDiscard,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                  ),
+                  _buildLetGoOption(
+                    sheetContext,
+                    icon: Icons.volunteer_activism_outlined,
+                    label: l10n.routeDonation,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                  ),
+                  _buildLetGoOption(
+                    sheetContext,
+                    icon: Icons.recycling_outlined,
+                    label: l10n.routeRecycle,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                  ),
+                  _buildLetGoOption(
+                    sheetContext,
+                    icon: Icons.attach_money_outlined,
+                    label: l10n.routeResell,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                  ),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: Text(l10n.cancel),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -1114,7 +1146,8 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
       category: widget.item.category,
       createdAt: DateTime.now(),
       status: status,
-      photoPath: widget.item.photoPath,
+      localPhotoPath: widget.item.localPhotoPath,
+      remotePhotoPath: widget.item.remotePhotoPath,
       joyLevel: _joyLevel,
     );
 
@@ -1231,21 +1264,23 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
                             borderRadius: BorderRadius.circular(24),
                             child: AspectRatio(
                               aspectRatio: 4 / 3,
-                              child:
-                                  widget.item.photoPath == null ||
-                                      widget.item.photoPath!.isEmpty
-                                  ? Container(
+                              child: () {
+                                  final photoPath = widget.item.localPhotoPath ?? widget.item.remotePhotoPath;
+                                  if (photoPath == null || photoPath.isEmpty) {
+                                    return Container(
                                       color: Colors.grey.shade200,
                                       child: const Icon(
                                         Icons.photo_camera_outlined,
                                         size: 80,
                                         color: Colors.black45,
                                       ),
-                                    )
-                                  : Image.file(
-                                      File(widget.item.photoPath!),
-                                      fit: BoxFit.cover,
-                                    ),
+                                    );
+                                  }
+                                  return Image.file(
+                                    File(photoPath),
+                                    fit: BoxFit.cover,
+                                  );
+                                }(),
                             ),
                           ),
                           const SizedBox(height: 20),

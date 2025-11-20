@@ -23,7 +23,8 @@ class PremiumAccessService {
       final isInTrial = await SubscriptionService.isInTrialPeriod();
       if (!isInTrial) return 0;
 
-      final expirationDate = await SubscriptionService.getSubscriptionExpirationDate();
+      final expirationDate =
+          await SubscriptionService.getSubscriptionExpirationDate();
       if (expirationDate == null) return 0;
 
       final remaining = expirationDate.difference(DateTime.now()).inDays;

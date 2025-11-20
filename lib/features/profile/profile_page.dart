@@ -55,6 +55,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return 'U';
   }
 
+  String? get _avatarPath {
+    final metadata = _authService.currentUser?.userMetadata;
+    if (metadata != null && metadata['avatar_url'] != null) {
+      return metadata['avatar_url'] as String;
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -145,16 +153,24 @@ class _ProfilePageState extends State<ProfilePage> {
                       backgroundColor: const Color(
                         0xFFB794F6,
                       ).withValues(alpha: 0.15),
-                      child: Text(
-                        _userInitial,
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Display',
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFB794F6),
-                          letterSpacing: 0,
-                        ),
-                      ),
+                      backgroundImage:
+                          _avatarPath != null && File(_avatarPath!).existsSync()
+                          ? FileImage(File(_avatarPath!))
+                          : null,
+                      child:
+                          _avatarPath == null ||
+                              !File(_avatarPath!).existsSync()
+                          ? Text(
+                              _userInitial,
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Display',
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFB794F6),
+                                letterSpacing: 0,
+                              ),
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 16),
                     // User Info
@@ -361,43 +377,6 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 32),
 
             // Data Management Section
-            _buildSectionTitle(context, l10n.data),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _SettingsTile(
-                    icon: Icons.download_outlined,
-                    title: l10n.exportData,
-                    onTap: () {
-                      _exportData(context);
-                    },
-                  ),
-                  const Divider(height: 1, indent: 56),
-                  _SettingsTile(
-                    icon: Icons.delete_outline,
-                    title: l10n.clearAllData,
-                    textColor: Colors.red,
-                    onTap: () {
-                      _showClearDataDialog(context);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
             // Logout Section
             Container(
               decoration: BoxDecoration(
@@ -535,187 +514,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFFB794F6),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showClearDataDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(
-              Icons.warning_amber_rounded,
-              color: Colors.red,
-              size: 28,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                l10n.clearAllData,
-                style: const TextStyle(
-                  fontFamily: 'SF Pro Display',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isChinese
-                  ? '确定要清除所有数据吗？此操作无法撤销。'
-                  : 'Are you sure you want to clear all data? This cannot be undone.',
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF111827),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isChinese ? '将删除以下数据：' : 'This will delete:',
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Text',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.red,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    isChinese
-                        ? '• 所有物品记录\n• 所有整理记录\n• 所有回忆\n• 所有二手物品追踪\n• 所有照片和数据'
-                        : '• All items\n• All sessions\n• All memories\n• All resell items\n• All photos and data',
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Text',
-                      fontSize: 13,
-                      color: Color(0xFF991B1B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              l10n.cancel,
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF6B7280),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-
-              // Show loading dialog
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        isChinese ? '正在清除数据...' : 'Clearing data...',
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          fontSize: 15,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-
-              try {
-                final repository = DataRepository();
-
-                // Clear all data from repository
-                await repository.clearAllData();
-
-                // Sign out the user
-                await _authService.signOut();
-
-                // Close loading dialog
-                if (mounted) {
-                  Navigator.pop(context);
-                }
-
-                // CRITICAL: Navigate to welcome page and clear all previous routes
-                if (mounted && context.mounted) {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/welcome',
-                    (route) => false, // Remove all previous routes
-                  );
-                }
-              } catch (e) {
-                // Close loading dialog
-                if (mounted) {
-                  Navigator.pop(context);
-                }
-
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        isChinese ? '清除失败: $e' : 'Clear failed: $e',
-                      ),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            child: Text(
-              isChinese ? '清除' : 'Clear',
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.red,
               ),
             ),
           ),
@@ -921,7 +719,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'nameLocalizations': item.nameLocalizations,
                   'category': item.category.name,
                   'createdAt': item.createdAt.toIso8601String(),
-                  'photoPath': item.photoPath,
+                  'photoPath': item.localPhotoPath ?? item.remotePhotoPath,
                   'status': item.status.name,
                   'notes': item.notes,
                   'joyLevel': item.joyLevel,
@@ -936,8 +734,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   'startTime': session.startTime.toIso8601String(),
                   'elapsedSeconds': session.elapsedSeconds,
                   'itemsCount': session.itemsCount,
-                  'beforePhotoPath': session.beforePhotoPath,
-                  'afterPhotoPath': session.afterPhotoPath,
+                  'beforePhotoPath': session.localBeforePhotoPath ?? session.remoteBeforePhotoPath,
+                  'afterPhotoPath': session.localAfterPhotoPath ?? session.remoteAfterPhotoPath,
                   'focusIndex': session.focusIndex,
                   'moodIndex': session.moodIndex,
                 },
@@ -952,7 +750,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'description': memory.description,
                   'sentiment': memory.sentiment?.name,
                   'createdAt': memory.createdAt.toIso8601String(),
-                  'photoPath': memory.photoPath,
+                  'photoPath': memory.localPhotoPath ?? memory.remotePhotoPath,
                   'type': memory.type.name,
                 },
               )

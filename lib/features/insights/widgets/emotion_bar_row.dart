@@ -24,7 +24,9 @@ class EmotionBarRow extends StatelessWidget {
         final count = sentimentCounts[sentiment] ?? 0;
         final color = emotion['color'] as Color;
         final label = emotion['label'] as String;
-        final percent = maxCount == 0 ? 0.0 : (count / maxCount).clamp(0.05, 1.0);
+        final percent = maxCount == 0
+            ? 0.0
+            : (count / maxCount).clamp(0.05, 1.0);
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 14),

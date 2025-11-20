@@ -95,13 +95,9 @@ class ResellItem {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       declutterItemId: json['declutter_item_id'] as String,
-      status: ResellStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-      ),
+      status: ResellStatus.values.firstWhere((e) => e.name == json['status']),
       platform: json['platform'] != null
-          ? ResellPlatform.values.firstWhere(
-              (e) => e.name == json['platform'],
-            )
+          ? ResellPlatform.values.firstWhere((e) => e.name == json['platform'])
           : null,
       sellingPrice: json['selling_price'] as double?,
       soldPrice: json['sold_price'] as double?,

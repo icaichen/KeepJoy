@@ -25,12 +25,12 @@ class AppTypography {
   /// Fallback fonts for Chinese characters
   /// Ordered by preference and availability
   static const List<String> chineseFallbacks = [
-    'NotoSansSC',         // Bundled fallback for Simplified Chinese
-    'PingFang SC',        // Apple's modern Chinese font (best for iOS/macOS)
+    'NotoSansSC', // Bundled fallback for Simplified Chinese
+    'PingFang SC', // Apple's modern Chinese font (best for iOS/macOS)
     'Source Han Sans CN', // Adobe's open-source Chinese font
-    'Noto Sans SC',       // System-installed Pan-CJK font name
-    'Roboto',             // Android fallback
-    'Inter',              // Web fallback
+    'Noto Sans SC', // System-installed Pan-CJK font name
+    'Roboto', // Android fallback
+    'Inter', // Web fallback
   ];
 
   // ============================================================================
@@ -47,7 +47,7 @@ class AppTypography {
       fontFamily: displayFont,
       fontSize: 48,
       fontWeight: FontWeight.w700,
-      letterSpacing: -1.0,  // Tighter for English, ignored for Chinese
+      letterSpacing: -1.0, // Tighter for English, ignored for Chinese
       height: 1.2,
     ),
     displayMedium: TextStyle(
@@ -126,7 +126,7 @@ class AppTypography {
       fontSize: 16,
       fontWeight: FontWeight.w400,
       letterSpacing: 0,
-      height: 1.5,  // Extra line height for readability
+      height: 1.5, // Extra line height for readability
     ),
     bodyMedium: TextStyle(
       fontFamily: textFont,

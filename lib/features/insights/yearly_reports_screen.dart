@@ -74,8 +74,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             ).format(session.startTime);
 
             final hasPhotos =
-                session.beforePhotoPath != null &&
-                session.afterPhotoPath != null;
+                (session.localBeforePhotoPath != null || session.remoteBeforePhotoPath != null) &&
+                (session.localAfterPhotoPath != null || session.remoteAfterPhotoPath != null);
 
             return Container(
               decoration: const BoxDecoration(
@@ -159,7 +159,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     fit: StackFit.expand,
                                     children: [
                                       Image.file(
-                                        File(session.beforePhotoPath!),
+                                        File(session.localBeforePhotoPath ?? session.remoteBeforePhotoPath!),
                                         fit: BoxFit.cover,
                                       ),
                                       Positioned(
@@ -197,7 +197,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     fit: StackFit.expand,
                                     children: [
                                       Image.file(
-                                        File(session.afterPhotoPath!),
+                                        File(session.localAfterPhotoPath ?? session.remoteAfterPhotoPath!),
                                         fit: BoxFit.cover,
                                       ),
                                       Positioned(

@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../widgets/smart_image_widget.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 
@@ -129,9 +128,9 @@ class _ResellTrackerPageState extends State<ResellTrackerPage> {
             onPressed: () {
               widget.onDeleteResellItem(item);
               Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.itemDeleted)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(l10n.itemDeleted)));
             },
             child: Text(l10n.deleteItem),
           ),
@@ -145,11 +144,13 @@ class _ResellTrackerPageState extends State<ResellTrackerPage> {
     final monthStart = DateTime(now.year, now.month, 1);
 
     return widget.resellItems
-        .where((item) =>
-            item.status == ResellStatus.sold &&
-            item.soldDate != null &&
-            item.soldDate!.isAfter(monthStart) &&
-            item.soldDate!.isBefore(now.add(const Duration(days: 1))))
+        .where(
+          (item) =>
+              item.status == ResellStatus.sold &&
+              item.soldDate != null &&
+              item.soldDate!.isAfter(monthStart) &&
+              item.soldDate!.isBefore(now.add(const Duration(days: 1))),
+        )
         .fold(0.0, (sum, item) => sum + (item.soldPrice ?? 0.0));
   }
 
@@ -186,10 +187,7 @@ class _ResellTrackerPageState extends State<ResellTrackerPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.resellTracker),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: Text(l10n.resellTracker), centerTitle: false),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -216,18 +214,25 @@ class _ResellTrackerPageState extends State<ResellTrackerPage> {
                         key: ValueKey('empty-${_segment.name}'),
                         child: Text(
                           emptyMessage,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                         ),
                       )
                     : ListView.separated(
-                        key: ValueKey('list-${_segment.name}-${currentItems.length}'),
+                        key: ValueKey(
+                          'list-${_segment.name}-${currentItems.length}',
+                        ),
                         itemCount: currentItems.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final item = currentItems[index];
-                          final declutterItem = _getDeclutterItem(item.declutterItemId);
+                          final declutterItem = _getDeclutterItem(
+                            item.declutterItemId,
+                          );
 
                           return Dismissible(
                             key: Key(item.id),
@@ -304,14 +309,17 @@ class _ResellItemCard extends StatelessWidget {
           child: Row(
             children: [
               // Photo
-              if (declutterItem?.photoPath != null)
+              if (declutterItem?.localPhotoPath != null || declutterItem?.remotePhotoPath != null)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.file(
-                    File(declutterItem!.photoPath!),
+                  child: SizedBox(
                     width: 80,
                     height: 80,
-                    fit: BoxFit.cover,
+                    child: SmartImageWidget(
+                      localPath: declutterItem!.localPhotoPath,
+                      remotePath: declutterItem!.remotePhotoPath,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 )
               else
@@ -319,7 +327,9 @@ class _ResellItemCard extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -343,8 +353,8 @@ class _ResellItemCard extends StatelessWidget {
                     Text(
                       declutterItem?.category.label(context) ?? '',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     // Status-specific info
@@ -352,8 +362,8 @@ class _ResellItemCard extends StatelessWidget {
                       Text(
                         l10n.addedOn(formatDate(item.createdAt)),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ] else if (segment == ResellSegment.listing) ...[
                       if (item.platform != null)
@@ -365,16 +375,16 @@ class _ResellItemCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           '${l10n.sellingPrice}: $currencySymbol${item.sellingPrice!.toStringAsFixed(2)}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ] else if (segment == ResellSegment.sold) ...[
                       if (item.soldPrice != null)
                         Text(
                           '${l10n.soldPrice}: $currencySymbol${item.soldPrice!.toStringAsFixed(2)}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -383,8 +393,11 @@ class _ResellItemCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           formatDate(item.soldDate!),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                         ),
                       ],
@@ -393,7 +406,9 @@ class _ResellItemCard extends StatelessWidget {
                 ),
               ),
               Icon(
-                segment == ResellSegment.sold ? Icons.info_outline : Icons.chevron_right,
+                segment == ResellSegment.sold
+                    ? Icons.info_outline
+                    : Icons.chevron_right,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ],
@@ -451,9 +466,9 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
     // Validation for sold status
     if (_selectedStatus == ResellStatus.sold) {
       if (_priceController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.soldPriceRequired)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.soldPriceRequired)));
         return;
       }
     }
@@ -467,8 +482,12 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
 
       final updatedItem = widget.item.copyWith(
         status: _selectedStatus,
-        platform: _selectedStatus == ResellStatus.listing ? _selectedPlatform : widget.item.platform,
-        sellingPrice: _selectedStatus == ResellStatus.listing ? price : widget.item.sellingPrice,
+        platform: _selectedStatus == ResellStatus.listing
+            ? _selectedPlatform
+            : widget.item.platform,
+        sellingPrice: _selectedStatus == ResellStatus.listing
+            ? price
+            : widget.item.sellingPrice,
         soldPrice: _selectedStatus == ResellStatus.sold ? price : null,
         soldDate: _selectedStatus == ResellStatus.sold ? DateTime.now() : null,
       );
@@ -477,9 +496,9 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
 
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.itemStatusUpdated)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.itemStatusUpdated)));
       }
     } finally {
       if (mounted) {
@@ -564,7 +583,9 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
                   prefixText: widget.currencySymbol,
                   border: const OutlineInputBorder(),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
             ] else if (_selectedStatus == ResellStatus.sold) ...[
               TextField(
@@ -575,7 +596,9 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
                   prefixText: widget.currencySymbol,
                   border: const OutlineInputBorder(),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 autofocus: true,
               ),
             ],

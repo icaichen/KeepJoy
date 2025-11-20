@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -7,6 +5,7 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/features/memories/create_memory_page.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/widgets/create_memory_prompt_sheet.dart';
+import 'package:keepjoy_app/widgets/smart_image_widget.dart';
 
 class ItemsScreen extends StatefulWidget {
   const ItemsScreen({
@@ -499,7 +498,7 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
         MaterialPageRoute(
           builder: (_) => CreateMemoryPage(
             item: item,
-            photoPath: widget.item.photoPath ?? '',
+            photoPath: widget.item.localPhotoPath ?? widget.item.remotePhotoPath ?? '',
             itemName: item.displayName(context),
           ),
         ),
@@ -707,13 +706,14 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (widget.item.photoPath != null)
+                              if (widget.item.localPhotoPath != null || widget.item.remotePhotoPath != null)
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(16),
                                   child: AspectRatio(
                                     aspectRatio: 4 / 3,
-                                    child: Image.file(
-                                      File(widget.item.photoPath!),
+                                    child: SmartImageWidget(
+                                      localPath: widget.item.localPhotoPath,
+                                      remotePath: widget.item.remotePhotoPath,
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -1177,14 +1177,17 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
       ),
       child: Row(
         children: [
-          if (item.photoPath != null)
+          if (item.localPhotoPath != null || item.remotePhotoPath != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.file(
-                File(item.photoPath!),
+              child: SizedBox(
                 width: 48,
                 height: 48,
-                fit: BoxFit.cover,
+                child: SmartImageWidget(
+                  localPath: item.localPhotoPath,
+                  remotePath: item.remotePhotoPath,
+                  fit: BoxFit.cover,
+                ),
               ),
             )
           else

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../l10n/app_localizations.dart';
+import '../../widgets/smart_image_widget.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'memory_detail_page.dart';
 
@@ -81,8 +82,17 @@ class _MemoriesPageState extends State<MemoriesPage> {
                         child: _EmptyMemoriesState(),
                       )
                     : _viewMode == MemoryViewMode.grid
-                    ? _GridViewWrapper(memories: memories)
-                    : _TimelineView(memories: memories, l10n: l10n),
+                    ? _GridViewWrapper(
+                        memories: memories,
+                        onMemoryDeleted: widget.onMemoryDeleted,
+                        onMemoryUpdated: widget.onMemoryUpdated,
+                      )
+                    : _TimelineView(
+                        memories: memories,
+                        l10n: l10n,
+                        onMemoryDeleted: widget.onMemoryDeleted,
+                        onMemoryUpdated: widget.onMemoryUpdated,
+                      ),
               ),
             ],
           ),
@@ -142,47 +152,50 @@ class _MemoriesPageState extends State<MemoriesPage> {
                   right: 24,
                   top: topPadding + 12,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      pageName,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1C1C1E),
-                        letterSpacing: -0.5,
-                        height: 1.0,
+                child: Opacity(
+                  opacity: headerOpacity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        pageName,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1C1C1E),
+                          letterSpacing: -0.5,
+                          height: 1.0,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Container(
-                      height: 40,
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(10),
+                      Container(
+                        height: 40,
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildViewModeButton(
+                              icon: Icons.grid_view_rounded,
+                              mode: MemoryViewMode.grid,
+                              isSelected: _viewMode == MemoryViewMode.grid,
+                            ),
+                            const SizedBox(width: 4),
+                            _buildViewModeButton(
+                              icon: Icons.timeline_rounded,
+                              mode: MemoryViewMode.timeline,
+                              isSelected: _viewMode == MemoryViewMode.timeline,
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildViewModeButton(
-                            icon: Icons.grid_view_rounded,
-                            mode: MemoryViewMode.grid,
-                            isSelected: _viewMode == MemoryViewMode.grid,
-                          ),
-                          const SizedBox(width: 4),
-                          _buildViewModeButton(
-                            icon: Icons.timeline_rounded,
-                            mode: MemoryViewMode.timeline,
-                            isSelected: _viewMode == MemoryViewMode.timeline,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -224,36 +237,17 @@ class _MemoriesPageState extends State<MemoriesPage> {
   }
 }
 
-// Grid View (Original Photo Wall Style)
-class _GridView extends StatelessWidget {
-  final List<Memory> memories;
-
-  const _GridView({required this.memories});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(1),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 1,
-        mainAxisSpacing: 1,
-        childAspectRatio: 1,
-      ),
-      itemCount: memories.length,
-      itemBuilder: (context, index) {
-        final memory = memories[index];
-        return _MemoryGridItem(key: ValueKey(memory.id), memory: memory);
-      },
-    );
-  }
-}
-
 // Wrapper for GridView to work with CustomScrollView
 class _GridViewWrapper extends StatelessWidget {
   final List<Memory> memories;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
-  const _GridViewWrapper({required this.memories});
+  const _GridViewWrapper({
+    required this.memories,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -270,16 +264,28 @@ class _GridViewWrapper extends StatelessWidget {
       itemCount: memories.length,
       itemBuilder: (context, index) {
         final memory = memories[index];
-        return _MemoryGridItem(key: ValueKey(memory.id), memory: memory);
+        return _MemoryGridItem(
+          key: ValueKey(memory.id),
+          memory: memory,
+          onMemoryDeleted: onMemoryDeleted,
+          onMemoryUpdated: onMemoryUpdated,
+        );
       },
     );
   }
 }
 
 class _MemoryGridItem extends StatelessWidget {
-  const _MemoryGridItem({super.key, required this.memory});
+  const _MemoryGridItem({
+    super.key,
+    required this.memory,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
+  });
 
   final Memory memory;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
   @override
   Widget build(BuildContext context) {
@@ -290,10 +296,10 @@ class _MemoryGridItem extends StatelessWidget {
               aspectRatio: 1.0,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  memory.photoFile!,
+                child: SmartImageWidget(
+                  localPath: memory.localPhotoPath,
+                  remotePath: memory.remotePhotoPath,
                   fit: BoxFit.cover,
-                  gaplessPlayback: true,
                 ),
               ),
             )
@@ -311,7 +317,13 @@ class _MemoryGridItem extends StatelessWidget {
 
   void _openMemoryDetail(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => MemoryDetailPage(memory: memory)),
+      MaterialPageRoute(
+        builder: (context) => MemoryDetailPage(
+          memory: memory,
+          onMemoryDeleted: onMemoryDeleted,
+          onMemoryUpdated: onMemoryUpdated,
+        ),
+      ),
     );
   }
 }
@@ -320,8 +332,15 @@ class _MemoryGridItem extends StatelessWidget {
 class _TimelineView extends StatelessWidget {
   final List<Memory> memories;
   final AppLocalizations l10n;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
-  const _TimelineView({required this.memories, required this.l10n});
+  const _TimelineView({
+    required this.memories,
+    required this.l10n,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -351,6 +370,8 @@ class _TimelineView extends StatelessWidget {
             memories: dateMemories,
             l10n: l10n,
             isLast: isLast,
+            onMemoryDeleted: onMemoryDeleted,
+            onMemoryUpdated: onMemoryUpdated,
           );
         }).toList(),
       ),
@@ -363,12 +384,16 @@ class _TimelineDateSection extends StatelessWidget {
   final List<Memory> memories;
   final AppLocalizations l10n;
   final bool isLast;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
   const _TimelineDateSection({
     required this.date,
     required this.memories,
     required this.l10n,
     required this.isLast,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
   });
 
   @override
@@ -398,6 +423,8 @@ class _TimelineDateSection extends StatelessWidget {
             key: ValueKey(entry.value.id),
             memory: entry.value,
             showLine: !isLastMemory,
+            onMemoryDeleted: onMemoryDeleted,
+            onMemoryUpdated: onMemoryUpdated,
           );
         }),
       ],
@@ -408,8 +435,16 @@ class _TimelineDateSection extends StatelessWidget {
 class _TimelineMemoryItem extends StatelessWidget {
   final Memory memory;
   final bool showLine;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
-  const _TimelineMemoryItem({super.key, required this.memory, required this.showLine});
+  const _TimelineMemoryItem({
+    super.key,
+    required this.memory,
+    required this.showLine,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -461,7 +496,11 @@ class _TimelineMemoryItem extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => MemoryDetailPage(memory: memory),
+                    builder: (context) => MemoryDetailPage(
+                      memory: memory,
+                      onMemoryDeleted: onMemoryDeleted,
+                      onMemoryUpdated: onMemoryUpdated,
+                    ),
                   ),
                 );
               },
@@ -542,10 +581,10 @@ class _TimelineMemoryItem extends StatelessWidget {
                         aspectRatio: 1.0,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            memory.photoFile!,
+                          child: SmartImageWidget(
+                            localPath: memory.localPhotoPath,
+                            remotePath: memory.remotePhotoPath,
                             fit: BoxFit.cover,
-                            gaplessPlayback: true,
                           ),
                         ),
                       ),
@@ -575,6 +614,8 @@ class _TimelineMemoryItem extends StatelessWidget {
                           color: Color(0xFF6B7280),
                           height: 1.5,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                   ],
                 ),

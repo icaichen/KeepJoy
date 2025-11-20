@@ -29,7 +29,8 @@ enum CleaningArea {
     // Handle old keys for backward compatibility
     if (value == 'closet') return CleaningArea.wardrobe;
     if (value == 'study') return CleaningArea.bookshelf;
-    if (value == 'bathroom') return null; // Bathroom was removed, no direct mapping
+    if (value == 'bathroom')
+      return null; // Bathroom was removed, no direct mapping
 
     // Try to match by English or Chinese name (for backward compatibility)
     for (final area in CleaningArea.values) {
@@ -60,8 +61,10 @@ class DeepCleaningSession {
   final DateTime startTime;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final String? beforePhotoPath;
-  String? afterPhotoPath;
+  final String? localBeforePhotoPath;
+  final String? remoteBeforePhotoPath;
+  String? localAfterPhotoPath;
+  String? remoteAfterPhotoPath;
   int? elapsedSeconds;
   int? itemsCount;
   int? focusIndex; // 1-10
@@ -76,8 +79,10 @@ class DeepCleaningSession {
     required this.startTime,
     DateTime? createdAt,
     this.updatedAt,
-    this.beforePhotoPath,
-    this.afterPhotoPath,
+    this.localBeforePhotoPath,
+    this.remoteBeforePhotoPath,
+    this.localAfterPhotoPath,
+    this.remoteAfterPhotoPath,
     this.elapsedSeconds,
     this.itemsCount,
     this.focusIndex,
@@ -95,8 +100,8 @@ class DeepCleaningSession {
       'start_time': startTime.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
-      'before_photo_path': beforePhotoPath,
-      'after_photo_path': afterPhotoPath,
+      'before_photo_path': remoteBeforePhotoPath, // Supabase stores remote URL only
+      'after_photo_path': remoteAfterPhotoPath, // Supabase stores remote URL only
       'elapsed_seconds': elapsedSeconds,
       'items_count': itemsCount,
       'focus_index': focusIndex,
@@ -108,6 +113,29 @@ class DeepCleaningSession {
 
   // Create from JSON from Supabase
   factory DeepCleaningSession.fromJson(Map<String, dynamic> json) {
+    // Backward compatibility: migrate old photo_path to remote
+    String? localBeforePath;
+    String? remoteBeforePath;
+    final beforePhotoPath = json['before_photo_path'] as String?;
+    if (beforePhotoPath != null && beforePhotoPath.isNotEmpty) {
+      if (beforePhotoPath.startsWith('http')) {
+        remoteBeforePath = beforePhotoPath;
+      } else {
+        localBeforePath = beforePhotoPath;
+      }
+    }
+
+    String? localAfterPath;
+    String? remoteAfterPath;
+    final afterPhotoPath = json['after_photo_path'] as String?;
+    if (afterPhotoPath != null && afterPhotoPath.isNotEmpty) {
+      if (afterPhotoPath.startsWith('http')) {
+        remoteAfterPath = afterPhotoPath;
+      } else {
+        localAfterPath = afterPhotoPath;
+      }
+    }
+
     return DeepCleaningSession(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -117,8 +145,10 @@ class DeepCleaningSession {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
-      beforePhotoPath: json['before_photo_path'] as String?,
-      afterPhotoPath: json['after_photo_path'] as String?,
+      localBeforePhotoPath: localBeforePath,
+      remoteBeforePhotoPath: remoteBeforePath,
+      localAfterPhotoPath: localAfterPath,
+      remoteAfterPhotoPath: remoteAfterPath,
       elapsedSeconds: json['elapsed_seconds'] as int?,
       itemsCount: json['items_count'] as int?,
       focusIndex: json['focus_index'] as int?,
@@ -135,8 +165,10 @@ class DeepCleaningSession {
     DateTime? startTime,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? beforePhotoPath,
-    String? afterPhotoPath,
+    String? localBeforePhotoPath,
+    String? remoteBeforePhotoPath,
+    String? localAfterPhotoPath,
+    String? remoteAfterPhotoPath,
     int? elapsedSeconds,
     int? itemsCount,
     int? focusIndex,
@@ -151,8 +183,10 @@ class DeepCleaningSession {
       startTime: startTime ?? this.startTime,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      beforePhotoPath: beforePhotoPath ?? this.beforePhotoPath,
-      afterPhotoPath: afterPhotoPath ?? this.afterPhotoPath,
+      localBeforePhotoPath: localBeforePhotoPath ?? this.localBeforePhotoPath,
+      remoteBeforePhotoPath: remoteBeforePhotoPath ?? this.remoteBeforePhotoPath,
+      localAfterPhotoPath: localAfterPhotoPath ?? this.localAfterPhotoPath,
+      remoteAfterPhotoPath: remoteAfterPhotoPath ?? this.remoteAfterPhotoPath,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       itemsCount: itemsCount ?? this.itemsCount,
       focusIndex: focusIndex ?? this.focusIndex,

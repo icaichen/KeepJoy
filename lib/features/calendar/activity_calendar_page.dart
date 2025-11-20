@@ -60,7 +60,9 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
 
   List<PlannedSession> _getUnscheduledSessions() {
     return widget.plannedSessions
-        .where((session) => session.scheduledDate == null && !session.isCompleted)
+        .where(
+          (session) => session.scheduledDate == null && !session.isCompleted,
+        )
         .toList();
   }
 
@@ -111,7 +113,9 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
         final newSession = PlannedSession(
           id: const Uuid().v4(),
           title: titleController.text,
-          area: areaController.text.isNotEmpty ? areaController.text : titleController.text,
+          area: areaController.text.isNotEmpty
+              ? areaController.text
+              : titleController.text,
           createdAt: DateTime.now(),
           priority: TaskPriority.someday,
         );
@@ -142,9 +146,12 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
     final localeName = l10n.localeName;
     final topPadding = MediaQuery.of(context).padding.top;
 
-    final scheduledSessions = widget.plannedSessions.where((s) => s.isScheduled).toList();
+    final scheduledSessions = widget.plannedSessions
+        .where((s) => s.isScheduled)
+        .toList();
     final unscheduledSessions = _getUnscheduledSessions();
-    final hasAnySessions = scheduledSessions.isNotEmpty || unscheduledSessions.isNotEmpty;
+    final hasAnySessions =
+        scheduledSessions.isNotEmpty || unscheduledSessions.isNotEmpty;
 
     // Calculate scroll-based animations
     const headerHeight = 100.0;
@@ -172,7 +179,10 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                     padding: const EdgeInsets.all(20),
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 48,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEBE6F5),
                         borderRadius: BorderRadius.circular(20),
@@ -254,7 +264,9 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              DateFormat.MMMEd(localeName).format(_selectedDay!),
+                              DateFormat.MMMEd(
+                                localeName,
+                              ).format(_selectedDay!),
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -263,10 +275,12 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                             ),
                           ),
                         ),
-                        ..._getSessionsForDay(_selectedDay!).map((session) => _SessionTile(
-                              session: session,
-                              onToggle: () => _toggleSessionCompletion(session),
-                            )),
+                        ..._getSessionsForDay(_selectedDay!).map(
+                          (session) => _SessionTile(
+                            session: session,
+                            onToggle: () => _toggleSessionCompletion(session),
+                          ),
+                        ),
                       ],
 
                       // Unscheduled tasks
@@ -285,7 +299,10 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFE5E7EB),
                                   borderRadius: BorderRadius.circular(10),
@@ -302,10 +319,12 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                             ],
                           ),
                         ),
-                        ...unscheduledSessions.map((session) => _SessionTile(
-                              session: session,
-                              onToggle: () => _toggleSessionCompletion(session),
-                            )),
+                        ...unscheduledSessions.map(
+                          (session) => _SessionTile(
+                            session: session,
+                            onToggle: () => _toggleSessionCompletion(session),
+                          ),
+                        ),
                       ],
 
                       const SizedBox(height: 80),
@@ -355,7 +374,11 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
             child: SizedBox(
               height: 120,
               child: Padding(
-                padding: EdgeInsets.only(left: 24, right: 16, top: topPadding + 12),
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 16,
+                  top: topPadding + 12,
+                ),
                 child: Opacity(
                   opacity: headerOpacity,
                   child: Row(
@@ -374,7 +397,10 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                       GestureDetector(
                         onTap: _addNewPlan,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF10B981),
                             borderRadius: BorderRadius.circular(12),
@@ -382,7 +408,11 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.add, color: Colors.white, size: 20),
+                              const Icon(
+                                Icons.add,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 l10n.calendarAddNewPlan,
@@ -412,10 +442,7 @@ class _SessionTile extends StatelessWidget {
   final PlannedSession session;
   final VoidCallback onToggle;
 
-  const _SessionTile({
-    required this.session,
-    required this.onToggle,
-  });
+  const _SessionTile({required this.session, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -441,9 +468,13 @@ class _SessionTile extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: session.isCompleted ? const Color(0xFFB794F6) : Colors.white,
+                color: session.isCompleted
+                    ? const Color(0xFFB794F6)
+                    : Colors.white,
                 border: Border.all(
-                  color: session.isCompleted ? const Color(0xFFB794F6) : const Color(0xFFD1D5DB),
+                  color: session.isCompleted
+                      ? const Color(0xFFB794F6)
+                      : const Color(0xFFD1D5DB),
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(6),
@@ -463,8 +494,12 @@ class _SessionTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: session.isCompleted ? const Color(0xFF9CA3AF) : const Color(0xFF111827),
-                    decoration: session.isCompleted ? TextDecoration.lineThrough : null,
+                    color: session.isCompleted
+                        ? const Color(0xFF9CA3AF)
+                        : const Color(0xFF111827),
+                    decoration: session.isCompleted
+                        ? TextDecoration.lineThrough
+                        : null,
                   ),
                 ),
                 if (session.scheduledTime != null)
@@ -579,13 +614,19 @@ class _SimpleCalendar extends StatelessWidget {
                   return const Expanded(child: SizedBox(height: 40));
                 }
 
-                final date = DateTime(focusedDay.year, focusedDay.month, dayNumber);
+                final date = DateTime(
+                  focusedDay.year,
+                  focusedDay.month,
+                  dayNumber,
+                );
                 final sessions = getSessionsForDay(date);
                 final hasSessions = sessions.isNotEmpty;
-                final isToday = date.year == todayDate.year &&
+                final isToday =
+                    date.year == todayDate.year &&
                     date.month == todayDate.month &&
                     date.day == todayDate.day;
-                final isSelected = selectedDay != null &&
+                final isSelected =
+                    selectedDay != null &&
                     date.year == selectedDay!.year &&
                     date.month == selectedDay!.month &&
                     date.day == selectedDay!.day;
@@ -600,8 +641,8 @@ class _SimpleCalendar extends StatelessWidget {
                         color: isSelected
                             ? const Color(0xFFB794F6)
                             : isToday
-                                ? const Color(0xFFB794F6).withValues(alpha: 0.2)
-                                : null,
+                            ? const Color(0xFFB794F6).withValues(alpha: 0.2)
+                            : null,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Stack(
@@ -611,7 +652,9 @@ class _SimpleCalendar extends StatelessWidget {
                               '$dayNumber',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: hasSessions || isToday ? FontWeight.w600 : FontWeight.w400,
+                                fontWeight: hasSessions || isToday
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
                                 color: isSelected
                                     ? Colors.white
                                     : const Color(0xFF111827),

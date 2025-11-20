@@ -145,6 +145,10 @@ class AuthService {
       // This ensures the user is completely logged out and cannot access the app
       await client!.auth.signOut(scope: SignOutScope.global);
 
+      // NOTE: We do NOT clear Hive data on logout
+      // This preserves local-first architecture - data stays cached locally
+      // When user logs in again, sync will merge local and cloud data
+
       // Force verify logout worked
       final currentUser = client!.auth.currentUser;
       if (kDebugMode) {

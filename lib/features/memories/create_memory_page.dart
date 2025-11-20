@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -66,9 +68,31 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
       return _capturedPhotoPath;
     }
     if (widget.item != null) {
-      return widget.item!.photoPath;
+      return widget.item!.localPhotoPath ?? widget.item!.remotePhotoPath;
     }
     return widget.photoPath;
+  }
+
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final memoriesDir = Directory('${appDir.path}/memories');
+      if (!await memoriesDir.exists()) {
+        await memoriesDir.create(recursive: true);
+      }
+
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(memoriesDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -79,16 +103,20 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
       );
 
       if (photo != null && mounted) {
-        setState(() {
-          _capturedPhotoPath = photo.path;
-        });
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          setState(() {
+            _capturedPhotoPath = permanentPath;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.failedToPickImage('$e'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.failedToPickImage('$e'))));
       }
     }
   }
@@ -110,7 +138,10 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.camera_alt, color: Color(0xFFB794F6)),
+                  leading: const Icon(
+                    Icons.camera_alt,
+                    color: Color(0xFFB794F6),
+                  ),
                   title: Text(
                     l10n.takePhoto,
                     style: const TextStyle(
@@ -125,7 +156,10 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.photo_library, color: Color(0xFFB794F6)),
+                  leading: const Icon(
+                    Icons.photo_library,
+                    color: Color(0xFFB794F6),
+                  ),
                   title: Text(
                     l10n.chooseFromGallery,
                     style: const TextStyle(
@@ -153,9 +187,9 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
     if (userId == null) return;
 
     if (_itemNameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pleaseEnterItemName)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseEnterItemName)));
       return;
     }
 
@@ -181,7 +215,8 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
       itemName: _itemNameController.text.trim(),
       category: _selectedCategory!.name,
       createdAt: DateTime.now(),
-      photoPath: _photoPath,
+      localPhotoPath: _photoPath,
+      remotePhotoPath: null,
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
@@ -190,10 +225,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
 
     // Return the memory (and status if showing status selector) to the caller
     if (widget.showStatusSelector) {
-      Navigator.of(context).pop({
-        'memory': memory,
-        'status': _selectedStatus,
-      });
+      Navigator.of(context).pop({'memory': memory, 'status': _selectedStatus});
     } else {
       Navigator.of(context).pop(memory);
     }
@@ -202,13 +234,15 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
   String? _currentUserIdOrWarn() {
     final userId = _authService.currentUserId;
     if (userId == null) {
-      final isChinese =
-          Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
-      final message =
-          isChinese ? '请先登录以保存数据' : 'Please sign in to save your data.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      final isChinese = Localizations.localeOf(
+        context,
+      ).languageCode.toLowerCase().startsWith('zh');
+      final message = isChinese
+          ? '请先登录以保存数据'
+          : 'Please sign in to save your data.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
     return userId;
   }
@@ -231,7 +265,10 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFF111827)),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Color(0xFF111827),
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                     Expanded(
@@ -304,7 +341,9 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                             width: 64,
                             height: 64,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFB794F6).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFFB794F6,
+                              ).withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -350,56 +389,255 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                    // Item Name
-                    Text(
-                      l10n.itemName,
-                      style: const TextStyle(
+                  // Item Name
+                  Text(
+                    l10n.itemName,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _itemNameController,
+                    decoration: InputDecoration(
+                      hintText: l10n.enterItemName,
+                      hintStyle: const TextStyle(
                         fontFamily: 'SF Pro Text',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFF9CA3AF),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFB794F6),
+                          width: 2,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFFAFAFA),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _itemNameController,
-                      decoration: InputDecoration(
-                        hintText: l10n.enterItemName,
-                        hintStyle: const TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          color: Color(0xFF9CA3AF),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFB794F6), width: 2),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                      ),
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Text',
-                        fontSize: 16,
-                        color: Color(0xFF111827),
-                      ),
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 16,
+                      color: Color(0xFF111827),
                     ),
+                  ),
 
+                  const SizedBox(height: 20),
+
+                  // Category
+                  Text(
+                    l10n.category,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAFAFA),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE5E7EA)),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<DeclutterCategory>(
+                        value: _selectedCategory,
+                        hint: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            l10n.selectCategory,
+                            style: const TextStyle(
+                              fontFamily: 'SF Pro Text',
+                              color: Color(0xFF9CA3AF),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        isExpanded: true,
+                        icon: const Padding(
+                          padding: EdgeInsets.only(right: 16),
+                          child: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Color(0xFF6B7280),
+                            size: 24,
+                          ),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        dropdownColor: Colors.white,
+                        items: DeclutterCategory.values.map((category) {
+                          return DropdownMenuItem<DeclutterCategory>(
+                            value: category,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Text(
+                                category.label(context),
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 16,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCategory = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Description
+                  Text(
+                    l10n.memoryDescription,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      hintText: l10n.describeYourMemory,
+                      hintStyle: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        color: Color(0xFF9CA3AF),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFB794F6),
+                          width: 2,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFFAFAFA),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                    ),
+                    maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 16,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Sentiment/Emotion (2 per row)
+                  Text(
+                    l10n.whatDidThisItemBring,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 2.8,
+                        ),
+                    itemCount: MemorySentiment.values.length,
+                    itemBuilder: (context, index) {
+                      final sentiment = MemorySentiment.values[index];
+                      final isSelected = _selectedSentiment == sentiment;
+
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() => _selectedSentiment = sentiment);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: isSelected
+                                ? const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFF5ECFB8),
+                                      Color(0xFFB794F6),
+                                    ],
+                                  )
+                                : null,
+                            color: isSelected ? null : const Color(0xFFFAFAFA),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.transparent
+                                  : const Color(0xFFE5E7EA),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              sentiment.label(context),
+                              style: TextStyle(
+                                fontFamily: 'SF Pro Text',
+                                fontSize: 15,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Item Status (Have you let go of this item?) - only show when called from dashboard
+                  if (widget.showStatusSelector) ...[
                     const SizedBox(height: 20),
-
-                    // Category
                     Text(
-                      l10n.category,
+                      l10n.haveYouLetGoOfThisItem,
                       style: const TextStyle(
                         fontFamily: 'SF Pro Text',
                         fontSize: 14,
@@ -415,12 +653,12 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                         border: Border.all(color: const Color(0xFFE5E7EA)),
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton<DeclutterCategory>(
-                          value: _selectedCategory,
+                        child: DropdownButton<DeclutterStatus>(
+                          value: _selectedStatus,
                           hint: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
-                              l10n.selectCategory,
+                              l10n.selectStatus,
                               style: const TextStyle(
                                 fontFamily: 'SF Pro Text',
                                 color: Color(0xFF9CA3AF),
@@ -439,13 +677,15 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                           ),
                           borderRadius: BorderRadius.circular(12),
                           dropdownColor: Colors.white,
-                          items: DeclutterCategory.values.map((category) {
-                            return DropdownMenuItem<DeclutterCategory>(
-                              value: category,
+                          items: DeclutterStatus.values.map((status) {
+                            return DropdownMenuItem<DeclutterStatus>(
+                              value: status,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Text(
-                                  category.label(context),
+                                  status.label(context),
                                   style: const TextStyle(
                                     fontFamily: 'SF Pro Text',
                                     fontSize: 16,
@@ -457,200 +697,15 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                           }).toList(),
                           onChanged: (value) {
                             setState(() {
-                              _selectedCategory = value;
+                              _selectedStatus = value;
                             });
                           },
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 20),
-
-                    // Description
-                    Text(
-                      l10n.memoryDescription,
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Text',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        hintText: l10n.describeYourMemory,
-                        hintStyle: const TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          color: Color(0xFF9CA3AF),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFB794F6), width: 2),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFFAFAFA),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                      ),
-                      maxLines: 3,
-                      textInputAction: TextInputAction.done,
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Text',
-                        fontSize: 16,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Sentiment/Emotion (2 per row)
-                    Text(
-                      l10n.whatDidThisItemBring,
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Text',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 2.8,
-                      ),
-                      itemCount: MemorySentiment.values.length,
-                      itemBuilder: (context, index) {
-                        final sentiment = MemorySentiment.values[index];
-                        final isSelected = _selectedSentiment == sentiment;
-
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() => _selectedSentiment = sentiment);
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: isSelected
-                                  ? const LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [Color(0xFF5ECFB8), Color(0xFFB794F6)],
-                                    )
-                                  : null,
-                              color: isSelected ? null : const Color(0xFFFAFAFA),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.transparent
-                                    : const Color(0xFFE5E7EA),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                sentiment.label(context),
-                                style: TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 15,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : const Color(0xFF6B7280),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    // Item Status (Have you let go of this item?) - only show when called from dashboard
-                    if (widget.showStatusSelector) ...[
-                      const SizedBox(height: 20),
-                      Text(
-                        l10n.haveYouLetGoOfThisItem,
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAFAFA),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE5E7EA)),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<DeclutterStatus>(
-                            value: _selectedStatus,
-                            hint: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                l10n.selectStatus,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  color: Color(0xFF9CA3AF),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            isExpanded: true,
-                            icon: const Padding(
-                              padding: EdgeInsets.only(right: 16),
-                              child: Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: Color(0xFF6B7280),
-                                size: 24,
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            dropdownColor: Colors.white,
-                            items: DeclutterStatus.values.map((status) {
-                              return DropdownMenuItem<DeclutterStatus>(
-                                value: status,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  child: Text(
-                                    status.label(context),
-                                    style: const TextStyle(
-                                      fontFamily: 'SF Pro Text',
-                                      fontSize: 16,
-                                      color: Color(0xFF111827),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedStatus = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 24),
@@ -679,7 +734,10 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
         backgroundColor: const Color(0xFFF5F5F7),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF111827),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(

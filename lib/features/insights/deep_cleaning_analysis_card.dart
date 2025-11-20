@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -7,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/deep_cleaning_session.dart';
 import '../dashboard/widgets/cleaning_area_legend.dart';
 import '../../widgets/auto_scale_text.dart';
+import '../../widgets/smart_image_widget.dart';
 
 class DeepCleaningAnalysisCard extends StatelessWidget {
   final List<DeepCleaningSession> sessions;
@@ -164,7 +163,8 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 // Calculate button width to fit 3 per row with proper spacing
-                final buttonWidth = (constraints.maxWidth - 16) / 3; // 16 = 2 gaps of 8px
+                final buttonWidth =
+                    (constraints.maxWidth - 16) / 3; // 16 = 2 gaps of 8px
                 return Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -172,7 +172,10 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                   children: allAreas.map((area) {
                     final count = areaCounts[area] ?? 0;
                     final entry = CleaningAreaLegend.forCount(count);
-                    final displayName = CleaningArea.getDisplayName(area, context);
+                    final displayName = CleaningArea.getDisplayName(
+                      area,
+                      context,
+                    );
                     return Container(
                       width: buttonWidth,
                       padding: const EdgeInsets.symmetric(
@@ -223,18 +226,17 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         Text(
           l10n.deepCleaningComparisonsTitle,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+          ),
         ),
         const SizedBox(height: 12),
         if (sessions.isEmpty)
           Text(
             l10n.deepCleaningComparisonsEmpty,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: Colors.black54),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
           )
         else
           ...sortedSessions.map(
@@ -306,10 +308,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Color(0xFF9CA3AF),
-              ),
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
             ],
           ),
         ),
@@ -385,7 +384,9 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                     ),
                     child: _buildSessionDetailList(
                       l10n: l10n,
-                      colon: l10n.localeName.toLowerCase().startsWith('zh') ? '：' : ':',
+                      colon: l10n.localeName.toLowerCase().startsWith('zh')
+                          ? '：'
+                          : ':',
                       itemsValue: session.itemsCount?.toString() ?? '--',
                       durationValue: session.elapsedSeconds != null
                           ? _formatDuration(session.elapsedSeconds!, l10n)
@@ -426,12 +427,22 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     DeepCleaningSession session,
   ) {
     final slides = [
-      _PhotoSlide(label: l10n.beforePhoto, path: session.beforePhotoPath),
-      _PhotoSlide(label: l10n.afterPhoto, path: session.afterPhotoPath),
+      _PhotoSlide(
+        label: l10n.beforePhoto,
+        localPath: session.localBeforePhotoPath,
+        remotePath: session.remoteBeforePhotoPath,
+      ),
+      _PhotoSlide(
+        label: l10n.afterPhoto,
+        localPath: session.localAfterPhotoPath,
+        remotePath: session.remoteAfterPhotoPath,
+      ),
     ];
 
     final allMissing = slides.every(
-      (slide) => slide.path == null || slide.path!.isEmpty,
+      (slide) =>
+          (slide.localPath == null || slide.localPath!.isEmpty) &&
+          (slide.remotePath == null || slide.remotePath!.isEmpty),
     );
 
     if (allMissing) {
@@ -456,7 +467,11 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         itemCount: slides.length,
         itemBuilder: (context, index) {
           final slide = slides[index];
-          return _PhotoPage(label: slide.label, path: slide.path);
+          return _PhotoPage(
+            label: slide.label,
+            localPath: slide.localPath,
+            remotePath: slide.remotePath,
+          );
         },
       ),
     );
@@ -473,10 +488,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     required String focusValue,
     required String joyValue,
   }) {
-    final labelStyle = const TextStyle(
-      fontSize: 14,
-      color: Color(0xFF6B7280),
-    );
+    final labelStyle = const TextStyle(fontSize: 14, color: Color(0xFF6B7280));
     final valueStyle = const TextStyle(
       fontSize: 15,
       fontWeight: FontWeight.w600,
@@ -487,16 +499,8 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              '$label$colon',
-              style: labelStyle,
-            ),
-          ),
-          Text(
-            value,
-            style: valueStyle,
-          ),
+          Expanded(child: Text('$label$colon', style: labelStyle)),
+          Text(value, style: valueStyle),
         ],
       );
     }
@@ -602,6 +606,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     final locale = l10n.localeName;
     return DateFormat.jm(locale).format(date);
   }
+
   Widget _buildDeepCleaningMetricItem(
     BuildContext context, {
     required IconData icon,
@@ -645,42 +650,42 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
 
   Widget _buildReportSection(
     BuildContext context, {
-      required String title,
-      Widget? trailing,
-      required Widget child,
-    }) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (trailing != null)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
+    required String title,
+    Widget? trailing,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (trailing != null)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
                 ),
-                trailing,
-              ],
-            )
-          else
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF111827),
               ),
+              trailing,
+            ],
+          )
+        else
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
             ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      );
-    }
+          ),
+        const SizedBox(height: 12),
+        child,
+      ],
+    );
+  }
 
   IconData _getIconForArea(String areaValue) {
     final area = CleaningArea.fromString(areaValue);
@@ -706,16 +711,18 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
 
 class _PhotoSlide {
   final String label;
-  final String? path;
+  final String? localPath;
+  final String? remotePath;
 
-  const _PhotoSlide({required this.label, this.path});
+  const _PhotoSlide({required this.label, this.localPath, this.remotePath});
 }
 
 class _PhotoPage extends StatelessWidget {
   final String label;
-  final String? path;
+  final String? localPath;
+  final String? remotePath;
 
-  const _PhotoPage({required this.label, this.path});
+  const _PhotoPage({required this.label, this.localPath, this.remotePath});
 
   @override
   Widget build(BuildContext context) {
@@ -739,7 +746,8 @@ class _PhotoPage extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 color: const Color(0xFFF3F4F6),
-                child: path == null || path!.isEmpty
+                child: (localPath == null || localPath!.isEmpty) &&
+                        (remotePath == null || remotePath!.isEmpty)
                     ? const Center(
                         child: Icon(
                           Icons.photo_camera_back_outlined,
@@ -747,10 +755,11 @@ class _PhotoPage extends StatelessWidget {
                           size: 32,
                         ),
                       )
-                    : Image.file(
-                        File(path!),
+                    : SmartImageWidget(
+                        localPath: localPath,
+                        remotePath: remotePath,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Center(
+                        errorWidget: const Center(
                           child: Icon(
                             Icons.broken_image_outlined,
                             color: Color(0xFF9CA3AF),

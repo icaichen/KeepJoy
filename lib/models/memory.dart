@@ -37,7 +37,8 @@ class Memory {
   final String userId; // Foreign key to auth.users
   final String title;
   final String? description;
-  final String? photoPath;
+  final String? localPhotoPath;
+  final String? remotePhotoPath;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final MemoryType type;
@@ -51,7 +52,8 @@ class Memory {
     required this.userId,
     required this.title,
     this.description,
-    this.photoPath,
+    this.localPhotoPath,
+    this.remotePhotoPath,
     required this.createdAt,
     this.updatedAt,
     required this.type,
@@ -68,7 +70,8 @@ class Memory {
     required String itemName,
     required String category,
     required DateTime createdAt,
-    String? photoPath,
+    String? localPhotoPath,
+    String? remotePhotoPath,
     String? notes,
     String? description,
     MemorySentiment? sentiment,
@@ -78,7 +81,8 @@ class Memory {
       userId: userId,
       title: itemName,
       description: description,
-      photoPath: photoPath,
+      localPhotoPath: localPhotoPath,
+      remotePhotoPath: remotePhotoPath,
       createdAt: createdAt,
       type: MemoryType.decluttering,
       itemName: itemName,
@@ -112,7 +116,8 @@ class Memory {
     required String userId,
     required String title,
     String? description,
-    String? photoPath,
+    String? localPhotoPath,
+    String? remotePhotoPath,
     required DateTime createdAt,
     MemorySentiment? sentiment,
   }) {
@@ -121,7 +126,8 @@ class Memory {
       userId: userId,
       title: title,
       description: description,
-      photoPath: photoPath,
+      localPhotoPath: localPhotoPath,
+      remotePhotoPath: remotePhotoPath,
       createdAt: createdAt,
       type: MemoryType.custom,
       sentiment: sentiment,
@@ -135,7 +141,7 @@ class Memory {
       'user_id': userId,
       'title': title,
       'description': description,
-      'photo_path': photoPath,
+      'photo_path': remotePhotoPath, // Supabase stores remote URL only
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       'type': type.name,
@@ -162,12 +168,25 @@ class Memory {
       }
     }
 
+    // Backward compatibility: migrate old photo_path to remote
+    String? localPath;
+    String? remotePath;
+    final photoPath = json['photo_path'] as String?;
+    if (photoPath != null && photoPath.isNotEmpty) {
+      if (photoPath.startsWith('http')) {
+        remotePath = photoPath;
+      } else {
+        localPath = photoPath;
+      }
+    }
+
     return Memory(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
-      photoPath: json['photo_path'] as String?,
+      localPhotoPath: localPath,
+      remotePhotoPath: remotePath,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
@@ -185,7 +204,8 @@ class Memory {
     String? userId,
     String? title,
     String? description,
-    String? photoPath,
+    String? localPhotoPath,
+    String? remotePhotoPath,
     DateTime? createdAt,
     DateTime? updatedAt,
     MemoryType? type,
@@ -199,7 +219,8 @@ class Memory {
       userId: userId ?? this.userId,
       title: title ?? this.title,
       description: description ?? this.description,
-      photoPath: photoPath ?? this.photoPath,
+      localPhotoPath: localPhotoPath ?? this.localPhotoPath,
+      remotePhotoPath: remotePhotoPath ?? this.remotePhotoPath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       type: type ?? this.type,
@@ -211,15 +232,28 @@ class Memory {
   }
 
   /// Check if the memory has a valid photo
-  bool get hasPhoto =>
-      photoPath != null &&
-      photoPath!.isNotEmpty &&
-      File(photoPath!).existsSync();
+  bool get hasPhoto {
+    // Check local first
+    if (localPhotoPath != null && localPhotoPath!.isNotEmpty) {
+      if (File(localPhotoPath!).existsSync()) {
+        return true;
+      }
+    }
+    // Then check remote
+    if (remotePhotoPath != null && remotePhotoPath!.isNotEmpty) {
+      return true;
+    }
+    return false;
+  }
 
-  /// Get the photo file if it exists
+  /// Get the photo file if it exists (only for local files)
   File? get photoFile {
-    if (hasPhoto) {
-      return File(photoPath!);
+    if (localPhotoPath == null || localPhotoPath!.isEmpty) {
+      return null;
+    }
+    // For local files, check if they exist
+    if (File(localPhotoPath!).existsSync()) {
+      return File(localPhotoPath!);
     }
     return null;
   }

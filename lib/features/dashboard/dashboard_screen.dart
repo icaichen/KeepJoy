@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -21,7 +20,6 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
-import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 
 class _ModeMeta {
@@ -1889,7 +1887,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
-                              vertical: 20,
+                              vertical: 16,
                             ),
                             child: Column(
                               children: [
@@ -1922,20 +1920,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
 
                                 // Large streak number
                                 Text(
                                   '${widget.streak}',
                                   style: const TextStyle(
                                     fontFamily: 'SF Pro Display',
-                                    fontSize: 48,
+                                    fontSize: 40,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF111827),
                                     height: 1.0,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 2),
 
                                 // Subtitle
                                 Text(
@@ -1947,7 +1945,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     color: Color(0xFF6B7280),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
 
                                 // Dots visualization (max 7 dots)
                                 Row(
@@ -1957,10 +1955,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         widget.streak > 7 ? 7 : widget.streak,
                                         (index) => Container(
                                           margin: const EdgeInsets.symmetric(
-                                            horizontal: 3,
+                                            horizontal: 4,
                                           ),
-                                          width: 8,
-                                          height: 8,
+                                          width: 12,
+                                          height: 12,
                                           decoration: const BoxDecoration(
                                             color: Color(0xFF6B7280),
                                             shape: BoxShape.circle,
@@ -2071,7 +2069,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 6),
                               Text(
                                 l10n.whatBroughtYouJoy,
-                                style: AppTypography.subtitle,
+                                style: AppTypography.subtitle.copyWith(
+                                  fontWeight: FontWeight.w400,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 18),
@@ -2121,7 +2121,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             : DeclutterCategory.miscellaneous,
                                         createdAt: DateTime.now(),
                                         status: status,
-                                        photoPath: memory.photoPath,
+                                        localPhotoPath: memory.localPhotoPath,
+                                        remotePhotoPath: memory.remotePhotoPath,
                                       );
                                       widget.onAddItem(item);
                                     }
@@ -2254,7 +2255,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             area: widget.activeSession!.area,
                                             beforePhotoPath: widget
                                                 .activeSession!
-                                                .beforePhotoPath,
+                                                .localBeforePhotoPath ??
+                                                widget.activeSession!.remoteBeforePhotoPath,
                                             onStopSession: widget.onStopSession,
                                             sessionStartTime: widget
                                                 .activeSession!
@@ -2310,7 +2312,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                           .area,
                                                       beforePhotoPath: widget
                                                           .activeSession!
-                                                          .beforePhotoPath,
+                                                          .localBeforePhotoPath ??
+                                                          widget.activeSession!.remoteBeforePhotoPath,
                                                       elapsedSeconds:
                                                           DateTime.now()
                                                               .difference(

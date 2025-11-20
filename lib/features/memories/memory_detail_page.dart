@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/memory.dart';
+import 'package:keepjoy_app/widgets/smart_image_widget.dart';
 
 /// Memory detail page with photo viewer
 class MemoryDetailPage extends StatefulWidget {
@@ -42,7 +43,11 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1C1C1E), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF1C1C1E),
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -106,10 +111,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPhotoSection(l10n),
-            _buildDetailSection(l10n),
-          ],
+          children: [_buildPhotoSection(l10n), _buildDetailSection(l10n)],
         ),
       ),
     );
@@ -122,9 +124,20 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
       child: _currentMemory.hasPhoto
           ? Hero(
               tag: 'memory_photo_${_currentMemory.id}',
-              child: Image.file(
-                _currentMemory.photoFile!,
+              child: SmartImageWidget(
+                localPath: _currentMemory.localPhotoPath,
+                remotePath: _currentMemory.remotePhotoPath,
                 fit: BoxFit.contain,
+                errorWidget: Container(
+                  height: 400,
+                  color: const Color(0xFFF3F4F6),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.broken_image_outlined,
+                    size: 64,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                ),
               ),
             )
           : Container(
@@ -133,10 +146,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
               alignment: Alignment.center,
               child: Text(
                 _currentMemory.type.icon,
-                style: const TextStyle(
-                  fontSize: 64,
-                  color: Color(0xFF9CA3AF),
-                ),
+                style: const TextStyle(fontSize: 64, color: Color(0xFF9CA3AF)),
               ),
             ),
     );
@@ -148,9 +158,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE5E7EB), width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFFE5E7EB), width: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

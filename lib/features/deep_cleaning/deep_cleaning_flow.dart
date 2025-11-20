@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../l10n/app_localizations.dart';
 import '../../models/deep_cleaning_session.dart';
@@ -174,7 +176,8 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                                 context,
                                 screenWidth,
                                 area,
-                                isSelected: area.label(context) == selectedAreaText,
+                                isSelected:
+                                    area.label(context) == selectedAreaText,
                               ),
                             )
                             .toList(),
@@ -316,7 +319,9 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
         InkWell(
           onTap: () {
             setState(() {
-              _areaController.text = area.label(context); // Store the localized label
+              _areaController.text = area.label(
+                context,
+              ); // Store the localized label
             });
           },
           borderRadius: BorderRadius.circular(diameter / 2),
@@ -403,6 +408,28 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
   String? _photoPath;
   bool _isProcessing = false;
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final sessionsDir = Directory('${appDir.path}/sessions');
+      if (!await sessionsDir.exists()) {
+        await sessionsDir.create(recursive: true);
+      }
+
+      final fileName =
+          'before_${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(sessionsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _takePicture() async {
     setState(() {
       _isProcessing = true;
@@ -415,9 +442,13 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
       );
 
       if (photo != null && mounted) {
-        setState(() {
-          _photoPath = photo.path;
-        });
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          setState(() {
+            _photoPath = permanentPath;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -1075,6 +1106,28 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
   String? _photoPath;
   bool _isProcessing = false;
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final sessionsDir = Directory('${appDir.path}/sessions');
+      if (!await sessionsDir.exists()) {
+        await sessionsDir.create(recursive: true);
+      }
+
+      final fileName =
+          'after_${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(sessionsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _takePicture() async {
     setState(() {
       _isProcessing = true;
@@ -1087,9 +1140,13 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
       );
 
       if (photo != null && mounted) {
-        setState(() {
-          _photoPath = photo.path;
-        });
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          setState(() {
+            _photoPath = permanentPath;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {

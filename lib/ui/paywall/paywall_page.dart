@@ -556,7 +556,6 @@ class _PaywallPageState extends State<PaywallPage> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-
                       ],
                     ),
                   ],

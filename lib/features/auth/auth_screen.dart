@@ -77,16 +77,16 @@ class _AuthScreenState extends State<AuthScreen> {
                   Text(
                     'KeepJoy',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF6B5CE7),
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF6B5CE7),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _isLogin ? 'Welcome back!' : 'Create your account',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.black54,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
                   ),
                   const SizedBox(height: 48),
 

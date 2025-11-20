@@ -38,10 +38,7 @@ class ReminderService {
 
       final l10n = AppLocalizations.of(context);
       final isChinese = l10n?.localeName.startsWith('zh') ?? false;
-      _showSnackBar(
-        context,
-        isChinese ? '通知已启用' : 'Notifications enabled',
-      );
+      _showSnackBar(context, isChinese ? '通知已启用' : 'Notifications enabled');
       return true;
     } catch (e) {
       final l10n = AppLocalizations.of(context);
@@ -63,10 +60,7 @@ class ReminderService {
 
       final l10n = AppLocalizations.of(context);
       final isChinese = l10n?.localeName.startsWith('zh') ?? false;
-      _showSnackBar(
-        context,
-        isChinese ? '通知已关闭' : 'Notifications disabled',
-      );
+      _showSnackBar(context, isChinese ? '通知已关闭' : 'Notifications disabled');
     } catch (e) {
       final l10n = AppLocalizations.of(context);
       final isChinese = l10n?.localeName.startsWith('zh') ?? false;
