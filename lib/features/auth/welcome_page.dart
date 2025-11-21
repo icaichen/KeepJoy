@@ -75,10 +75,14 @@ class WelcomePage extends StatelessWidget {
 
               const Spacer(flex: 3),
 
-              // Get Started Button
+              // Get Started Button (goes to Sign Up)
               GradientButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/login');
+                  Navigator.pushNamed(
+                    context,
+                    '/login',
+                    arguments: {'isSignUp': true},
+                  );
                 },
                 width: double.infinity,
                 height: 56,
@@ -88,10 +92,14 @@ class WelcomePage extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Already have account
+              // Already have account (goes to Sign In)
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/login');
+                  Navigator.pushNamed(
+                    context,
+                    '/login',
+                    arguments: {'isSignUp': false},
+                  );
                 },
                 child: Text(
                   l10n.alreadyHaveAccount,

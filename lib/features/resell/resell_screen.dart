@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
+import 'package:keepjoy_app/widgets/smart_image_widget.dart';
 
 enum ResellSegment { toSell, listing, sold }
 
@@ -439,14 +439,17 @@ class _ResellScreenState extends State<ResellScreen> {
         child: Row(
           children: [
             // Photo or placeholder
-            if (declutterItem.photoPath != null)
+            if (declutterItem.localPhotoPath != null || declutterItem.remotePhotoPath != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  File(declutterItem.photoPath!),
+                child: SizedBox(
                   width: 64,
                   height: 64,
-                  fit: BoxFit.cover,
+                  child: SmartImageWidget(
+                    localPath: declutterItem.localPhotoPath,
+                    remotePath: declutterItem.remotePhotoPath,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               )
             else

@@ -34,16 +34,67 @@ class SubscriptionService {
     }
   }
 
+  /// Login user to RevenueCat with Supabase user ID
+  /// This ensures subscription is tied to the user account
+  static Future<void> loginUser(String userId) async {
+    try {
+      await Purchases.logIn(userId);
+      print('✅ RevenueCat user logged in: $userId');
+    } catch (e) {
+      print('❌ RevenueCat login error: $e');
+      rethrow;
+    }
+  }
+
+  /// Logout user from RevenueCat
+  static Future<void> logoutUser() async {
+    try {
+      await Purchases.logOut();
+      print('✅ RevenueCat user logged out');
+    } catch (e) {
+      print('❌ RevenueCat logout error: $e');
+    }
+  }
+
   /// Check if user has active premium subscription
   static Future<bool> isPremium() async {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
-      final entitlement = customerInfo
-          .entitlements.all[RevenueCatConfig.premiumEntitlementId];
-      
-      return entitlement != null && entitlement.isActive;
+
+      // Debug: Print all available entitlements
+      print(
+        '🔍 All Entitlements: ${customerInfo.entitlements.all.keys.toList()}',
+      );
+      print(
+        '🔍 Active Entitlements: ${customerInfo.entitlements.active.keys.toList()}',
+      );
+
+      // Check if user has ANY active entitlement (in case the ID is wrong)
+      if (customerInfo.entitlements.active.isNotEmpty) {
+        print(
+          '✅ User has active entitlements: ${customerInfo.entitlements.active.keys.toList()}',
+        );
+        // Return true if ANY entitlement is active
+        return true;
+      }
+
+      // Fallback: Check specific premium entitlement
+      final entitlement =
+          customerInfo.entitlements.all[RevenueCatConfig.premiumEntitlementId];
+
+      if (entitlement != null) {
+        print(
+          '📦 Premium entitlement found - isActive: ${entitlement.isActive}',
+        );
+        return entitlement.isActive;
+      }
+
+      print(
+        '⚠️ No premium entitlement found with ID: ${RevenueCatConfig.premiumEntitlementId}',
+      );
+      return false;
     } catch (e) {
-      print('Error checking premium status: $e');
+      print('❌ Error checking premium status: $e');
       return false;
     }
   }
@@ -103,15 +154,16 @@ class SubscriptionService {
   static Future<bool> isInTrialPeriod() async {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
-      final entitlement = customerInfo
-          .entitlements.all[RevenueCatConfig.premiumEntitlementId];
-      
+      final entitlement =
+          customerInfo.entitlements.all[RevenueCatConfig.premiumEntitlementId];
+
       if (entitlement == null || !entitlement.isActive) {
         return false;
       }
 
       // Check if it's a trial
-      return entitlement.willRenew && entitlement.periodType == PeriodType.trial;
+      return entitlement.willRenew &&
+          entitlement.periodType == PeriodType.trial;
     } catch (e) {
       print('Error checking trial status: $e');
       return false;
@@ -122,9 +174,9 @@ class SubscriptionService {
   static Future<DateTime?> getSubscriptionExpirationDate() async {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
-      final entitlement = customerInfo
-          .entitlements.all[RevenueCatConfig.premiumEntitlementId];
-      
+      final entitlement =
+          customerInfo.entitlements.all[RevenueCatConfig.premiumEntitlementId];
+
       final expDate = entitlement?.expirationDate;
       if (expDate is String) {
         return DateTime.tryParse(expDate);
@@ -142,9 +194,9 @@ class SubscriptionService {
   static Future<bool> willRenew() async {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
-      final entitlement = customerInfo
-          .entitlements.all[RevenueCatConfig.premiumEntitlementId];
-      
+      final entitlement =
+          customerInfo.entitlements.all[RevenueCatConfig.premiumEntitlementId];
+
       return entitlement?.willRenew ?? false;
     } catch (e) {
       print('Error checking renewal status: $e');
@@ -152,15 +204,32 @@ class SubscriptionService {
     }
   }
 
-  /// Listen to customer info updates
-  /// Get stream of customer info updates
-  /// Note: In newer versions of purchases_flutter, use Purchases.addCustomerInfoUpdateListener
-  static Stream<CustomerInfo> get customerInfoStream async* {
-    // Initial customer info
-    yield await Purchases.getCustomerInfo();
-    
-    // Listen for updates - requires manual polling or using the listener callback
-    // For now, just yield initial state
+  /// Add listener for customer info updates
+  /// This enables real-time subscription status sync across devices
+  /// The listener will be called whenever the subscription status changes
+  static void addCustomerInfoUpdateListener(
+    Function(CustomerInfo) onCustomerInfoUpdate,
+  ) {
+    try {
+      Purchases.addCustomerInfoUpdateListener((customerInfo) {
+        print('🔄 RevenueCat: Customer info updated');
+        onCustomerInfoUpdate(customerInfo);
+      });
+      print('✅ RevenueCat: Customer info listener added');
+    } catch (e) {
+      print('❌ Error adding customer info listener: $e');
+    }
+  }
+
+  /// Remove customer info update listener
+  static void removeCustomerInfoUpdateListener(
+    Function(CustomerInfo) listener,
+  ) {
+    try {
+      Purchases.removeCustomerInfoUpdateListener(listener);
+      print('✅ RevenueCat: Customer info listener removed');
+    } catch (e) {
+      print('❌ Error removing customer info listener: $e');
+    }
   }
 }
-

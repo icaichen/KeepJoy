@@ -96,9 +96,7 @@ class CleaningAreaLegend {
     );
   }
 
-  static Widget dialog({
-    required BuildContext context,
-  }) {
+  static Widget dialog({required BuildContext context}) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
@@ -124,10 +122,7 @@ class CleaningAreaLegend {
           children: [
             Row(
               children: [
-                Text(
-                  l10n.cleaningLegendTitle,
-                  style: labelStyle,
-                ),
+                Text(l10n.cleaningLegendTitle, style: labelStyle),
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -7,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/deep_cleaning_session.dart';
 import '../dashboard/widgets/cleaning_area_legend.dart';
 import '../../widgets/auto_scale_text.dart';
+import '../../widgets/smart_image_widget.dart';
 
 class DeepCleaningAnalysisCard extends StatelessWidget {
   final List<DeepCleaningSession> sessions;
@@ -24,44 +23,6 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (sessions.isEmpty) {
-      return Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFE5E7EA)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              emptyStateMessage ?? 'No deep cleaning records yet.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
-            ),
-          ],
-        ),
-      );
-    }
-
     // Calculate metrics
     final deepCleaningCount = sessions.length;
     final cleanedItemsCount = sessions
@@ -74,35 +35,24 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         .fold(0, (sum, session) => sum + session.elapsedSeconds!);
     final totalTimeHours = totalTimeSeconds / 3600;
 
-    // Group sessions by area
-    final sessionsByArea = <String, List<DeepCleaningSession>>{};
-    for (final session in sessions) {
-      sessionsByArea.update(
-        session.area,
-        (list) => list..add(session),
-        ifAbsent: () => [session],
-      );
-    }
-
-    // Common areas
-    final commonAreas = [
-      l10n.kitchen,
-      l10n.bedroom,
-      l10n.livingRoom,
-      l10n.bathroom,
-      l10n.study,
-      l10n.closet,
-    ];
-
-    // Combine common areas with custom areas
-    final areaSet = <String>{...commonAreas, ...sessionsByArea.keys};
-
-    // Calculate area counts for heatmap
+    // Start with all standard areas from CleaningArea enum, count = 0
     final areaCounts = <String, int>{
-      for (final area in areaSet) area: sessionsByArea[area]?.length ?? 0,
+      for (final area in CleaningArea.values) area.key: 0,
     };
 
-    final allAreas = areaSet.toList()
+    // Count sessions for each area
+    for (final session in sessions) {
+      final cleaningArea = CleaningArea.fromString(session.area);
+      if (cleaningArea != null) {
+        // Standard area - use its key
+        areaCounts[cleaningArea.key] = (areaCounts[cleaningArea.key] ?? 0) + 1;
+      } else {
+        // Custom area entered by user - use the raw string
+        areaCounts[session.area] = (areaCounts[session.area] ?? 0) + 1;
+      }
+    }
+
+    final allAreas = areaCounts.keys.toList()
       ..sort((a, b) {
         final countB = areaCounts[b] ?? 0;
         final countA = areaCounts[a] ?? 0;
@@ -210,40 +160,51 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                 );
               },
             ),
-            child: SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: allAreas.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final area = allAreas[index];
-                  final count = areaCounts[area] ?? 0;
-                  final entry = CleaningAreaLegend.forCount(count);
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: entry.color,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Calculate button width to fit 3 per row with proper spacing
+                final buttonWidth =
+                    (constraints.maxWidth - 16) / 3; // 16 = 2 gaps of 8px
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.start,
+                  children: allAreas.map((area) {
+                    final count = areaCounts[area] ?? 0;
+                    final entry = CleaningAreaLegend.forCount(count);
+                    final displayName = CleaningArea.getDisplayName(
+                      area,
+                      context,
+                    );
+                    return Container(
+                      width: buttonWidth,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: entry.color,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Text(
-                        '$area ($count)',
+                        '$displayName ($count)',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: entry.textColor,
                           fontWeight: FontWeight.w500,
+                          fontSize: 13,
                         ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  );
-                },
-              ),
+                    );
+                  }).toList(),
+                );
+              },
             ),
           ),
           const SizedBox(height: 24),
+          const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
           _buildComparisonsSection(context, l10n, sessions),
         ],
       ),
@@ -255,18 +216,9 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     AppLocalizations l10n,
     List<DeepCleaningSession> sessions,
   ) {
-    if (sessions.isEmpty) {
-      return Text(
-        l10n.deepCleaningComparisonsEmpty,
-        style: Theme.of(context)
-            .textTheme
-            .bodyMedium
-            ?.copyWith(color: Colors.black54),
-      );
-    }
-
-    final sortedSessions = [...sessions]
-      ..sort((a, b) => b.startTime.compareTo(a.startTime));
+    final sortedSessions = sessions.isEmpty
+        ? <DeepCleaningSession>[]
+        : ([...sessions]..sort((a, b) => b.startTime.compareTo(a.startTime)));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,14 +226,22 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         Text(
           l10n.deepCleaningComparisonsTitle,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+          ),
         ),
         const SizedBox(height: 12),
-        ...sortedSessions.map(
-          (session) => _buildComparisonRow(context, l10n, session),
-        ),
+        if (sessions.isEmpty)
+          Text(
+            l10n.deepCleaningComparisonsEmpty,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+          )
+        else
+          ...sortedSessions.map(
+            (session) => _buildComparisonRow(context, l10n, session),
+          ),
       ],
     );
   }
@@ -319,9 +279,9 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                   color: const Color(0xFFF3F4F6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.compare_rounded,
-                  color: Color(0xFF6B7280),
+                child: Icon(
+                  _getIconForArea(session.area),
+                  color: const Color(0xFF6B7280),
                 ),
               ),
               const SizedBox(width: 12),
@@ -330,7 +290,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      session.area,
+                      CleaningArea.getDisplayName(session.area, context),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -348,10 +308,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Color(0xFF9CA3AF),
-              ),
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
             ],
           ),
         ),
@@ -382,77 +339,81 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
               top: 12,
               bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '${session.area} · ${_formatSessionDate(session.startTime, l10n)}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+                  const SizedBox(height: 16),
+                  Text(
+                    '${CleaningArea.getDisplayName(session.area, context)} · ${_formatSessionDate(session.startTime, l10n)}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatSessionTime(session.startTime, l10n),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatSessionTime(session.startTime, l10n),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _buildPhotoCarousel(context, l10n, session),
-                const SizedBox(height: 18),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  const SizedBox(height: 16),
+                  _buildPhotoCarousel(context, l10n, session),
+                  const SizedBox(height: 18),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                    ),
+                    child: _buildSessionDetailList(
+                      l10n: l10n,
+                      colon: l10n.localeName.toLowerCase().startsWith('zh')
+                          ? '：'
+                          : ':',
+                      itemsValue: session.itemsCount?.toString() ?? '--',
+                      durationValue: session.elapsedSeconds != null
+                          ? _formatDuration(session.elapsedSeconds!, l10n)
+                          : '--',
+                      beforeValue: session.beforeMessinessIndex != null
+                          ? session.beforeMessinessIndex!.toStringAsFixed(1)
+                          : '--',
+                      afterValue: session.afterMessinessIndex != null
+                          ? session.afterMessinessIndex!.toStringAsFixed(1)
+                          : '--',
+                      improvementValue: improvement != null
+                          ? '${improvement.toStringAsFixed(0)}%'
+                          : '--',
+                      focusValue: session.focusIndex?.toString() ?? '--',
+                      joyValue: session.moodIndex?.toString() ?? '--',
+                    ),
                   ),
-                  child: _buildSessionDetailList(
-                    l10n: l10n,
-                    colon: l10n.localeName.toLowerCase().startsWith('zh') ? '：' : ':',
-                    itemsValue: session.itemsCount?.toString() ?? '--',
-                    durationValue: session.elapsedSeconds != null
-                        ? _formatDuration(session.elapsedSeconds!, l10n)
-                        : '--',
-                    beforeValue: session.beforeMessinessIndex != null
-                        ? session.beforeMessinessIndex!.toStringAsFixed(1)
-                        : '--',
-                    afterValue: session.afterMessinessIndex != null
-                        ? session.afterMessinessIndex!.toStringAsFixed(1)
-                        : '--',
-                    improvementValue: improvement != null
-                        ? '${improvement.toStringAsFixed(0)}%'
-                        : '--',
-                    focusValue: session.focusIndex?.toString() ?? '--',
-                    joyValue: session.moodIndex?.toString() ?? '--',
+                  const SizedBox(height: 18),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      child: Text(l10n.close),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 18),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(sheetContext),
-                    child: Text(l10n.close),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -466,12 +427,22 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     DeepCleaningSession session,
   ) {
     final slides = [
-      _PhotoSlide(label: l10n.beforePhoto, path: session.beforePhotoPath),
-      _PhotoSlide(label: l10n.afterPhoto, path: session.afterPhotoPath),
+      _PhotoSlide(
+        label: l10n.beforePhoto,
+        localPath: session.localBeforePhotoPath,
+        remotePath: session.remoteBeforePhotoPath,
+      ),
+      _PhotoSlide(
+        label: l10n.afterPhoto,
+        localPath: session.localAfterPhotoPath,
+        remotePath: session.remoteAfterPhotoPath,
+      ),
     ];
 
     final allMissing = slides.every(
-      (slide) => slide.path == null || slide.path!.isEmpty,
+      (slide) =>
+          (slide.localPath == null || slide.localPath!.isEmpty) &&
+          (slide.remotePath == null || slide.remotePath!.isEmpty),
     );
 
     if (allMissing) {
@@ -496,7 +467,11 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         itemCount: slides.length,
         itemBuilder: (context, index) {
           final slide = slides[index];
-          return _PhotoPage(label: slide.label, path: slide.path);
+          return _PhotoPage(
+            label: slide.label,
+            localPath: slide.localPath,
+            remotePath: slide.remotePath,
+          );
         },
       ),
     );
@@ -513,10 +488,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     required String focusValue,
     required String joyValue,
   }) {
-    final labelStyle = const TextStyle(
-      fontSize: 14,
-      color: Color(0xFF6B7280),
-    );
+    final labelStyle = const TextStyle(fontSize: 14, color: Color(0xFF6B7280));
     final valueStyle = const TextStyle(
       fontSize: 15,
       fontWeight: FontWeight.w600,
@@ -527,16 +499,8 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              '$label$colon',
-              style: labelStyle,
-            ),
-          ),
-          Text(
-            value,
-            style: valueStyle,
-          ),
+          Expanded(child: Text('$label$colon', style: labelStyle)),
+          Text(value, style: valueStyle),
         ],
       );
     }
@@ -642,6 +606,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     final locale = l10n.localeName;
     return DateFormat.jm(locale).format(date);
   }
+
   Widget _buildDeepCleaningMetricItem(
     BuildContext context, {
     required IconData icon,
@@ -685,56 +650,79 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
 
   Widget _buildReportSection(
     BuildContext context, {
-      required String title,
-      Widget? trailing,
-      required Widget child,
-    }) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (trailing != null)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
+    required String title,
+    Widget? trailing,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (trailing != null)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
                 ),
-                trailing,
-              ],
-            )
-          else
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF111827),
               ),
+              trailing,
+            ],
+          )
+        else
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
             ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      );
-    }
+          ),
+        const SizedBox(height: 12),
+        child,
+      ],
+    );
   }
+
+  IconData _getIconForArea(String areaValue) {
+    final area = CleaningArea.fromString(areaValue);
+    if (area != null) {
+      switch (area) {
+        case CleaningArea.livingRoom:
+          return Icons.weekend_outlined;
+        case CleaningArea.bedroom:
+          return Icons.bed_outlined;
+        case CleaningArea.wardrobe:
+          return Icons.checkroom_outlined;
+        case CleaningArea.bookshelf:
+          return Icons.book_outlined;
+        case CleaningArea.kitchen:
+          return Icons.kitchen_outlined;
+        case CleaningArea.desk:
+          return Icons.desk_outlined;
+      }
+    }
+    return Icons.home_outlined; // Default icon
+  }
+}
 
 class _PhotoSlide {
   final String label;
-  final String? path;
+  final String? localPath;
+  final String? remotePath;
 
-  const _PhotoSlide({required this.label, this.path});
+  const _PhotoSlide({required this.label, this.localPath, this.remotePath});
 }
 
 class _PhotoPage extends StatelessWidget {
   final String label;
-  final String? path;
+  final String? localPath;
+  final String? remotePath;
 
-  const _PhotoPage({required this.label, this.path});
+  const _PhotoPage({required this.label, this.localPath, this.remotePath});
 
   @override
   Widget build(BuildContext context) {
@@ -758,7 +746,8 @@ class _PhotoPage extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 color: const Color(0xFFF3F4F6),
-                child: path == null || path!.isEmpty
+                child: (localPath == null || localPath!.isEmpty) &&
+                        (remotePath == null || remotePath!.isEmpty)
                     ? const Center(
                         child: Icon(
                           Icons.photo_camera_back_outlined,
@@ -766,10 +755,11 @@ class _PhotoPage extends StatelessWidget {
                           size: 32,
                         ),
                       )
-                    : Image.file(
-                        File(path!),
+                    : SmartImageWidget(
+                        localPath: localPath,
+                        remotePath: remotePath,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Center(
+                        errorWidget: const Center(
                           child: Icon(
                             Icons.broken_image_outlined,
                             color: Color(0xFF9CA3AF),

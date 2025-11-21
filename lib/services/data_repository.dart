@@ -1,323 +1,455 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
+import 'package:keepjoy_app/models/hive/memory_hive.dart';
+import 'package:keepjoy_app/models/hive/deep_cleaning_session_hive.dart';
+import 'package:keepjoy_app/models/hive/declutter_item_hive.dart';
+import 'package:keepjoy_app/models/hive/resell_item_hive.dart';
+import 'package:keepjoy_app/models/hive/planned_session_hive.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
+import 'package:keepjoy_app/services/hive_service.dart';
+import 'package:keepjoy_app/services/sync_service.dart';
 
-/// Data Repository
-/// Handles all CRUD operations with Supabase database
+/// Local-First Data Repository
+/// All operations write to Hive first, then sync to cloud in background
 class DataRepository {
   final _authService = AuthService();
-  SupabaseClient? get _client => _authService.client;
+  final _hiveService = HiveService.instance;
 
   String? get _userId => _authService.currentUserId;
   String get _requiredUserId => _authService.requireUserId();
 
-  // ========================================================================
-  // DECLUTTER ITEMS
-  // ========================================================================
-
-  /// Fetch all declutter items for current user
-  Future<List<DeclutterItem>> fetchDeclutterItems() async {
-    if (_userId == null || _client == null) return [];
-
-    final response = await _client!
-        .from('declutter_items')
-        .select()
-        .eq('user_id', _userId!)
-        .order('created_at', ascending: false);
-
-    return (response as List)
-        .map((json) => DeclutterItem.fromJson(json))
-        .toList();
+  /// Schedule background sync after data change
+  /// 5-second delay to batch multiple rapid changes and reduce Supabase requests
+  void _scheduleSyncAfterDelay() {
+    Future.delayed(const Duration(seconds: 5), () {
+      SyncService.instance.syncAll();
+    });
   }
 
-  /// Create a new declutter item
+  /// Delete a local image file if it exists
+  Future<void> _deleteImageFile(String? photoPath) async {
+    if (photoPath == null || photoPath.isEmpty) return;
+    // Don't delete cloud URLs
+    if (photoPath.startsWith('http')) return;
+
+    try {
+      final file = File(photoPath);
+      if (await file.exists()) {
+        await file.delete();
+        debugPrint('🗑️ Deleted image file: $photoPath');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Failed to delete image file: $e');
+    }
+  }
+
+  // ========================================================================
+  // DECLUTTER ITEMS (Local-First)
+  // ========================================================================
+
+  /// Fetch all declutter items from local Hive database
+  Future<List<DeclutterItem>> fetchDeclutterItems() async {
+    if (_userId == null) return [];
+
+    final hiveItems = _hiveService.getAllItems(userId: _userId!);
+    return hiveItems.map((h) => h.toItem()).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  /// Create a new declutter item (writes to Hive, syncs later)
   Future<DeclutterItem> createDeclutterItem(DeclutterItem item) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('declutter_items')
-        .insert(item.copyWith(userId: userId).toJson())
-        .select()
-        .single();
 
-    return DeclutterItem.fromJson(response);
+    final itemWithUser = item.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Save to Hive (local-first)
+    final hive = DeclutterItemHive.fromItem(itemWithUser, isDirty: true);
+    await _hiveService.saveItem(hive);
+
+    debugPrint('💾 Created item locally: ${item.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return itemWithUser;
   }
 
-  /// Update a declutter item
+  /// Update a declutter item (writes to Hive, syncs later)
   Future<DeclutterItem> updateDeclutterItem(DeclutterItem item) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('declutter_items')
-        .update(item.copyWith(userId: userId).toJson())
-        .eq('id', item.id)
-        .select()
-        .single();
 
-    return DeclutterItem.fromJson(response);
+    final itemWithUser = item.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Update in Hive
+    final hive = DeclutterItemHive.fromItem(itemWithUser, isDirty: true);
+    await _hiveService.saveItem(hive);
+
+    debugPrint('💾 Updated item locally: ${item.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return itemWithUser;
   }
 
-  /// Delete a declutter item
+  /// Delete a declutter item (soft delete in Hive, syncs later)
   Future<void> deleteDeclutterItem(String id) async {
     final _ = _requiredUserId;
-    if (_client == null) return;
-    await _client!.from('declutter_items').delete().eq('id', id);
+
+    // Get item for image cleanup
+    final hive = _hiveService.getItem(id);
+    if (hive != null) {
+      await _deleteImageFile(hive.photoPath);
+    }
+
+    // Soft delete in Hive
+    await _hiveService.deleteItem(id);
+
+    debugPrint('🗑️ Deleted item locally: $id');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
   }
 
   // ========================================================================
-  // RESELL ITEMS
+  // RESELL ITEMS (Local-First)
   // ========================================================================
 
-  /// Fetch all resell items for current user
+  /// Fetch all resell items from local Hive database
   Future<List<ResellItem>> fetchResellItems() async {
-    if (_userId == null || _client == null) return [];
+    if (_userId == null) return [];
 
-    final response = await _client!
-        .from('resell_items')
-        .select()
-        .eq('user_id', _userId!)
-        .order('created_at', ascending: false);
-
-    return (response as List).map((json) => ResellItem.fromJson(json)).toList();
+    final hiveItems = _hiveService.getAllResellItems(userId: _userId!);
+    return hiveItems.map((h) => h.toItem()).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
-  /// Create a new resell item
+  /// Create a new resell item (writes to Hive, syncs later)
   Future<ResellItem> createResellItem(ResellItem item) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('resell_items')
-        .insert(item.copyWith(userId: userId).toJson())
-        .select()
-        .single();
 
-    return ResellItem.fromJson(response);
+    final itemWithUser = item.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Save to Hive
+    final hive = ResellItemHive.fromItem(itemWithUser, isDirty: true);
+    await _hiveService.saveResellItem(hive);
+
+    debugPrint('💾 Created resell item locally: ${item.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return itemWithUser;
   }
 
-  /// Update a resell item
+  /// Update a resell item (writes to Hive, syncs later)
   Future<ResellItem> updateResellItem(ResellItem item) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('resell_items')
-        .update(item.copyWith(userId: userId).toJson())
-        .eq('id', item.id)
-        .select()
-        .single();
 
-    return ResellItem.fromJson(response);
+    final itemWithUser = item.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Update in Hive
+    final hive = ResellItemHive.fromItem(itemWithUser, isDirty: true);
+    await _hiveService.saveResellItem(hive);
+
+    debugPrint('💾 Updated resell item locally: ${item.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return itemWithUser;
   }
 
-  /// Delete a resell item
+  /// Delete a resell item (soft delete in Hive, syncs later)
   Future<void> deleteResellItem(String id) async {
     final _ = _requiredUserId;
-    if (_client == null) return;
-    await _client!.from('resell_items').delete().eq('id', id);
+
+    // Soft delete in Hive
+    await _hiveService.deleteResellItem(id);
+
+    debugPrint('🗑️ Deleted resell item locally: $id');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
   }
 
   // ========================================================================
-  // DEEP CLEANING SESSIONS
+  // DEEP CLEANING SESSIONS (Local-First)
   // ========================================================================
 
-  /// Fetch all deep cleaning sessions for current user
+  /// Fetch all deep cleaning sessions from local Hive database
   Future<List<DeepCleaningSession>> fetchDeepCleaningSessions() async {
-    if (_userId == null || _client == null) return [];
+    if (_userId == null) return [];
 
-    final response = await _client!
-        .from('deep_cleaning_sessions')
-        .select()
-        .eq('user_id', _userId!)
-        .order('start_time', ascending: false);
-
-    return (response as List)
-        .map((json) => DeepCleaningSession.fromJson(json))
-        .toList();
+    final hiveSessions = _hiveService.getAllSessions(userId: _userId!);
+    return hiveSessions.map((h) => h.toSession()).toList()
+      ..sort((a, b) => b.startTime.compareTo(a.startTime));
   }
 
-  /// Create a new deep cleaning session
+  /// Create a new deep cleaning session (writes to Hive, syncs later)
   Future<DeepCleaningSession> createDeepCleaningSession(
     DeepCleaningSession session,
   ) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('deep_cleaning_sessions')
-        .insert(session.copyWith(userId: userId).toJson())
-        .select()
-        .single();
 
-    return DeepCleaningSession.fromJson(response);
+    final sessionWithUser = session.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Save to Hive
+    final hive = DeepCleaningSessionHive.fromSession(
+      sessionWithUser,
+      isDirty: true,
+    );
+    await _hiveService.saveSession(hive);
+
+    debugPrint('💾 Created session locally: ${session.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return sessionWithUser;
   }
 
-  /// Update a deep cleaning session
+  /// Update a deep cleaning session (writes to Hive, syncs later)
   Future<DeepCleaningSession> updateDeepCleaningSession(
     DeepCleaningSession session,
   ) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('deep_cleaning_sessions')
-        .update(session.copyWith(userId: userId).toJson())
-        .eq('id', session.id)
-        .select()
-        .single();
 
-    return DeepCleaningSession.fromJson(response);
+    final sessionWithUser = session.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Update in Hive
+    final hive = DeepCleaningSessionHive.fromSession(
+      sessionWithUser,
+      isDirty: true,
+    );
+    await _hiveService.saveSession(hive);
+
+    debugPrint('💾 Updated session locally: ${session.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return sessionWithUser;
   }
 
-  /// Delete a deep cleaning session
+  /// Delete a deep cleaning session (soft delete in Hive, syncs later)
   Future<void> deleteDeepCleaningSession(String id) async {
     final _ = _requiredUserId;
-    if (_client == null) return;
-    await _client!.from('deep_cleaning_sessions').delete().eq('id', id);
+
+    // Get session for image cleanup
+    final hive = _hiveService.getSession(id);
+    if (hive != null) {
+      await _deleteImageFile(hive.beforePhotoPath);
+      await _deleteImageFile(hive.afterPhotoPath);
+    }
+
+    // Soft delete in Hive
+    await _hiveService.deleteSession(id);
+
+    debugPrint('🗑️ Deleted session locally: $id');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
   }
 
   // ========================================================================
-  // MEMORIES
+  // MEMORIES (Local-First)
   // ========================================================================
 
-  /// Fetch all memories for current user
+  /// Fetch all memories from local Hive database
   Future<List<Memory>> fetchMemories() async {
-    if (_userId == null || _client == null) return [];
+    if (_userId == null) return [];
 
-    final response = await _client!
-        .from('memories')
-        .select()
-        .eq('user_id', _userId!)
-        .order('created_at', ascending: false);
-
-    return (response as List).map((json) => Memory.fromJson(json)).toList();
+    final hiveMemories = _hiveService.getAllMemories(userId: _userId!);
+    return hiveMemories.map((h) => h.toMemory()).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
-  /// Create a new memory
+  /// Create a new memory (writes to Hive, syncs later)
   Future<Memory> createMemory(Memory memory) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('memories')
-        .insert(memory.copyWith(userId: userId).toJson())
-        .select()
-        .single();
 
-    return Memory.fromJson(response);
+    final memoryWithUser = memory.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Save to Hive
+    final hive = MemoryHive.fromMemory(memoryWithUser, isDirty: true);
+    await _hiveService.saveMemory(hive);
+
+    debugPrint('💾 Created memory locally: ${memory.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return memoryWithUser;
   }
 
-  /// Update a memory
+  /// Update a memory (writes to Hive, syncs later)
   Future<Memory> updateMemory(Memory memory) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('memories')
-        .update(memory.copyWith(userId: userId).toJson())
-        .eq('id', memory.id)
-        .select()
-        .single();
 
-    return Memory.fromJson(response);
+    final memoryWithUser = memory.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Update in Hive
+    final hive = MemoryHive.fromMemory(memoryWithUser, isDirty: true);
+    await _hiveService.saveMemory(hive);
+
+    debugPrint('💾 Updated memory locally: ${memory.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return memoryWithUser;
   }
 
-  /// Delete a memory
+  /// Delete a memory (soft delete in Hive, syncs later)
   Future<void> deleteMemory(String id) async {
     final _ = _requiredUserId;
-    if (_client == null) return;
-    await _client!.from('memories').delete().eq('id', id);
+
+    // Get memory for image cleanup
+    final hive = _hiveService.getMemory(id);
+    if (hive != null) {
+      await _deleteImageFile(hive.photoPath);
+    }
+
+    // Soft delete in Hive
+    await _hiveService.deleteMemory(id);
+
+    debugPrint('🗑️ Deleted memory locally: $id');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
   }
 
   // ========================================================================
-  // PLANNED SESSIONS
+  // PLANNED SESSIONS (Local-First)
   // ========================================================================
 
-  /// Fetch all planned sessions for current user
+  /// Fetch all planned sessions from local Hive database
   Future<List<PlannedSession>> fetchPlannedSessions() async {
-    if (_userId == null || _client == null) return [];
+    if (_userId == null) return [];
 
-    final response = await _client!
-        .from('planned_sessions')
-        .select()
-        .eq('user_id', _userId!)
-        .order('scheduled_date', ascending: true);
-
-    return (response as List)
-        .map((json) => PlannedSession.fromJson(json))
-        .toList();
+    final hiveSessions = _hiveService.getAllPlannedSessions(userId: _userId!);
+    return hiveSessions.map((h) => h.toSession()).toList()..sort((a, b) {
+      // Sort by scheduled date, nulls last
+      if (a.scheduledDate == null && b.scheduledDate == null) {
+        return a.createdAt.compareTo(b.createdAt);
+      }
+      if (a.scheduledDate == null) return 1;
+      if (b.scheduledDate == null) return -1;
+      return a.scheduledDate!.compareTo(b.scheduledDate!);
+    });
   }
 
-  /// Create a new planned session
+  /// Create a new planned session (writes to Hive, syncs later)
   Future<PlannedSession> createPlannedSession(PlannedSession session) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('planned_sessions')
-        .insert(session.copyWith(userId: userId).toJson())
-        .select()
-        .single();
 
-    return PlannedSession.fromJson(response);
+    final sessionWithUser = session.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Save to Hive
+    final hive = PlannedSessionHive.fromSession(sessionWithUser, isDirty: true);
+    await _hiveService.savePlannedSession(hive);
+
+    debugPrint('💾 Created planned session locally: ${session.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return sessionWithUser;
   }
 
-  /// Update a planned session
+  /// Update a planned session (writes to Hive, syncs later)
   Future<PlannedSession> updatePlannedSession(PlannedSession session) async {
     final userId = _requiredUserId;
-    if (_client == null) throw StateError('Supabase client is not available');
-    final response = await _client!
-        .from('planned_sessions')
-        .update(session.copyWith(userId: userId).toJson())
-        .eq('id', session.id)
-        .select()
-        .single();
 
-    return PlannedSession.fromJson(response);
+    final sessionWithUser = session.copyWith(
+      userId: userId,
+      updatedAt: DateTime.now(),
+    );
+
+    // Update in Hive
+    final hive = PlannedSessionHive.fromSession(sessionWithUser, isDirty: true);
+    await _hiveService.savePlannedSession(hive);
+
+    debugPrint('💾 Updated planned session locally: ${session.id}');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
+
+    return sessionWithUser;
   }
 
-  /// Delete a planned session
+  /// Delete a planned session (soft delete in Hive, syncs later)
   Future<void> deletePlannedSession(String id) async {
     final _ = _requiredUserId;
-    if (_client == null) return;
-    await _client!.from('planned_sessions').delete().eq('id', id);
+
+    // Soft delete in Hive
+    await _hiveService.deletePlannedSession(id);
+
+    debugPrint('🗑️ Deleted planned session locally: $id');
+
+    // Schedule background sync
+    _scheduleSyncAfterDelay();
   }
 
-  /// Fetch today's incomplete tasks (scheduled for today OR marked as "today" priority)
+  /// Fetch today's incomplete tasks
   Future<List<PlannedSession>> fetchTodayTasks() async {
-    if (_userId == null || _client == null) return [];
+    if (_userId == null) return [];
 
-    // Fetch all incomplete tasks and filter in memory for flexibility
-    final response = await _client!
-        .from('planned_sessions')
-        .select()
-        .eq('user_id', _userId!)
-        .eq('is_completed', false)
-        .order('created_at', ascending: true);
-
-    final allTasks = (response as List)
-        .map((json) => PlannedSession.fromJson(json))
-        .toList();
-
-    // Filter for today's tasks
+    final allTasks = await fetchPlannedSessions();
     return allTasks.where((task) => task.isForToday).toList();
   }
 
   /// Fetch today's completed tasks
   Future<List<PlannedSession>> fetchTodayCompletedTasks() async {
-    if (_userId == null || _client == null) return [];
+    if (_userId == null) return [];
 
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
 
-    final response = await _client!
-        .from('planned_sessions')
-        .select()
-        .eq('user_id', _userId!)
-        .eq('is_completed', true)
-        .gte('completed_at', startOfDay.toIso8601String())
-        .order('completed_at', ascending: false);
-
-    return (response as List)
-        .map((json) => PlannedSession.fromJson(json))
-        .toList();
+    final hiveSessions = _hiveService.getAllPlannedSessions(userId: _userId!);
+    return hiveSessions
+        .map((h) => h.toSession())
+        .where(
+          (task) =>
+              task.isCompleted &&
+              task.completedAt != null &&
+              task.completedAt!.isAfter(startOfDay),
+        )
+        .toList()
+      ..sort((a, b) => b.completedAt!.compareTo(a.completedAt!));
   }
 
   /// Toggle task completion
@@ -334,7 +466,7 @@ class DataRepository {
   // BATCH OPERATIONS
   // ========================================================================
 
-  /// Sync all data from Supabase
+  /// Get all data from local Hive database
   Future<Map<String, dynamic>> syncAllData() async {
     final results = await Future.wait([
       fetchDeclutterItems(),
@@ -353,18 +485,14 @@ class DataRepository {
     };
   }
 
-  /// Clear all user data from Supabase
-  Future<void> clearAllData() async {
-    final userId = _requiredUserId;
-    if (_client == null) return;
-
-    // Delete all data for the current user in parallel
-    await Future.wait([
-      _client!.from('declutter_items').delete().eq('user_id', userId),
-      _client!.from('resell_items').delete().eq('user_id', userId),
-      _client!.from('deep_cleaning_sessions').delete().eq('user_id', userId),
-      _client!.from('memories').delete().eq('user_id', userId),
-      _client!.from('planned_sessions').delete().eq('user_id', userId),
-    ]);
+  /// Force immediate sync
+  Future<void> forceSync() async {
+    await SyncService.instance.forceSync();
   }
+
+  /// Get sync status
+  SyncStatus get syncStatus => SyncService.instance.currentStatus;
+
+  /// Stream of sync status changes
+  Stream<SyncStatus> get syncStatusStream => SyncService.instance.statusStream;
 }

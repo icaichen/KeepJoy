@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -106,11 +109,15 @@ Widget _buildJoySurface({
 class JoyDeclutterFlowPage extends StatefulWidget {
   final Function(DeclutterItem) onItemCompleted;
   final Function(Memory) onMemoryCreated;
+  final bool hasFullAccess;
+  final VoidCallback onRequestUpgrade;
 
   const JoyDeclutterFlowPage({
     super.key,
     required this.onItemCompleted,
     required this.onMemoryCreated,
+    required this.hasFullAccess,
+    required this.onRequestUpgrade,
   });
 
   @override
@@ -120,6 +127,28 @@ class JoyDeclutterFlowPage extends StatefulWidget {
 class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
   bool _isProcessing = false;
   final ImagePicker _picker = ImagePicker();
+
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final itemsDir = Directory('${appDir.path}/items');
+      if (!await itemsDir.exists()) {
+        await itemsDir.create(recursive: true);
+      }
+
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(itemsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
 
   Future<void> _takePicture() async {
     setState(() => _isProcessing = true);
@@ -131,15 +160,21 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
       );
 
       if (photo != null && mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => _PhotoReviewPage(
-              photoPath: photo.path,
-              onItemCompleted: widget.onItemCompleted,
-              onMemoryCreated: widget.onMemoryCreated,
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => _PhotoReviewPage(
+                photoPath: permanentPath,
+                onItemCompleted: widget.onItemCompleted,
+                onMemoryCreated: widget.onMemoryCreated,
+                hasFullAccess: widget.hasFullAccess,
+                onRequestUpgrade: widget.onRequestUpgrade,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -246,15 +281,6 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                isChinese
-                    ? '拍攝物品，我們會陪你完成怦然心動檢查。'
-                    : 'Capture one item—we will guide you through the decision.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
             ],
           ),
         ),
@@ -301,11 +327,15 @@ class _PhotoReviewPage extends StatefulWidget {
   final String photoPath;
   final Function(DeclutterItem) onItemCompleted;
   final Function(Memory) onMemoryCreated;
+  final bool hasFullAccess;
+  final VoidCallback onRequestUpgrade;
 
   const _PhotoReviewPage({
     required this.photoPath,
     required this.onItemCompleted,
     required this.onMemoryCreated,
+    required this.hasFullAccess,
+    required this.onRequestUpgrade,
   });
 
   @override
@@ -364,6 +394,28 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
     }
   }
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final itemsDir = Directory('${appDir.path}/items');
+      if (!await itemsDir.exists()) {
+        await itemsDir.create(recursive: true);
+      }
+
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(itemsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _retakePicture() async {
     try {
       final XFile? photo = await _picker.pickImage(
@@ -372,15 +424,21 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
       );
 
       if (photo != null && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => _PhotoReviewPage(
-              photoPath: photo.path,
-              onItemCompleted: widget.onItemCompleted,
-              onMemoryCreated: widget.onMemoryCreated,
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => _PhotoReviewPage(
+                photoPath: permanentPath,
+                onItemCompleted: widget.onItemCompleted,
+                onMemoryCreated: widget.onMemoryCreated,
+                hasFullAccess: widget.hasFullAccess,
+                onRequestUpgrade: widget.onRequestUpgrade,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -412,6 +470,8 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
           category: _selectedCategory,
           onItemCompleted: widget.onItemCompleted,
           onMemoryCreated: widget.onMemoryCreated,
+          hasFullAccess: widget.hasFullAccess,
+          onRequestUpgrade: widget.onRequestUpgrade,
         ),
       ),
     );
@@ -525,6 +585,7 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                           ),
                           const SizedBox(height: 16),
                           DropdownMenu<DeclutterCategory>(
+                            expandedInsets: EdgeInsets.zero,
                             initialSelection: _selectedCategory,
                             label: Text(l10n.category),
                             dropdownMenuEntries: DeclutterCategory.values
@@ -585,6 +646,8 @@ Widget _createJoyQuestionPage({
   required DeclutterCategory category,
   required Function(DeclutterItem) onItemCompleted,
   required Function(Memory) onMemoryCreated,
+  required bool hasFullAccess,
+  required VoidCallback onRequestUpgrade,
 }) {
   final definition = _joyQuestionDefinition(questionIndex);
   return _JoyQuestionPage(
@@ -604,6 +667,8 @@ Widget _createJoyQuestionPage({
               category: category,
               onItemCompleted: onItemCompleted,
               onMemoryCreated: onMemoryCreated,
+              hasFullAccess: hasFullAccess,
+              onRequestUpgrade: onRequestUpgrade,
             ),
           ),
         );
@@ -618,6 +683,8 @@ Widget _createJoyQuestionPage({
               answers: answers,
               onItemCompleted: onItemCompleted,
               onMemoryCreated: onMemoryCreated,
+              hasFullAccess: hasFullAccess,
+              onRequestUpgrade: onRequestUpgrade,
             ),
           ),
         );
@@ -819,6 +886,8 @@ class _SummaryPage extends StatelessWidget {
   final _JoyAnswers answers;
   final Function(DeclutterItem) onItemCompleted;
   final Function(Memory) onMemoryCreated;
+  final bool hasFullAccess;
+  final VoidCallback onRequestUpgrade;
 
   const _SummaryPage({
     required this.photoPath,
@@ -828,6 +897,8 @@ class _SummaryPage extends StatelessWidget {
     required this.answers,
     required this.onItemCompleted,
     required this.onMemoryCreated,
+    required this.hasFullAccess,
+    required this.onRequestUpgrade,
   });
 
   List<String> _getInsights(bool isChinese) {
@@ -869,13 +940,14 @@ class _SummaryPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final item = DeclutterItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      id: const Uuid().v4(),
       name: itemName,
       nameLocalizations: nameLocalizations,
       category: category,
       createdAt: DateTime.now(),
       status: DeclutterStatus.keep,
-      photoPath: photoPath,
+      localPhotoPath: photoPath,
+      remotePhotoPath: null,
     );
 
     onItemCompleted(item);
@@ -900,68 +972,70 @@ class _SummaryPage extends StatelessWidget {
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.timeToLetGo,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.timeToLetGo,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.joyQuestionDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.4,
-                    color: Colors.black.withValues(alpha: 0.7),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.joyQuestionDescription,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      height: 1.4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                _LetGoOption(
-                  icon: Icons.delete_outline,
-                  label: l10n.routeDiscard,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
-                ),
-                _LetGoOption(
-                  icon: Icons.volunteer_activism_outlined,
-                  label: l10n.routeDonation,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
-                ),
-                _LetGoOption(
-                  icon: Icons.recycling_outlined,
-                  label: l10n.routeRecycle,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
-                ),
-                _LetGoOption(
-                  icon: Icons.attach_money_outlined,
-                  label: l10n.routeResell,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
-                ),
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(),
-                  child: Text(l10n.cancel),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  _LetGoOption(
+                    icon: Icons.delete_outline,
+                    label: l10n.routeDiscard,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                  ),
+                  _LetGoOption(
+                    icon: Icons.volunteer_activism_outlined,
+                    label: l10n.routeDonation,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                  ),
+                  _LetGoOption(
+                    icon: Icons.recycling_outlined,
+                    label: l10n.routeRecycle,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                  ),
+                  _LetGoOption(
+                    icon: Icons.attach_money_outlined,
+                    label: l10n.routeResell,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                  ),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: Text(l10n.cancel),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -973,18 +1047,29 @@ class _SummaryPage extends StatelessWidget {
     }
 
     final item = DeclutterItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      id: const Uuid().v4(),
       name: itemName,
       nameLocalizations: nameLocalizations,
       category: category,
       createdAt: DateTime.now(),
       status: status,
-      photoPath: photoPath,
+      localPhotoPath: photoPath,
+      remotePhotoPath: null,
     );
 
     onItemCompleted(item);
 
     if (!context.mounted) return;
+
+    // Show memory prompt only if user has premium access
+    if (!hasFullAccess) {
+      // Show upgrade dialog instead
+      onRequestUpgrade();
+      if (context.mounted) {
+        popToHome(context);
+      }
+      return;
+    }
 
     // Show memory prompt
     final shouldCreateMemory = await showCreateMemoryPromptSheet(
@@ -1007,9 +1092,9 @@ class _SummaryPage extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: CreateMemoryPage(
-            item: item,
-            photoPath: photoPath,
-            itemName: itemName,
+              item: item,
+              photoPath: photoPath,
+              itemName: itemName,
               isModal: true,
             ),
           ),

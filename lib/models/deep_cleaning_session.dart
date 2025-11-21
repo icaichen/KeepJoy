@@ -1,3 +1,66 @@
+import 'package:flutter/material.dart';
+
+enum CleaningArea {
+  livingRoom('Living Room', '客厅', 'living_room'),
+  bedroom('Bedroom', '卧室', 'bedroom'),
+  wardrobe('Wardrobe', '衣柜', 'wardrobe'),
+  bookshelf('Bookshelf', '书柜', 'bookshelf'),
+  kitchen('Kitchen', '厨房', 'kitchen'),
+  desk('Desk', '书桌', 'desk');
+
+  const CleaningArea(this.english, this.chinese, this.key);
+  final String english;
+  final String chinese;
+  final String key;
+
+  String label(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode.toLowerCase().startsWith('zh')) {
+      return chinese;
+    }
+    return english;
+  }
+
+  static CleaningArea? fromString(String value) {
+    // Try to match by key first
+    for (final area in CleaningArea.values) {
+      if (area.key == value) return area;
+    }
+    // Handle old keys for backward compatibility
+    if (value == 'closet') return CleaningArea.wardrobe;
+    if (value == 'study') return CleaningArea.bookshelf;
+    if (value == 'bathroom')
+      return null; // Bathroom was removed, no direct mapping
+
+    // Try to match by English or Chinese name (for backward compatibility)
+    for (final area in CleaningArea.values) {
+      if (area.english == value || area.chinese == value) return area;
+    }
+
+    // Additional backward compatibility for old string values
+    if (value == 'Closet' || value == '衣柜') return CleaningArea.wardrobe;
+    if (value == 'Study' || value == '书房') return CleaningArea.bookshelf;
+
+    return null;
+  }
+
+  static String getDisplayName(String storedValue, BuildContext context) {
+    final area = fromString(storedValue);
+    if (area != null) {
+      return area.label(context);
+    }
+    // Fallback to stored value if no match found
+    return storedValue;
+  }
+}
+
+enum SessionStatus {
+  ongoing,
+  paused,
+  completed,
+  canceled;
+}
+
 class DeepCleaningSession {
   final String id;
   final String userId; // Foreign key to auth.users
@@ -5,8 +68,13 @@ class DeepCleaningSession {
   final DateTime startTime;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final String? beforePhotoPath;
-  String? afterPhotoPath;
+  final DateTime? deletedAt; // Soft delete timestamp
+  final String? deviceId; // Device that made the last change
+  final SessionStatus? sessionStatus; // Session state
+  final String? localBeforePhotoPath;
+  final String? remoteBeforePhotoPath;
+  String? localAfterPhotoPath;
+  String? remoteAfterPhotoPath;
   int? elapsedSeconds;
   int? itemsCount;
   int? focusIndex; // 1-10
@@ -21,8 +89,13 @@ class DeepCleaningSession {
     required this.startTime,
     DateTime? createdAt,
     this.updatedAt,
-    this.beforePhotoPath,
-    this.afterPhotoPath,
+    this.deletedAt,
+    this.deviceId,
+    this.sessionStatus = SessionStatus.completed,
+    this.localBeforePhotoPath,
+    this.remoteBeforePhotoPath,
+    this.localAfterPhotoPath,
+    this.remoteAfterPhotoPath,
     this.elapsedSeconds,
     this.itemsCount,
     this.focusIndex,
@@ -40,8 +113,11 @@ class DeepCleaningSession {
       'start_time': startTime.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
-      'before_photo_path': beforePhotoPath,
-      'after_photo_path': afterPhotoPath,
+      'deleted_at': deletedAt?.toIso8601String(),
+      'device_id': deviceId,
+      'session_status': sessionStatus?.name,
+      'before_photo_path': remoteBeforePhotoPath, // Supabase stores remote URL only
+      'after_photo_path': remoteAfterPhotoPath, // Supabase stores remote URL only
       'elapsed_seconds': elapsedSeconds,
       'items_count': itemsCount,
       'focus_index': focusIndex,
@@ -53,6 +129,29 @@ class DeepCleaningSession {
 
   // Create from JSON from Supabase
   factory DeepCleaningSession.fromJson(Map<String, dynamic> json) {
+    // Backward compatibility: migrate old photo_path to remote
+    String? localBeforePath;
+    String? remoteBeforePath;
+    final beforePhotoPath = json['before_photo_path'] as String?;
+    if (beforePhotoPath != null && beforePhotoPath.isNotEmpty) {
+      if (beforePhotoPath.startsWith('http')) {
+        remoteBeforePath = beforePhotoPath;
+      } else {
+        localBeforePath = beforePhotoPath;
+      }
+    }
+
+    String? localAfterPath;
+    String? remoteAfterPath;
+    final afterPhotoPath = json['after_photo_path'] as String?;
+    if (afterPhotoPath != null && afterPhotoPath.isNotEmpty) {
+      if (afterPhotoPath.startsWith('http')) {
+        remoteAfterPath = afterPhotoPath;
+      } else {
+        localAfterPath = afterPhotoPath;
+      }
+    }
+
     return DeepCleaningSession(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -62,8 +161,13 @@ class DeepCleaningSession {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
-      beforePhotoPath: json['before_photo_path'] as String?,
-      afterPhotoPath: json['after_photo_path'] as String?,
+      deletedAt: json['deleted_at'] != null ? DateTime.parse(json['deleted_at'] as String) : null,
+      deviceId: json['device_id'] as String?,
+      sessionStatus: json['session_status'] != null ? SessionStatus.values.firstWhere((e) => e.name == json['session_status'], orElse: () => SessionStatus.completed) : SessionStatus.completed,
+      localBeforePhotoPath: localBeforePath,
+      remoteBeforePhotoPath: remoteBeforePath,
+      localAfterPhotoPath: localAfterPath,
+      remoteAfterPhotoPath: remoteAfterPath,
       elapsedSeconds: json['elapsed_seconds'] as int?,
       itemsCount: json['items_count'] as int?,
       focusIndex: json['focus_index'] as int?,
@@ -80,8 +184,13 @@ class DeepCleaningSession {
     DateTime? startTime,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? beforePhotoPath,
-    String? afterPhotoPath,
+    DateTime? deletedAt,
+    String? deviceId,
+    SessionStatus? sessionStatus,
+    String? localBeforePhotoPath,
+    String? remoteBeforePhotoPath,
+    String? localAfterPhotoPath,
+    String? remoteAfterPhotoPath,
     int? elapsedSeconds,
     int? itemsCount,
     int? focusIndex,
@@ -96,8 +205,13 @@ class DeepCleaningSession {
       startTime: startTime ?? this.startTime,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      beforePhotoPath: beforePhotoPath ?? this.beforePhotoPath,
-      afterPhotoPath: afterPhotoPath ?? this.afterPhotoPath,
+      deletedAt: deletedAt ?? this.deletedAt,
+      deviceId: deviceId ?? this.deviceId,
+      sessionStatus: sessionStatus ?? this.sessionStatus,
+      localBeforePhotoPath: localBeforePhotoPath ?? this.localBeforePhotoPath,
+      remoteBeforePhotoPath: remoteBeforePhotoPath ?? this.remoteBeforePhotoPath,
+      localAfterPhotoPath: localAfterPhotoPath ?? this.localAfterPhotoPath,
+      remoteAfterPhotoPath: remoteAfterPhotoPath ?? this.remoteAfterPhotoPath,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       itemsCount: itemsCount ?? this.itemsCount,
       focusIndex: focusIndex ?? this.focusIndex,

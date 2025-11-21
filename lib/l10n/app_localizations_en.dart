@@ -28,11 +28,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pick the experience that fits your current energy.';
 
   @override
-  String get joyDeclutterFlowDescription => 'Keep only what sparks joy';
+  String get joyDeclutterFlowDescription => 'Help you make difficult decision';
 
   @override
-  String get quickDeclutterFlowDescription =>
-      'Fast pass: clear a spot in minutes';
+  String get quickDeclutterFlowDescription => 'Only keep items that bring joys';
 
   @override
   String get deepCleaningFlowDescription => 'Plan, focus, finish a deep clean';
@@ -138,28 +137,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardMonthlyProgress => 'Monthly Progress';
 
   @override
+  String get dashboardYearlyProgress => 'Yearly Progress';
+
+  @override
   String get dashboardDeclutteredLabel => 'Decluttered Items';
 
   @override
   String get dashboardResellLabel => 'Resell Earnings';
 
   @override
-  String get dashboardResellReportTitle => 'Second-hand Trends';
+  String get dashboardResellReportTitle => 'Resale Insights';
 
   @override
-  String get dashboardResellReportSubtitle => 'View full report';
+  String get dashboardResellReportSubtitle => 'Track second-hand performance';
 
   @override
-  String get dashboardMemoryLaneTitle => 'Heartfelt Memories';
+  String get dashboardMemoryLaneTitle => 'Annual Memory';
 
   @override
-  String get dashboardMemoryLaneSubtitle => 'Revisit your journey';
+  String get dashboardMemoryLaneSubtitle => 'Revisit your yearly highlights';
 
   @override
-  String get dashboardYearlyReportsTitle => 'Heartfelt Chronicles';
+  String get dashboardYearlyReportsTitle => 'Year in Review';
 
   @override
-  String get dashboardYearlyReportsSubtitle => 'View annual summary';
+  String get dashboardYearlyReportsSubtitle => 'See year-round insights';
 
   @override
   String get dashboardCurrentStreakTitle => 'Current Streak';
@@ -190,7 +192,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardNoSessionsForDay => 'No sessions on this day';
 
   @override
-  String get deepCleaningAnalysisTitle => 'Deep Cleaning Analysis';
+  String get deepCleaningAnalysisTitle => 'Clean Sweep Analysis';
 
   @override
   String get dashboardSessionsLabel => 'Sessions';
@@ -824,7 +826,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get comingSoon => 'Coming soon';
 
   @override
-  String get captureItemToStart => 'Capture an item to start decluttering';
+  String get captureItemToStart =>
+      'Capture an item and let us guide you through the decision';
 
   @override
   String get takePicture => 'Take the picture';
@@ -839,7 +842,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get finishDeclutter => 'Finish declutter';
 
   @override
-  String get deepCleaningTitle => 'Deep Cleaning';
+  String get deepCleaningTitle => 'Clean Sweep';
 
   @override
   String get continueButton => 'Continue';
@@ -873,7 +876,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get deepCleaningSessionCompleted => 'Deep Cleaning session completed';
+  String get deepCleaningSessionCompleted => 'Clean Sweep session completed';
 
   @override
   String get memoriesTitle => 'Memories';
@@ -1097,7 +1100,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderActiveSessionBody =>
-      'Your deep cleaning session is still running. Come back to finish and log your progress.';
+      'Your clean sweep session is still running. Come back to finish and log your progress.';
 
   @override
   String get memoryNoDescription => 'No additional notes for this memory.';
@@ -1107,7 +1110,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumRequiredMessage =>
-      'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.';
+      'Your trial has ended. Upgrade to KeepJoy Premium to continue clean sweep sessions, unlock full reports, and keep reminders active.';
+
+  @override
+  String get premiumExpiredMessage =>
+      'Your subscription has expired or needs to be restored. Please renew or restore your purchases to continue using premium features.';
 
   @override
   String get premiumLockedOverlay => 'Upgrade to view full insights';
@@ -1159,6 +1166,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restorePurchases => 'Restore Purchases';
 
   @override
+  String get subscribeNow => 'Subscribe Now';
+
+  @override
   String get mostPopular => 'Most Popular';
 
   @override
@@ -1180,16 +1190,85 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeTrial => 'Free Trial';
 
   @override
-  String get featureAnnualReports => 'Annual Reports';
+  String get trialActive => 'Trial Active';
 
   @override
-  String get featureMonthlyReports => 'Monthly Reports';
+  String get premiumActive => 'Premium Active';
 
   @override
-  String get featureDeepReports => 'Deep Cleaning Reports';
+  String renewsOn(String date) {
+    return 'Renews on $date';
+  }
 
   @override
-  String get featureMemoriesPage => 'Unlimited Memories';
+  String get featureMemoriesPage => 'Memories Page';
+
+  @override
+  String get featureMemoriesPageDesc =>
+      'Create and cherish memories of items you let go';
+
+  @override
+  String get featureMemoryLane => 'Annual Memory';
+
+  @override
+  String get featureMemoryLaneDesc =>
+      'Visualize your decluttering journey over time';
+
+  @override
+  String get featureResellTrends => 'Resell Trends';
+
+  @override
+  String get featureResellTrendsDesc =>
+      'Track potential value of items for resale';
+
+  @override
+  String get featureYearlyChronicle => 'Yearly Chronicle';
+
+  @override
+  String get featureYearlyChronicleDesc =>
+      'Detailed insights on your cleaning sessions';
+
+  @override
+  String trialDays(String days) {
+    return '$days-Day Free Trial';
+  }
+
+  @override
+  String startFreeTrial(String days) {
+    return 'Start $days-Day Free Trial';
+  }
+
+  @override
+  String get billedYearlyAfterTrial => 'Billed yearly after free trial';
+
+  @override
+  String get billedMonthlyAfterTrial => 'Billed monthly after free trial';
+
+  @override
+  String get unlockPremium => 'Unlock Premium Features';
+
+  @override
+  String get premiumFeatures => 'Premium Features';
+
+  @override
+  String savePercent(String percent) {
+    return 'Save $percent%';
+  }
+
+  @override
+  String get perMonth => '/mo';
+
+  @override
+  String get perYear => '/yr';
+
+  @override
+  String get monthlyPlan => 'Monthly';
+
+  @override
+  String get annualPlan => 'Annual';
+
+  @override
+  String get changePlansAnytime => 'Change plans or cancel anytime';
 
   @override
   String get featureExportData => 'Export Data';
@@ -1410,6 +1489,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatDidThisItemBring => 'What did this item bring you?';
 
   @override
+  String get haveYouLetGoOfThisItem => 'Have you let go of this item?';
+
+  @override
+  String get selectStatus => 'Select item status';
+
+  @override
   String get chooseFromGallery => 'Choose from Gallery';
 
   @override
@@ -1600,7 +1685,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todaysTip1 =>
-      'Deep Cleaning Mode: Tap \'Deep Cleaning\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!';
+      'Clean Sweep Mode: Tap \'Clean Sweep\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!';
 
   @override
   String get todaysTip2 =>
@@ -1723,7 +1808,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickTip => 'Quick Tip';
 
   @override
-  String get whatBroughtYouJoy => 'What brought you joy today?';
+  String get whatBroughtYouJoy =>
+      'Which items sparked joy and are worth remembering?';
 
   @override
   String get shareYourJoy => 'Share Your Joy';
@@ -1735,7 +1821,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get declutterRhythmOverview => 'Declutter Rhythm & Achievements';
 
   @override
-  String get deepCleaning => 'Deep Cleaning';
+  String get deepCleaning => 'Clean Sweep';
 
   @override
   String get cleaningAreas => 'Cleaning Areas';
@@ -1770,7 +1856,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get markAsComplete => 'Mark as Complete';
 
   @override
-  String get startDeepCleaning => 'Start Deep Cleaning';
+  String get startDeepCleaning => 'Start Clean Sweep';
 
   @override
   String get schedule => 'Schedule';

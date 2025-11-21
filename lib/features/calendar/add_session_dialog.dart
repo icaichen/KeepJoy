@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
@@ -70,7 +71,7 @@ class _AddSessionDialogState extends State<AddSessionDialog> {
       if (userId == null) return;
 
       final session = PlannedSession(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: const Uuid().v4(),
         userId: userId,
         title: '${_areaController.text} declutter',
         area: _areaController.text,
@@ -87,13 +88,15 @@ class _AddSessionDialogState extends State<AddSessionDialog> {
   String? _currentUserIdOrWarn() {
     final userId = _authService.currentUserId;
     if (userId == null) {
-      final isChinese =
-          Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
-      final message =
-          isChinese ? '请先登录以保存数据' : 'Please sign in to save your data.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      final isChinese = Localizations.localeOf(
+        context,
+      ).languageCode.toLowerCase().startsWith('zh');
+      final message = isChinese
+          ? '请先登录以保存数据'
+          : 'Please sign in to save your data.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
     return userId;
   }
@@ -116,8 +119,8 @@ class _AddSessionDialogState extends State<AddSessionDialog> {
                 Text(
                   l10n.planNewSession,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
@@ -147,9 +150,7 @@ class _AddSessionDialogState extends State<AddSessionDialog> {
                       border: const OutlineInputBorder(),
                       suffixIcon: const Icon(Icons.calendar_today),
                     ),
-                    child: Text(
-                      DateFormat.yMMMd().format(_selectedDate),
-                    ),
+                    child: Text(DateFormat.yMMMd().format(_selectedDate)),
                   ),
                 ),
                 const SizedBox(height: 16),

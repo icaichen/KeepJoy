@@ -19,312 +19,562 @@ class _PaywallPageState extends State<PaywallPage> {
   bool _isProcessing = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Auto-select annual package if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final subscriptionProvider = Provider.of<SubscriptionProvider>(
+        context,
+        listen: false,
+      );
+      final offerings = subscriptionProvider.currentOffering;
+      if (offerings?.current != null) {
+        final packages = offerings!.current!.availablePackages;
+        if (packages.isNotEmpty) {
+          // Select annual package by default
+          final annualPackage = packages.firstWhere(
+            (p) =>
+                p.storeProduct.identifier.contains('yearly') ||
+                p.storeProduct.identifier.contains('annual'),
+            orElse: () => packages.first,
+          );
+          setState(() {
+            _selectedPackage = annualPackage;
+          });
+        }
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
     final offerings = subscriptionProvider.currentOffering;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        title: Text(l10n.premiumMembership),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: const Color(0xFF111827),
-      ),
+      backgroundColor: Colors.white,
       body: offerings == null
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
+          : SafeArea(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
-                  Text(
-                    l10n.upgradeToPremium,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.premiumMembershipDescription,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Premium Features List
-                  _buildFeaturesList(l10n),
-
-                  const SizedBox(height: 32),
-
-                  // Subscription Options
-                  if (offerings.current != null)
-                    ..._buildSubscriptionOptions(
-                      offerings.current!,
-                      l10n,
-                    ),
-
-                  const SizedBox(height: 24),
-
-                  // Restore Purchases Button
-                  Center(
-                    child: TextButton(
-                      onPressed: _isProcessing ? null : _restorePurchases,
-                      child: Text(
-                        l10n.restorePurchases,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                  // Close button
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      icon: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          shape: BoxShape.circle,
                         ),
+                        child: const Icon(
+                          Icons.close,
+                          size: 20,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+
+                          // Title
+                          Text(
+                            l10n.upgradeToPremium,
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Subtitle
+                          Text(
+                            l10n.premiumMembershipDescription,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              color: Color(0xFF6B7280),
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Premium Features List
+                          _buildFeaturesList(l10n),
+
+                          const SizedBox(height: 32),
+
+                          // Select plan text
+                          Center(
+                            child: Text(
+                              l10n.selectPlan,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF111827),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Subscription Options (side by side)
+                          if (offerings.current != null)
+                            _buildSubscriptionCards(offerings.current!, l10n),
+
+                          const SizedBox(height: 24),
+
+                          // Legal text
+                          _buildLegalText(l10n),
+
+                          const SizedBox(height: 24),
+                        ],
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 16),
-
-                  // Terms and Privacy
-                  _buildLegalText(l10n),
+                  // Bottom button section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+                    child: Column(
+                      children: [
+                        // Subscribe Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 64,
+                          child: ElevatedButton(
+                            onPressed: _isProcessing || _selectedPackage == null
+                                ? null
+                                : _handlePurchase,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                              elevation: 0,
+                              disabledBackgroundColor: const Color(0xFFE5E7EB),
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF8B5CF6),
+                                    Color(0xFF6FEDD6),
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: _isProcessing
+                                    ? const SizedBox(
+                                        height: 28,
+                                        width: 28,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                    : Text(
+                                        _getButtonText(l10n),
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        // Restore Purchases Button
+                        TextButton(
+                          onPressed: _isProcessing ? null : _restorePurchases,
+                          child: Text(
+                            l10n.restorePurchases,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
     );
   }
 
+  String _getButtonText(AppLocalizations l10n) {
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
+
+    if (_selectedPackage == null) {
+      return isChinese ? '开始7天免费试用' : 'Start 7-Day Trial';
+    }
+
+    final product = _selectedPackage!.storeProduct;
+    // Check for trial period
+    if (product.introductoryPrice != null) {
+      final intro = product.introductoryPrice!;
+      if (intro.periodNumberOfUnits > 0) {
+        return isChinese
+            ? '开始${intro.periodNumberOfUnits}天免费试用'
+            : 'Start ${intro.periodNumberOfUnits}-Day Trial';
+      }
+    }
+
+    // Default to 7-day trial text even if no trial data
+    return isChinese ? '开始7天免费试用' : 'Start 7-Day Trial';
+  }
+
   Widget _buildFeaturesList(AppLocalizations l10n) {
+    final features = [
+      (
+        l10n.featureMemoriesPage,
+        l10n.featureMemoriesPageDesc,
+        Icons.star_rounded,
+      ),
+      (
+        l10n.dashboardMemoryLaneTitle,
+        l10n.featureMemoryLaneDesc,
+        Icons.star_rounded,
+      ),
+      (
+        l10n.dashboardResellReportTitle,
+        l10n.featureResellTrendsDesc,
+        Icons.star_rounded,
+      ),
+      (
+        l10n.dashboardYearlyReportsTitle,
+        l10n.featureYearlyChronicleDesc,
+        Icons.star_rounded,
+      ),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildFeatureItem(l10n.featureAnnualReports, Icons.bar_chart_rounded),
-        _buildFeatureItem(l10n.featureMonthlyReports, Icons.calendar_month_rounded),
-        _buildFeatureItem(l10n.featureDeepReports, Icons.insights_rounded),
-        _buildFeatureItem(l10n.featureMemoriesPage, Icons.photo_library_rounded),
-        _buildFeatureItem(l10n.featureExportData, Icons.download_rounded),
-        _buildFeatureItem(l10n.featureAdvancedInsights, Icons.analytics_rounded),
-        _buildFeatureItem(l10n.featureCustomReminders, Icons.notifications_active_rounded),
-        _buildFeatureItem(l10n.featureSessionResume, Icons.play_arrow_rounded),
-      ],
-    );
-  }
-
-  Widget _buildFeatureItem(String text, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF0EA5E9), size: 24),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF374151),
+      children: features.map((feature) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEF3C7),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  feature.$3,
+                  color: const Color(0xFFF59E0B),
+                  size: 18,
+                ),
               ),
-            ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      feature.$1,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF111827),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      feature.$2,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 
-  List<Widget> _buildSubscriptionOptions(
-    Offering offering,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildSubscriptionCards(Offering offering, AppLocalizations l10n) {
     final packages = offering.availablePackages;
 
     if (packages.isEmpty) {
-      return [
-        Center(
-          child: Text(
-            l10n.noOfferingsAvailable,
-            style: const TextStyle(color: Color(0xFF6B7280)),
-          ),
+      return Center(
+        child: Text(
+          l10n.noOfferingsAvailable,
+          style: const TextStyle(color: Color(0xFF6B7280)),
         ),
-      ];
+      );
     }
 
     // Sort packages: annual first, then monthly
     final sortedPackages = List<Package>.from(packages);
     sortedPackages.sort((a, b) {
-      final aIsAnnual = a.storeProduct.identifier.contains('yearly') ||
+      final aIsAnnual =
+          a.storeProduct.identifier.contains('yearly') ||
           a.storeProduct.identifier.contains('annual');
-      final bIsAnnual = b.storeProduct.identifier.contains('yearly') ||
+      final bIsAnnual =
+          b.storeProduct.identifier.contains('yearly') ||
           b.storeProduct.identifier.contains('annual');
-      
+
       if (aIsAnnual && !bIsAnnual) return -1;
       if (!aIsAnnual && bIsAnnual) return 1;
       return 0;
     });
 
-    return sortedPackages.map((package) {
-      final product = package.storeProduct;
-      final isAnnual = product.identifier.contains('yearly') ||
-          product.identifier.contains('annual');
-      final isSelected = _selectedPackage?.identifier == package.identifier;
+    // Calculate savings if both annual and monthly exist
+    double? savingsPercent;
+    if (sortedPackages.length >= 2) {
+      final annualPackage = sortedPackages[0];
+      final monthlyPackage = sortedPackages[1];
 
-      // Get trial info
-      String? trialText;
-      if (product.introductoryPrice != null) {
-        final intro = product.introductoryPrice!;
-        if (intro.periodNumberOfUnits > 0) {
-          trialText = '${intro.periodNumberOfUnits} ${_getPeriodUnit(intro.periodUnit)} ${l10n.freeTrial}';
-        }
+      // Extract prices (this is simplified, actual implementation may vary)
+      final annualPrice = annualPackage.storeProduct.price;
+      final monthlyPrice = monthlyPackage.storeProduct.price;
+
+      if (monthlyPrice > 0) {
+        final annualMonthlyEquivalent = monthlyPrice * 12;
+        savingsPercent =
+            ((annualMonthlyEquivalent - annualPrice) /
+            annualMonthlyEquivalent *
+            100);
       }
+    }
 
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedPackage = package;
-          });
-        },
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF0EA5E9)
-                  : const Color(0xFFE5E7EB),
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: isSelected
-                ? [
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: sortedPackages.take(2).map((package) {
+          final product = package.storeProduct;
+          final isAnnual =
+              product.identifier.contains('yearly') ||
+              product.identifier.contains('annual');
+          final isSelected = _selectedPackage?.identifier == package.identifier;
+          final isFirst = sortedPackages.indexOf(package) == 0;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedPackage = package;
+                });
+              },
+              child: Container(
+                margin: EdgeInsets.only(
+                  left: isFirst ? 0 : 6,
+                  right: isFirst ? 6 : 0,
+                ),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF8B5CF6)
+                        : const Color(0xFFE5E7EB),
+                    width: 2,
+                  ),
+                  boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF0EA5E9).withValues(alpha: 0.2),
+                      color: Colors.black.withOpacity(0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            children: [
-              // Radio button
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF0EA5E9)
-                        : const Color(0xFFD1D5DB),
-                    width: 2,
-                  ),
+                  ],
                 ),
-                child: isSelected
-                    ? Center(
+                child: Stack(
+                  children: [
+                    // Checkmark for selected
+                    if (isSelected)
+                      Positioned(
+                        top: 0,
+                        right: 0,
                         child: Container(
-                          width: 12,
-                          height: 12,
+                          width: 28,
+                          height: 28,
                           decoration: const BoxDecoration(
-                            color: Color(0xFF0EA5E9),
+                            color: Color(0xFF10B981),
                             shape: BoxShape.circle,
                           ),
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
-
-              // Package info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          product.title.split('(').first.trim(),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF111827),
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 18,
                           ),
-                        ),
-                        if (isAnnual) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              l10n.recommended,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    if (trialText != null)
-                      Text(
-                        trialText,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF10B981),
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
+                    Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Savings badge - always takes space
+                        Container(
+                          height: 24,
+                          alignment: Alignment.centerLeft,
+                          child: (isAnnual && savingsPercent != null)
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    l10n.savePercent(
+                                      savingsPercent.round().toString(),
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Plan name
+                        Text(
+                          isAnnual
+                              ? l10n.annualPlan.toUpperCase()
+                              : l10n.monthlyPlan.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF111827),
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Price
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: product.priceString.split('.')[0],
+                                style: const TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF111827),
+                                  height: 1,
+                                ),
+                              ),
+                              if (product.priceString.contains('.'))
+                                TextSpan(
+                                  text: '.${product.priceString.split('.')[1]}',
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF111827),
+                                  ),
+                                ),
+                              TextSpan(
+                                text: isAnnual
+                                    ? l10n.perYear.toUpperCase()
+                                    : l10n.perMonth.toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Original price - always takes space
+                        Container(
+                          height: 20,
+                          margin: const EdgeInsets.only(top: 4),
+                          alignment: Alignment.centerLeft,
+                          child:
+                              (isAnnual &&
+                                  savingsPercent != null &&
+                                  sortedPackages.length >= 2)
+                              ? Text(
+                                  '\$${(sortedPackages[1].storeProduct.price * 12).toStringAsFixed(2)}${l10n.perYear.toUpperCase()}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF9CA3AF),
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+
+                        const Spacer(),
+
+                        // Billing info
+                        Text(
+                          isAnnual
+                              ? l10n.billedYearlyAfterTrial
+                              : l10n.billedMonthlyAfterTrial,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF6B7280),
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-
-              // Price
-              Text(
-                product.priceString,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }).toList();
-  }
-
-  String _getPeriodUnit(PeriodUnit unit) {
-    switch (unit) {
-      case PeriodUnit.day:
-        return 'day';
-      case PeriodUnit.week:
-        return 'week';
-      case PeriodUnit.month:
-        return 'month';
-      case PeriodUnit.year:
-        return 'year';
-      default:
-        return '';
-    }
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 
   Widget _buildLegalText(AppLocalizations l10n) {
     return Text(
-      l10n.subscriptionTerms,
+      l10n.changePlansAnytime,
       style: const TextStyle(
-        fontSize: 12,
+        fontSize: 13,
         color: Color(0xFF9CA3AF),
+        height: 1.4,
       ),
       textAlign: TextAlign.center,
     );
@@ -338,27 +588,165 @@ class _PaywallPageState extends State<PaywallPage> {
     });
 
     try {
-      await SubscriptionService.purchasePackage(_selectedPackage!);
-      
+      final customerInfo = await SubscriptionService.purchasePackage(
+        _selectedPackage!,
+      );
+
+      print('🎉 Purchase completed!');
+      print('📱 Customer Info after purchase:');
+      print(
+        '   - All Entitlements: ${customerInfo.entitlements.all.keys.toList()}',
+      );
+      print(
+        '   - Active Entitlements: ${customerInfo.entitlements.active.keys.toList()}',
+      );
+
       if (mounted) {
         // Refresh subscription status
-        await Provider.of<SubscriptionProvider>(context, listen: false)
-            .refreshSubscriptionStatus();
-        
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.subscriptionSuccess),
-            backgroundColor: const Color(0xFF10B981),
-          ),
-        );
-        
+        await Provider.of<SubscriptionProvider>(
+          context,
+          listen: false,
+        ).refreshSubscriptionStatus();
+
+        // Double-check premium status
+        final isPremium = await SubscriptionService.isPremium();
+        print('✅ Premium status after purchase: $isPremium');
+
+        // Get trial period info
+        final product = _selectedPackage!.storeProduct;
+        final hasTrialPeriod =
+            product.introductoryPrice != null &&
+            product.introductoryPrice!.periodNumberOfUnits > 0;
+
+        if (hasTrialPeriod) {
+          final trialDays = product.introductoryPrice!.periodNumberOfUnits;
+          final isChinese = Localizations.localeOf(
+            context,
+          ).languageCode.toLowerCase().startsWith('zh');
+
+          // Show trial notification dialog
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF5ECFB8), Color(0xFFB794F6)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.celebration_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      isChinese ? '试用已开始！' : 'Trial Started!',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isChinese
+                        ? '您的 $trialDays 天免费试用已激活！'
+                        : 'Your $trialDays-day free trial is now active!',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF111827),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          color: Color(0xFFF59E0B),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            isChinese
+                                ? '试用期结束后，将自动从您的账户扣款。您可以随时取消订阅。'
+                                : 'After the trial period, you will be charged. You can cancel anytime.',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF92400E),
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: Text(
+                    isChinese ? '知道了' : 'Got it',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF5ECFB8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Show regular success message for non-trial purchases
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.subscriptionSuccess),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+          );
+        }
+
+        // Wait a moment for state to propagate
+        await Future.delayed(const Duration(milliseconds: 500));
+
         // Close paywall
         Navigator.of(context).pop();
       }
     } on PlatformException catch (e) {
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
-      
+
       if (mounted && errorCode != PurchasesErrorCode.purchaseCancelledError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -391,27 +779,39 @@ class _PaywallPageState extends State<PaywallPage> {
     });
 
     try {
-      await SubscriptionService.restorePurchases();
-      
+      final customerInfo = await SubscriptionService.restorePurchases();
+      print(
+        '🔄 Restore result - Active entitlements: ${customerInfo.entitlements.active}',
+      );
+
       if (mounted) {
         // Refresh subscription status
-        await Provider.of<SubscriptionProvider>(context, listen: false)
-            .refreshSubscriptionStatus();
-        
+        await Provider.of<SubscriptionProvider>(
+          context,
+          listen: false,
+        ).refreshSubscriptionStatus();
+
+        // Check premium status after refresh
+        final provider = Provider.of<SubscriptionProvider>(
+          context,
+          listen: false,
+        );
+        print('✅ Premium status after restore: ${provider.isPremium}');
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.purchasesRestored),
             backgroundColor: const Color(0xFF10B981),
           ),
         );
-        
+
         // Close paywall if premium now
-        final provider = Provider.of<SubscriptionProvider>(context, listen: false);
         if (provider.isPremium) {
           Navigator.of(context).pop();
         }
       }
     } catch (e) {
+      print('❌ Restore error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -429,4 +829,3 @@ class _PaywallPageState extends State<PaywallPage> {
     }
   }
 }
-

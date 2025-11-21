@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
+import '../../services/sync_service.dart';
+import '../../services/subscription_service.dart';
 import '../../widgets/gradient_button.dart';
 
 class LoginPage extends StatefulWidget {
@@ -22,6 +24,21 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
   final _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Get arguments passed from WelcomePage
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['isSignUp'] != null) {
+        setState(() {
+          _isSignUp = args['isSignUp'] as bool;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -62,8 +79,13 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
 
+            // Initialize sync service and trigger cloud sync after sign up
+            await _initializeSyncAfterLogin(response!.user!.id);
+
             // Navigate to home after successful sign up
-            Navigator.pushReplacementNamed(context, '/home');
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
           } else if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -87,12 +109,19 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
 
+            // Initialize sync service and trigger cloud sync after sign in
+            await _initializeSyncAfterLogin(response!.user!.id);
+
             // Navigate to home after successful sign in
-            Navigator.pushReplacementNamed(context, '/home');
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
           } else if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Sign in failed. Please check your credentials.'),
+                content: const Text(
+                  'Sign in failed. Please check your credentials.',
+                ),
                 backgroundColor: Colors.red,
               ),
             );
@@ -107,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
           } else if (errorMessage.contains('Exception:')) {
             errorMessage = errorMessage.replaceFirst('Exception: ', '');
           }
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMessage),
@@ -234,18 +263,28 @@ class _LoginPageState extends State<LoginPage> {
                               fontFamily: 'SF Pro Text',
                               color: Color(0xFF6B7280),
                             ),
-                            prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF6B7280)),
+                            prefixIcon: const Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF6B7280),
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE5E7EA),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE5E7EA),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF414B5A),
+                                width: 2,
+                              ),
                             ),
                             filled: true,
                             fillColor: const Color(0xFFFAFAFA),
@@ -270,18 +309,28 @@ class _LoginPageState extends State<LoginPage> {
                             fontFamily: 'SF Pro Text',
                             color: Color(0xFF6B7280),
                           ),
-                          prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF6B7280)),
+                          prefixIcon: const Icon(
+                            Icons.email_outlined,
+                            color: Color(0xFF6B7280),
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF414B5A),
+                              width: 2,
+                            ),
                           ),
                           filled: true,
                           fillColor: const Color(0xFFFAFAFA),
@@ -301,7 +350,10 @@ class _LoginPageState extends State<LoginPage> {
                             fontFamily: 'SF Pro Text',
                             color: Color(0xFF6B7280),
                           ),
-                          prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF6B7280)),
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            color: Color(0xFF6B7280),
+                          ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _isPasswordVisible
@@ -317,15 +369,22 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF414B5A),
+                              width: 2,
+                            ),
                           ),
                           filled: true,
                           fillColor: const Color(0xFFFAFAFA),
@@ -345,23 +404,34 @@ class _LoginPageState extends State<LoginPage> {
                               fontFamily: 'SF Pro Text',
                               color: Color(0xFF6B7280),
                             ),
-                            prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF6B7280)),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: Color(0xFF6B7280),
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE5E7EA),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE5E7EA),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF414B5A),
+                                width: 2,
+                              ),
                             ),
                             filled: true,
                             fillColor: const Color(0xFFFAFAFA),
                           ),
-                          validator: (value) => _validateConfirmPassword(value, l10n),
+                          validator: (value) =>
+                              _validateConfirmPassword(value, l10n),
                         ),
                       ],
 
@@ -395,82 +465,6 @@ class _LoginPageState extends State<LoginPage> {
                         isLoading: _isLoading,
                         width: double.infinity,
                         child: Text(_isSignUp ? l10n.signUp : l10n.signIn),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Divider
-                      Row(
-                        children: [
-                          const Expanded(child: Divider(color: Color(0xFFE5E7EA))),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              l10n.orContinueWith,
-                              style: const TextStyle(
-                                fontFamily: 'SF Pro Text',
-                                color: Color(0xFF9CA3AF),
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                          const Expanded(child: Divider(color: Color(0xFFE5E7EA))),
-                        ],
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Social login buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                // TODO: Implement Google sign in
-                              },
-                              icon: const Icon(Icons.g_mobiledata, size: 28, color: Color(0xFF414B5A)),
-                              label: Text(
-                                l10n.google,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF414B5A),
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                side: const BorderSide(color: Color(0xFFE5E7EA)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                // TODO: Implement Apple sign in
-                              },
-                              icon: const Icon(Icons.apple, size: 24, color: Color(0xFF414B5A)),
-                              label: Text(
-                                l10n.apple,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF414B5A),
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                side: const BorderSide(color: Color(0xFFE5E7EA)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -513,7 +507,9 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Text(
             l10n.forgotPassword,
             style: const TextStyle(
@@ -548,7 +544,10 @@ class _LoginPageState extends State<LoginPage> {
                       fontFamily: 'SF Pro Text',
                       color: Color(0xFF6B7280),
                     ),
-                    prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF6B7280)),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: Color(0xFF6B7280),
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
@@ -559,7 +558,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF414B5A), width: 2),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF414B5A),
+                        width: 2,
+                      ),
                     ),
                     filled: true,
                     fillColor: const Color(0xFFFAFAFA),
@@ -592,7 +594,9 @@ class _LoginPageState extends State<LoginPage> {
                         });
 
                         try {
-                          await _authService.resetPassword(emailController.text.trim());
+                          await _authService.resetPassword(
+                            emailController.text.trim(),
+                          );
 
                           if (mounted) {
                             Navigator.pop(dialogContext);
@@ -626,7 +630,9 @@ class _LoginPageState extends State<LoginPage> {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF414B5A)),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xFF414B5A),
+                        ),
                       ),
                     )
                   : Text(
@@ -643,5 +649,30 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  /// Initialize sync service and trigger full cloud sync after login
+  Future<void> _initializeSyncAfterLogin(String userId) async {
+    try {
+      debugPrint('🔐 Login successful, initializing sync for user: $userId');
+
+      // Login to RevenueCat for subscription management
+      try {
+        await SubscriptionService.loginUser(userId);
+        debugPrint('✅ RevenueCat logged in');
+      } catch (e) {
+        debugPrint('⚠️ RevenueCat login failed: $e');
+      }
+
+      // Initialize and trigger sync service for data recovery
+      await SyncService.instance.init();
+      debugPrint('✅ SyncService initialized');
+
+      // Trigger immediate full sync to restore cloud data to local Hive
+      SyncService.instance.syncAll();
+      debugPrint('🔄 Full cloud sync triggered');
+    } catch (e) {
+      debugPrint('❌ Post-login sync initialization failed: $e');
+    }
   }
 }

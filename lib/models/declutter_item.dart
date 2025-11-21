@@ -82,8 +82,11 @@ class DeclutterItem {
     required this.category,
     DateTime? createdAt,
     this.updatedAt,
+    this.deletedAt,
+    this.deviceId,
     required this.status,
-    this.photoPath,
+    this.localPhotoPath,
+    this.remotePhotoPath,
     this.notes,
     this.joyLevel,
     this.joyNotes,
@@ -98,8 +101,11 @@ class DeclutterItem {
   final DeclutterCategory category;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final DateTime? deletedAt; // Soft delete timestamp
+  final String? deviceId; // Device that made the last change
   final DeclutterStatus status;
-  final String? photoPath;
+  final String? localPhotoPath;
+  final String? remotePhotoPath;
   final String? notes;
   final int? joyLevel; // Joy Index: 1-10 (怦然心动指数)
   final String? joyNotes; // Why it sparks joy (为什么带来快乐)
@@ -116,8 +122,10 @@ class DeclutterItem {
       'category': category.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
+      'device_id': deviceId,
       'status': status.name,
-      'photo_path': photoPath,
+      'photo_path': remotePhotoPath, // Supabase stores remote URL only
       'notes': notes,
       'joy_level': joyLevel,
       'joy_notes': joyNotes,
@@ -128,6 +136,18 @@ class DeclutterItem {
 
   // Create from JSON from Supabase
   factory DeclutterItem.fromJson(Map<String, dynamic> json) {
+    // Backward compatibility: migrate old photo_path to remote
+    String? localPath;
+    String? remotePath;
+    final photoPath = json['photo_path'] as String?;
+    if (photoPath != null && photoPath.isNotEmpty) {
+      if (photoPath.startsWith('http')) {
+        remotePath = photoPath;
+      } else {
+        localPath = photoPath;
+      }
+    }
+
     return DeclutterItem(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -141,10 +161,15 @@ class DeclutterItem {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'] as String)
+          : null,
+      deviceId: json['device_id'] as String?,
       status: DeclutterStatus.values.firstWhere(
         (e) => e.name == json['status'],
       ),
-      photoPath: json['photo_path'] as String?,
+      localPhotoPath: localPath,
+      remotePhotoPath: remotePath,
       notes: json['notes'] as String?,
       joyLevel: json['joy_level'] as int?,
       joyNotes: json['joy_notes'] as String?,
@@ -167,8 +192,11 @@ class DeclutterItem {
     DeclutterCategory? category,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
+    String? deviceId,
     DeclutterStatus? status,
-    String? photoPath,
+    String? localPhotoPath,
+    String? remotePhotoPath,
     String? notes,
     int? joyLevel,
     String? joyNotes,
@@ -183,8 +211,11 @@ class DeclutterItem {
       category: category ?? this.category,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      deviceId: deviceId ?? this.deviceId,
       status: status ?? this.status,
-      photoPath: photoPath ?? this.photoPath,
+      localPhotoPath: localPhotoPath ?? this.localPhotoPath,
+      remotePhotoPath: remotePhotoPath ?? this.remotePhotoPath,
       notes: notes ?? this.notes,
       joyLevel: joyLevel ?? this.joyLevel,
       joyNotes: joyNotes ?? this.joyNotes,

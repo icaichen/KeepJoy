@@ -1,8 +1,4 @@
-enum ActivityType {
-  deepCleaning,
-  joyDeclutter,
-  quickDeclutter,
-}
+enum ActivityType { deepCleaning, joyDeclutter, quickDeclutter }
 
 class ActivityEntry {
   const ActivityEntry({

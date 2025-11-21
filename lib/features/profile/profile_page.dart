@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
@@ -54,6 +55,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return 'U';
   }
 
+  String? get _avatarPath {
+    final metadata = _authService.currentUser?.userMetadata;
+    if (metadata != null && metadata['avatar_url'] != null) {
+      return metadata['avatar_url'] as String;
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -85,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     } else {
-      await ReminderService.disableGeneralReminders();
+      await ReminderService.disableGeneralReminders(context);
       if (mounted) {
         setState(() {
           _notificationsEnabled = false;
@@ -144,16 +153,24 @@ class _ProfilePageState extends State<ProfilePage> {
                       backgroundColor: const Color(
                         0xFFB794F6,
                       ).withValues(alpha: 0.15),
-                      child: Text(
-                        _userInitial,
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Display',
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFB794F6),
-                          letterSpacing: 0,
-                        ),
-                      ),
+                      backgroundImage:
+                          _avatarPath != null && File(_avatarPath!).existsSync()
+                          ? FileImage(File(_avatarPath!))
+                          : null,
+                      child:
+                          _avatarPath == null ||
+                              !File(_avatarPath!).existsSync()
+                          ? Text(
+                              _userInitial,
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Display',
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFB794F6),
+                                letterSpacing: 0,
+                              ),
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 16),
                     // User Info
@@ -272,9 +289,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: const Center(child: CircularProgressIndicator()),
                   );
                 }
 
@@ -362,43 +377,6 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 32),
 
             // Data Management Section
-            _buildSectionTitle(context, l10n.data),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _SettingsTile(
-                    icon: Icons.download_outlined,
-                    title: l10n.exportData,
-                    onTap: () {
-                      _exportData(context);
-                    },
-                  ),
-                  const Divider(height: 1, indent: 56),
-                  _SettingsTile(
-                    icon: Icons.delete_outline,
-                    title: l10n.clearAllData,
-                    textColor: Colors.red,
-                    onTap: () {
-                      _showClearDataDialog(context);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
             // Logout Section
             Container(
               decoration: BoxDecoration(
@@ -457,7 +435,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
 
   void _showLanguageDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -545,187 +522,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _showClearDataDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(
-              Icons.warning_amber_rounded,
-              color: Colors.red,
-              size: 28,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                l10n.clearAllData,
-                style: const TextStyle(
-                  fontFamily: 'SF Pro Display',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isChinese
-                  ? '确定要清除所有数据吗？此操作无法撤销。'
-                  : 'Are you sure you want to clear all data? This cannot be undone.',
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF111827),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isChinese ? '将删除以下数据：' : 'This will delete:',
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Text',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.red,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    isChinese
-                        ? '• 所有物品记录\n• 所有整理记录\n• 所有回忆\n• 所有二手物品追踪\n• 所有照片和数据'
-                        : '• All items\n• All sessions\n• All memories\n• All resell items\n• All photos and data',
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Text',
-                      fontSize: 13,
-                      color: Color(0xFF991B1B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              l10n.cancel,
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF6B7280),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-
-              // Show loading dialog
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        isChinese ? '正在清除数据...' : 'Clearing data...',
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          fontSize: 15,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-
-              try {
-                final repository = DataRepository();
-
-                // Clear all data from repository
-                await repository.clearAllData();
-
-                // Close loading dialog
-                if (mounted) {
-                  Navigator.pop(context);
-                }
-
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        isChinese ? '所有数据已清除' : 'All data has been cleared',
-                      ),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                // Close loading dialog
-                if (mounted) {
-                  Navigator.pop(context);
-                }
-
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        isChinese ? '清除失败: $e' : 'Clear failed: $e',
-                      ),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            child: Text(
-              isChinese ? '清除' : 'Clear',
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.red,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showLogoutDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isChinese = Localizations.localeOf(
@@ -785,14 +581,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Perform logout
                 await _authService.signOut();
 
-                // Navigate to welcome screen
-                if (mounted) {
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/welcome', (route) => false);
+                // CRITICAL: Navigate to welcome page and clear all previous routes
+                // This ensures the user cannot go back to authenticated screens
+                if (mounted && context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/welcome',
+                    (route) => false, // Remove all previous routes
+                  );
                 }
               } catch (e) {
-                if (mounted) {
+                if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -921,7 +719,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'nameLocalizations': item.nameLocalizations,
                   'category': item.category.name,
                   'createdAt': item.createdAt.toIso8601String(),
-                  'photoPath': item.photoPath,
+                  'photoPath': item.localPhotoPath ?? item.remotePhotoPath,
                   'status': item.status.name,
                   'notes': item.notes,
                   'joyLevel': item.joyLevel,
@@ -936,8 +734,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   'startTime': session.startTime.toIso8601String(),
                   'elapsedSeconds': session.elapsedSeconds,
                   'itemsCount': session.itemsCount,
-                  'beforePhotoPath': session.beforePhotoPath,
-                  'afterPhotoPath': session.afterPhotoPath,
+                  'beforePhotoPath': session.localBeforePhotoPath ?? session.remoteBeforePhotoPath,
+                  'afterPhotoPath': session.localAfterPhotoPath ?? session.remoteAfterPhotoPath,
                   'focusIndex': session.focusIndex,
                   'moodIndex': session.moodIndex,
                 },
@@ -952,7 +750,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'description': memory.description,
                   'sentiment': memory.sentiment?.name,
                   'createdAt': memory.createdAt.toIso8601String(),
-                  'photoPath': memory.photoPath,
+                  'photoPath': memory.localPhotoPath ?? memory.remotePhotoPath,
                   'type': memory.type.name,
                 },
               )
@@ -1109,28 +907,31 @@ class _ProfilePageState extends State<ProfilePage> {
     DateTime? expirationDate,
   ) {
     final dateFormat = DateFormat('MMM dd, yyyy');
-    String statusText = isInTrial ? 'Trial Active' : 'Premium Active';
+    String statusText = isInTrial ? l10n.trialActive : l10n.premiumActive;
     String expiryText = expirationDate != null
-        ? 'Renews on ${dateFormat.format(expirationDate)}'
+        ? l10n.renewsOn(dateFormat.format(expirationDate))
         : '';
 
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const PaywallPage()),
+          CupertinoPageRoute(
+            builder: (_) => const PaywallPage(),
+            fullscreenDialog: true,
+          ),
         );
       },
       child: Container(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF0EA5E9), Color(0xFF06B6D4)],
+            colors: [Color(0xFF5ECFB8), Color(0xFFB794F6)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0EA5E9).withValues(alpha: 0.3),
+              color: const Color(0xFF5ECFB8).withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -1140,8 +941,6 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.all(20),
           child: Row(
             children: [
-              const Icon(Icons.check_circle, color: Colors.white, size: 32),
-              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1169,7 +968,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white,
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -1181,7 +984,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const PaywallPage()),
+          CupertinoPageRoute(
+            builder: (_) => const PaywallPage(),
+            fullscreenDialog: true,
+          ),
         );
       },
       child: Container(
@@ -1239,7 +1045,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Color(0xFF9CA3AF), size: 16),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xFF9CA3AF),
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -1354,5 +1164,4 @@ class _LanguageOption extends StatelessWidget {
       ),
     );
   }
-
 }

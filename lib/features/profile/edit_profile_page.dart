@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
@@ -59,6 +61,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final profileDir = Directory('${appDir.path}/profile');
+      if (!await profileDir.exists()) {
+        await profileDir.create(recursive: true);
+      }
+
+      final fileName =
+          'avatar_${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(profileDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
@@ -69,9 +93,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
 
     if (pickedFile != null) {
-      setState(() {
-        _avatarPath = pickedFile.path;
-      });
+      // Save to permanent storage
+      final permanentPath = await _saveImagePermanently(pickedFile.path);
+      if (permanentPath != null) {
+        setState(() {
+          _avatarPath = permanentPath;
+        });
+      }
     }
   }
 
@@ -157,7 +185,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 fontFamily: 'SF Pro Text',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: _isLoading ? const Color(0xFF9CA3AF) : const Color(0xFFB794F6),
+                color: _isLoading
+                    ? const Color(0xFF9CA3AF)
+                    : const Color(0xFFB794F6),
               ),
             ),
           ),
@@ -175,11 +205,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   children: [
                     CircleAvatar(
                       radius: 60,
-                      backgroundColor: const Color(0xFFB794F6).withValues(alpha: 0.15),
-                      backgroundImage: _avatarPath != null && File(_avatarPath!).existsSync()
+                      backgroundColor: const Color(
+                        0xFFB794F6,
+                      ).withValues(alpha: 0.15),
+                      backgroundImage:
+                          _avatarPath != null && File(_avatarPath!).existsSync()
                           ? FileImage(File(_avatarPath!))
                           : null,
-                      child: _avatarPath == null || !File(_avatarPath!).existsSync()
+                      child:
+                          _avatarPath == null ||
+                              !File(_avatarPath!).existsSync()
                           ? Text(
                               _nameController.text.isNotEmpty
                                   ? _nameController.text[0].toUpperCase()
@@ -257,15 +292,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFB794F6), width: 2),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFB794F6),
+                              width: 2,
+                            ),
                           ),
                           filled: true,
                           fillColor: const Color(0xFFFAFAFA),
@@ -321,15 +363,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           disabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EA)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EA),
+                            ),
                           ),
                           filled: true,
                           fillColor: const Color(0xFFF3F4F6),

@@ -20,4 +20,3 @@ class NotificationService {
 
   Future<void> cancelActiveSessionReminder() async {}
 }
-

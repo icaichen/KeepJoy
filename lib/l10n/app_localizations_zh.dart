@@ -27,13 +27,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chooseFlowSubtitle => '根据当前状态选择最合适的整理体验。';
 
   @override
-  String get joyDeclutterFlowDescription => '只保留让你心动的物品';
+  String get joyDeclutterFlowDescription => '帮助你做出艰难的决定';
 
   @override
-  String get quickDeclutterFlowDescription => '几分钟完成一次快速清理';
+  String get quickDeclutterFlowDescription => '只保留带来快乐的物品';
 
   @override
-  String get deepCleaningFlowDescription => '规划、聚焦、完成深度整理';
+  String get deepCleaningFlowDescription => '规划、聚焦、完成大扫除';
 
   @override
   String get deepCleaningComparisonsTitle => '前后对比报告';
@@ -134,28 +134,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardMonthlyProgress => '本月进度';
 
   @override
+  String get dashboardYearlyProgress => '年度进度';
+
+  @override
   String get dashboardDeclutteredLabel => '已整理物品';
 
   @override
   String get dashboardResellLabel => '转售收益';
 
   @override
-  String get dashboardResellReportTitle => '二手趋势';
+  String get dashboardResellReportTitle => '二手洞察';
 
   @override
-  String get dashboardResellReportSubtitle => '查看完整报告';
+  String get dashboardResellReportSubtitle => '了解二手表现';
 
   @override
-  String get dashboardMemoryLaneTitle => '心动记忆';
+  String get dashboardMemoryLaneTitle => '年度记忆';
 
   @override
-  String get dashboardMemoryLaneSubtitle => '重温你的整理旅程';
+  String get dashboardMemoryLaneSubtitle => '重温这一年的闪光时刻';
 
   @override
-  String get dashboardYearlyReportsTitle => '心动年鉴';
+  String get dashboardYearlyReportsTitle => '年度洞察';
 
   @override
-  String get dashboardYearlyReportsSubtitle => '查看年度总结';
+  String get dashboardYearlyReportsSubtitle => '查看年度洞察';
 
   @override
   String get dashboardCurrentStreakTitle => '当前连击';
@@ -185,7 +188,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardNoSessionsForDay => '这天没有计划任务';
 
   @override
-  String get deepCleaningAnalysisTitle => '深度整理分析';
+  String get deepCleaningAnalysisTitle => '大扫除分析';
 
   @override
   String get dashboardSessionsLabel => '整理次数';
@@ -797,7 +800,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get comingSoon => '即将推出';
 
   @override
-  String get captureItemToStart => '拍摄物品开始整理';
+  String get captureItemToStart => '拍摄物品，让我们引导你做出决定';
 
   @override
   String get takePicture => '拍摄物品';
@@ -812,7 +815,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get finishDeclutter => '完成整理';
 
   @override
-  String get deepCleaningTitle => '深度清理';
+  String get deepCleaningTitle => '大扫除';
 
   @override
   String get continueButton => '继续';
@@ -846,7 +849,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get deepCleaningSessionCompleted => '深度清理进程已完成';
+  String get deepCleaningSessionCompleted => '大扫除进程已完成';
 
   @override
   String get memoriesTitle => '回忆';
@@ -1059,10 +1062,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reminderPendingTask2 => '目标还在等你，抽空续上心动整理旅程。';
 
   @override
-  String get reminderActiveSessionTitle => '深度整理仍在进行';
+  String get reminderActiveSessionTitle => '大扫除仍在进行';
 
   @override
-  String get reminderActiveSessionBody => '你的深度整理流程还没结束，回来继续并记录成果吧。';
+  String get reminderActiveSessionBody => '你的大扫除流程还没结束，回来继续并记录成果吧。';
 
   @override
   String get memoryNoDescription => '这段回忆目前还没有补充说明。';
@@ -1071,7 +1074,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumRequiredTitle => 'KeepJoy 高级版';
 
   @override
-  String get premiumRequiredMessage => '7 天试用已结束，升级即可继续使用深度整理流程、完整报表与提醒功能。';
+  String get premiumRequiredMessage => '7 天试用已结束，升级即可继续使用大扫除流程、完整报表与提醒功能。';
+
+  @override
+  String get premiumExpiredMessage => '您的订阅已过期或需要恢复。请续订或恢复购买以继续使用高级功能。';
 
   @override
   String get premiumLockedOverlay => '升级以查看完整洞察';
@@ -1119,6 +1125,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restorePurchases => '恢复购买';
 
   @override
+  String get subscribeNow => '立即订阅';
+
+  @override
   String get mostPopular => '最受欢迎';
 
   @override
@@ -1140,16 +1149,81 @@ class AppLocalizationsZh extends AppLocalizations {
   String get freeTrial => '免费试用';
 
   @override
-  String get featureAnnualReports => '年度报告';
+  String get trialActive => '试用中';
 
   @override
-  String get featureMonthlyReports => '月度报告';
+  String get premiumActive => '高级版已激活';
 
   @override
-  String get featureDeepReports => '深度清洁报告';
+  String renewsOn(String date) {
+    return '续订日期：$date';
+  }
 
   @override
-  String get featureMemoriesPage => '无限回忆';
+  String get featureMemoriesPage => '心动回忆';
+
+  @override
+  String get featureMemoriesPageDesc => '记录并珍藏你的断舍离回忆';
+
+  @override
+  String get featureMemoryLane => '年度记忆';
+
+  @override
+  String get featureMemoryLaneDesc => '可视化你的整理旅程时光线';
+
+  @override
+  String get featureResellTrends => '二手趋势';
+
+  @override
+  String get featureResellTrendsDesc => '追踪物品的潜在转售价值';
+
+  @override
+  String get featureYearlyChronicle => '心动年鉴';
+
+  @override
+  String get featureYearlyChronicleDesc => '大扫除的详细分析报告';
+
+  @override
+  String trialDays(String days) {
+    return '$days天免费试用';
+  }
+
+  @override
+  String startFreeTrial(String days) {
+    return '开始$days天免费试用';
+  }
+
+  @override
+  String get billedYearlyAfterTrial => '试用结束后按年计费';
+
+  @override
+  String get billedMonthlyAfterTrial => '试用结束后按月计费';
+
+  @override
+  String get unlockPremium => '解锁高级功能';
+
+  @override
+  String get premiumFeatures => '高级功能';
+
+  @override
+  String savePercent(String percent) {
+    return '节省$percent%';
+  }
+
+  @override
+  String get perMonth => '/月';
+
+  @override
+  String get perYear => '/年';
+
+  @override
+  String get monthlyPlan => '月度方案';
+
+  @override
+  String get annualPlan => '年度方案';
+
+  @override
+  String get changePlansAnytime => '随时更改或取消订阅';
 
   @override
   String get featureExportData => '导出数据';
@@ -1367,6 +1441,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get whatDidThisItemBring => '这件物品给你带来了什么？';
 
   @override
+  String get haveYouLetGoOfThisItem => '你是否已经放手这件物品？';
+
+  @override
+  String get selectStatus => '选择物品状态';
+
+  @override
   String get chooseFromGallery => '从相册选择';
 
   @override
@@ -1550,7 +1630,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todaysTip1 =>
-      '深度清理模式：点击「深度清理」拍摄空间的前后对比照。启动计时器，见证你的转变！应用会追踪你的进度，使用AI测量混乱度改善，让你看到自己完成了多少。非常适合整理整个房间！';
+      '大扫除模式：点击「大扫除」拍摄空间的前后对比照。启动计时器，见证你的转变！应用会追踪你的进度，使用AI测量混乱度改善，让你看到自己完成了多少。非常适合整理整个房间！';
 
   @override
   String get todaysTip2 =>
@@ -1671,7 +1751,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickTip => '快速提示';
 
   @override
-  String get whatBroughtYouJoy => '今天什么让你快乐？';
+  String get whatBroughtYouJoy => '哪些物品值得为其创建回忆？';
 
   @override
   String get shareYourJoy => '分享你的快乐';
@@ -1718,7 +1798,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get markAsComplete => '标记为完成';
 
   @override
-  String get startDeepCleaning => '开始深度清洁';
+  String get startDeepCleaning => '开始大扫除';
 
   @override
   String get schedule => '安排时间';

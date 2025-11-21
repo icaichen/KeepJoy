@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:uuid/uuid.dart';
 import 'package:keepjoy_app/features/deep_cleaning/deep_cleaning_flow.dart';
 import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
 import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
@@ -20,7 +20,6 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
-import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 
 class _ModeMeta {
@@ -66,6 +65,7 @@ class DashboardScreen extends StatefulWidget {
   final List<ResellItem> resellItems;
   final List<DeepCleaningSession> deepCleaningSessions;
   final Function(Memory) onMemoryCreated;
+  final Function(DeclutterItem) onAddItem;
   final bool hasFullAccess;
   final VoidCallback onRequestUpgrade;
 
@@ -90,6 +90,7 @@ class DashboardScreen extends StatefulWidget {
     required this.resellItems,
     required this.deepCleaningSessions,
     required this.onMemoryCreated,
+    required this.onAddItem,
     required this.hasFullAccess,
     required this.onRequestUpgrade,
   });
@@ -356,8 +357,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               }
 
                               final newSession = PlannedSession(
-                                id: DateTime.now().millisecondsSinceEpoch
-                                    .toString(),
+                                id: const Uuid().v4(),
                                 title: goalController.text.trim(),
                                 area: 'General',
                                 scheduledDate: selectedDate,
@@ -933,8 +933,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 }
 
                                 final newSession = PlannedSession(
-                                  id: DateTime.now().millisecondsSinceEpoch
-                                      .toString(),
+                                  id: const Uuid().v4(),
                                   title:
                                       selectedMode == SessionMode.deepCleaning
                                       ? '${areaController.text} ${selectedMode.displayName(l10n)}'
@@ -1087,6 +1086,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           eventLoader: getEventsForDay,
                           calendarFormat: CalendarFormat.month,
                           startingDayOfWeek: StartingDayOfWeek.monday,
+                          locale: l10n.localeName,
                           headerStyle: HeaderStyle(
                             formatButtonVisible: false,
                             titleCentered: true,
@@ -1581,11 +1581,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   IconData _getIconForMode(SessionMode mode) {
     switch (mode) {
       case SessionMode.deepCleaning:
-        return Icons.spa_rounded;
+        return Icons.cleaning_services_rounded;
       case SessionMode.joyDeclutter:
         return Icons.auto_awesome_rounded;
       case SessionMode.quickDeclutter:
         return Icons.bolt_rounded;
+    }
+  }
+
+  Color _getModeColorForSession(PlannedSession session) {
+    switch (session.mode) {
+      case SessionMode.deepCleaning:
+        return const Color(0xFF10B981); // Green
+      case SessionMode.joyDeclutter:
+        return const Color(0xFF3B82F6); // Blue
+      case SessionMode.quickDeclutter:
+        return const Color(0xFFF59E0B); // Orange
     }
   }
 
@@ -1807,6 +1818,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
     final nextMonthStart = DateTime(now.year, now.month + 1, 1);
+    final yearStart = DateTime(now.year, 1, 1);
+    final nextYearStart = DateTime(now.year + 1, 1, 1);
 
     final sessionsThisMonth = widget.deepCleaningSessions
         .where(
@@ -1815,7 +1828,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               session.startTime.isBefore(nextMonthStart),
         )
         .length;
-
     final soldItems = widget.resellItems.where(
       (item) => item.soldPrice != null,
     );
@@ -1875,7 +1887,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
-                              vertical: 20,
+                              vertical: 16,
                             ),
                             child: Column(
                               children: [
@@ -1908,20 +1920,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
 
                                 // Large streak number
                                 Text(
                                   '${widget.streak}',
                                   style: const TextStyle(
                                     fontFamily: 'SF Pro Display',
-                                    fontSize: 48,
+                                    fontSize: 40,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF111827),
                                     height: 1.0,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 2),
 
                                 // Subtitle
                                 Text(
@@ -1933,7 +1945,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     color: Color(0xFF6B7280),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
 
                                 // Dots visualization (max 7 dots)
                                 Row(
@@ -1943,10 +1955,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         widget.streak > 7 ? 7 : widget.streak,
                                         (index) => Container(
                                           margin: const EdgeInsets.symmetric(
-                                            horizontal: 3,
+                                            horizontal: 4,
                                           ),
-                                          width: 8,
-                                          height: 8,
+                                          width: 12,
+                                          height: 12,
                                           decoration: const BoxDecoration(
                                             color: Color(0xFF6B7280),
                                             shape: BoxShape.circle,
@@ -2057,27 +2069,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 6),
                               Text(
                                 l10n.whatBroughtYouJoy,
-                                style: AppTypography.subtitle,
+                                style: AppTypography.subtitle.copyWith(
+                                  fontWeight: FontWeight.w400,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 18),
                               GradientButton(
                                 onPressed: () async {
-                                  final memory = await Navigator.of(context)
-                                      .push<Memory>(
+                                  if (!widget.hasFullAccess) {
+                                    widget.onRequestUpgrade();
+                                    return;
+                                  }
+                                  final result = await Navigator.of(context)
+                                      .push<Map<String, dynamic>>(
                                         MaterialPageRoute(
                                           builder: (_) =>
-                                              const CreateMemoryPage(),
+                                              const CreateMemoryPage(
+                                                showStatusSelector: true,
+                                              ),
                                         ),
                                       );
 
-                                  if (memory != null && context.mounted) {
+                                  if (result != null && context.mounted) {
+                                    final memory = result['memory'] as Memory;
+                                    final status =
+                                        result['status'] as DeclutterStatus?;
+
                                     widget.onMemoryCreated(memory);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(l10n.memoryCreated),
                                       ),
                                     );
+
+                                    // If user selected a status, create the item
+                                    if (status != null) {
+                                      final item = DeclutterItem(
+                                        id: const Uuid().v4(),
+                                        name: memory.itemName ?? memory.title,
+                                        category: memory.category != null
+                                            ? DeclutterCategory.values
+                                                  .firstWhere(
+                                                    (c) =>
+                                                        c.name ==
+                                                        memory.category,
+                                                    orElse: () =>
+                                                        DeclutterCategory
+                                                            .miscellaneous,
+                                                  )
+                                            : DeclutterCategory.miscellaneous,
+                                        createdAt: DateTime.now(),
+                                        status: status,
+                                        localPhotoPath: memory.localPhotoPath,
+                                        remotePhotoPath: memory.remotePhotoPath,
+                                      );
+                                      widget.onAddItem(item);
+                                    }
                                   }
                                 },
                                 width: double.infinity,
@@ -2106,7 +2154,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             color: Colors.white,
                                             letterSpacing: 0,
                                           ),
-                                      overflow: TextOverflow.visible,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
@@ -2207,7 +2255,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             area: widget.activeSession!.area,
                                             beforePhotoPath: widget
                                                 .activeSession!
-                                                .beforePhotoPath,
+                                                .localBeforePhotoPath ??
+                                                widget.activeSession!.remoteBeforePhotoPath,
                                             onStopSession: widget.onStopSession,
                                             sessionStartTime: widget
                                                 .activeSession!
@@ -2263,7 +2312,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                           .area,
                                                       beforePhotoPath: widget
                                                           .activeSession!
-                                                          .beforePhotoPath,
+                                                          .localBeforePhotoPath ??
+                                                          widget.activeSession!.remoteBeforePhotoPath,
                                                       elapsedSeconds:
                                                           DateTime.now()
                                                               .difference(
@@ -2361,29 +2411,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   color: const Color(0xFFE5E7EA),
                                 ),
                               ),
-                              padding: const EdgeInsets.all(32),
+                              padding: const EdgeInsets.all(20),
                               child: Center(
                                 child: Column(
                                   children: [
                                     Icon(
                                       Icons.check_circle_outline,
-                                      size: 48,
+                                      size: 32,
                                       color: Colors.grey[400],
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     Text(
                                       l10n.dashboardNoTodosTitle,
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFF6B7280),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 4),
                                     Text(
                                       l10n.dashboardNoTodosSubtitle,
                                       style: const TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         color: Color(0xFF9CA3AF),
                                       ),
                                       textAlign: TextAlign.center,
@@ -2447,17 +2497,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           width: 48,
                                           height: 48,
                                           decoration: BoxDecoration(
-                                            color:
-                                                session.area == 'General' &&
-                                                    session.isCompleted
-                                                ? const Color(0xFF10B981)
+                                            color: session.isCompleted
+                                                ? _getModeColorForSession(
+                                                    session,
+                                                  ).withValues(alpha: 0.2)
                                                 : const Color(0xFFF3F4F6),
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
-                                            border:
-                                                session.area == 'General' &&
-                                                    session.isCompleted
+                                            border: session.isCompleted
                                                 ? null
                                                 : Border.all(
                                                     color: const Color(
@@ -2466,15 +2514,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                   ),
                                           ),
                                           child: Icon(
-                                            session.area == 'General'
-                                                ? (session.isCompleted
-                                                      ? Icons.check_rounded
-                                                      : Icons.flag_outlined)
-                                                : Icons.calendar_month_rounded,
-                                            color:
-                                                session.area == 'General' &&
-                                                    session.isCompleted
-                                                ? Colors.white
+                                            session.isCompleted
+                                                ? Icons.check_rounded
+                                                : _getIconForMode(session.mode),
+                                            color: session.isCompleted
+                                                ? _getModeColorForSession(
+                                                    session,
+                                                  )
                                                 : const Color(0xFF6B7280),
                                             size: 24,
                                           ),
@@ -2486,7 +2532,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                session.goal ?? session.area,
+                                                session.goal ??
+                                                    (session.mode ==
+                                                            SessionMode
+                                                                .deepCleaning
+                                                        ? session.area
+                                                        : session.mode
+                                                              .displayName(
+                                                                l10n,
+                                                              )),
                                                 style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -2494,9 +2548,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                     0xFF1C1C1E,
                                                   ),
                                                   decoration:
-                                                      session.area ==
-                                                              'General' &&
-                                                          session.isCompleted
+                                                      session.isCompleted
                                                       ? TextDecoration
                                                             .lineThrough
                                                       : null,
@@ -2529,21 +2581,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),
-                                            activeColor: const Color(
-                                              0xFF10B981,
-                                            ),
+                                            activeColor:
+                                                _getModeColorForSession(
+                                                  session,
+                                                ),
                                           )
                                         else
-                                          GradientButton(
+                                          ElevatedButton(
                                             onPressed: () {
                                               _startSessionFromPlanned(session);
                                             },
-                                            height: 36,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 6,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(
+                                                0xFF1C1C1E,
+                                              ),
+                                              foregroundColor: Colors.white,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 8,
+                                                  ),
+                                              minimumSize: const Size(0, 36),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              elevation: 0,
                                             ),
-                                            child: Text(l10n.dashboardStartNow),
+                                            child: Text(
+                                              l10n.dashboardStartNow,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
                                           ),
                                       ],
                                     ),
@@ -2618,49 +2689,74 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.dashboardMonthlyProgress,
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Display',
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          letterSpacing: 0,
-                          height: 1.0,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l10n.dashboardMonthlyProgress,
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Display',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF111827),
+                                letterSpacing: 0,
+                                height: 1.0,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(
+                              Icons.info_outline_rounded,
+                              color: Color(0xFF9CA3AF),
+                              size: 22,
+                            ),
+                            onPressed: () => _showMonthlyProgressInfo(
+                              context,
+                              monthStart,
+                              nextMonthStart.subtract(const Duration(days: 1)),
+                              isChinese,
+                            ),
+                            tooltip: isChinese ? '数据说明' : 'Data info',
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
 
                       // Metrics Row
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildMetricCard(
-                              icon: Icons.cleaning_services_rounded,
-                              iconColor: const Color(0xFFB794F6),
-                              value: sessionsThisMonth.toString(),
-                              label: l10n.deepCleaning,
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: _buildMetricCard(
+                                icon: Icons.cleaning_services_rounded,
+                                iconColor: const Color(0xFFB794F6),
+                                value: sessionsThisMonth.toString(),
+                                label: l10n.deepCleaning,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildMetricCard(
-                              icon: Icons.inventory_2_rounded,
-                              iconColor: const Color(0xFF5ECFB8),
-                              value: widget.declutteredItems.length.toString(),
-                              label: l10n.dashboardDeclutteredLabel,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildMetricCard(
+                                icon: Icons.inventory_2_rounded,
+                                iconColor: const Color(0xFF5ECFB8),
+                                value: widget.declutteredItems.length.toString(),
+                                label: l10n.dashboardDeclutteredLabel,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildMetricCard(
-                              icon: Icons.attach_money_rounded,
-                              iconColor: const Color(0xFFFFD93D),
-                              value: totalValue.toStringAsFixed(0),
-                              label: l10n.dashboardResellLabel,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildMetricCard(
+                                icon: Icons.attach_money_rounded,
+                                iconColor: const Color(0xFFFFD93D),
+                                value: totalValue.toStringAsFixed(0),
+                                label: l10n.dashboardResellLabel,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -2695,89 +2791,130 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 24),
 
-                // Reports Cards
+                // Yearly Progress Section wrapping report cards
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _wrapPremiumCard(
-                        context,
-                        _buildReportCard(
-                          context,
-                          icon: Icons.trending_up_rounded,
-                          iconColor: const Color(0xFFFFD93D),
-                          bgColors: const [
-                            Color(0xFFFFF9E6),
-                            Color(0xFFFFECB3),
-                          ],
-                          title: l10n.dashboardResellReportTitle,
-                          subtitle: l10n.dashboardResellReportSubtitle,
-                          onTap: () {
-                            Navigator.push(
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l10n.dashboardYearlyProgress,
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Display',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF111827),
+                                letterSpacing: 0,
+                                height: 1.0,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(
+                              Icons.info_outline_rounded,
+                              color: Color(0xFF9CA3AF),
+                              size: 22,
+                            ),
+                            onPressed: () => _showYearlyProgressInfo(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ResellAnalysisReportScreen(
-                                      resellItems: widget.resellItems,
+                              yearStart,
+                              nextYearStart.subtract(const Duration(days: 1)),
+                              isChinese,
+                            ),
+                            tooltip: isChinese ? '年度说明' : 'Yearly data info',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Column(
+                        children: [
+                          _wrapPremiumCard(
+                            context,
+                            _buildReportCard(
+                              context,
+                              icon: Icons.trending_up_rounded,
+                              iconColor: const Color(0xFFFFD93D),
+                              bgColors: const [
+                                Color(0xFFFFF9E6),
+                                Color(0xFFFFECB3),
+                              ],
+                              title: l10n.dashboardResellReportTitle,
+                              subtitle: l10n.dashboardResellReportSubtitle,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ResellAnalysisReportScreen(
+                                          resellItems: widget.resellItems,
+                                          declutteredItems:
+                                              widget.declutteredItems,
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _wrapPremiumCard(
+                            context,
+                            _buildReportCard(
+                              context,
+                              icon: Icons.photo_library_rounded,
+                              iconColor: const Color(0xFFFF9AA2),
+                              bgColors: const [
+                                Color(0xFFFFEEF0),
+                                Color(0xFFFFDDE0),
+                              ],
+                              title: l10n.dashboardMemoryLaneTitle,
+                              subtitle: l10n.dashboardMemoryLaneSubtitle,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        MemoryLaneReportScreen(
+                                          memories: widget.memories,
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _wrapPremiumCard(
+                            context,
+                            _buildReportCard(
+                              context,
+                              icon: Icons.calendar_today_rounded,
+                              iconColor: const Color(0xFF89CFF0),
+                              bgColors: const [
+                                Color(0xFFE6F4F9),
+                                Color(0xFFD4E9F3),
+                              ],
+                              title: l10n.dashboardYearlyReportsTitle,
+                              subtitle: l10n.dashboardYearlyReportsSubtitle,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => YearlyReportsScreen(
                                       declutteredItems: widget.declutteredItems,
+                                      resellItems: widget.resellItems,
+                                      deepCleaningSessions:
+                                          widget.deepCleaningSessions,
                                     ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _wrapPremiumCard(
-                        context,
-                        _buildReportCard(
-                          context,
-                          icon: Icons.photo_library_rounded,
-                          iconColor: const Color(0xFFFF9AA2),
-                          bgColors: const [
-                            Color(0xFFFFEEF0),
-                            Color(0xFFFFDDE0),
-                          ],
-                          title: l10n.dashboardMemoryLaneTitle,
-                          subtitle: l10n.dashboardMemoryLaneSubtitle,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MemoryLaneReportScreen(
-                                  memories: widget.memories,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _wrapPremiumCard(
-                        context,
-                        _buildReportCard(
-                          context,
-                          icon: Icons.calendar_today_rounded,
-                          iconColor: const Color(0xFF89CFF0),
-                          bgColors: const [
-                            Color(0xFFE6F4F9),
-                            Color(0xFFD4E9F3),
-                          ],
-                          title: l10n.dashboardYearlyReportsTitle,
-                          subtitle: l10n.dashboardYearlyReportsSubtitle,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => YearlyReportsScreen(
-                                  declutteredItems: widget.declutteredItems,
-                                  resellItems: widget.resellItems,
-                                  deepCleaningSessions:
-                                      widget.deepCleaningSessions,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -3004,6 +3141,425 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildMonthlyInfoRow({
+    required IconData icon,
+    required String title,
+    required String detail,
+    required bool isChinese,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF4F6FB),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, size: 20, color: const Color(0xFF8B5CF6)),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isChinese
+                    ? detail
+                          .replaceAll('Joy Declutter', '心动整理')
+                          .replaceAll('Quick Declutter', '快速整理')
+                    : detail,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF4B5563),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showMonthlyProgressInfo(
+    BuildContext context,
+    DateTime monthStart,
+    DateTime monthEnd,
+    bool isChinese,
+  ) {
+    final dateFormatEn = DateFormat('MMMM d, yyyy');
+    final dateFormatZh = DateFormat('yyyy年M月d日');
+    final dateRange = isChinese
+        ? '${dateFormatZh.format(monthStart)} - ${dateFormatZh.format(monthEnd)}'
+        : '${dateFormatEn.format(monthStart)} - ${dateFormatEn.format(monthEnd)}';
+
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: const Color(0xFFE6EAF2)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x1A000000),
+                  blurRadius: 30,
+                  offset: Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.info_outline_rounded,
+                          color: Color(0xFF8B5CF6),
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isChinese ? '月度进度说明' : 'Monthly Progress',
+                              style: const TextStyle(
+                                color: Color(0xFF111827),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              isChinese
+                                  ? '了解你正在查看的数据范围'
+                                  : 'See what the numbers include',
+                              style: TextStyle(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '统计周期' : 'Time Period',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4F6FB),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 18,
+                              color: Color(0xFF6B7280),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                isChinese
+                                    ? '统计时间：$dateRange'
+                                    : 'Tracking: $dateRange',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF374151),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        isChinese ? '数据来源' : 'Data Sources',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMonthlyInfoRow(
+                        icon: Icons.inventory_2_outlined,
+                        title: isChinese ? '已整理物品' : 'Decluttered Items',
+                        detail: isChinese
+                            ? '来自心动整理与快速整理的所有物品记录。'
+                            : 'Includes every item logged via Joy Declutter or Quick Declutter.',
+                        isChinese: isChinese,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMonthlyInfoRow(
+                        icon: Icons.pie_chart_outline_rounded,
+                        title: isChinese ? '成果分布' : 'Outcome Distribution',
+                        detail: isChinese
+                            ? '基于每件已整理物品所选择的去向（保留、捐赠、转卖、丢弃等）汇总，展示你让物品离开的方式。'
+                            : 'Aggregates each decluttered item\'s outcome tag (keep, donate, resell, discard, etc.) so you can see how you let things go.',
+                        isChinese: isChinese,
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF111827),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: Text(
+                        isChinese ? '好的，继续' : 'Got it',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showYearlyProgressInfo(
+    BuildContext context,
+    DateTime yearStart,
+    DateTime yearEnd,
+    bool isChinese,
+  ) {
+    final dateFormatEn = DateFormat('MMMM d, yyyy');
+    final dateFormatZh = DateFormat('yyyy年M月d日');
+    final dateRange = isChinese
+        ? '${dateFormatZh.format(yearStart)} - ${dateFormatZh.format(yearEnd)}'
+        : '${dateFormatEn.format(yearStart)} - ${dateFormatEn.format(yearEnd)}';
+
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: const Color(0xFFE6EAF2)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x1A000000),
+                  blurRadius: 30,
+                  offset: Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.info_outline_rounded,
+                          color: Color(0xFF8B5CF6),
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isChinese ? '年度进度说明' : 'Yearly Progress',
+                              style: const TextStyle(
+                                color: Color(0xFF111827),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              isChinese
+                                  ? '了解年度统计涵盖的时间范围'
+                                  : 'See which dates the yearly summary covers',
+                              style: const TextStyle(
+                                color: Color(0xFF6B7280),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '统计周期' : 'Time Period',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4F6FB),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 18,
+                              color: Color(0xFF6B7280),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                isChinese
+                                    ? '统计时间：$dateRange'
+                                    : 'Tracking: $dateRange',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF374151),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF111827),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: Text(
+                        isChinese ? '好的，继续' : 'Got it',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _wrapPremiumCard(BuildContext context, Widget child) {
     if (widget.hasFullAccess == true) {
       return child;
@@ -3067,8 +3623,266 @@ class _DashboardScreenState extends State<DashboardScreen> {
       sessions: sessionsThisMonth,
       title: l10n.deepCleaningAnalysisTitle,
       emptyStateMessage: isChinese
-          ? '本月还没有深度整理记录，开始一次专注的整理吧。'
+          ? '本月还没有大扫除记录，开始一次专注的整理吧。'
           : 'No deep cleaning records yet this month. Start your first focused session.',
+    );
+  }
+
+  Future<void> _showLetGoPrompt(BuildContext context, Memory memory) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
+
+    final shouldLetGo = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (dialogContext) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isChinese ? '让物品离开？' : 'Let this item go?',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese
+                      ? '既然已经记录了这份美好回忆，是否考虑让这件物品离开，给新的心动物品腾出空间？'
+                      : 'Now that you\'ve captured this beautiful memory, would you consider letting this item go to make room for new joy?',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF6B7280),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: Color(0xFFE5E7EB)),
+                          ),
+                        ),
+                        child: Text(
+                          isChinese ? '暂不' : 'Not Yet',
+                          style: const TextStyle(
+                            color: Color(0xFF6B7280),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: const Color(0xFFB794F6),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          isChinese ? '是的' : 'Yes',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (shouldLetGo == true && context.mounted) {
+      await _showDeclutterRouteOptions(context, memory);
+    }
+  }
+
+  Future<void> _showDeclutterRouteOptions(
+    BuildContext context,
+    Memory memory,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
+
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (dialogContext) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isChinese ? '选择离开方式' : 'Choose Route',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese
+                      ? '你想如何让这件物品离开？'
+                      : 'How would you like to let this item go?',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF6B7280),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                _buildRouteOption(
+                  context: dialogContext,
+                  icon: Icons.shopping_bag_outlined,
+                  title: isChinese ? '转卖' : 'Resell',
+                  description: isChinese
+                      ? '通过二手平台出售'
+                      : 'Sell on secondhand platform',
+                  color: const Color(0xFFFFD93D),
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    // TODO: Navigate to resell item creation
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildRouteOption(
+                  context: dialogContext,
+                  icon: Icons.favorite_outline,
+                  title: isChinese ? '赠送' : 'Gift',
+                  description: isChinese
+                      ? '送给需要的人'
+                      : 'Give to someone who needs it',
+                  color: const Color(0xFFFF9AA2),
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    // TODO: Navigate to gift item creation
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildRouteOption(
+                  context: dialogContext,
+                  icon: Icons.recycling_outlined,
+                  title: isChinese ? '捐赠/回收' : 'Donate/Recycle',
+                  description: isChinese ? '捐给公益或回收' : 'Donate or recycle',
+                  color: const Color(0xFF5ECFB8),
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    // TODO: Navigate to donate/recycle item creation
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildRouteOption(
+                  context: dialogContext,
+                  icon: Icons.delete_outline,
+                  title: isChinese ? '丢弃' : 'Discard',
+                  description: isChinese ? '直接扔掉' : 'Throw away',
+                  color: const Color(0xFF9CA3AF),
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    // TODO: Navigate to discard item creation
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRouteOption({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF9CA3AF),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

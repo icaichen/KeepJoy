@@ -3,8 +3,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import '../../l10n/app_localizations.dart';
+import '../../models/deep_cleaning_session.dart';
 import '../../services/messiness_analysis_service.dart';
 import '../../utils/navigation.dart';
 
@@ -127,18 +130,11 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
-    final areas = isChinese
-        ? ['客厅', '卧室', '衣柜', '书柜', '厨房', '书桌']
-        : [
-            'Living Room',
-            'Bedroom',
-            'Wardrobe',
-            'Bookshelf',
-            'Kitchen',
-            'Desk',
-          ];
 
-    final selectedArea = _areaController.text.trim();
+    // Get all cleaning areas from enum
+    final areas = CleaningArea.values;
+
+    final selectedAreaText = _areaController.text.trim();
 
     return Scaffold(
       backgroundColor: _deepCleaningBackgroundColor,
@@ -176,12 +172,12 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
                         runSpacing: screenHeight * 0.05,
                         children: areas
                             .map(
-                              (label) => _buildCircle(
+                              (area) => _buildCircle(
+                                context,
                                 screenWidth,
-                                label,
+                                area,
                                 isSelected:
-                                    label.toLowerCase() ==
-                                    selectedArea.toLowerCase(),
+                                    area.label(context) == selectedAreaText,
                               ),
                             )
                             .toList(),
@@ -290,31 +286,32 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
   }
 
   Widget _buildCircle(
+    BuildContext context,
     double screenWidth,
-    String label, {
+    CleaningArea area, {
     required bool isSelected,
   }) {
     final diameter = screenWidth * 0.22;
 
     // Map areas to icons
-    IconData getIconForArea(String area) {
-      final areaLower = area.toLowerCase();
-      if (areaLower.contains('living') || area == '客厅') {
-        return Icons.weekend_outlined; // Sofa icon
-      } else if (areaLower.contains('bedroom') || area == '卧室') {
-        return Icons.bed_outlined;
-      } else if (areaLower.contains('wardrobe') || area == '衣柜') {
-        return Icons.checkroom_outlined;
-      } else if (areaLower.contains('bookshelf') || area == '书柜') {
-        return Icons.book_outlined;
-      } else if (areaLower.contains('kitchen') || area == '厨房') {
-        return Icons.kitchen_outlined;
-      } else if (areaLower.contains('desk') || area == '书桌') {
-        return Icons.desk_outlined;
-      } else {
-        return Icons.home_outlined; // Default icon
+    IconData getIconForArea(CleaningArea area) {
+      switch (area) {
+        case CleaningArea.livingRoom:
+          return Icons.weekend_outlined;
+        case CleaningArea.bedroom:
+          return Icons.bed_outlined;
+        case CleaningArea.wardrobe:
+          return Icons.checkroom_outlined;
+        case CleaningArea.bookshelf:
+          return Icons.book_outlined;
+        case CleaningArea.kitchen:
+          return Icons.kitchen_outlined;
+        case CleaningArea.desk:
+          return Icons.desk_outlined;
       }
     }
+
+    final label = area.label(context);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -322,7 +319,9 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
         InkWell(
           onTap: () {
             setState(() {
-              _areaController.text = label;
+              _areaController.text = area.label(
+                context,
+              ); // Store the localized label
             });
           },
           borderRadius: BorderRadius.circular(diameter / 2),
@@ -350,7 +349,7 @@ class _DeepCleaningFlowPageState extends State<DeepCleaningFlowPage> {
             ),
             alignment: Alignment.center,
             child: Icon(
-              getIconForArea(label),
+              getIconForArea(area),
               size: 26,
               color: isSelected ? Colors.white : const Color(0xFF1F2937),
             ),
@@ -409,6 +408,28 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
   String? _photoPath;
   bool _isProcessing = false;
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final sessionsDir = Directory('${appDir.path}/sessions');
+      if (!await sessionsDir.exists()) {
+        await sessionsDir.create(recursive: true);
+      }
+
+      final fileName =
+          'before_${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(sessionsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _takePicture() async {
     setState(() {
       _isProcessing = true;
@@ -421,9 +442,13 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
       );
 
       if (photo != null && mounted) {
-        setState(() {
-          _photoPath = photo.path;
-        });
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          setState(() {
+            _photoPath = permanentPath;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -1081,6 +1106,28 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
   String? _photoPath;
   bool _isProcessing = false;
 
+  Future<String?> _saveImagePermanently(String tempPath) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final sessionsDir = Directory('${appDir.path}/sessions');
+      if (!await sessionsDir.exists()) {
+        await sessionsDir.create(recursive: true);
+      }
+
+      final fileName =
+          'after_${DateTime.now().millisecondsSinceEpoch}${path.extension(tempPath)}';
+      final permanentPath = path.join(sessionsDir.path, fileName);
+
+      final tempFile = File(tempPath);
+      await tempFile.copy(permanentPath);
+
+      return permanentPath;
+    } catch (e) {
+      debugPrint('❌ Failed to save image permanently: $e');
+      return null;
+    }
+  }
+
   Future<void> _takePicture() async {
     setState(() {
       _isProcessing = true;
@@ -1093,9 +1140,13 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
       );
 
       if (photo != null && mounted) {
-        setState(() {
-          _photoPath = photo.path;
-        });
+        // Save to permanent storage
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          setState(() {
+            _photoPath = permanentPath;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {

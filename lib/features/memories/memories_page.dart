@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../l10n/app_localizations.dart';
+import '../../widgets/smart_image_widget.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'memory_detail_page.dart';
 
@@ -52,7 +53,7 @@ class _MemoriesPageState extends State<MemoriesPage> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     // Calculate scroll-based animations
-    const headerHeight = 120.0;
+    const headerHeight = 100.0;
     final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
     final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
     final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
@@ -81,8 +82,17 @@ class _MemoriesPageState extends State<MemoriesPage> {
                         child: _EmptyMemoriesState(),
                       )
                     : _viewMode == MemoryViewMode.grid
-                    ? _GridViewWrapper(memories: memories)
-                    : _TimelineView(memories: memories, l10n: l10n),
+                    ? _GridViewWrapper(
+                        memories: memories,
+                        onMemoryDeleted: widget.onMemoryDeleted,
+                        onMemoryUpdated: widget.onMemoryUpdated,
+                      )
+                    : _TimelineView(
+                        memories: memories,
+                        l10n: l10n,
+                        onMemoryDeleted: widget.onMemoryDeleted,
+                        onMemoryUpdated: widget.onMemoryUpdated,
+                      ),
               ),
             ],
           ),
@@ -135,11 +145,11 @@ class _MemoriesPageState extends State<MemoriesPage> {
             left: 0,
             right: 0,
             child: SizedBox(
-              height: headerHeight,
+              height: 100,
               child: Padding(
                 padding: EdgeInsets.only(
                   left: 24,
-                  right: 16,
+                  right: 24,
                   top: topPadding + 12,
                 ),
                 child: Opacity(
@@ -148,34 +158,17 @@ class _MemoriesPageState extends State<MemoriesPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            pageName,
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1C1C1E),
-                              letterSpacing: -0.5,
-                              height: 1.0,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.joyfulMemories,
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Display',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xFF6B7280),
-                              letterSpacing: 0,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        pageName,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1C1C1E),
+                          letterSpacing: -0.5,
+                          height: 1.0,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Container(
                         height: 40,
@@ -244,36 +237,17 @@ class _MemoriesPageState extends State<MemoriesPage> {
   }
 }
 
-// Grid View (Original Photo Wall Style)
-class _GridView extends StatelessWidget {
-  final List<Memory> memories;
-
-  const _GridView({required this.memories});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(1),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 1,
-        mainAxisSpacing: 1,
-        childAspectRatio: 1,
-      ),
-      itemCount: memories.length,
-      itemBuilder: (context, index) {
-        final memory = memories[index];
-        return _MemoryGridItem(memory: memory);
-      },
-    );
-  }
-}
-
 // Wrapper for GridView to work with CustomScrollView
 class _GridViewWrapper extends StatelessWidget {
   final List<Memory> memories;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
-  const _GridViewWrapper({required this.memories});
+  const _GridViewWrapper({
+    required this.memories,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -290,23 +264,45 @@ class _GridViewWrapper extends StatelessWidget {
       itemCount: memories.length,
       itemBuilder: (context, index) {
         final memory = memories[index];
-        return _MemoryGridItem(memory: memory);
+        return _MemoryGridItem(
+          key: ValueKey(memory.id),
+          memory: memory,
+          onMemoryDeleted: onMemoryDeleted,
+          onMemoryUpdated: onMemoryUpdated,
+        );
       },
     );
   }
 }
 
 class _MemoryGridItem extends StatelessWidget {
-  const _MemoryGridItem({required this.memory});
+  const _MemoryGridItem({
+    super.key,
+    required this.memory,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
+  });
 
   final Memory memory;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _openMemoryDetail(context),
       child: memory.hasPhoto
-          ? Image.file(memory.photoFile!, fit: BoxFit.cover)
+          ? AspectRatio(
+              aspectRatio: 1.0,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SmartImageWidget(
+                  localPath: memory.localPhotoPath,
+                  remotePath: memory.remotePhotoPath,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            )
           : Container(
               color: Colors.grey[200],
               child: Center(
@@ -321,7 +317,13 @@ class _MemoryGridItem extends StatelessWidget {
 
   void _openMemoryDetail(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => MemoryDetailPage(memory: memory)),
+      MaterialPageRoute(
+        builder: (context) => MemoryDetailPage(
+          memory: memory,
+          onMemoryDeleted: onMemoryDeleted,
+          onMemoryUpdated: onMemoryUpdated,
+        ),
+      ),
     );
   }
 }
@@ -330,8 +332,15 @@ class _MemoryGridItem extends StatelessWidget {
 class _TimelineView extends StatelessWidget {
   final List<Memory> memories;
   final AppLocalizations l10n;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
-  const _TimelineView({required this.memories, required this.l10n});
+  const _TimelineView({
+    required this.memories,
+    required this.l10n,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -361,6 +370,8 @@ class _TimelineView extends StatelessWidget {
             memories: dateMemories,
             l10n: l10n,
             isLast: isLast,
+            onMemoryDeleted: onMemoryDeleted,
+            onMemoryUpdated: onMemoryUpdated,
           );
         }).toList(),
       ),
@@ -373,12 +384,16 @@ class _TimelineDateSection extends StatelessWidget {
   final List<Memory> memories;
   final AppLocalizations l10n;
   final bool isLast;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
   const _TimelineDateSection({
     required this.date,
     required this.memories,
     required this.l10n,
     required this.isLast,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
   });
 
   @override
@@ -405,8 +420,11 @@ class _TimelineDateSection extends StatelessWidget {
         ...memories.asMap().entries.map((entry) {
           final isLastMemory = entry.key == memories.length - 1 && isLast;
           return _TimelineMemoryItem(
+            key: ValueKey(entry.value.id),
             memory: entry.value,
             showLine: !isLastMemory,
+            onMemoryDeleted: onMemoryDeleted,
+            onMemoryUpdated: onMemoryUpdated,
           );
         }),
       ],
@@ -417,8 +435,16 @@ class _TimelineDateSection extends StatelessWidget {
 class _TimelineMemoryItem extends StatelessWidget {
   final Memory memory;
   final bool showLine;
+  final void Function(Memory memory) onMemoryDeleted;
+  final void Function(Memory memory) onMemoryUpdated;
 
-  const _TimelineMemoryItem({required this.memory, required this.showLine});
+  const _TimelineMemoryItem({
+    super.key,
+    required this.memory,
+    required this.showLine,
+    required this.onMemoryDeleted,
+    required this.onMemoryUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -470,7 +496,11 @@ class _TimelineMemoryItem extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => MemoryDetailPage(memory: memory),
+                    builder: (context) => MemoryDetailPage(
+                      memory: memory,
+                      onMemoryDeleted: onMemoryDeleted,
+                      onMemoryUpdated: onMemoryUpdated,
+                    ),
                   ),
                 );
               },
@@ -547,13 +577,15 @@ class _TimelineMemoryItem extends StatelessWidget {
 
                     // Photo if present
                     if (memory.hasPhoto) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          memory.photoFile!,
-                          width: double.infinity,
-                          height: 200,
-                          fit: BoxFit.cover,
+                      AspectRatio(
+                        aspectRatio: 1.0,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: SmartImageWidget(
+                            localPath: memory.localPhotoPath,
+                            remotePath: memory.remotePhotoPath,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -582,6 +614,8 @@ class _TimelineMemoryItem extends StatelessWidget {
                           color: Color(0xFF6B7280),
                           height: 1.5,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                   ],
                 ),

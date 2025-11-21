@@ -51,11 +51,12 @@ class MessinessAnalysisService {
       final densityScore = _calculateDensityScore(objectCount);
 
       // Weighted combination of factors
-      final rawScore = (
-        densityScore * 0.4 +        // Object density (40%)
-        clutterScore * 0.35 +       // Clutter vs furniture ratio (35%)
-        confidenceScore * 0.25      // Low confidence objects (25%)
-      );
+      final rawScore =
+          (densityScore * 0.4 + // Object density (40%)
+          clutterScore * 0.35 + // Clutter vs furniture ratio (35%)
+          confidenceScore *
+              0.25 // Low confidence objects (25%)
+              );
 
       // Normalize to 0-10 scale
       final normalizedScore = rawScore.clamp(0.0, 10.0);
@@ -80,21 +81,62 @@ class MessinessAnalysisService {
   double _calculateClutterScore(List<ImageLabel> labels) {
     // Define clutter categories (items that make a room look messy)
     const clutterKeywords = [
-      'clothing', 'clothes', 'shirt', 'pants', 'shoe', 'sock',
-      'paper', 'document', 'book', 'magazine', 'newspaper',
-      'box', 'package', 'bag', 'plastic',
-      'bottle', 'can', 'cup', 'plate', 'dish',
-      'toy', 'game', 'electronic', 'cable', 'wire',
-      'tool', 'equipment', 'container',
-      'trash', 'waste', 'garbage',
+      'clothing',
+      'clothes',
+      'shirt',
+      'pants',
+      'shoe',
+      'sock',
+      'paper',
+      'document',
+      'book',
+      'magazine',
+      'newspaper',
+      'box',
+      'package',
+      'bag',
+      'plastic',
+      'bottle',
+      'can',
+      'cup',
+      'plate',
+      'dish',
+      'toy',
+      'game',
+      'electronic',
+      'cable',
+      'wire',
+      'tool',
+      'equipment',
+      'container',
+      'trash',
+      'waste',
+      'garbage',
     ];
 
     // Define structure/furniture (expected items, less messy)
     const structureKeywords = [
-      'furniture', 'table', 'chair', 'desk', 'bed', 'sofa', 'couch',
-      'shelf', 'cabinet', 'dresser', 'wardrobe',
-      'wall', 'floor', 'ceiling', 'window', 'door',
-      'lamp', 'light', 'plant', 'picture', 'frame',
+      'furniture',
+      'table',
+      'chair',
+      'desk',
+      'bed',
+      'sofa',
+      'couch',
+      'shelf',
+      'cabinet',
+      'dresser',
+      'wardrobe',
+      'wall',
+      'floor',
+      'ceiling',
+      'window',
+      'door',
+      'lamp',
+      'light',
+      'plant',
+      'picture',
+      'frame',
     ];
 
     int clutterCount = 0;
@@ -105,7 +147,9 @@ class MessinessAnalysisService {
 
       if (clutterKeywords.any((keyword) => labelText.contains(keyword))) {
         clutterCount++;
-      } else if (structureKeywords.any((keyword) => labelText.contains(keyword))) {
+      } else if (structureKeywords.any(
+        (keyword) => labelText.contains(keyword),
+      )) {
         structureCount++;
       }
     }
@@ -126,7 +170,9 @@ class MessinessAnalysisService {
     if (labels.isEmpty) return 0.0;
 
     // Count objects with low confidence (harder to identify = messier)
-    final lowConfidenceCount = labels.where((label) => label.confidence < 0.7).length;
+    final lowConfidenceCount = labels
+        .where((label) => label.confidence < 0.7)
+        .length;
     final lowConfidenceRatio = lowConfidenceCount / labels.length;
 
     return lowConfidenceRatio * 10.0;

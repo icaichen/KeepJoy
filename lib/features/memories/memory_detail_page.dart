@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/memory.dart';
+import 'package:keepjoy_app/widgets/smart_image_widget.dart';
 
 /// Memory detail page with photo viewer
 class MemoryDetailPage extends StatefulWidget {
@@ -36,19 +37,22 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF1C1C1E),
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
+            icon: const Icon(Icons.more_horiz, color: Color(0xFF1C1C1E)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -105,131 +109,97 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
         ],
       ),
       body: SingleChildScrollView(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildPhotoSection(l10n),
-                const SizedBox(height: 16),
-                _buildDetailSheet(l10n),
-              ],
-            ),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [_buildPhotoSection(l10n), _buildDetailSection(l10n)],
         ),
       ),
     );
   }
 
   Widget _buildPhotoSection(AppLocalizations l10n) {
-    return AspectRatio(
-      aspectRatio: 3 / 4,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _currentMemory.hasPhoto
-                ? Hero(
-                    tag: 'memory_photo_${_currentMemory.id}',
-                    child: Image.file(
-                      _currentMemory.photoFile!,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : Container(
-                    color: const Color(0xFF1F1F1F),
-                    alignment: Alignment.center,
-                    child: Text(
-                      _currentMemory.type.icon,
-                      style: const TextStyle(
-                        fontSize: 64,
-                        color: Colors.white70,
-                      ),
-                    ),
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      child: _currentMemory.hasPhoto
+          ? Hero(
+              tag: 'memory_photo_${_currentMemory.id}',
+              child: SmartImageWidget(
+                localPath: _currentMemory.localPhotoPath,
+                remotePath: _currentMemory.remotePhotoPath,
+                fit: BoxFit.contain,
+                errorWidget: Container(
+                  height: 400,
+                  color: const Color(0xFFF3F4F6),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.broken_image_outlined,
+                    size: 64,
+                    color: Color(0xFF9CA3AF),
                   ),
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black54],
                 ),
               ),
-            ),
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 24,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _currentMemory.itemName ?? l10n.memoryDetailTitle,
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Display',
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    l10n.memoryCreatedOn(_formatDate(_currentMemory.createdAt)),
-                    style: const TextStyle(
-                      fontFamily: 'SF Pro Text',
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
+            )
+          : Container(
+              height: 400,
+              color: const Color(0xFFF3F4F6),
+              alignment: Alignment.center,
+              child: Text(
+                _currentMemory.type.icon,
+                style: const TextStyle(fontSize: 64, color: Color(0xFF9CA3AF)),
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildDetailSheet(AppLocalizations l10n) {
+  Widget _buildDetailSection(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 24,
-            offset: Offset(0, 12),
-          ),
-        ],
+        border: Border(top: BorderSide(color: Color(0xFFE5E7EB), width: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title and date
+          Text(
+            _currentMemory.itemName ?? l10n.memoryDetailTitle,
+            style: const TextStyle(
+              fontFamily: 'SF Pro Display',
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1C1C1E),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.memoryCreatedOn(_formatDate(_currentMemory.createdAt)),
+            style: const TextStyle(
+              fontFamily: 'SF Pro Text',
+              fontSize: 14,
+              color: Color(0xFF6B7280),
+            ),
+          ),
+
+          // Description
           if (_currentMemory.description != null &&
-              _currentMemory.description!.trim().isNotEmpty)
+              _currentMemory.description!.trim().isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Divider(color: Color(0xFFE5E7EB), height: 1),
+            const SizedBox(height: 16),
             Text(
               _currentMemory.description!,
               style: const TextStyle(
                 fontFamily: 'SF Pro Text',
                 fontSize: 16,
-                height: 1.6,
-                color: Color(0xFF111827),
-              ),
-            )
-          else
-            Text(
-              l10n.memoryNoDescription,
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 15,
-                color: Color(0xFF9CA3AF),
+                height: 1.5,
+                color: Color(0xFF374151),
               ),
             ),
+          ],
+          const SizedBox(height: 20),
         ],
       ),
     );

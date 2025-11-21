@@ -7,9 +7,9 @@
   "startYourDeclutterJourney": "开始你的断舍离旅程",
   "chooseFlowTitle": "选择整理方式",
   "chooseFlowSubtitle": "根据当前状态选择最合适的整理体验。",
-  "joyDeclutterFlowDescription": "只保留让你心动的物品",
-  "quickDeclutterFlowDescription": "几分钟完成一次快速清理",
-  "deepCleaningFlowDescription": "规划、聚焦、完成深度整理",
+  "joyDeclutterFlowDescription": "帮助你做出艰难的决定",
+  "quickDeclutterFlowDescription": "只保留带来快乐的物品",
+  "deepCleaningFlowDescription": "规划、聚焦、完成大扫除",
   "deepCleaningComparisonsTitle": "前后对比报告",
   "deepCleaningComparisonsEmpty": "添加照片和凌乱度数据即可查看前后对比。",
   "startAction": "开始",
@@ -44,14 +44,15 @@
   "dashboardEnterAreaPrompt": "请输入区域名称",
   "dashboardSessionCreated": "计划已创建",
   "dashboardMonthlyProgress": "本月进度",
+  "dashboardYearlyProgress": "年度进度",
   "dashboardDeclutteredLabel": "已整理物品",
   "dashboardResellLabel": "转售收益",
-  "dashboardResellReportTitle": "二手趋势",
-  "dashboardResellReportSubtitle": "查看完整报告",
-  "dashboardMemoryLaneTitle": "心动记忆",
-  "dashboardMemoryLaneSubtitle": "重温你的整理旅程",
-  "dashboardYearlyReportsTitle": "心动年鉴",
-  "dashboardYearlyReportsSubtitle": "查看年度总结",
+  "dashboardResellReportTitle": "二手洞察",
+  "dashboardResellReportSubtitle": "了解二手表现",
+  "dashboardMemoryLaneTitle": "年度记忆",
+  "dashboardMemoryLaneSubtitle": "重温这一年的闪光时刻",
+  "dashboardYearlyReportsTitle": "年度洞察",
+  "dashboardYearlyReportsSubtitle": "查看年度洞察",
   "dashboardCurrentStreakTitle": "当前连击",
   "dashboardStreakSubtitle": "天连续记录",
   "dashboardActiveSessionTitle": "进行中的任务",
@@ -61,7 +62,7 @@
   "dashboardNoTodosSubtitle": "点击下方按钮创建目标或任务",
   "dashboardCalendarTitle": "计划日历",
   "dashboardNoSessionsForDay": "这天没有计划任务",
-  "deepCleaningAnalysisTitle": "深度整理分析",
+  "deepCleaningAnalysisTitle": "大扫除分析",
   "dashboardSessionsLabel": "整理次数",
   "dashboardItemsLabel": "清理物品",
   "dashboardAverageFocusLabel": "平均专注度",
@@ -321,13 +322,13 @@
 
   "comingSoon": "即将推出",
 
-  "captureItemToStart": "拍摄物品开始整理",
+  "captureItemToStart": "拍摄物品，让我们引导你做出决定",
   "takePicture": "拍摄物品",
   "itemsCaptured": "已拍摄物品",
   "nextItem": "下一个物品",
   "finishDeclutter": "完成整理",
 
-  "deepCleaningTitle": "深度清理",
+  "deepCleaningTitle": "大扫除",
   "continueButton": "继续",
 
   "nextStep": "下一步",
@@ -342,7 +343,7 @@
   "continueSession": "继续进程",
   "started": "开始于{when}",
 
-  "deepCleaningSessionCompleted": "深度清理进程已完成",
+  "deepCleaningSessionCompleted": "大扫除进程已完成",
 
   "memoriesTitle": "回忆",
   "memoriesEmptyTitle": "还没有回忆",
@@ -415,11 +416,12 @@
   "reminderJoyNudge3": "小步伐也能带来清晰，现在拍下一件物品开始 Joy Dedclutter。",
   "reminderPendingTask1": "还有整理计划未完成，安排一个时间继续吧。",
   "reminderPendingTask2": "目标还在等你，抽空续上心动整理旅程。",
-  "reminderActiveSessionTitle": "深度整理仍在进行",
-  "reminderActiveSessionBody": "你的深度整理流程还没结束，回来继续并记录成果吧。",
+  "reminderActiveSessionTitle": "大扫除仍在进行",
+  "reminderActiveSessionBody": "你的大扫除流程还没结束，回来继续并记录成果吧。",
   "memoryNoDescription": "这段回忆目前还没有补充说明。",
   "premiumRequiredTitle": "KeepJoy 高级版",
-  "premiumRequiredMessage": "7 天试用已结束，升级即可继续使用深度整理流程、完整报表与提醒功能。",
+  "premiumRequiredMessage": "7 天试用已结束，升级即可继续使用大扫除流程、完整报表与提醒功能。",
+  "premiumExpiredMessage": "您的订阅已过期或需要恢复。请续订或恢复购买以继续使用高级功能。",
   "premiumLockedOverlay": "升级以查看完整洞察",
   "premiumMembership": "高级会员",
   "premiumMembershipDescription": "解锁专属仪式、更深入的洞察和进阶自动化。",
@@ -435,6 +437,7 @@
   "paywallRestoreSuccess": "已恢复之前的购买。",
   "paywallRestoreFailure": "暂时没有可恢复的购买记录。",
   "restorePurchases": "恢复购买",
+  "subscribeNow": "立即订阅",
   "mostPopular": "最受欢迎",
   "recommended": "推荐",
   "noOfferingsAvailable": "暂无订阅选项",
@@ -442,10 +445,57 @@
   "purchaseSuccessful": "购买成功",
   "purchasesRestored": "购买已恢复",
   "freeTrial": "免费试用",
-  "featureAnnualReports": "年度报告",
-  "featureMonthlyReports": "月度报告", 
-  "featureDeepReports": "深度清洁报告",
-  "featureMemoriesPage": "无限回忆",
+  "trialActive": "试用中",
+  "premiumActive": "高级版已激活",
+  "renewsOn": "续订日期：{date}",
+  "@renewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "featureMemoriesPage": "心动回忆",
+  "featureMemoriesPageDesc": "记录并珍藏你的断舍离回忆",
+  "featureMemoryLane": "年度记忆",
+  "featureMemoryLaneDesc": "可视化你的整理旅程时光线",
+  "featureResellTrends": "二手趋势",
+  "featureResellTrendsDesc": "追踪物品的潜在转售价值",
+  "featureYearlyChronicle": "心动年鉴",
+  "featureYearlyChronicleDesc": "大扫除的详细分析报告",
+  "trialDays": "{days}天免费试用",
+  "@trialDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "startFreeTrial": "开始{days}天免费试用",
+  "@startFreeTrial": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "billedYearlyAfterTrial": "试用结束后按年计费",
+  "billedMonthlyAfterTrial": "试用结束后按月计费",
+  "unlockPremium": "解锁高级功能",
+  "premiumFeatures": "高级功能",
+  "savePercent": "节省{percent}%",
+  "@savePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "perMonth": "/月",
+  "perYear": "/年",
+  "monthlyPlan": "月度方案",
+  "annualPlan": "年度方案",
+  "changePlansAnytime": "随时更改或取消订阅",
   "featureExportData": "导出数据",
   "featureAdvancedInsights": "高级洞察",
   "featureCustomReminders": "自定义提醒",
@@ -522,6 +572,8 @@
   "createMemory": "创建回忆",
   "createMemoryTitle": "创建回忆",
   "whatDidThisItemBring": "这件物品给你带来了什么？",
+  "haveYouLetGoOfThisItem": "你是否已经放手这件物品？",
+  "selectStatus": "选择物品状态",
   "chooseFromGallery": "从相册选择",
   "addPhoto": "添加照片",
   "captureSpecialMoment": "捕捉这个特别的时刻",
@@ -599,7 +651,7 @@
   "joyCheckMessage6": "你的空间反映你的优先事项。你想让它说什么？",
 
   "todaysTip": "今日建议",
-  "todaysTip1": "深度清理模式：点击「深度清理」拍摄空间的前后对比照。启动计时器，见证你的转变！应用会追踪你的进度，使用AI测量混乱度改善，让你看到自己完成了多少。非常适合整理整个房间！",
+  "todaysTip1": "大扫除模式：点击「大扫除」拍摄空间的前后对比照。启动计时器，见证你的转变！应用会追踪你的进度，使用AI测量混乱度改善，让你看到自己完成了多少。非常适合整理整个房间！",
   "todaysTip2": "快乐整理法：难以决定保留什么？试试首页的「快乐整理」。给物品拍照，我们会引导你完成近藤麻理惠的提问：「这能带给我快乐吗？」把它拿在手中，相信你的感觉。如果它不能带来快乐，我们会帮你感恩地放手。",
   "todaysTip3": "创建永久回忆：在放手有纪念意义的物品前，创建回忆！整理时点击回忆图标。拍摄照片，写下这件物品对你的意义，保存故事。实体物品可能消失，但你珍贵的回忆永远留在应用中。",
   "todaysTip4": "快速扫除计时器：需要动力？试试「快速扫除」，进行15分钟的高效整理！选择任何区域（客厅、衣柜、书桌），启动计时器，与时钟赛跑。它让整理变成激动人心的游戏。看看你能在时间用完前清理多少物品！",
@@ -646,7 +698,7 @@
   "resetPasswordEmailSent": "密码重置邮件已发送！请检查您的收件箱。",
 
   "quickTip": "快速提示",
-  "whatBroughtYouJoy": "今天什么让你快乐？",
+  "whatBroughtYouJoy": "哪些物品值得为其创建回忆？",
   "shareYourJoy": "分享你的快乐",
 
   "monthlyReport": "本月整理报告",
@@ -666,7 +718,7 @@
   "noTasksYet": "暂无任务，添加第一个吧！",
   "completed": "已完成",
   "markAsComplete": "标记为完成",
-  "startDeepCleaning": "开始深度清洁",
+  "startDeepCleaning": "开始大扫除",
   "schedule": "安排时间",
   "delete": "删除",
   "taskAdded": "任务已添加",

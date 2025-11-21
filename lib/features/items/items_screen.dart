@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -7,6 +5,7 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/features/memories/create_memory_page.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/widgets/create_memory_prompt_sheet.dart';
+import 'package:keepjoy_app/widgets/smart_image_widget.dart';
 
 class ItemsScreen extends StatefulWidget {
   const ItemsScreen({
@@ -218,7 +217,12 @@ class _ItemsScreenState extends State<ItemsScreen> {
               final category = DeclutterCategory.values[index];
               final stats = categoryStats[category] ?? {'total': 0, 'kept': 0};
               return GestureDetector(
-                onTap: () => _showCategoryItems(category, isChinese),
+                onTap: () {
+                  debugPrint(
+                    '📱 Items: Category tapped - ${category.label(context)}',
+                  );
+                  _showCategoryItems(category, isChinese);
+                },
                 child: _buildCategoryCard(
                   category,
                   stats['total']!,
@@ -494,7 +498,7 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
         MaterialPageRoute(
           builder: (_) => CreateMemoryPage(
             item: item,
-            photoPath: widget.item.photoPath ?? '',
+            photoPath: widget.item.localPhotoPath ?? widget.item.remotePhotoPath ?? '',
             itemName: item.displayName(context),
           ),
         ),
@@ -640,7 +644,6 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                 ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
           ],
         ),
       ),
@@ -703,13 +706,14 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (widget.item.photoPath != null)
+                              if (widget.item.localPhotoPath != null || widget.item.remotePhotoPath != null)
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(16),
                                   child: AspectRatio(
                                     aspectRatio: 4 / 3,
-                                    child: Image.file(
-                                      File(widget.item.photoPath!),
+                                    child: SmartImageWidget(
+                                      localPath: widget.item.localPhotoPath,
+                                      remotePath: widget.item.remotePhotoPath,
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -1081,85 +1085,67 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                       itemBuilder: (context, index) {
                         final item = displayItems[index];
 
-                        // Wrap decluttered items with Dismissible for swipe-to-delete
-                        if (_selectedTab == 1) {
-                          return Dismissible(
-                            key: Key(item.id),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 20),
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEF4444),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.white,
-                                size: 28,
-                              ),
+                        // All items support swipe-to-delete
+                        return Dismissible(
+                          key: Key(item.id),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEF4444),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            confirmDismiss: (direction) async {
-                              return await showDialog<bool>(
-                                    context: context,
-                                    builder: (dialogContext) => AlertDialog(
-                                      title: Text(
-                                        widget.isChinese
-                                            ? '删除物品'
-                                            : 'Delete Item',
-                                      ),
-                                      content: Text(
-                                        widget.isChinese
-                                            ? '确定要删除这个物品吗？'
-                                            : 'Are you sure you want to delete this item?',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.of(
-                                            dialogContext,
-                                          ).pop(false),
-                                          child: Text(
-                                            widget.isChinese ? '取消' : 'Cancel',
-                                          ),
-                                        ),
-                                        FilledButton(
-                                          onPressed: () => Navigator.of(
-                                            dialogContext,
-                                          ).pop(true),
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor: const Color(
-                                              0xFFEF4444,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            widget.isChinese ? '删除' : 'Delete',
-                                          ),
-                                        ),
-                                      ],
+                            child: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                          confirmDismiss: (direction) async {
+                            return await showDialog<bool>(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    title: Text(
+                                      widget.isChinese
+                                          ? '删除物品'
+                                          : 'Delete Item',
                                     ),
-                                  ) ??
-                                  false;
-                            },
-                            onDismissed: (direction) {
-                              widget.onDeleteItem(item.id);
-                            },
-                            child: _buildItemCard(item),
-                          );
-                        }
-
-                        // Kept items - clickable to start joy assessment
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => _JoyQuestionPage(
-                                  item: item,
-                                  onItemCompleted: widget.onItemCompleted,
-                                  onMemoryCreated: widget.onMemoryCreated,
-                                ),
-                              ),
-                            );
+                                    content: Text(
+                                      widget.isChinese
+                                          ? '确定要删除这个物品吗？'
+                                          : 'Are you sure you want to delete this item?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(
+                                          dialogContext,
+                                        ).pop(false),
+                                        child: Text(
+                                          widget.isChinese ? '取消' : 'Cancel',
+                                        ),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () => Navigator.of(
+                                          dialogContext,
+                                        ).pop(true),
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: const Color(
+                                            0xFFEF4444,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          widget.isChinese ? '删除' : 'Delete',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ) ??
+                                false;
+                          },
+                          onDismissed: (direction) {
+                            widget.onDeleteItem(item.id);
                           },
                           child: _buildItemCard(item),
                         );
@@ -1186,14 +1172,17 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
       ),
       child: Row(
         children: [
-          if (item.photoPath != null)
+          if (item.localPhotoPath != null || item.remotePhotoPath != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.file(
-                File(item.photoPath!),
+              child: SizedBox(
                 width: 48,
                 height: 48,
-                fit: BoxFit.cover,
+                child: SmartImageWidget(
+                  localPath: item.localPhotoPath,
+                  remotePath: item.remotePhotoPath,
+                  fit: BoxFit.cover,
+                ),
               ),
             )
           else
@@ -1235,11 +1224,6 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                 ),
               ],
             ),
-          ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: Color(0xFFD1D5DB),
-            size: 20,
           ),
         ],
       ),

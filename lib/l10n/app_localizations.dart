@@ -137,13 +137,13 @@ abstract class AppLocalizations {
   /// No description provided for @joyDeclutterFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Keep only what sparks joy'**
+  /// **'Help you make difficult decision'**
   String get joyDeclutterFlowDescription;
 
   /// No description provided for @quickDeclutterFlowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Fast pass: clear a spot in minutes'**
+  /// **'Only keep items that bring joys'**
   String get quickDeclutterFlowDescription;
 
   /// No description provided for @deepCleaningFlowDescription.
@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'Monthly Progress'**
   String get dashboardMonthlyProgress;
 
+  /// No description provided for @dashboardYearlyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly Progress'**
+  String get dashboardYearlyProgress;
+
   /// No description provided for @dashboardDeclutteredLabel.
   ///
   /// In en, this message translates to:
@@ -359,37 +365,37 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardResellReportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Second-hand Trends'**
+  /// **'Resale Insights'**
   String get dashboardResellReportTitle;
 
   /// No description provided for @dashboardResellReportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'View full report'**
+  /// **'Track second-hand performance'**
   String get dashboardResellReportSubtitle;
 
   /// No description provided for @dashboardMemoryLaneTitle.
   ///
   /// In en, this message translates to:
-  /// **'Heartfelt Memories'**
+  /// **'Annual Memory'**
   String get dashboardMemoryLaneTitle;
 
   /// No description provided for @dashboardMemoryLaneSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Revisit your journey'**
+  /// **'Revisit your yearly highlights'**
   String get dashboardMemoryLaneSubtitle;
 
   /// No description provided for @dashboardYearlyReportsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Heartfelt Chronicles'**
+  /// **'Year in Review'**
   String get dashboardYearlyReportsTitle;
 
   /// No description provided for @dashboardYearlyReportsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'View annual summary'**
+  /// **'See year-round insights'**
   String get dashboardYearlyReportsSubtitle;
 
   /// No description provided for @dashboardCurrentStreakTitle.
@@ -449,7 +455,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningAnalysisTitle.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning Analysis'**
+  /// **'Clean Sweep Analysis'**
   String get deepCleaningAnalysisTitle;
 
   /// No description provided for @dashboardSessionsLabel.
@@ -1593,7 +1599,7 @@ abstract class AppLocalizations {
   /// No description provided for @captureItemToStart.
   ///
   /// In en, this message translates to:
-  /// **'Capture an item to start decluttering'**
+  /// **'Capture an item and let us guide you through the decision'**
   String get captureItemToStart;
 
   /// No description provided for @takePicture.
@@ -1623,7 +1629,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningTitle.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning'**
+  /// **'Clean Sweep'**
   String get deepCleaningTitle;
 
   /// No description provided for @continueButton.
@@ -1683,7 +1689,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaningSessionCompleted.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning session completed'**
+  /// **'Clean Sweep session completed'**
   String get deepCleaningSessionCompleted;
 
   /// No description provided for @memoriesTitle.
@@ -2097,7 +2103,7 @@ abstract class AppLocalizations {
   /// No description provided for @reminderActiveSessionBody.
   ///
   /// In en, this message translates to:
-  /// **'Your deep cleaning session is still running. Come back to finish and log your progress.'**
+  /// **'Your clean sweep session is still running. Come back to finish and log your progress.'**
   String get reminderActiveSessionBody;
 
   /// No description provided for @memoryNoDescription.
@@ -2115,8 +2121,14 @@ abstract class AppLocalizations {
   /// No description provided for @premiumRequiredMessage.
   ///
   /// In en, this message translates to:
-  /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue deep cleaning sessions, unlock full reports, and keep reminders active.'**
+  /// **'Your trial has ended. Upgrade to KeepJoy Premium to continue clean sweep sessions, unlock full reports, and keep reminders active.'**
   String get premiumRequiredMessage;
+
+  /// No description provided for @premiumExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription has expired or needs to be restored. Please renew or restore your purchases to continue using premium features.'**
+  String get premiumExpiredMessage;
 
   /// No description provided for @premiumLockedOverlay.
   ///
@@ -2208,6 +2220,12 @@ abstract class AppLocalizations {
   /// **'Restore Purchases'**
   String get restorePurchases;
 
+  /// No description provided for @subscribeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe Now'**
+  String get subscribeNow;
+
   /// No description provided for @mostPopular.
   ///
   /// In en, this message translates to:
@@ -2250,29 +2268,143 @@ abstract class AppLocalizations {
   /// **'Free Trial'**
   String get freeTrial;
 
-  /// No description provided for @featureAnnualReports.
+  /// No description provided for @trialActive.
   ///
   /// In en, this message translates to:
-  /// **'Annual Reports'**
-  String get featureAnnualReports;
+  /// **'Trial Active'**
+  String get trialActive;
 
-  /// No description provided for @featureMonthlyReports.
+  /// No description provided for @premiumActive.
   ///
   /// In en, this message translates to:
-  /// **'Monthly Reports'**
-  String get featureMonthlyReports;
+  /// **'Premium Active'**
+  String get premiumActive;
 
-  /// No description provided for @featureDeepReports.
+  /// No description provided for @renewsOn.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning Reports'**
-  String get featureDeepReports;
+  /// **'Renews on {date}'**
+  String renewsOn(String date);
 
   /// No description provided for @featureMemoriesPage.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited Memories'**
+  /// **'Memories Page'**
   String get featureMemoriesPage;
+
+  /// No description provided for @featureMemoriesPageDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create and cherish memories of items you let go'**
+  String get featureMemoriesPageDesc;
+
+  /// No description provided for @featureMemoryLane.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Memory'**
+  String get featureMemoryLane;
+
+  /// No description provided for @featureMemoryLaneDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Visualize your decluttering journey over time'**
+  String get featureMemoryLaneDesc;
+
+  /// No description provided for @featureResellTrends.
+  ///
+  /// In en, this message translates to:
+  /// **'Resell Trends'**
+  String get featureResellTrends;
+
+  /// No description provided for @featureResellTrendsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Track potential value of items for resale'**
+  String get featureResellTrendsDesc;
+
+  /// No description provided for @featureYearlyChronicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly Chronicle'**
+  String get featureYearlyChronicle;
+
+  /// No description provided for @featureYearlyChronicleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed insights on your cleaning sessions'**
+  String get featureYearlyChronicleDesc;
+
+  /// No description provided for @trialDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-Day Free Trial'**
+  String trialDays(String days);
+
+  /// No description provided for @startFreeTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Start {days}-Day Free Trial'**
+  String startFreeTrial(String days);
+
+  /// No description provided for @billedYearlyAfterTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed yearly after free trial'**
+  String get billedYearlyAfterTrial;
+
+  /// No description provided for @billedMonthlyAfterTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed monthly after free trial'**
+  String get billedMonthlyAfterTrial;
+
+  /// No description provided for @unlockPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Premium Features'**
+  String get unlockPremium;
+
+  /// No description provided for @premiumFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Features'**
+  String get premiumFeatures;
+
+  /// No description provided for @savePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {percent}%'**
+  String savePercent(String percent);
+
+  /// No description provided for @perMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'/mo'**
+  String get perMonth;
+
+  /// No description provided for @perYear.
+  ///
+  /// In en, this message translates to:
+  /// **'/yr'**
+  String get perYear;
+
+  /// No description provided for @monthlyPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthlyPlan;
+
+  /// No description provided for @annualPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual'**
+  String get annualPlan;
+
+  /// No description provided for @changePlansAnytime.
+  ///
+  /// In en, this message translates to:
+  /// **'Change plans or cancel anytime'**
+  String get changePlansAnytime;
 
   /// No description provided for @featureExportData.
   ///
@@ -2700,6 +2832,18 @@ abstract class AppLocalizations {
   /// **'What did this item bring you?'**
   String get whatDidThisItemBring;
 
+  /// No description provided for @haveYouLetGoOfThisItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Have you let go of this item?'**
+  String get haveYouLetGoOfThisItem;
+
+  /// No description provided for @selectStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Select item status'**
+  String get selectStatus;
+
   /// No description provided for @chooseFromGallery.
   ///
   /// In en, this message translates to:
@@ -3045,7 +3189,7 @@ abstract class AppLocalizations {
   /// No description provided for @todaysTip1.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning Mode: Tap \'Deep Cleaning\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!'**
+  /// **'Clean Sweep Mode: Tap \'Clean Sweep\' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you\'ve accomplished. Perfect for tackling entire rooms!'**
   String get todaysTip1;
 
   /// No description provided for @todaysTip2.
@@ -3273,7 +3417,7 @@ abstract class AppLocalizations {
   /// No description provided for @whatBroughtYouJoy.
   ///
   /// In en, this message translates to:
-  /// **'What brought you joy today?'**
+  /// **'Which items sparked joy and are worth remembering?'**
   String get whatBroughtYouJoy;
 
   /// No description provided for @shareYourJoy.
@@ -3297,7 +3441,7 @@ abstract class AppLocalizations {
   /// No description provided for @deepCleaning.
   ///
   /// In en, this message translates to:
-  /// **'Deep Cleaning'**
+  /// **'Clean Sweep'**
   String get deepCleaning;
 
   /// No description provided for @cleaningAreas.
@@ -3363,7 +3507,7 @@ abstract class AppLocalizations {
   /// No description provided for @startDeepCleaning.
   ///
   /// In en, this message translates to:
-  /// **'Start Deep Cleaning'**
+  /// **'Start Clean Sweep'**
   String get startDeepCleaning;
 
   /// No description provided for @schedule.
