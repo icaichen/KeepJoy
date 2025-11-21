@@ -370,10 +370,6 @@ class AppLocalizationsEn extends AppLocalizations {
       '\"The first step in crafting the life you want is to get rid of everything you don\'t.\" — Joshua Becker';
 
   @override
-  String get quote10 =>
-      '\"A clean house is a sign of a wasted life.\" — Unknown';
-
-  @override
   String get quote11 =>
       '\"The more you have, the more you are occupied. The less you have, the more free you are.\" — Mother Teresa';
 
@@ -392,6 +388,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get quote15 =>
       '\"Getting rid of everything that doesn\'t matter allows you to remember who you are.\" — Unknown';
+
+  @override
+  String get quote16 => '\"Less is more.\" — Ludwig Mies van der Rohe';
+
+  @override
+  String get quote17 =>
+      '\"Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.\" — Antoine de Saint-Exupéry';
+
+  @override
+  String get quote18 =>
+      '\"Your home is living space, not storage space.\" — Francine Jay';
 
   @override
   String get goodEvening => 'Good Evening';

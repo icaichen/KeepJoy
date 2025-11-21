@@ -148,42 +148,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _getQuoteOfDay(AppLocalizations l10n) {
     final now = DateTime.now();
     final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
-    final quoteIndex = (dayOfYear % 15) + 1;
-
-    switch (quoteIndex) {
-      case 1:
-        return l10n.quote1;
-      case 2:
-        return l10n.quote2;
-      case 3:
-        return l10n.quote3;
-      case 4:
-        return l10n.quote4;
-      case 5:
-        return l10n.quote5;
-      case 6:
-        return l10n.quote6;
-      case 7:
-        return l10n.quote7;
-      case 8:
-        return l10n.quote8;
-      case 9:
-        return l10n.quote9;
-      case 10:
-        return l10n.quote10;
-      case 11:
-        return l10n.quote11;
-      case 12:
-        return l10n.quote12;
-      case 13:
-        return l10n.quote13;
-      case 14:
-        return l10n.quote14;
-      case 15:
-        return l10n.quote15;
-      default:
-        return l10n.quote1;
-    }
+    final quotes = <String>[
+      l10n.quote1,
+      l10n.quote2,
+      l10n.quote3,
+      l10n.quote4,
+      l10n.quote5,
+      l10n.quote6,
+      l10n.quote7,
+      l10n.quote8,
+      l10n.quote9,
+      l10n.quote11,
+      l10n.quote12,
+      l10n.quote13,
+      l10n.quote14,
+      l10n.quote15,
+      l10n.quote16,
+      l10n.quote17,
+      l10n.quote18,
+    ];
+    return quotes[dayOfYear % quotes.length];
   }
 
   String _formatQuote(String quote) {
@@ -1636,11 +1620,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _startSessionFromPlanned(PlannedSession session) {
     switch (session.mode) {
       case SessionMode.deepCleaning:
-        if (!widget.hasFullAccess) {
-          widget.onRequestUpgrade();
-          return;
-        }
-        // For deep cleaning, navigate directly to before photo page with area pre-filled
+        // Deep cleaning is FREE - no premium check needed
+        // Navigate directly to before photo page with area pre-filled
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => BeforePhotoPage(
@@ -2396,7 +2377,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           final todoSessions = widget.plannedSessions
                               .where(
                                 (session) =>
-                                    session.area == 'General' ||
+                                    session.area == 'General' &&
                                     !session.isCompleted,
                               )
                               .toList();

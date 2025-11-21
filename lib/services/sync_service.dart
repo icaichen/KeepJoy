@@ -111,8 +111,14 @@ class SyncService {
 
     _isPulling = true;
     try {
-      await _downloadRemoteData();
-      _setStatus(SyncStatus.success);
+      debugPrint('🔄 [PULL] Starting 5-second cloud pull...');
+      final hadChanges = await _downloadRemoteData();
+      if (hadChanges) {
+        debugPrint('🔄 [PULL] Data changed, notifying UI to reload');
+        _setStatus(SyncStatus.success);
+      } else {
+        debugPrint('🔄 [PULL] No changes detected');
+      }
     } catch (e) {
       debugPrint('❌ Cloud pull failed: $e');
     } finally {
@@ -193,10 +199,10 @@ class SyncService {
   // ==========================================================================
 
   Future<void> _uploadDirtyData() async {
-    debugPrint('⬆️ Uploading dirty data...');
+    debugPrint('⬆️ [PUSH] Uploading dirty data...');
 
-    // Upload memories
     final dirtyMemories = _hiveService.getDirtyMemories();
+    debugPrint('   Found ${dirtyMemories.length} dirty memories');
     for (final memory in dirtyMemories) {
       await _processUploadTask(
         type: PendingTaskType.memoryUpload,
@@ -206,8 +212,8 @@ class SyncService {
       );
     }
 
-    // Upload sessions
     final dirtySessions = _hiveService.getDirtySessions();
+    debugPrint('   Found ${dirtySessions.length} dirty sessions');
     for (final session in dirtySessions) {
       await _processUploadTask(
         type: PendingTaskType.deepCleaningUpload,
@@ -217,8 +223,8 @@ class SyncService {
       );
     }
 
-    // Upload items
     final dirtyItems = _hiveService.getDirtyItems();
+    debugPrint('   Found ${dirtyItems.length} dirty items');
     for (final item in dirtyItems) {
       await _processUploadTask(
         type: PendingTaskType.declutterUpload,
@@ -228,8 +234,8 @@ class SyncService {
       );
     }
 
-    // Upload resell items
     final dirtyResellItems = _hiveService.getDirtyResellItems();
+    debugPrint('   Found ${dirtyResellItems.length} dirty resell items');
     for (final item in dirtyResellItems) {
       await _processUploadTask(
         type: PendingTaskType.resellUpload,
@@ -239,8 +245,8 @@ class SyncService {
       );
     }
 
-    // Upload planned sessions
     final dirtyPlannedSessions = _hiveService.getDirtyPlannedSessions();
+    debugPrint('   Found ${dirtyPlannedSessions.length} dirty planned sessions');
     for (final session in dirtyPlannedSessions) {
       await _processUploadTask(
         type: PendingTaskType.plannedSessionUpload,
@@ -250,7 +256,7 @@ class SyncService {
       );
     }
 
-    debugPrint('✅ Upload complete');
+    debugPrint('✅ [PUSH] Upload complete');
   }
 
   Map<String, dynamic> _memoryPayload(MemoryHive memory) =>
@@ -459,6 +465,9 @@ class SyncService {
   Future<void> _uploadItem(DeclutterItemHive itemHive) async {
     final item = itemHive.toItem();
 
+    debugPrint('⬆️ Uploading item: ${item.name} (${item.id.substring(0, 8)})');
+    debugPrint('   updated=${item.updatedAt}, deleted=${item.deletedAt}, device=${item.deviceId}');
+
     // Handle photo upload - only upload local files
     String? cloudPhotoUrl = item.remotePhotoPath;
     if (item.localPhotoPath != null && !item.localPhotoPath!.startsWith('http')) {
@@ -474,6 +483,7 @@ class SyncService {
     final data = item.toJson();
     data['photo_path'] = cloudPhotoUrl;
 
+    debugPrint('   Upserting to Supabase...');
     // Always upsert (including soft deletes) - never hard delete
     await _client!.from('declutter_items').upsert(data);
 
@@ -484,9 +494,9 @@ class SyncService {
     await itemHive.save();
 
     if (itemHive.deletedAt != null) {
-      debugPrint('⬆️ Uploaded soft-deleted item: ${item.id}');
+      debugPrint('   ✅ Uploaded soft-deleted item: ${item.name}');
     } else {
-      debugPrint('⬆️ Uploaded item: ${item.id}');
+      debugPrint('   ✅ Uploaded item: ${item.name}');
     }
   }
 
@@ -510,15 +520,16 @@ class SyncService {
     final session = sessionHive.toSession();
     final data = session.toJson();
 
-    // Always upsert (including soft deletes) - never hard delete
+    debugPrint('⬆️ [UPLOAD] PlannedSession ${session.id}: isCompleted=${session.isCompleted}, updatedAt=${session.updatedAt}');
+
     await _client!.from('planned_sessions').upsert(data);
     sessionHive.markSynced();
     await sessionHive.save();
 
     if (sessionHive.deletedAt != null) {
-      debugPrint('⬆️ Uploaded soft-deleted planned session: ${session.id}');
+      debugPrint('✅ Uploaded soft-deleted planned session: ${session.id}');
     } else {
-      debugPrint('⬆️ Uploaded planned session: ${session.id}');
+      debugPrint('✅ Uploaded planned session: ${session.id}');
     }
   }
 
@@ -526,27 +537,30 @@ class SyncService {
   // DOWNLOAD (Cloud -> Local)
   // ==========================================================================
 
-  Future<void> _downloadRemoteData() async {
-    debugPrint('⬇️ Downloading remote data...');
+  Future<bool> _downloadRemoteData() async {
+    debugPrint('⬇️ [PULL] Starting cloud→local sync...');
 
-    await _downloadMemories();
-    await _downloadSessions();
-    await _downloadItems();
-    await _downloadResellItems();
-    await _downloadPlannedSessions();
+    bool hadChanges = false;
+    hadChanges |= await _downloadMemories();
+    hadChanges |= await _downloadSessions();
+    hadChanges |= await _downloadItems();
+    hadChanges |= await _downloadResellItems();
+    hadChanges |= await _downloadPlannedSessions();
 
-    debugPrint('✅ Download complete');
+    debugPrint('✅ [PULL] Cloud→local sync complete, hadChanges=$hadChanges');
+    return hadChanges;
   }
 
-  Future<void> _downloadMemories() async {
+  Future<bool> _downloadMemories() async {
+    bool hadChanges = false;
     try {
-      // Always fetch all data for now - incremental sync can be added later
       final response = await _client!
           .from('memories')
           .select()
           .eq('user_id', _userId!)
           .order('created_at', ascending: false);
 
+      debugPrint('📥 Downloaded ${response.length} memories from cloud');
       DateTime? latestRemote;
 
       for (final json in response) {
@@ -555,18 +569,30 @@ class SyncService {
         latestRemote =
             _maxTimestamp(latestRemote, memory.updatedAt ?? memory.createdAt);
 
-        // Last-write-wins with delete priority
-        if (localHive == null ||
-            !localHive.isDirty ||
-            _shouldReplaceLocal(
-              localHive.updatedAt,
-              memory.updatedAt,
-              localDeletedAt: localHive.deletedAt,
-              remoteDeletedAt: memory.deletedAt,
-            )) {
+        if (localHive == null) {
           final hive = MemoryHive.fromMemory(memory, isDirty: false);
-          // Direct save to avoid auto-metadata injection
           await _hiveService.memories.put(hive.id, hive);
+          debugPrint('   ✅ Created memory: ${memory.title}');
+          hadChanges = true;
+        } else {
+          // CRITICAL: Never overwrite dirty local data
+          if (localHive.isDirty) {
+            debugPrint('   ⏭️ Skipping memory - local is dirty (pending upload)');
+            continue;
+          }
+
+          if (_shouldReplaceLocal(
+            localHive.updatedAt,
+            memory.updatedAt,
+            localDeletedAt: localHive.deletedAt,
+            remoteDeletedAt: memory.deletedAt,
+            localIsDirty: localHive.isDirty,
+          )) {
+            final hive = MemoryHive.fromMemory(memory, isDirty: false);
+            await _hiveService.memories.put(hive.id, hive);
+            debugPrint('   ✅ Updated memory: ${memory.title}');
+            hadChanges = true;
+          }
         }
       }
 
@@ -574,17 +600,19 @@ class SyncService {
     } catch (e) {
       debugPrint('❌ Failed to download memories: $e');
     }
+    return hadChanges;
   }
 
-  Future<void> _downloadSessions() async {
+  Future<bool> _downloadSessions() async {
+    bool hadChanges = false;
     try {
-      // Always fetch all data for now - incremental sync can be added later
       final response = await _client!
           .from('deep_cleaning_sessions')
           .select()
           .eq('user_id', _userId!)
           .order('created_at', ascending: false);
 
+      debugPrint('📥 Downloaded ${response.length} sessions from cloud');
       DateTime? latestRemote;
 
       for (final json in response) {
@@ -593,20 +621,36 @@ class SyncService {
         latestRemote =
             _maxTimestamp(latestRemote, session.updatedAt ?? session.createdAt);
 
-        if (localHive == null ||
-            !localHive.isDirty ||
-            _shouldReplaceLocal(
-              localHive.updatedAt,
-              session.updatedAt,
-              localDeletedAt: localHive.deletedAt,
-              remoteDeletedAt: session.deletedAt,
-            )) {
+        if (localHive == null) {
           final hive = DeepCleaningSessionHive.fromSession(
             session,
             isDirty: false,
           );
-          // Direct save to avoid auto-metadata injection
           await _hiveService.sessions.put(hive.id, hive);
+          debugPrint('   ✅ Created session: ${session.area}');
+          hadChanges = true;
+        } else {
+          // CRITICAL: Never overwrite dirty local data
+          if (localHive.isDirty) {
+            debugPrint('   ⏭️ Skipping session - local is dirty (pending upload)');
+            continue;
+          }
+
+          if (_shouldReplaceLocal(
+            localHive.updatedAt,
+            session.updatedAt,
+            localDeletedAt: localHive.deletedAt,
+            remoteDeletedAt: session.deletedAt,
+            localIsDirty: localHive.isDirty,
+          )) {
+            final hive = DeepCleaningSessionHive.fromSession(
+              session,
+              isDirty: false,
+            );
+            await _hiveService.sessions.put(hive.id, hive);
+            debugPrint('   ✅ Updated session: ${session.area}');
+            hadChanges = true;
+          }
         }
       }
 
@@ -614,17 +658,19 @@ class SyncService {
     } catch (e) {
       debugPrint('❌ Failed to download sessions: $e');
     }
+    return hadChanges;
   }
 
-  Future<void> _downloadItems() async {
+  Future<bool> _downloadItems() async {
+    bool hadChanges = false;
     try {
-      // Always fetch all data for now - incremental sync can be added later
       final response = await _client!
           .from('declutter_items')
           .select()
           .eq('user_id', _userId!)
           .order('created_at', ascending: false);
 
+      debugPrint('📥 Downloaded ${response.length} items from cloud');
       DateTime? latestRemote;
 
       for (final json in response) {
@@ -633,17 +679,37 @@ class SyncService {
         latestRemote =
             _maxTimestamp(latestRemote, item.updatedAt ?? item.createdAt);
 
-        if (localHive == null ||
-            !localHive.isDirty ||
-            _shouldReplaceLocal(
-              localHive.updatedAt,
-              item.updatedAt,
-              localDeletedAt: localHive.deletedAt,
-              remoteDeletedAt: item.deletedAt,
-            )) {
+        debugPrint('   🔍 Item: ${item.name} (${item.id.substring(0, 8)})');
+        debugPrint('      Remote: updated=${item.updatedAt}, deleted=${item.deletedAt}, device=${item.deviceId}');
+
+        if (localHive == null) {
           final hive = DeclutterItemHive.fromItem(item, isDirty: false);
-          // Direct save to avoid auto-metadata injection
           await _hiveService.items.put(hive.id, hive);
+          debugPrint('   ✅ Created item: ${item.name}');
+          hadChanges = true;
+        } else {
+          debugPrint('      Local: updated=${localHive.updatedAt}, deleted=${localHive.deletedAt}, device=${localHive.deviceId}, dirty=${localHive.isDirty}');
+
+          // CRITICAL: Never overwrite dirty local data (not yet uploaded)
+          if (localHive.isDirty) {
+            debugPrint('   ⏭️ Skipping - local is dirty (pending upload)');
+            continue;
+          }
+
+          if (_shouldReplaceLocal(
+            localHive.updatedAt,
+            item.updatedAt,
+            localDeletedAt: localHive.deletedAt,
+            remoteDeletedAt: item.deletedAt,
+            localIsDirty: localHive.isDirty,
+          )) {
+            final hive = DeclutterItemHive.fromItem(item, isDirty: false);
+            await _hiveService.items.put(hive.id, hive);
+            debugPrint('   ✅ Updated item: ${item.name}');
+            hadChanges = true;
+          } else {
+            debugPrint('   ⏭️ Kept local item: ${item.name}');
+          }
         }
       }
 
@@ -651,17 +717,19 @@ class SyncService {
     } catch (e) {
       debugPrint('❌ Failed to download items: $e');
     }
+    return hadChanges;
   }
 
-  Future<void> _downloadResellItems() async {
+  Future<bool> _downloadResellItems() async {
+    bool hadChanges = false;
     try {
-      // Always fetch all data for now - incremental sync can be added later
       final response = await _client!
           .from('resell_items')
           .select()
           .eq('user_id', _userId!)
           .order('created_at', ascending: false);
 
+      debugPrint('📥 Downloaded ${response.length} resell items from cloud');
       DateTime? latestRemote;
 
       for (final json in response) {
@@ -670,17 +738,37 @@ class SyncService {
         latestRemote =
             _maxTimestamp(latestRemote, item.updatedAt ?? item.createdAt);
 
-        if (localHive == null ||
-            !localHive.isDirty ||
-            _shouldReplaceLocal(
-              localHive.updatedAt,
-              item.updatedAt,
-              localDeletedAt: localHive.deletedAt,
-              remoteDeletedAt: item.deletedAt,
-            )) {
+        debugPrint('   🔍 ResellItem: ${item.id.substring(0, 8)}');
+        debugPrint('      Remote: status=${item.status.name}, updated=${item.updatedAt}, deleted=${item.deletedAt}');
+
+        if (localHive == null) {
           final hive = ResellItemHive.fromItem(item, isDirty: false);
-          // Direct save to avoid auto-metadata injection
           await _hiveService.resellItems.put(hive.id, hive);
+          debugPrint('   ✅ Created resell item: ${item.id}');
+          hadChanges = true;
+        } else {
+          debugPrint('      Local: status=${localHive.status}, updated=${localHive.updatedAt}, deleted=${localHive.deletedAt}, dirty=${localHive.isDirty}');
+
+          // CRITICAL: Never overwrite dirty local data (not yet uploaded)
+          if (localHive.isDirty) {
+            debugPrint('   ⏭️ Skipping - local is dirty (pending upload)');
+            continue;
+          }
+
+          if (_shouldReplaceLocal(
+            localHive.updatedAt,
+            item.updatedAt,
+            localDeletedAt: localHive.deletedAt,
+            remoteDeletedAt: item.deletedAt,
+            localIsDirty: localHive.isDirty,
+          )) {
+            final hive = ResellItemHive.fromItem(item, isDirty: false);
+            await _hiveService.resellItems.put(hive.id, hive);
+            debugPrint('   ✅ Updated resell item: ${item.id}');
+            hadChanges = true;
+          } else {
+            debugPrint('   ⏭️ Kept local resell item: ${item.id}');
+          }
         }
       }
 
@@ -688,12 +776,12 @@ class SyncService {
     } catch (e) {
       debugPrint('❌ Failed to download resell items: $e');
     }
+    return hadChanges;
   }
 
-  Future<void> _downloadPlannedSessions() async {
+  Future<bool> _downloadPlannedSessions() async {
+    bool hadChanges = false;
     try {
-      // Always fetch all data for now - incremental sync can be added later
-      // when we ensure all records have proper updated_at values
       final response = await _client!
           .from('planned_sessions')
           .select()
@@ -706,23 +794,40 @@ class SyncService {
         final session = PlannedSession.fromJson(json);
         final localHive = _hiveService.getPlannedSession(session.id);
 
-        if (localHive == null ||
-            !localHive.isDirty ||
-            _shouldReplaceLocal(
-              localHive.updatedAt,
-              session.updatedAt,
-              localDeletedAt: localHive.deletedAt,
-              remoteDeletedAt: session.deletedAt,
-            )) {
+        debugPrint('   Checking session: ${session.title} (${session.id})');
+
+        if (localHive == null) {
           final hive = PlannedSessionHive.fromSession(session, isDirty: false);
-          // Direct save to avoid auto-metadata injection
           await _hiveService.plannedSessions.put(hive.id, hive);
-          debugPrint('   Saved planned session: ${session.title}');
+          debugPrint('   ✅ Created planned session: ${session.title}');
+          hadChanges = true;
+        } else {
+          // CRITICAL: Never overwrite dirty local data
+          if (localHive.isDirty) {
+            debugPrint('   ⏭️ Skipping planned session - local is dirty (pending upload)');
+            continue;
+          }
+
+          if (_shouldReplaceLocal(
+            localHive.updatedAt,
+            session.updatedAt,
+            localDeletedAt: localHive.deletedAt,
+          remoteDeletedAt: session.deletedAt,
+          localIsDirty: localHive.isDirty,
+        )) {
+          final hive = PlannedSessionHive.fromSession(session, isDirty: false);
+            await _hiveService.plannedSessions.put(hive.id, hive);
+            debugPrint('   ✅ Updated planned session: ${session.title} (remote newer)');
+            hadChanges = true;
+          } else {
+            debugPrint('   ⏭️ Kept local planned session: ${session.title}');
+          }
         }
       }
     } catch (e) {
       debugPrint('❌ Failed to download planned sessions: $e');
     }
+    return hadChanges;
   }
 
   // ==========================================================================
@@ -739,17 +844,45 @@ class SyncService {
     DateTime? remoteUpdatedAt, {
     DateTime? localDeletedAt,
     DateTime? remoteDeletedAt,
+    bool localIsDirty = false,
   }) {
-    // Rule 1: Remote deletion takes priority
-    if (remoteDeletedAt != null) return true;
+    // NOTE: We removed the isDirty check here because it was blocking legitimate
+    // remote updates. The isDirty flag should only prevent uploading stale local
+    // data to cloud, not prevent downloading newer remote data.
+    // If remote is genuinely newer, we should accept it regardless of local state.
 
-    // Rule 2: Keep local deletion if remote is not deleted
-    if (localDeletedAt != null && remoteDeletedAt == null) return false;
+    if (localIsDirty) {
+      debugPrint('   ⚠️ Local is dirty - will still compare timestamps');
+    }
 
-    // Rule 3: Last-write-wins based on updatedAt
-    if (remoteUpdatedAt == null) return false;
-    if (localUpdatedAt == null) return true;
-    return remoteUpdatedAt.isAfter(localUpdatedAt);
+    if (remoteDeletedAt != null && localDeletedAt != null) {
+      final result = remoteDeletedAt.isAfter(localDeletedAt);
+      debugPrint('   📊 Both deleted: remote=${remoteDeletedAt}, local=${localDeletedAt}, replace=$result');
+      return result;
+    }
+
+    if (remoteDeletedAt != null) {
+      debugPrint('   📊 Remote deleted, replacing local');
+      return true;
+    }
+
+    if (localDeletedAt != null && remoteDeletedAt == null) {
+      debugPrint('   📊 Local deleted but remote not, keeping local delete');
+      return false;
+    }
+
+    if (remoteUpdatedAt == null) {
+      debugPrint('   📊 Remote has no updatedAt, keeping local');
+      return false;
+    }
+    if (localUpdatedAt == null) {
+      debugPrint('   📊 Local has no updatedAt, taking remote');
+      return true;
+    }
+
+    final result = remoteUpdatedAt.isAfter(localUpdatedAt);
+    debugPrint('   📊 Comparing: remote=${remoteUpdatedAt.toIso8601String()}, local=${localUpdatedAt.toIso8601String()}, replace=$result');
+    return result;
   }
 
   // ==========================================================================

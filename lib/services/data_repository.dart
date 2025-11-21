@@ -13,12 +13,14 @@ import 'package:keepjoy_app/models/hive/planned_session_hive.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
 import 'package:keepjoy_app/services/hive_service.dart';
 import 'package:keepjoy_app/services/sync_service.dart';
+import 'package:keepjoy_app/services/device_id_service.dart';
 
 /// Local-First Data Repository
 /// All operations write to Hive first, then sync to cloud in background
 class DataRepository {
   final _authService = AuthService();
   final _hiveService = HiveService.instance;
+  final _deviceIdService = DeviceIdService.instance;
 
   String? get _userId => _authService.currentUserId;
   String get _requiredUserId => _authService.requireUserId();
@@ -53,28 +55,35 @@ class DataRepository {
   // ========================================================================
 
   /// Fetch all declutter items from local Hive database
+  /// Only returns items that are NOT soft-deleted
   Future<List<DeclutterItem>> fetchDeclutterItems() async {
     if (_userId == null) return [];
 
     final hiveItems = _hiveService.getAllItems(userId: _userId!);
-    return hiveItems.map((h) => h.toItem()).toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    // Filter out soft-deleted items
+    final activeItems = hiveItems
+        .where((h) => h.deletedAt == null)
+        .map((h) => h.toItem())
+        .toList();
+    return activeItems..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   /// Create a new declutter item (writes to Hive, syncs later)
   Future<DeclutterItem> createDeclutterItem(DeclutterItem item) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final itemWithUser = item.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Save to Hive (local-first)
     final hive = DeclutterItemHive.fromItem(itemWithUser, isDirty: true);
     await _hiveService.saveItem(hive);
 
-    debugPrint('💾 Created item locally: ${item.id}');
+    debugPrint('💾 Created item locally: ${item.id} [device: $deviceId]');
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -85,17 +94,19 @@ class DataRepository {
   /// Update a declutter item (writes to Hive, syncs later)
   Future<DeclutterItem> updateDeclutterItem(DeclutterItem item) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final itemWithUser = item.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Update in Hive
     final hive = DeclutterItemHive.fromItem(itemWithUser, isDirty: true);
     await _hiveService.saveItem(hive);
 
-    debugPrint('💾 Updated item locally: ${item.id}');
+    debugPrint('💾 Updated item locally: ${item.id} [device: $deviceId]');
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -127,28 +138,47 @@ class DataRepository {
   // ========================================================================
 
   /// Fetch all resell items from local Hive database
+  /// Only returns resell items where the linked declutter_item is NOT deleted
   Future<List<ResellItem>> fetchResellItems() async {
     if (_userId == null) return [];
 
     final hiveItems = _hiveService.getAllResellItems(userId: _userId!);
-    return hiveItems.map((h) => h.toItem()).toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final resellItems = hiveItems.map((h) => h.toItem()).toList();
+
+    // Filter out resell items linked to deleted declutter items
+    final validResellItems = <ResellItem>[];
+    for (final resellItem in resellItems) {
+      // Skip soft-deleted resell items
+      if (resellItem.deletedAt != null) continue;
+
+      // Check if the linked declutter item exists and is not deleted
+      final declutterItem = _hiveService.getItem(resellItem.declutterItemId);
+      if (declutterItem != null && declutterItem.deletedAt == null) {
+        validResellItems.add(resellItem);
+      }
+    }
+
+    return validResellItems..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   /// Create a new resell item (writes to Hive, syncs later)
   Future<ResellItem> createResellItem(ResellItem item) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final itemWithUser = item.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Save to Hive
     final hive = ResellItemHive.fromItem(itemWithUser, isDirty: true);
     await _hiveService.saveResellItem(hive);
 
-    debugPrint('💾 Created resell item locally: ${item.id}');
+    debugPrint(
+      '💾 Created resell item locally: ${item.id} [device: $deviceId]',
+    );
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -159,17 +189,21 @@ class DataRepository {
   /// Update a resell item (writes to Hive, syncs later)
   Future<ResellItem> updateResellItem(ResellItem item) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final itemWithUser = item.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Update in Hive
     final hive = ResellItemHive.fromItem(itemWithUser, isDirty: true);
     await _hiveService.saveResellItem(hive);
 
-    debugPrint('💾 Updated resell item locally: ${item.id}');
+    debugPrint(
+      '💾 Updated resell item locally: ${item.id} [device: $deviceId]',
+    );
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -199,8 +233,12 @@ class DataRepository {
     if (_userId == null) return [];
 
     final hiveSessions = _hiveService.getAllSessions(userId: _userId!);
-    return hiveSessions.map((h) => h.toSession()).toList()
-      ..sort((a, b) => b.startTime.compareTo(a.startTime));
+    // Filter out soft-deleted sessions
+    final activeSessions = hiveSessions
+        .where((h) => h.deletedAt == null)
+        .map((h) => h.toSession())
+        .toList();
+    return activeSessions..sort((a, b) => b.startTime.compareTo(a.startTime));
   }
 
   /// Create a new deep cleaning session (writes to Hive, syncs later)
@@ -208,10 +246,12 @@ class DataRepository {
     DeepCleaningSession session,
   ) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final sessionWithUser = session.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Save to Hive
@@ -221,7 +261,7 @@ class DataRepository {
     );
     await _hiveService.saveSession(hive);
 
-    debugPrint('💾 Created session locally: ${session.id}');
+    debugPrint('💾 Created session locally: ${session.id} [device: $deviceId]');
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -234,10 +274,12 @@ class DataRepository {
     DeepCleaningSession session,
   ) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final sessionWithUser = session.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Update in Hive
@@ -247,7 +289,7 @@ class DataRepository {
     );
     await _hiveService.saveSession(hive);
 
-    debugPrint('💾 Updated session locally: ${session.id}');
+    debugPrint('💾 Updated session locally: ${session.id} [device: $deviceId]');
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -280,28 +322,35 @@ class DataRepository {
   // ========================================================================
 
   /// Fetch all memories from local Hive database
+  /// Only returns memories that are NOT soft-deleted
   Future<List<Memory>> fetchMemories() async {
     if (_userId == null) return [];
 
     final hiveMemories = _hiveService.getAllMemories(userId: _userId!);
-    return hiveMemories.map((h) => h.toMemory()).toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    // Filter out soft-deleted memories
+    final activeMemories = hiveMemories
+        .where((h) => h.deletedAt == null)
+        .map((h) => h.toMemory())
+        .toList();
+    return activeMemories..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   /// Create a new memory (writes to Hive, syncs later)
   Future<Memory> createMemory(Memory memory) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final memoryWithUser = memory.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Save to Hive
     final hive = MemoryHive.fromMemory(memoryWithUser, isDirty: true);
     await _hiveService.saveMemory(hive);
 
-    debugPrint('💾 Created memory locally: ${memory.id}');
+    debugPrint('💾 Created memory locally: ${memory.id} [device: $deviceId]');
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -312,17 +361,19 @@ class DataRepository {
   /// Update a memory (writes to Hive, syncs later)
   Future<Memory> updateMemory(Memory memory) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final memoryWithUser = memory.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Update in Hive
     final hive = MemoryHive.fromMemory(memoryWithUser, isDirty: true);
     await _hiveService.saveMemory(hive);
 
-    debugPrint('💾 Updated memory locally: ${memory.id}');
+    debugPrint('💾 Updated memory locally: ${memory.id} [device: $deviceId]');
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -354,11 +405,17 @@ class DataRepository {
   // ========================================================================
 
   /// Fetch all planned sessions from local Hive database
+  /// Only returns sessions that are NOT soft-deleted
   Future<List<PlannedSession>> fetchPlannedSessions() async {
     if (_userId == null) return [];
 
     final hiveSessions = _hiveService.getAllPlannedSessions(userId: _userId!);
-    return hiveSessions.map((h) => h.toSession()).toList()..sort((a, b) {
+    // Filter out soft-deleted sessions
+    final activeSessions = hiveSessions
+        .where((h) => h.deletedAt == null)
+        .map((h) => h.toSession())
+        .toList();
+    return activeSessions..sort((a, b) {
       // Sort by scheduled date, nulls last
       if (a.scheduledDate == null && b.scheduledDate == null) {
         return a.createdAt.compareTo(b.createdAt);
@@ -372,17 +429,21 @@ class DataRepository {
   /// Create a new planned session (writes to Hive, syncs later)
   Future<PlannedSession> createPlannedSession(PlannedSession session) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
     final sessionWithUser = session.copyWith(
       userId: userId,
       updatedAt: DateTime.now(),
+      deviceId: deviceId,
     );
 
     // Save to Hive
     final hive = PlannedSessionHive.fromSession(sessionWithUser, isDirty: true);
     await _hiveService.savePlannedSession(hive);
 
-    debugPrint('💾 Created planned session locally: ${session.id}');
+    debugPrint(
+      '💾 Created planned session locally: ${session.id} [device: $deviceId]',
+    );
 
     // Schedule background sync
     _scheduleSyncAfterDelay();
@@ -393,17 +454,36 @@ class DataRepository {
   /// Update a planned session (writes to Hive, syncs later)
   Future<PlannedSession> updatePlannedSession(PlannedSession session) async {
     final userId = _requiredUserId;
+    final deviceId = await _deviceIdService.getDeviceId();
 
-    final sessionWithUser = session.copyWith(
+    // Create a new session to ensure deletedAt is cleared
+    // We can't use copyWith because it preserves null values
+    final sessionWithUser = PlannedSession(
+      id: session.id,
       userId: userId,
+      title: session.title,
+      area: session.area,
+      scheduledDate: session.scheduledDate,
+      scheduledTime: session.scheduledTime,
+      createdAt: session.createdAt,
       updatedAt: DateTime.now(),
+      deletedAt: null, // Always null when updating
+      deviceId: deviceId,
+      notes: session.notes,
+      isCompleted: session.isCompleted,
+      completedAt: session.completedAt,
+      priority: session.priority,
+      mode: session.mode,
+      goal: session.goal,
     );
 
     // Update in Hive
     final hive = PlannedSessionHive.fromSession(sessionWithUser, isDirty: true);
     await _hiveService.savePlannedSession(hive);
 
-    debugPrint('💾 Updated planned session locally: ${session.id}');
+    debugPrint(
+      '💾 Updated planned session locally: ${session.id} [device: $deviceId]',
+    );
 
     // Schedule background sync
     _scheduleSyncAfterDelay();

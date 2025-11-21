@@ -47,21 +47,42 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
 
   List<PlannedSession> _getSessionsForDay(DateTime day) {
     return widget.plannedSessions.where((session) {
-      if (session.scheduledDate == null) return false;
-      final sessionDate = DateTime(
-        session.scheduledDate!.year,
-        session.scheduledDate!.month,
-        session.scheduledDate!.day,
-      );
       final compareDate = DateTime(day.year, day.month, day.day);
-      return sessionDate == compareDate;
+
+      // Priority 1: Show scheduled sessions on their scheduled date
+      if (session.scheduledDate != null) {
+        final sessionDate = DateTime(
+          session.scheduledDate!.year,
+          session.scheduledDate!.month,
+          session.scheduledDate!.day,
+        );
+        return sessionDate == compareDate;
+      }
+
+      // Priority 2: Show completed unscheduled sessions on their completion date
+      if (session.isCompleted && session.completedAt != null) {
+        final completedDate = DateTime(
+          session.completedAt!.year,
+          session.completedAt!.month,
+          session.completedAt!.day,
+        );
+        return completedDate == compareDate;
+      }
+
+      // Priority 3: Show unscheduled, non-completed goals on their creation date
+      final createdDate = DateTime(
+        session.createdAt.year,
+        session.createdAt.month,
+        session.createdAt.day,
+      );
+      return createdDate == compareDate;
     }).toList();
   }
 
   List<PlannedSession> _getUnscheduledSessions() {
     return widget.plannedSessions
         .where(
-          (session) => session.scheduledDate == null && !session.isCompleted,
+          (session) => !session.isCompleted && session.scheduledDate == null,
         )
         .toList();
   }
@@ -366,21 +387,23 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
             ),
           ),
 
-          // Original header
+          // Original header - allows touches to pass through
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: SizedBox(
-              height: 120,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 24,
-                  right: 16,
-                  top: topPadding + 12,
-                ),
-                child: Opacity(
-                  opacity: headerOpacity,
+            child: IgnorePointer(
+              ignoring: true,
+              child: Opacity(
+                opacity: headerOpacity,
+                child: Container(
+                  height: 120,
+                  color: Colors.transparent,
+                  padding: EdgeInsets.only(
+                    left: 24,
+                    right: 16,
+                    top: topPadding + 12,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -394,44 +417,47 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                           letterSpacing: -0.5,
                         ),
                       ),
-                      GestureDetector(
-                        onTap: _addNewPlan,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.add,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                l10n.calendarAddNewPlan,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
+                      IgnorePointer(
+                        ignoring: false,
+                        child: GestureDetector(
+                          onTap: _addNewPlan,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.add,
                                   color: Colors.white,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Text(
+                                  l10n.calendarAddNewPlan,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -462,29 +488,34 @@ class _SessionTile extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Larger tap area for checkbox
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: onToggle,
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: session.isCompleted
-                    ? const Color(0xFFB794F6)
-                    : Colors.white,
-                border: Border.all(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
                   color: session.isCompleted
                       ? const Color(0xFFB794F6)
-                      : const Color(0xFFD1D5DB),
-                  width: 2,
+                      : Colors.white,
+                  border: Border.all(
+                    color: session.isCompleted
+                        ? const Color(0xFFB794F6)
+                        : const Color(0xFFD1D5DB),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                borderRadius: BorderRadius.circular(6),
+                child: session.isCompleted
+                    ? const Icon(Icons.check, size: 16, color: Colors.white)
+                    : null,
               ),
-              child: session.isCompleted
-                  ? const Icon(Icons.check, size: 16, color: Colors.white)
-                  : null,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 4),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -603,7 +634,9 @@ class _SimpleCalendar extends StatelessWidget {
         const SizedBox(height: 8),
 
         // Calendar days
-        ...List.generate((daysInMonth + firstWeekday) ~/ 7 + 1, (weekIndex) {
+        ...List.generate(
+          ((daysInMonth + firstWeekday + 6) ~/ 7),
+          (weekIndex) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(

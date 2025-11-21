@@ -738,12 +738,6 @@ abstract class AppLocalizations {
   /// **'\"The first step in crafting the life you want is to get rid of everything you don\'t.\" — Joshua Becker'**
   String get quote9;
 
-  /// No description provided for @quote10.
-  ///
-  /// In en, this message translates to:
-  /// **'\"A clean house is a sign of a wasted life.\" — Unknown'**
-  String get quote10;
-
   /// No description provided for @quote11.
   ///
   /// In en, this message translates to:
@@ -773,6 +767,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'\"Getting rid of everything that doesn\'t matter allows you to remember who you are.\" — Unknown'**
   String get quote15;
+
+  /// No description provided for @quote16.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Less is more.\" — Ludwig Mies van der Rohe'**
+  String get quote16;
+
+  /// No description provided for @quote17.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.\" — Antoine de Saint-Exupéry'**
+  String get quote17;
+
+  /// No description provided for @quote18.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Your home is living space, not storage space.\" — Francine Jay'**
+  String get quote18;
 
   /// No description provided for @goodEvening.
   ///

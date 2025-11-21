@@ -607,7 +607,10 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
 
     if (status == null || !mounted) return;
 
-    final updatedItem = widget.item.copyWith(status: status);
+    final updatedItem = widget.item.copyWith(
+      status: status,
+      updatedAt: DateTime.now(),
+    );
     widget.onItemCompleted(updatedItem);
 
     await _showMemoryPrompt(updatedItem);

@@ -183,6 +183,7 @@ class _MainNavigatorState extends State<MainNavigator>
       {}; // Track dates when user was active (format: yyyy-MM-dd)
   bool _hasFullAccess = false; // Default to false until verified
   StreamSubscription<SyncStatus>? _syncSubscription;
+  DateTime? _lastLocalUpdate; // Track when user made a local change
 
   @override
   void initState() {
@@ -192,11 +193,20 @@ class _MainNavigatorState extends State<MainNavigator>
     _loadUserData(); // 加载用户数据
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
 
-    // Listen to sync status changes - auto-refresh UI when sync completes
+    // Listen to sync status changes
     _syncSubscription = SyncService.instance.statusStream.listen((status) {
       if (status == SyncStatus.success && mounted) {
-        debugPrint('🔄 Sync completed successfully, refreshing UI data...');
-        _loadUserData();
+        // Check if user made a local update in the last 3 seconds
+        final now = DateTime.now();
+        final recentLocalUpdate = _lastLocalUpdate != null &&
+            now.difference(_lastLocalUpdate!).inSeconds < 3;
+
+        if (recentLocalUpdate) {
+          debugPrint('✅ Sync completed, but skipping reload (recent local update)');
+        } else {
+          debugPrint('✅ Sync completed, reloading data from other devices');
+          _loadUserData();
+        }
       }
     });
 
@@ -221,6 +231,7 @@ class _MainNavigatorState extends State<MainNavigator>
 
   /// 从数据库加载所有用户数据
   Future<void> _loadUserData() async {
+    debugPrint('📥 [LOAD] _loadUserData called - reloading all data from Hive');
     try {
       final repository = DataRepository();
 
@@ -241,8 +252,15 @@ class _MainNavigatorState extends State<MainNavigator>
           _memories.clear();
           _memories.addAll(results[1] as List<Memory>);
 
+          debugPrint('📥 [LOAD] Replacing _resellItems with ${(results[2] as List<ResellItem>).length} items from Hive');
           _resellItems.clear();
           _resellItems.addAll(results[2] as List<ResellItem>);
+
+          // Log first few resell items to see their status
+          for (var i = 0; i < _resellItems.length && i < 3; i++) {
+            final item = _resellItems[i];
+            debugPrint('📥 [LOAD] ResellItem[$i]: id=${item.id}, status=${item.status.name}');
+          }
 
           _completedSessions.clear();
           _completedSessions.addAll(results[3] as List<DeepCleaningSession>);
@@ -311,6 +329,8 @@ class _MainNavigatorState extends State<MainNavigator>
       ReminderService.cancelActiveSessionReminder();
       unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
       _refreshPremiumAccess();
+      // Reload data when app resumes to get any changes synced from other devices
+      _loadUserData();
     }
   }
 
@@ -492,6 +512,7 @@ class _MainNavigatorState extends State<MainNavigator>
                 _plannedSessions[plannedSessionIndex].copyWith(
                   isCompleted: true,
                   completedAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
                 );
             _plannedSessions[plannedSessionIndex] = completedPlannedSession;
             // 保存 PlannedSession 更新
@@ -516,6 +537,8 @@ class _MainNavigatorState extends State<MainNavigator>
   }
 
   Future<void> _addDeclutteredItem(DeclutterItem item) async {
+    _lastLocalUpdate = DateTime.now(); // Track local update time
+
     // Record activity based on which flow created the item
     final localizedName = item.displayName(context);
     _recordActivity(
@@ -564,55 +587,73 @@ class _MainNavigatorState extends State<MainNavigator>
       final repository = DataRepository();
       await repository.updateDeclutterItem(item);
 
-      setState(() {
-        final index = _declutteredItems.indexWhere((i) => i.id == item.id);
-        if (index != -1) {
-          _declutteredItems[index] = item;
-
-          // If status changed to resell, create ResellItem if not exists
-          if (item.status == DeclutterStatus.resell) {
-            final hasResellItem = _resellItems.any(
-              (r) => r.declutterItemId == item.id,
-            );
-            if (!hasResellItem) {
-              final resellItem = ResellItem(
-                id: const Uuid().v4(),
-                userId: _currentUserId,
-                declutterItemId: item.id,
-                status: ResellStatus.toSell,
-                createdAt: DateTime.now(),
-              );
-              _resellItems.insert(0, resellItem);
-              unawaited(repository.createResellItem(resellItem));
-            }
-          }
+      // If status changed to resell, create ResellItem if not exists
+      if (item.status == DeclutterStatus.resell) {
+        final hasResellItem = _resellItems.any(
+          (r) => r.declutterItemId == item.id,
+        );
+        if (!hasResellItem) {
+          final resellItem = ResellItem(
+            id: const Uuid().v4(),
+            userId: _currentUserId,
+            declutterItemId: item.id,
+            status: ResellStatus.toSell,
+            createdAt: DateTime.now(),
+          );
+          await repository.createResellItem(resellItem);
         }
-      });
-      debugPrint('✅ 物品已更新: ${item.id}');
+      }
+
+      // Reload from Hive immediately after save
+      await _reloadDeclutterItems();
+      await _reloadResellItems();
+      debugPrint('✅ 物品已更新并重新加载: ${item.id}');
     } catch (e) {
       debugPrint('❌ 更新物品失败: $e');
     }
   }
 
+  Future<void> _reloadDeclutterItems() async {
+    final repository = DataRepository();
+    final items = await repository.fetchDeclutterItems();
+    if (mounted) {
+      setState(() {
+        _declutteredItems.clear();
+        _declutteredItems.addAll(items);
+      });
+    }
+  }
+
   Future<void> _updateResellItem(ResellItem item) async {
     try {
+      debugPrint('🔄 开始更新转售物品: ${item.id}, status=${item.status.name}');
+      _lastLocalUpdate = DateTime.now(); // Track local update time
+
       final repository = DataRepository();
       await repository.updateResellItem(item);
 
-      setState(() {
-        final index = _resellItems.indexWhere((r) => r.id == item.id);
-        if (index != -1) {
-          _resellItems[index] = item;
-        }
-      });
-      debugPrint('✅ 转售物品已更新: ${item.id}');
+      // Reload from Hive immediately after save to get the updated item
+      await _reloadResellItems();
+      debugPrint('✅ 转售物品已更新并重新加载: ${item.id}');
     } catch (e) {
       debugPrint('❌ 更新转售物品失败: $e');
     }
   }
 
+  Future<void> _reloadResellItems() async {
+    final repository = DataRepository();
+    final items = await repository.fetchResellItems();
+    if (mounted) {
+      setState(() {
+        _resellItems.clear();
+        _resellItems.addAll(items);
+      });
+    }
+  }
+
   Future<void> _deleteResellItem(ResellItem item) async {
     try {
+      _lastLocalUpdate = DateTime.now(); // Track local update time
       final repository = DataRepository();
       await repository.deleteResellItem(item.id);
 
@@ -627,6 +668,7 @@ class _MainNavigatorState extends State<MainNavigator>
 
   Future<void> _deleteDeclutterItem(String itemId) async {
     try {
+      _lastLocalUpdate = DateTime.now(); // Track local update time
       final repository = DataRepository();
       await repository.deleteDeclutterItem(itemId);
 
@@ -763,6 +805,7 @@ class _MainNavigatorState extends State<MainNavigator>
 
   Future<void> _addPlannedSession(PlannedSession session) async {
     try {
+      _lastLocalUpdate = DateTime.now(); // Track local update time
       final repository = DataRepository();
       final savedSession = await repository.createPlannedSession(session);
 
@@ -783,6 +826,7 @@ class _MainNavigatorState extends State<MainNavigator>
 
   Future<void> _deletePlannedSession(PlannedSession session) async {
     try {
+      _lastLocalUpdate = DateTime.now(); // Track local update time
       final repository = DataRepository();
       await repository.deletePlannedSession(session.id);
 
@@ -807,18 +851,25 @@ class _MainNavigatorState extends State<MainNavigator>
       );
       await repository.updatePlannedSession(updatedSession);
 
-      setState(() {
-        final index = _plannedSessions.indexWhere((s) => s.id == session.id);
-        if (index != -1) {
-          _plannedSessions[index] = updatedSession;
-        }
-      });
-      debugPrint('✅ 计划任务状态已更新: ${session.id}');
+      // Reload from Hive immediately after save
+      await _reloadPlannedSessions();
+      debugPrint('✅ 计划任务状态已更新并重新加载: ${session.id}');
     } catch (e) {
       debugPrint('❌ 更新计划任务状态失败: $e');
     }
 
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
+  }
+
+  Future<void> _reloadPlannedSessions() async {
+    final repository = DataRepository();
+    final sessions = await repository.fetchPlannedSessions();
+    if (mounted) {
+      setState(() {
+        _plannedSessions.clear();
+        _plannedSessions.addAll(sessions);
+      });
+    }
   }
 
   @override
@@ -1026,11 +1077,7 @@ class _MainNavigatorState extends State<MainNavigator>
                                       Color(0xFF0BBF75),
                                     ],
                                     onTap: () {
-                                      if (!_hasFullAccess) {
-                                        Navigator.pop(sheetContext);
-                                        _showUpgradeDialog();
-                                        return;
-                                      }
+                                      // Deep cleaning is FREE - no premium check needed
                                       Navigator.pop(sheetContext);
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
@@ -1330,48 +1377,28 @@ class _HomeScreenState extends State<_HomeScreen> {
   }
 
   String _getQuoteOfDay(AppLocalizations l10n) {
-    // Get day of year to determine which quote to show
     final now = DateTime.now();
     final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
-
-    // Cycle through 15 quotes based on day of year
-    final quoteIndex = (dayOfYear % 15) + 1;
-
-    // Use reflection-like approach to get quote
-    switch (quoteIndex) {
-      case 1:
-        return l10n.quote1;
-      case 2:
-        return l10n.quote2;
-      case 3:
-        return l10n.quote3;
-      case 4:
-        return l10n.quote4;
-      case 5:
-        return l10n.quote5;
-      case 6:
-        return l10n.quote6;
-      case 7:
-        return l10n.quote7;
-      case 8:
-        return l10n.quote8;
-      case 9:
-        return l10n.quote9;
-      case 10:
-        return l10n.quote10;
-      case 11:
-        return l10n.quote11;
-      case 12:
-        return l10n.quote12;
-      case 13:
-        return l10n.quote13;
-      case 14:
-        return l10n.quote14;
-      case 15:
-        return l10n.quote15;
-      default:
-        return l10n.quote1;
-    }
+    final quotes = <String>[
+      l10n.quote1,
+      l10n.quote2,
+      l10n.quote3,
+      l10n.quote4,
+      l10n.quote5,
+      l10n.quote6,
+      l10n.quote7,
+      l10n.quote8,
+      l10n.quote9,
+      l10n.quote11,
+      l10n.quote12,
+      l10n.quote13,
+      l10n.quote14,
+      l10n.quote15,
+      l10n.quote16,
+      l10n.quote17,
+      l10n.quote18,
+    ];
+    return quotes[dayOfYear % quotes.length];
   }
 
   String _getElapsedTime(DateTime startTime) {

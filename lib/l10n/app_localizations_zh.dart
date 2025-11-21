@@ -355,9 +355,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quote9 => '\"打造理想生活的第一步是摆脱你不需要的一切。\" — 约书亚·贝克尔';
 
   @override
-  String get quote10 => '\"干净的房子是浪费生命的标志。\" — 佚名';
-
-  @override
   String get quote11 => '\"你拥有的越多，你就越忙碌。你拥有的越少，你就越自由。\" — 特蕾莎修女';
 
   @override
@@ -371,6 +368,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quote15 => '\"摆脱所有无关紧要的东西，让你记起自己是谁。\" — 佚名';
+
+  @override
+  String get quote16 => '\"少即是多。\" — 路德维希·密斯·凡德罗';
+
+  @override
+  String get quote17 => '\"当不再需要删减任何东西时，完美才算达成。\" — 安托万·德·圣-埃克苏佩里';
+
+  @override
+  String get quote18 => '\"你的家是用来生活的空间，而不是储物间。\" — 弗朗辛·杰伊';
 
   @override
   String get goodEvening => '晚上好';

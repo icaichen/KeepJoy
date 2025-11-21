@@ -56,8 +56,6 @@ class _ResellTrackerPageState extends State<ResellTrackerPage> {
   }
 
   void _showStatusChangeSheet(BuildContext context, ResellItem item) {
-    final l10n = AppLocalizations.of(context)!;
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -82,13 +80,6 @@ class _ResellTrackerPageState extends State<ResellTrackerPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (item.platform != null) ...[
-              Text(
-                '${l10n.platform}: ${item.platform!.label(context)}',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-            ],
             Text(
               '${l10n.soldPrice}: ${_getCurrencySymbol(context)}${item.soldPrice?.toStringAsFixed(2) ?? '0.00'}',
               style: Theme.of(context).textTheme.titleMedium,
@@ -366,19 +357,12 @@ class _ResellItemCard extends StatelessWidget {
                         ),
                       ),
                     ] else if (segment == ResellSegment.listing) ...[
-                      if (item.platform != null)
-                        Text(
-                          '${l10n.platform}: ${item.platform!.label(context)}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      if (item.sellingPrice != null) ...[
-                        const SizedBox(height: 2),
+                      if (item.sellingPrice != null)
                         Text(
                           '${l10n.sellingPrice}: $currencySymbol${item.sellingPrice!.toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                      ],
                     ] else if (segment == ResellSegment.sold) ...[
                       if (item.soldPrice != null)
                         Text(
@@ -438,7 +422,6 @@ class _StatusChangeSheet extends StatefulWidget {
 
 class _StatusChangeSheetState extends State<_StatusChangeSheet> {
   ResellStatus? _selectedStatus;
-  ResellPlatform? _selectedPlatform;
   final TextEditingController _priceController = TextEditingController();
   bool _isLoading = false;
 
@@ -482,14 +465,12 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
 
       final updatedItem = widget.item.copyWith(
         status: _selectedStatus,
-        platform: _selectedStatus == ResellStatus.listing
-            ? _selectedPlatform
-            : widget.item.platform,
         sellingPrice: _selectedStatus == ResellStatus.listing
             ? price
             : widget.item.sellingPrice,
         soldPrice: _selectedStatus == ResellStatus.sold ? price : null,
         soldDate: _selectedStatus == ResellStatus.sold ? DateTime.now() : null,
+        // updatedAt will be set by data_repository
       );
 
       widget.onUpdateResellItem(updatedItem);
@@ -558,23 +539,6 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
           ] else ...[
             // Show input fields based on selected status
             if (_selectedStatus == ResellStatus.listing) ...[
-              DropdownMenu<ResellPlatform>(
-                initialSelection: _selectedPlatform,
-                label: Text(l10n.platform),
-                expandedInsets: EdgeInsets.zero,
-                dropdownMenuEntries: ResellPlatform.forLocale(context)
-                    .map(
-                      (platform) => DropdownMenuEntry(
-                        value: platform,
-                        label: platform.label(context),
-                      ),
-                    )
-                    .toList(),
-                onSelected: (value) {
-                  setState(() => _selectedPlatform = value);
-                },
-              ),
-              const SizedBox(height: 16),
               TextField(
                 controller: _priceController,
                 decoration: InputDecoration(
@@ -586,6 +550,7 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                autofocus: true,
               ),
             ] else if (_selectedStatus == ResellStatus.sold) ...[
               TextField(
@@ -612,7 +577,6 @@ class _StatusChangeSheetState extends State<_StatusChangeSheet> {
                         : () {
                             setState(() {
                               _selectedStatus = null;
-                              _selectedPlatform = null;
                               _priceController.clear();
                             });
                           },

@@ -87,10 +87,10 @@ class ResellItem {
       'platform': platform?.name,
       'selling_price': sellingPrice,
       'sold_price': soldPrice,
-      'sold_date': soldDate?.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-      'deleted_at': deletedAt?.toIso8601String(),
+      'sold_date': soldDate?.toUtc().toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt?.toUtc().toIso8601String(),
+      'deleted_at': deletedAt?.toUtc().toIso8601String(),
       'device_id': deviceId,
     };
   }
@@ -108,14 +108,14 @@ class ResellItem {
       sellingPrice: json['selling_price'] as double?,
       soldPrice: json['sold_price'] as double?,
       soldDate: json['sold_date'] != null
-          ? DateTime.parse(json['sold_date'] as String)
+          ? DateTime.parse(json['sold_date'] as String).toLocal()
           : null,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
+          ? DateTime.parse(json['updated_at'] as String).toLocal()
           : null,
       deletedAt: json['deleted_at'] != null
-          ? DateTime.parse(json['deleted_at'] as String)
+          ? DateTime.parse(json['deleted_at'] as String).toLocal()
           : null,
       deviceId: json['device_id'] as String?,
     );

@@ -267,8 +267,9 @@ class HiveService {
     item.deviceId = deviceId;
     item.isDirty = true;
 
+    debugPrint('💾 [SAVE] ResellItem ${item.id}: status=${item.status}, updatedAt=${item.updatedAt}, isDirty=${item.isDirty}, deviceId=$deviceId');
     await resellItems.put(item.id, item);
-    debugPrint('💾 Saved resell item: ${item.id} (device: $deviceId)');
+    debugPrint('✅ [SAVE COMPLETE] ResellItem ${item.id} written to Hive');
   }
 
   ResellItemHive? getResellItem(String id) {
@@ -361,14 +362,13 @@ class HiveService {
   }
 
   Future<void> savePlannedSession(PlannedSessionHive session) async {
-    // Auto-update metadata
     final deviceId = await DeviceIdService.instance.getDeviceId();
     session.updatedAt = DateTime.now();
     session.deviceId = deviceId;
     session.isDirty = true;
 
     await plannedSessions.put(session.id, session);
-    debugPrint('💾 Saved planned session: ${session.id} (device: $deviceId)');
+    debugPrint('💾 [SAVE] PlannedSession ${session.id}: updatedAt=${session.updatedAt}, isDirty=${session.isDirty}, deviceId=$deviceId');
   }
 
   PlannedSessionHive? getPlannedSession(String id) {

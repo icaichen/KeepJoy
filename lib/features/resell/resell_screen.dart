@@ -661,71 +661,47 @@ class _ResellScreenState extends State<ResellScreen> {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final priceController = TextEditingController();
-    ResellPlatform? selectedPlatform;
 
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(l10n.markAsListing),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<ResellPlatform>(
-                    decoration: InputDecoration(
-                      labelText: l10n.platform,
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: ResellPlatform.forLocale(context).map((platform) {
-                      return DropdownMenuItem(
-                        value: platform,
-                        child: Text(platform.label(context)),
-                      );
-                    }).toList(),
-                    onChanged: (value) =>
-                        setState(() => selectedPlatform = value),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: priceController,
-                    decoration: InputDecoration(
-                      labelText: l10n.sellingPrice,
-                      hintText: l10n.enterSellingPrice,
-                      prefixText: currencySymbol,
-                      border: const OutlineInputBorder(),
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(l10n.cancel),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    final price = double.tryParse(priceController.text.trim());
-                    final updatedItem = item.copyWith(
-                      status: ResellStatus.listing,
-                      platform: selectedPlatform,
-                      sellingPrice: price,
-                    );
-                    widget.onUpdateResellItem(updatedItem);
-                    Navigator.pop(dialogContext);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.itemStatusUpdated)),
-                    );
-                  },
-                  child: Text(l10n.save),
-                ),
-              ],
-            );
-          },
+        return AlertDialog(
+          title: Text(l10n.markAsListing),
+          content: TextField(
+            controller: priceController,
+            decoration: InputDecoration(
+              labelText: l10n.sellingPrice,
+              hintText: l10n.enterSellingPrice,
+              prefixText: currencySymbol,
+              border: const OutlineInputBorder(),
+            ),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final price = double.tryParse(priceController.text.trim());
+                final updatedItem = item.copyWith(
+                  status: ResellStatus.listing,
+                  sellingPrice: price,
+                  updatedAt: DateTime.now(),
+                );
+                widget.onUpdateResellItem(updatedItem);
+                Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.itemStatusUpdated)),
+                );
+              },
+              child: Text(l10n.save),
+            ),
+          ],
         );
       },
     );
@@ -771,6 +747,7 @@ class _ResellScreenState extends State<ResellScreen> {
                   status: ResellStatus.sold,
                   soldPrice: price,
                   soldDate: DateTime.now(),
+                  updatedAt: DateTime.now(),
                 );
                 widget.onUpdateResellItem(updatedItem);
                 Navigator.pop(dialogContext);
