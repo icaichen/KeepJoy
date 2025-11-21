@@ -47,6 +47,8 @@ class PlannedSession {
     this.scheduledTime,
     required this.createdAt,
     this.updatedAt,
+    this.deletedAt,
+    this.deviceId,
     this.notes,
     this.isCompleted = false,
     this.completedAt,
@@ -63,6 +65,8 @@ class PlannedSession {
   final String? scheduledTime; // e.g., "2:00 PM", optional
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final DateTime? deletedAt; // Soft delete timestamp
+  final String? deviceId; // Device that made the last change
   final String? notes;
   final bool isCompleted;
   final DateTime? completedAt;
@@ -106,6 +110,8 @@ class PlannedSession {
       'scheduled_time': scheduledTime,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
+      'device_id': deviceId,
       'notes': notes,
       'is_completed': isCompleted,
       'completed_at': completedAt?.toIso8601String(),
@@ -130,6 +136,10 @@ class PlannedSession {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'] as String)
+          : null,
+      deviceId: json['device_id'] as String?,
       notes: json['notes'] as String?,
       isCompleted: json['is_completed'] as bool? ?? false,
       completedAt: json['completed_at'] != null
@@ -160,6 +170,8 @@ class PlannedSession {
     String? scheduledTime,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
+    String? deviceId,
     String? notes,
     bool? isCompleted,
     DateTime? completedAt,
@@ -176,6 +188,8 @@ class PlannedSession {
       scheduledTime: scheduledTime ?? this.scheduledTime,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      deviceId: deviceId ?? this.deviceId,
       notes: notes ?? this.notes,
       isCompleted: isCompleted ?? this.isCompleted,
       completedAt: completedAt ?? this.completedAt,

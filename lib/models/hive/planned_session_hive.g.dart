@@ -34,13 +34,15 @@ class PlannedSessionHiveAdapter extends TypeAdapter<PlannedSessionHive> {
       syncedAt: fields[14] as DateTime?,
       isDirty: fields[15] as bool,
       isDeleted: fields[16] as bool,
+      deletedAt: fields[17] as DateTime?,
+      deviceId: fields[18] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PlannedSessionHive obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(19)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -74,7 +76,11 @@ class PlannedSessionHiveAdapter extends TypeAdapter<PlannedSessionHive> {
       ..writeByte(15)
       ..write(obj.isDirty)
       ..writeByte(16)
-      ..write(obj.isDeleted);
+      ..write(obj.isDeleted)
+      ..writeByte(17)
+      ..write(obj.deletedAt)
+      ..writeByte(18)
+      ..write(obj.deviceId);
   }
 
   @override

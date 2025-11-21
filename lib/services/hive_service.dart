@@ -6,6 +6,7 @@ import 'package:keepjoy_app/models/hive/declutter_item_hive.dart';
 import 'package:keepjoy_app/models/hive/resell_item_hive.dart';
 import 'package:keepjoy_app/models/hive/planned_session_hive.dart';
 import 'package:keepjoy_app/models/pending_task.dart';
+import 'package:keepjoy_app/services/device_id_service.dart';
 
 /// Hive Local Database Service
 /// Manages all local data storage using Hive
@@ -93,8 +94,14 @@ class HiveService {
   Box<MemoryHive> get memories => Hive.box<MemoryHive>(memoriesBox);
 
   Future<void> saveMemory(MemoryHive memory) async {
+    // Auto-update metadata
+    final deviceId = await DeviceIdService.instance.getDeviceId();
+    memory.updatedAt = DateTime.now();
+    memory.deviceId = deviceId;
+    memory.isDirty = true;
+
     await memories.put(memory.id, memory);
-    debugPrint('💾 Saved memory: ${memory.id}');
+    debugPrint('💾 Saved memory: ${memory.id} (device: $deviceId)');
   }
 
   MemoryHive? getMemory(String id) {
@@ -111,7 +118,7 @@ class HiveService {
     if (includeDeleted) {
       return allMemories;
     }
-    return allMemories.where((m) => !m.isDeleted).toList();
+    return allMemories.where((m) => !m.isDeleted && m.deletedAt == null).toList();
   }
 
   List<MemoryHive> getDirtyMemories() {
@@ -121,9 +128,12 @@ class HiveService {
   Future<void> deleteMemory(String id) async {
     final memory = memories.get(id);
     if (memory != null) {
+      // Auto-update metadata before marking deleted
+      final deviceId = await DeviceIdService.instance.getDeviceId();
+      memory.deviceId = deviceId;
       memory.markDeleted();
       await memory.save();
-      debugPrint('🗑️ Marked memory as deleted: $id');
+      debugPrint('🗑️ Marked memory as deleted: $id (device: $deviceId)');
     }
   }
 
@@ -140,8 +150,14 @@ class HiveService {
       Hive.box<DeepCleaningSessionHive>(sessionsBox);
 
   Future<void> saveSession(DeepCleaningSessionHive session) async {
+    // Auto-update metadata
+    final deviceId = await DeviceIdService.instance.getDeviceId();
+    session.updatedAt = DateTime.now();
+    session.deviceId = deviceId;
+    session.isDirty = true;
+
     await sessions.put(session.id, session);
-    debugPrint('💾 Saved session: ${session.id}');
+    debugPrint('💾 Saved session: ${session.id} (device: $deviceId)');
   }
 
   DeepCleaningSessionHive? getSession(String id) {
@@ -158,7 +174,7 @@ class HiveService {
     if (includeDeleted) {
       return allSessions;
     }
-    return allSessions.where((s) => !s.isDeleted).toList();
+    return allSessions.where((s) => !s.isDeleted && s.deletedAt == null).toList();
   }
 
   List<DeepCleaningSessionHive> getDirtySessions() {
@@ -168,9 +184,12 @@ class HiveService {
   Future<void> deleteSession(String id) async {
     final session = sessions.get(id);
     if (session != null) {
+      // Auto-update metadata before marking deleted
+      final deviceId = await DeviceIdService.instance.getDeviceId();
+      session.deviceId = deviceId;
       session.markDeleted();
       await session.save();
-      debugPrint('🗑️ Marked session as deleted: $id');
+      debugPrint('🗑️ Marked session as deleted: $id (device: $deviceId)');
     }
   }
 
@@ -186,8 +205,14 @@ class HiveService {
   Box<DeclutterItemHive> get items => Hive.box<DeclutterItemHive>(itemsBox);
 
   Future<void> saveItem(DeclutterItemHive item) async {
+    // Auto-update metadata
+    final deviceId = await DeviceIdService.instance.getDeviceId();
+    item.updatedAt = DateTime.now();
+    item.deviceId = deviceId;
+    item.isDirty = true;
+
     await items.put(item.id, item);
-    debugPrint('💾 Saved item: ${item.id}');
+    debugPrint('💾 Saved item: ${item.id} (device: $deviceId)');
   }
 
   DeclutterItemHive? getItem(String id) {
@@ -204,7 +229,7 @@ class HiveService {
     if (includeDeleted) {
       return allItems;
     }
-    return allItems.where((i) => !i.isDeleted).toList();
+    return allItems.where((i) => !i.isDeleted && i.deletedAt == null).toList();
   }
 
   List<DeclutterItemHive> getDirtyItems() {
@@ -214,9 +239,12 @@ class HiveService {
   Future<void> deleteItem(String id) async {
     final item = items.get(id);
     if (item != null) {
+      // Auto-update metadata before marking deleted
+      final deviceId = await DeviceIdService.instance.getDeviceId();
+      item.deviceId = deviceId;
       item.markDeleted();
       await item.save();
-      debugPrint('🗑️ Marked item as deleted: $id');
+      debugPrint('🗑️ Marked item as deleted: $id (device: $deviceId)');
     }
   }
 
@@ -233,8 +261,14 @@ class HiveService {
       Hive.box<ResellItemHive>(resellItemsBox);
 
   Future<void> saveResellItem(ResellItemHive item) async {
+    // Auto-update metadata
+    final deviceId = await DeviceIdService.instance.getDeviceId();
+    item.updatedAt = DateTime.now();
+    item.deviceId = deviceId;
+    item.isDirty = true;
+
     await resellItems.put(item.id, item);
-    debugPrint('💾 Saved resell item: ${item.id}');
+    debugPrint('💾 Saved resell item: ${item.id} (device: $deviceId)');
   }
 
   ResellItemHive? getResellItem(String id) {
@@ -251,7 +285,7 @@ class HiveService {
     if (includeDeleted) {
       return allItems;
     }
-    return allItems.where((i) => !i.isDeleted).toList();
+    return allItems.where((i) => !i.isDeleted && i.deletedAt == null).toList();
   }
 
   List<ResellItemHive> getDirtyResellItems() {
@@ -261,9 +295,12 @@ class HiveService {
   Future<void> deleteResellItem(String id) async {
     final item = resellItems.get(id);
     if (item != null) {
+      // Auto-update metadata before marking deleted
+      final deviceId = await DeviceIdService.instance.getDeviceId();
+      item.deviceId = deviceId;
       item.markDeleted();
       await item.save();
-      debugPrint('🗑️ Marked resell item as deleted: $id');
+      debugPrint('🗑️ Marked resell item as deleted: $id (device: $deviceId)');
     }
   }
 
@@ -324,8 +361,14 @@ class HiveService {
   }
 
   Future<void> savePlannedSession(PlannedSessionHive session) async {
+    // Auto-update metadata
+    final deviceId = await DeviceIdService.instance.getDeviceId();
+    session.updatedAt = DateTime.now();
+    session.deviceId = deviceId;
+    session.isDirty = true;
+
     await plannedSessions.put(session.id, session);
-    debugPrint('💾 Saved planned session: ${session.id}');
+    debugPrint('💾 Saved planned session: ${session.id} (device: $deviceId)');
   }
 
   PlannedSessionHive? getPlannedSession(String id) {
@@ -342,7 +385,7 @@ class HiveService {
     if (includeDeleted) {
       return allSessions;
     }
-    return allSessions.where((s) => !s.isDeleted).toList();
+    return allSessions.where((s) => !s.isDeleted && s.deletedAt == null).toList();
   }
 
   List<PlannedSessionHive> getDirtyPlannedSessions() {
@@ -352,9 +395,12 @@ class HiveService {
   Future<void> deletePlannedSession(String id) async {
     final session = plannedSessions.get(id);
     if (session != null) {
+      // Auto-update metadata before marking deleted
+      final deviceId = await DeviceIdService.instance.getDeviceId();
+      session.deviceId = deviceId;
       session.markDeleted();
       await session.save();
-      debugPrint('🗑️ Marked planned session as deleted: $id');
+      debugPrint('🗑️ Marked planned session as deleted: $id (device: $deviceId)');
     }
   }
 

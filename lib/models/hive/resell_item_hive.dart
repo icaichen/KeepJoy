@@ -45,6 +45,12 @@ class ResellItemHive extends HiveObject {
   @HiveField(12)
   bool isDeleted;
 
+  @HiveField(13)
+  DateTime? deletedAt;
+
+  @HiveField(14)
+  String? deviceId;
+
   ResellItemHive({
     required this.id,
     required this.userId,
@@ -59,6 +65,8 @@ class ResellItemHive extends HiveObject {
     this.syncedAt,
     this.isDirty = false,
     this.isDeleted = false,
+    this.deletedAt,
+    this.deviceId,
   });
 
   /// Convert from domain ResellItem model
@@ -76,7 +84,9 @@ class ResellItemHive extends HiveObject {
       updatedAt: item.updatedAt,
       syncedAt: isDirty ? null : DateTime.now(),
       isDirty: isDirty,
-      isDeleted: false,
+      isDeleted: item.deletedAt != null,
+      deletedAt: item.deletedAt,
+      deviceId: item.deviceId,
     );
   }
 
@@ -95,6 +105,8 @@ class ResellItemHive extends HiveObject {
       soldDate: soldDate,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      deletedAt: deletedAt ?? (isDeleted ? DateTime.now() : null),
+      deviceId: deviceId,
     );
   }
 
@@ -112,6 +124,7 @@ class ResellItemHive extends HiveObject {
 
   /// Soft delete
   void markDeleted() {
+    deletedAt = DateTime.now();
     isDeleted = true;
     isDirty = true;
     updatedAt = DateTime.now();

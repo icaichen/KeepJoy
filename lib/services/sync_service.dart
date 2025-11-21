@@ -49,9 +49,10 @@ class SyncService {
   SupabaseClient? get _client => _authService.client;
   String? get _userId => _authService.currentUserId;
 
-  Timer? _syncTimer;
-  Timer? _pendingTaskTimer;
+  Timer? _cloudPullTimer; // 5-second cloud→local pull
+  Timer? _pendingTaskTimer; // 1-second local→cloud upload
   bool _isSyncing = false;
+  bool _isPulling = false;
   StreamSubscription? _connectivitySubscription;
 
   final _statusController = StreamController<SyncStatus>.broadcast();
@@ -73,26 +74,50 @@ class SyncService {
       }
     });
 
-    // Start periodic sync (every 5 minutes)
-    _startPeriodicSync();
-    _startPendingTaskProcessor();
+    // Start sync timers
+    _startCloudPullTimer(); // 5-second cloud→local
+    _startPendingTaskProcessor(); // 1-second local→cloud
 
     debugPrint('✅ Sync service initialized');
   }
 
-  void _startPeriodicSync() {
-    _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(const Duration(minutes: 5), (_) => syncAll());
+  /// 5-second cloud→local pull cycle
+  void _startCloudPullTimer() {
+    _cloudPullTimer?.cancel();
+    _cloudPullTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => pullFromCloud(),
+    );
   }
 
+  /// 1-second local→cloud upload cycle
   void _startPendingTaskProcessor() {
     _pendingTaskTimer?.cancel();
-    _pendingTaskTimer =
-        Timer.periodic(const Duration(seconds: 1), (_) => _processPendingTasks());
+    _pendingTaskTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _processPendingTasks(),
+    );
   }
 
   void _scheduleSync({Duration delay = const Duration(milliseconds: 100)}) {
     Future.delayed(delay, () => syncAll());
+  }
+
+  /// Pull changes from cloud (called every 5 seconds)
+  Future<void> pullFromCloud() async {
+    if (_isPulling) return;
+    if (!_connectivityService.isConnected) return;
+    if (_userId == null || _client == null) return;
+
+    _isPulling = true;
+    try {
+      await _downloadRemoteData();
+      _setStatus(SyncStatus.success);
+    } catch (e) {
+      debugPrint('❌ Cloud pull failed: $e');
+    } finally {
+      _isPulling = false;
+    }
   }
 
   /// Set sync status
@@ -364,20 +389,19 @@ class SyncService {
     final data = memory.toJson();
     data['photo_path'] = cloudPhotoUrl;
 
-    if (memoryHive.isDeleted) {
-      // Delete from cloud
-      await _client!.from('memories').delete().eq('id', memory.id);
-      await _hiveService.permanentlyDeleteMemory(memory.id);
-      debugPrint('🗑️ Deleted memory from cloud: ${memory.id}');
-    } else {
-      // Upsert to cloud
-      await _client!.from('memories').upsert(data);
+    // Always upsert (including soft deletes) - never hard delete
+    // This ensures deletedAt timestamp is synced to cloud for conflict resolution
+    await _client!.from('memories').upsert(data);
 
-      // Update local Hive with cloud URL - KEEP local path unchanged
-      memoryHive.remotePhotoPath = cloudPhotoUrl;
-      // DO NOT touch localPhotoPath - this is the key to local-first
-      memoryHive.markSynced();
-      await memoryHive.save();
+    // Update local Hive with cloud URL - KEEP local path unchanged
+    memoryHive.remotePhotoPath = cloudPhotoUrl;
+    // DO NOT touch localPhotoPath - this is the key to local-first
+    memoryHive.markSynced();
+    await memoryHive.save();
+
+    if (memoryHive.deletedAt != null) {
+      debugPrint('⬆️ Uploaded soft-deleted memory: ${memory.id}');
+    } else {
       debugPrint('⬆️ Uploaded memory: ${memory.id}');
     }
   }
@@ -415,22 +439,19 @@ class SyncService {
     data['before_photo_path'] = cloudBeforeUrl;
     data['after_photo_path'] = cloudAfterUrl;
 
-    if (sessionHive.isDeleted) {
-      await _client!
-          .from('deep_cleaning_sessions')
-          .delete()
-          .eq('id', session.id);
-      await _hiveService.permanentlyDeleteSession(session.id);
-      debugPrint('🗑️ Deleted session from cloud: ${session.id}');
-    } else {
-      await _client!.from('deep_cleaning_sessions').upsert(data);
+    // Always upsert (including soft deletes) - never hard delete
+    await _client!.from('deep_cleaning_sessions').upsert(data);
 
-      // Update local Hive with cloud URLs - KEEP local paths unchanged
-      sessionHive.remoteBeforePhotoPath = cloudBeforeUrl;
-      sessionHive.remoteAfterPhotoPath = cloudAfterUrl;
-      // DO NOT touch localBeforePhotoPath/localAfterPhotoPath
-      sessionHive.markSynced();
-      await sessionHive.save();
+    // Update local Hive with cloud URLs - KEEP local paths unchanged
+    sessionHive.remoteBeforePhotoPath = cloudBeforeUrl;
+    sessionHive.remoteAfterPhotoPath = cloudAfterUrl;
+    // DO NOT touch localBeforePhotoPath/localAfterPhotoPath
+    sessionHive.markSynced();
+    await sessionHive.save();
+
+    if (sessionHive.deletedAt != null) {
+      debugPrint('⬆️ Uploaded soft-deleted session: ${session.id}');
+    } else {
       debugPrint('⬆️ Uploaded session: ${session.id}');
     }
   }
@@ -453,18 +474,18 @@ class SyncService {
     final data = item.toJson();
     data['photo_path'] = cloudPhotoUrl;
 
-    if (itemHive.isDeleted) {
-      await _client!.from('declutter_items').delete().eq('id', item.id);
-      await _hiveService.permanentlyDeleteItem(item.id);
-      debugPrint('🗑️ Deleted item from cloud: ${item.id}');
-    } else {
-      await _client!.from('declutter_items').upsert(data);
+    // Always upsert (including soft deletes) - never hard delete
+    await _client!.from('declutter_items').upsert(data);
 
-      // Update local Hive with cloud URL - KEEP local path unchanged
-      itemHive.remotePhotoPath = cloudPhotoUrl;
-      // DO NOT touch localPhotoPath
-      itemHive.markSynced();
-      await itemHive.save();
+    // Update local Hive with cloud URL - KEEP local path unchanged
+    itemHive.remotePhotoPath = cloudPhotoUrl;
+    // DO NOT touch localPhotoPath
+    itemHive.markSynced();
+    await itemHive.save();
+
+    if (itemHive.deletedAt != null) {
+      debugPrint('⬆️ Uploaded soft-deleted item: ${item.id}');
+    } else {
       debugPrint('⬆️ Uploaded item: ${item.id}');
     }
   }
@@ -473,14 +494,14 @@ class SyncService {
     final item = itemHive.toItem();
     final data = item.toJson();
 
-    if (itemHive.isDeleted) {
-      await _client!.from('resell_items').delete().eq('id', item.id);
-      await _hiveService.permanentlyDeleteResellItem(item.id);
-      debugPrint('🗑️ Deleted resell item from cloud: ${item.id}');
+    // Always upsert (including soft deletes) - never hard delete
+    await _client!.from('resell_items').upsert(data);
+    itemHive.markSynced();
+    await itemHive.save();
+
+    if (itemHive.deletedAt != null) {
+      debugPrint('⬆️ Uploaded soft-deleted resell item: ${item.id}');
     } else {
-      await _client!.from('resell_items').upsert(data);
-      itemHive.markSynced();
-      await itemHive.save();
       debugPrint('⬆️ Uploaded resell item: ${item.id}');
     }
   }
@@ -489,14 +510,14 @@ class SyncService {
     final session = sessionHive.toSession();
     final data = session.toJson();
 
-    if (sessionHive.isDeleted) {
-      await _client!.from('planned_sessions').delete().eq('id', session.id);
-      await _hiveService.permanentlyDeletePlannedSession(session.id);
-      debugPrint('🗑️ Deleted planned session from cloud: ${session.id}');
+    // Always upsert (including soft deletes) - never hard delete
+    await _client!.from('planned_sessions').upsert(data);
+    sessionHive.markSynced();
+    await sessionHive.save();
+
+    if (sessionHive.deletedAt != null) {
+      debugPrint('⬆️ Uploaded soft-deleted planned session: ${session.id}');
     } else {
-      await _client!.from('planned_sessions').upsert(data);
-      sessionHive.markSynced();
-      await sessionHive.save();
       debugPrint('⬆️ Uploaded planned session: ${session.id}');
     }
   }
@@ -534,12 +555,18 @@ class SyncService {
         latestRemote =
             _maxTimestamp(latestRemote, memory.updatedAt ?? memory.createdAt);
 
-        // Last-write-wins: compare updated_at
+        // Last-write-wins with delete priority
         if (localHive == null ||
             !localHive.isDirty ||
-            _shouldReplaceLocal(localHive.updatedAt, memory.updatedAt)) {
+            _shouldReplaceLocal(
+              localHive.updatedAt,
+              memory.updatedAt,
+              localDeletedAt: localHive.deletedAt,
+              remoteDeletedAt: memory.deletedAt,
+            )) {
           final hive = MemoryHive.fromMemory(memory, isDirty: false);
-          await _hiveService.saveMemory(hive);
+          // Direct save to avoid auto-metadata injection
+          await _hiveService.memories.put(hive.id, hive);
         }
       }
 
@@ -568,12 +595,18 @@ class SyncService {
 
         if (localHive == null ||
             !localHive.isDirty ||
-            _shouldReplaceLocal(localHive.updatedAt, session.updatedAt)) {
+            _shouldReplaceLocal(
+              localHive.updatedAt,
+              session.updatedAt,
+              localDeletedAt: localHive.deletedAt,
+              remoteDeletedAt: session.deletedAt,
+            )) {
           final hive = DeepCleaningSessionHive.fromSession(
             session,
             isDirty: false,
           );
-          await _hiveService.saveSession(hive);
+          // Direct save to avoid auto-metadata injection
+          await _hiveService.sessions.put(hive.id, hive);
         }
       }
 
@@ -602,9 +635,15 @@ class SyncService {
 
         if (localHive == null ||
             !localHive.isDirty ||
-            _shouldReplaceLocal(localHive.updatedAt, item.updatedAt)) {
+            _shouldReplaceLocal(
+              localHive.updatedAt,
+              item.updatedAt,
+              localDeletedAt: localHive.deletedAt,
+              remoteDeletedAt: item.deletedAt,
+            )) {
           final hive = DeclutterItemHive.fromItem(item, isDirty: false);
-          await _hiveService.saveItem(hive);
+          // Direct save to avoid auto-metadata injection
+          await _hiveService.items.put(hive.id, hive);
         }
       }
 
@@ -633,9 +672,15 @@ class SyncService {
 
         if (localHive == null ||
             !localHive.isDirty ||
-            _shouldReplaceLocal(localHive.updatedAt, item.updatedAt)) {
+            _shouldReplaceLocal(
+              localHive.updatedAt,
+              item.updatedAt,
+              localDeletedAt: localHive.deletedAt,
+              remoteDeletedAt: item.deletedAt,
+            )) {
           final hive = ResellItemHive.fromItem(item, isDirty: false);
-          await _hiveService.saveResellItem(hive);
+          // Direct save to avoid auto-metadata injection
+          await _hiveService.resellItems.put(hive.id, hive);
         }
       }
 
@@ -663,9 +708,15 @@ class SyncService {
 
         if (localHive == null ||
             !localHive.isDirty ||
-            _shouldReplaceLocal(localHive.updatedAt, session.updatedAt)) {
+            _shouldReplaceLocal(
+              localHive.updatedAt,
+              session.updatedAt,
+              localDeletedAt: localHive.deletedAt,
+              remoteDeletedAt: session.deletedAt,
+            )) {
           final hive = PlannedSessionHive.fromSession(session, isDirty: false);
-          await _hiveService.savePlannedSession(hive);
+          // Direct save to avoid auto-metadata injection
+          await _hiveService.plannedSessions.put(hive.id, hive);
           debugPrint('   Saved planned session: ${session.title}');
         }
       }
@@ -678,11 +729,24 @@ class SyncService {
   // CONFLICT RESOLUTION
   // ==========================================================================
 
-  /// Last-write-wins: remote wins if it has a more recent updatedAt
+  /// Last-write-wins with delete priority
+  /// Rules:
+  /// 1. If remote has deletedAt, always take remote (delete wins)
+  /// 2. If local has deletedAt but remote doesn't, keep local delete
+  /// 3. Otherwise, use last-write-wins based on updatedAt
   bool _shouldReplaceLocal(
     DateTime? localUpdatedAt,
-    DateTime? remoteUpdatedAt,
-  ) {
+    DateTime? remoteUpdatedAt, {
+    DateTime? localDeletedAt,
+    DateTime? remoteDeletedAt,
+  }) {
+    // Rule 1: Remote deletion takes priority
+    if (remoteDeletedAt != null) return true;
+
+    // Rule 2: Keep local deletion if remote is not deleted
+    if (localDeletedAt != null && remoteDeletedAt == null) return false;
+
+    // Rule 3: Last-write-wins based on updatedAt
     if (remoteUpdatedAt == null) return false;
     if (localUpdatedAt == null) return true;
     return remoteUpdatedAt.isAfter(localUpdatedAt);
@@ -715,7 +779,7 @@ class SyncService {
 
   /// Dispose resources
   void dispose() {
-    _syncTimer?.cancel();
+    _cloudPullTimer?.cancel();
     _pendingTaskTimer?.cancel();
     _connectivitySubscription?.cancel();
     _statusController.close();

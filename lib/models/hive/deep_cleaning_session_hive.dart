@@ -69,6 +69,15 @@ class DeepCleaningSessionHive extends HiveObject {
   @HiveField(16)
   bool isDeleted;
 
+  @HiveField(21)
+  DateTime? deletedAt;
+
+  @HiveField(22)
+  String? deviceId;
+
+  @HiveField(23)
+  String? sessionStatus;
+
   DeepCleaningSessionHive({
     required this.id,
     required this.userId,
@@ -91,6 +100,9 @@ class DeepCleaningSessionHive extends HiveObject {
     this.remoteBeforePhotoPath,
     this.localAfterPhotoPath,
     this.remoteAfterPhotoPath,
+    this.deletedAt,
+    this.deviceId,
+    this.sessionStatus,
   });
 
   /// Convert from domain DeepCleaningSession model
@@ -120,6 +132,9 @@ class DeepCleaningSessionHive extends HiveObject {
       remoteBeforePhotoPath: session.remoteBeforePhotoPath,
       localAfterPhotoPath: session.localAfterPhotoPath,
       remoteAfterPhotoPath: session.remoteAfterPhotoPath,
+      deletedAt: session.deletedAt,
+      deviceId: session.deviceId,
+      sessionStatus: session.sessionStatus?.name,
     );
   }
 
@@ -154,6 +169,14 @@ class DeepCleaningSessionHive extends HiveObject {
       startTime: startTime,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      deletedAt: deletedAt,
+      deviceId: deviceId,
+      sessionStatus: sessionStatus != null
+          ? SessionStatus.values.firstWhere(
+              (e) => e.name == sessionStatus,
+              orElse: () => SessionStatus.completed,
+            )
+          : null,
       localBeforePhotoPath: localBefore,
       remoteBeforePhotoPath: remoteBefore,
       localAfterPhotoPath: localAfter,
@@ -182,6 +205,7 @@ class DeepCleaningSessionHive extends HiveObject {
   /// Soft delete
   void markDeleted() {
     isDeleted = true;
+    deletedAt = DateTime.now();
     isDirty = true;
     updatedAt = DateTime.now();
   }

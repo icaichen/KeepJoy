@@ -1291,23 +1291,38 @@ class _TrendChartPainter extends CustomPainter {
       ..color = const Color(0xFF9E9E9E)
       ..strokeWidth = 2;
 
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.right, // Right-align Y-axis labels
+    );
 
-    // Dimensions with space for Y-axis labels
-    const leftPadding = 20.0;
-    const rightPadding = 20.0;
-    const topPadding = 20.0;
-    const bottomPadding = 40.0;
-    final chartWidth = size.width - leftPadding - rightPadding;
-    final chartHeight = size.height - topPadding - bottomPadding;
-
-    // Find max value (ensure at least 1 to avoid division by zero)
+    // Find max value first (ensure at least 1 to avoid division by zero)
     double maxValue = trendData.values.reduce((a, b) => a > b ? a : b);
     if (maxValue == 0) {
       maxValue = 5; // default minimum
     } else {
       maxValue = maxValue * 1.25;
     }
+
+    // Calculate required left padding based on max label width
+    textPainter.text = TextSpan(
+      text: maxValue.toStringAsFixed(0),
+      style: const TextStyle(
+        color: Color(0xFF9E9E9E),
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+    textPainter.layout();
+    final maxLabelWidth = textPainter.width;
+    final leftPadding = maxLabelWidth + 12.0; // Label width + gap
+
+    // Dimensions with space for Y-axis labels
+    const rightPadding = 20.0;
+    const topPadding = 20.0;
+    const bottomPadding = 40.0;
+    final chartWidth = size.width - leftPadding - rightPadding;
+    final chartHeight = size.height - topPadding - bottomPadding;
 
     // Draw Y-axis
     canvas.drawLine(

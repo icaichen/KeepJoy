@@ -63,6 +63,12 @@ class DeclutterItemHive extends HiveObject {
   @HiveField(16)
   bool isDeleted;
 
+  @HiveField(19)
+  DateTime? deletedAt;
+
+  @HiveField(20)
+  String? deviceId;
+
   DeclutterItemHive({
     required this.id,
     required this.userId,
@@ -83,6 +89,8 @@ class DeclutterItemHive extends HiveObject {
     this.isDeleted = false,
     this.localPhotoPath,
     this.remotePhotoPath,
+    this.deletedAt,
+    this.deviceId,
   });
 
   /// Convert from domain DeclutterItem model
@@ -107,9 +115,11 @@ class DeclutterItemHive extends HiveObject {
       reviewedAt: item.reviewedAt,
       syncedAt: isDirty ? null : DateTime.now(),
       isDirty: isDirty,
-      isDeleted: false,
+      isDeleted: item.deletedAt != null,
       localPhotoPath: item.localPhotoPath,
       remotePhotoPath: item.remotePhotoPath,
+      deletedAt: item.deletedAt,
+      deviceId: item.deviceId,
     );
   }
 
@@ -145,6 +155,8 @@ class DeclutterItemHive extends HiveObject {
           ? PurchaseReview.values.firstWhere((e) => e.name == purchaseReview)
           : null,
       reviewedAt: reviewedAt,
+      deletedAt: deletedAt ?? (isDeleted ? DateTime.now() : null),
+      deviceId: deviceId,
     );
   }
 
@@ -162,6 +174,7 @@ class DeclutterItemHive extends HiveObject {
 
   /// Soft delete
   void markDeleted() {
+    deletedAt = DateTime.now();
     isDeleted = true;
     isDirty = true;
     updatedAt = DateTime.now();

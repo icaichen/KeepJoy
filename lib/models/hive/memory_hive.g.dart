@@ -34,13 +34,15 @@ class MemoryHiveAdapter extends TypeAdapter<MemoryHive> {
       isDeleted: fields[14] as bool,
       localPhotoPath: fields[23] as String?,
       remotePhotoPath: fields[24] as String?,
+      deletedAt: fields[25] as DateTime?,
+      deviceId: fields[26] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MemoryHive obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(19)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -74,7 +76,11 @@ class MemoryHiveAdapter extends TypeAdapter<MemoryHive> {
       ..writeByte(13)
       ..write(obj.isDirty)
       ..writeByte(14)
-      ..write(obj.isDeleted);
+      ..write(obj.isDeleted)
+      ..writeByte(25)
+      ..write(obj.deletedAt)
+      ..writeByte(26)
+      ..write(obj.deviceId);
   }
 
   @override

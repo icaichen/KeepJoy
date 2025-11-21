@@ -803,6 +803,7 @@ class _MainNavigatorState extends State<MainNavigator>
       final updatedSession = session.copyWith(
         isCompleted: !session.isCompleted,
         completedAt: !session.isCompleted ? DateTime.now() : null,
+        updatedAt: DateTime.now(),
       );
       await repository.updatePlannedSession(updatedSession);
 

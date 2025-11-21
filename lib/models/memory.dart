@@ -41,6 +41,8 @@ class Memory {
   final String? remotePhotoPath;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final DateTime? deletedAt; // Soft delete timestamp
+  final String? deviceId; // Device that made the last change
   final MemoryType type;
   final String? itemName;
   final String? category;
@@ -56,6 +58,8 @@ class Memory {
     this.remotePhotoPath,
     required this.createdAt,
     this.updatedAt,
+    this.deletedAt,
+    this.deviceId,
     required this.type,
     this.itemName,
     this.category,
@@ -144,6 +148,8 @@ class Memory {
       'photo_path': remotePhotoPath, // Supabase stores remote URL only
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
+      'device_id': deviceId,
       'type': type.name,
       'item_name': itemName,
       'category': category,
@@ -191,6 +197,10 @@ class Memory {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'] as String)
+          : null,
+      deviceId: json['device_id'] as String?,
       type: MemoryType.values.firstWhere((e) => e.name == json['type']),
       itemName: json['item_name'] as String?,
       category: json['category'] as String?,
@@ -208,6 +218,8 @@ class Memory {
     String? remotePhotoPath,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
+    String? deviceId,
     MemoryType? type,
     String? itemName,
     String? category,
@@ -223,6 +235,8 @@ class Memory {
       remotePhotoPath: remotePhotoPath ?? this.remotePhotoPath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      deviceId: deviceId ?? this.deviceId,
       type: type ?? this.type,
       itemName: itemName ?? this.itemName,
       category: category ?? this.category,

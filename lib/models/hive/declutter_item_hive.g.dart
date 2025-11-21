@@ -36,13 +36,15 @@ class DeclutterItemHiveAdapter extends TypeAdapter<DeclutterItemHive> {
       isDeleted: fields[16] as bool,
       localPhotoPath: fields[17] as String?,
       remotePhotoPath: fields[18] as String?,
+      deletedAt: fields[19] as DateTime?,
+      deviceId: fields[20] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DeclutterItemHive obj) {
     writer
-      ..writeByte(19)
+      ..writeByte(21)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -80,7 +82,11 @@ class DeclutterItemHiveAdapter extends TypeAdapter<DeclutterItemHive> {
       ..writeByte(15)
       ..write(obj.isDirty)
       ..writeByte(16)
-      ..write(obj.isDeleted);
+      ..write(obj.isDeleted)
+      ..writeByte(19)
+      ..write(obj.deletedAt)
+      ..writeByte(20)
+      ..write(obj.deviceId);
   }
 
   @override

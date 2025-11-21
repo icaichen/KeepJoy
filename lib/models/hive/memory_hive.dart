@@ -56,7 +56,13 @@ class MemoryHive extends HiveObject {
   bool isDirty; // Local changes not synced
 
   @HiveField(14)
-  bool isDeleted; // Soft delete flag
+  bool isDeleted; // Soft delete flag (deprecated - use deletedAt)
+
+  @HiveField(25)
+  DateTime? deletedAt; // Soft delete timestamp
+
+  @HiveField(26)
+  String? deviceId; // Device that made the last change
 
   MemoryHive({
     required this.id,
@@ -76,6 +82,8 @@ class MemoryHive extends HiveObject {
     this.isDeleted = false,
     this.localPhotoPath,
     this.remotePhotoPath,
+    this.deletedAt,
+    this.deviceId,
   });
 
   /// Convert from domain Memory model
@@ -95,9 +103,11 @@ class MemoryHive extends HiveObject {
       sentiment: memory.sentiment?.name,
       syncedAt: isDirty ? null : DateTime.now(),
       isDirty: isDirty,
-      isDeleted: false,
+      isDeleted: memory.deletedAt != null, // Backward compatibility
       localPhotoPath: memory.localPhotoPath,
       remotePhotoPath: memory.remotePhotoPath,
+      deletedAt: memory.deletedAt,
+      deviceId: memory.deviceId,
     );
   }
 
@@ -124,6 +134,8 @@ class MemoryHive extends HiveObject {
       remotePhotoPath: remote,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      deletedAt: deletedAt ?? (isDeleted ? DateTime.now() : null), // Migrate old isDeleted
+      deviceId: deviceId,
       type: MemoryType.values.firstWhere((e) => e.name == type),
       itemName: itemName,
       category: category,
@@ -151,7 +163,8 @@ class MemoryHive extends HiveObject {
 
   /// Soft delete
   void markDeleted() {
-    isDeleted = true;
+    deletedAt = DateTime.now();
+    isDeleted = true; // Keep for backward compatibility
     isDirty = true;
     updatedAt = DateTime.now();
   }

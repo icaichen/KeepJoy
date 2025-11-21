@@ -960,59 +960,70 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   void _showHeatmapLegendDialog(BuildContext context, bool isChinese) {
     showDialog(
       context: context,
-      barrierColor: Colors.black54,
-      builder: (BuildContext context) {
-        return Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 40),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          elevation: 12,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Text(
-                    isChinese ? '活动等级' : 'Activity Levels',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
+                Row(
+                  children: [
+                    Text(
+                      isChinese ? '活动等级说明' : 'Activity Levels',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF111827),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      color: const Color(0xFF9CA3AF),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 ...[
-                  {'range': '0', 'count': 0},
-                  {'range': '1-3', 'count': 2},
-                  {'range': '4-6', 'count': 5},
-                  {'range': '7-9', 'count': 8},
-                  {'range': '10+', 'count': 10},
+                  {'range': isChinese ? '无活动 (0)' : 'None (0)', 'count': 0},
+                  {'range': isChinese ? '轻度活跃 (1-3)' : 'Light (1-3)', 'count': 2},
+                  {'range': isChinese ? '中度活跃 (4-6)' : 'Moderate (4-6)', 'count': 5},
+                  {'range': isChinese ? '高度活跃 (7-9)' : 'High (7-9)', 'count': 8},
+                  {'range': isChinese ? '非常活跃 (10+)' : 'Very High (10+)', 'count': 10},
                 ].map((item) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          width: 24,
-                          height: 24,
+                          width: 20,
+                          height: 20,
                           decoration: BoxDecoration(
                             color: _getHeatmapColorByCount(
                               item['count'] as int,
                             ),
                             borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFE5E7EA)),
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Text(
-                          item['range'] as String,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Color(0xFF374151),
-                            decoration: TextDecoration.none,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            item['range'] as String,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF4B5563),
+                              height: 1.2,
+                            ),
                           ),
                         ),
                       ],

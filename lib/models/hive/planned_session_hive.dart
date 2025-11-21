@@ -55,7 +55,13 @@ class PlannedSessionHive extends HiveObject {
   bool isDirty;
 
   @HiveField(16)
-  bool isDeleted;
+  bool isDeleted; // Deprecated - use deletedAt
+
+  @HiveField(17)
+  DateTime? deletedAt; // Soft delete timestamp
+
+  @HiveField(18)
+  String? deviceId; // Device that made the last change
 
   PlannedSessionHive({
     required this.id,
@@ -75,6 +81,8 @@ class PlannedSessionHive extends HiveObject {
     this.syncedAt,
     this.isDirty = false,
     this.isDeleted = false,
+    this.deletedAt,
+    this.deviceId,
   });
 
   /// Convert from domain PlannedSession model
@@ -99,7 +107,9 @@ class PlannedSessionHive extends HiveObject {
       goal: session.goal,
       syncedAt: isDirty ? null : DateTime.now(),
       isDirty: isDirty,
-      isDeleted: false,
+      isDeleted: session.deletedAt != null, // Backward compatibility
+      deletedAt: session.deletedAt,
+      deviceId: session.deviceId,
     );
   }
 
@@ -114,6 +124,8 @@ class PlannedSessionHive extends HiveObject {
       scheduledTime: scheduledTime,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      deletedAt: deletedAt ?? (isDeleted ? DateTime.now() : null), // Migrate old isDeleted
+      deviceId: deviceId,
       notes: notes,
       isCompleted: isCompleted,
       completedAt: completedAt,
@@ -143,7 +155,8 @@ class PlannedSessionHive extends HiveObject {
 
   /// Soft delete
   void markDeleted() {
-    isDeleted = true;
+    deletedAt = DateTime.now();
+    isDeleted = true; // Keep for backward compatibility
     isDirty = true;
     updatedAt = DateTime.now();
   }

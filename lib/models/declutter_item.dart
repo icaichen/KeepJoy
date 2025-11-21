@@ -82,6 +82,8 @@ class DeclutterItem {
     required this.category,
     DateTime? createdAt,
     this.updatedAt,
+    this.deletedAt,
+    this.deviceId,
     required this.status,
     this.localPhotoPath,
     this.remotePhotoPath,
@@ -99,6 +101,8 @@ class DeclutterItem {
   final DeclutterCategory category;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final DateTime? deletedAt; // Soft delete timestamp
+  final String? deviceId; // Device that made the last change
   final DeclutterStatus status;
   final String? localPhotoPath;
   final String? remotePhotoPath;
@@ -118,6 +122,8 @@ class DeclutterItem {
       'category': category.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
+      'device_id': deviceId,
       'status': status.name,
       'photo_path': remotePhotoPath, // Supabase stores remote URL only
       'notes': notes,
@@ -155,6 +161,10 @@ class DeclutterItem {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'] as String)
+          : null,
+      deviceId: json['device_id'] as String?,
       status: DeclutterStatus.values.firstWhere(
         (e) => e.name == json['status'],
       ),
@@ -182,6 +192,8 @@ class DeclutterItem {
     DeclutterCategory? category,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
+    String? deviceId,
     DeclutterStatus? status,
     String? localPhotoPath,
     String? remotePhotoPath,
@@ -199,6 +211,8 @@ class DeclutterItem {
       category: category ?? this.category,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      deviceId: deviceId ?? this.deviceId,
       status: status ?? this.status,
       localPhotoPath: localPhotoPath ?? this.localPhotoPath,
       remotePhotoPath: remotePhotoPath ?? this.remotePhotoPath,

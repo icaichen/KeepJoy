@@ -30,13 +30,15 @@ class ResellItemHiveAdapter extends TypeAdapter<ResellItemHive> {
       syncedAt: fields[10] as DateTime?,
       isDirty: fields[11] as bool,
       isDeleted: fields[12] as bool,
+      deletedAt: fields[13] as DateTime?,
+      deviceId: fields[14] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ResellItemHive obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,7 +64,11 @@ class ResellItemHiveAdapter extends TypeAdapter<ResellItemHive> {
       ..writeByte(11)
       ..write(obj.isDirty)
       ..writeByte(12)
-      ..write(obj.isDeleted);
+      ..write(obj.isDeleted)
+      ..writeByte(13)
+      ..write(obj.deletedAt)
+      ..writeByte(14)
+      ..write(obj.deviceId);
   }
 
   @override

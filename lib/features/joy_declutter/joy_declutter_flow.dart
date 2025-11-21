@@ -972,68 +972,70 @@ class _SummaryPage extends StatelessWidget {
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.timeToLetGo,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.timeToLetGo,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.joyQuestionDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.4,
-                    color: Colors.black.withValues(alpha: 0.7),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.joyQuestionDescription,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      height: 1.4,
+                      color: Colors.black.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                _LetGoOption(
-                  icon: Icons.delete_outline,
-                  label: l10n.routeDiscard,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.discard),
-                ),
-                _LetGoOption(
-                  icon: Icons.volunteer_activism_outlined,
-                  label: l10n.routeDonation,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.donate),
-                ),
-                _LetGoOption(
-                  icon: Icons.recycling_outlined,
-                  label: l10n.routeRecycle,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
-                ),
-                _LetGoOption(
-                  icon: Icons.attach_money_outlined,
-                  label: l10n.routeResell,
-                  onTap: () =>
-                      Navigator.of(sheetContext).pop(DeclutterStatus.resell),
-                ),
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(),
-                  child: Text(l10n.cancel),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  _LetGoOption(
+                    icon: Icons.delete_outline,
+                    label: l10n.routeDiscard,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.discard),
+                  ),
+                  _LetGoOption(
+                    icon: Icons.volunteer_activism_outlined,
+                    label: l10n.routeDonation,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.donate),
+                  ),
+                  _LetGoOption(
+                    icon: Icons.recycling_outlined,
+                    label: l10n.routeRecycle,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.recycle),
+                  ),
+                  _LetGoOption(
+                    icon: Icons.attach_money_outlined,
+                    label: l10n.routeResell,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(DeclutterStatus.resell),
+                  ),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: Text(l10n.cancel),
+                  ),
+                ],
+              ),
             ),
           ),
         );

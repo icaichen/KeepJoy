@@ -39,13 +39,16 @@ class DeepCleaningSessionHiveAdapter
       remoteBeforePhotoPath: fields[18] as String?,
       localAfterPhotoPath: fields[19] as String?,
       remoteAfterPhotoPath: fields[20] as String?,
+      deletedAt: fields[21] as DateTime?,
+      deviceId: fields[22] as String?,
+      sessionStatus: fields[23] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DeepCleaningSessionHive obj) {
     writer
-      ..writeByte(21)
+      ..writeByte(24)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -87,7 +90,13 @@ class DeepCleaningSessionHiveAdapter
       ..writeByte(15)
       ..write(obj.isDirty)
       ..writeByte(16)
-      ..write(obj.isDeleted);
+      ..write(obj.isDeleted)
+      ..writeByte(21)
+      ..write(obj.deletedAt)
+      ..writeByte(22)
+      ..write(obj.deviceId)
+      ..writeByte(23)
+      ..write(obj.sessionStatus);
   }
 
   @override

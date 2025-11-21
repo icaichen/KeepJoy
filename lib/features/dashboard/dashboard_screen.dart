@@ -2725,35 +2725,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 16),
 
                       // Metrics Row
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildMetricCard(
-                              icon: Icons.cleaning_services_rounded,
-                              iconColor: const Color(0xFFB794F6),
-                              value: sessionsThisMonth.toString(),
-                              label: l10n.deepCleaning,
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: _buildMetricCard(
+                                icon: Icons.cleaning_services_rounded,
+                                iconColor: const Color(0xFFB794F6),
+                                value: sessionsThisMonth.toString(),
+                                label: l10n.deepCleaning,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildMetricCard(
-                              icon: Icons.inventory_2_rounded,
-                              iconColor: const Color(0xFF5ECFB8),
-                              value: widget.declutteredItems.length.toString(),
-                              label: l10n.dashboardDeclutteredLabel,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildMetricCard(
+                                icon: Icons.inventory_2_rounded,
+                                iconColor: const Color(0xFF5ECFB8),
+                                value: widget.declutteredItems.length.toString(),
+                                label: l10n.dashboardDeclutteredLabel,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildMetricCard(
-                              icon: Icons.attach_money_rounded,
-                              iconColor: const Color(0xFFFFD93D),
-                              value: totalValue.toStringAsFixed(0),
-                              label: l10n.dashboardResellLabel,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildMetricCard(
+                                icon: Icons.attach_money_rounded,
+                                iconColor: const Color(0xFFFFD93D),
+                                value: totalValue.toStringAsFixed(0),
+                                label: l10n.dashboardResellLabel,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),

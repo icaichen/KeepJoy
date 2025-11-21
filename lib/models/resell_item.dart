@@ -56,6 +56,8 @@ class ResellItem {
     required this.status,
     required this.createdAt,
     this.updatedAt,
+    this.deletedAt,
+    this.deviceId,
     this.platform,
     this.sellingPrice,
     this.soldPrice,
@@ -72,6 +74,8 @@ class ResellItem {
   final DateTime? soldDate; // Auto-set when status = sold
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final DateTime? deletedAt; // Soft delete timestamp
+  final String? deviceId; // Device that made the last change
 
   // Convert to JSON for Supabase
   Map<String, dynamic> toJson() {
@@ -86,6 +90,8 @@ class ResellItem {
       'sold_date': soldDate?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
+      'device_id': deviceId,
     };
   }
 
@@ -108,6 +114,10 @@ class ResellItem {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'] as String)
+          : null,
+      deviceId: json['device_id'] as String?,
     );
   }
 
@@ -122,6 +132,8 @@ class ResellItem {
     DateTime? soldDate,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
+    String? deviceId,
   }) {
     return ResellItem(
       id: id ?? this.id,
@@ -134,6 +146,8 @@ class ResellItem {
       soldDate: soldDate ?? this.soldDate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      deviceId: deviceId ?? this.deviceId,
     );
   }
 }
