@@ -40,6 +40,15 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
   }
 
   @override
+  void didUpdateWidget(ActivityCalendarPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Rebuild when sessions list changes
+    if (widget.plannedSessions != oldWidget.plannedSessions) {
+      setState(() {});
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
@@ -82,7 +91,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
   List<PlannedSession> _getUnscheduledSessions() {
     return widget.plannedSessions
         .where(
-          (session) => !session.isCompleted && session.scheduledDate == null,
+          (session) => session.scheduledDate == null,
         )
         .toList();
   }
@@ -152,14 +161,6 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
     areaController.dispose();
   }
 
-  Future<void> _toggleSessionCompletion(PlannedSession session) async {
-    try {
-      await _repository.toggleTaskCompletion(session);
-      widget.onSessionsChanged();
-    } catch (e) {
-      // Handle error
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -298,8 +299,9 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                         ),
                         ..._getSessionsForDay(_selectedDay!).map(
                           (session) => _SessionTile(
+                            key: ValueKey(session.id),
                             session: session,
-                            onToggle: () => _toggleSessionCompletion(session),
+                            onSessionsChanged: widget.onSessionsChanged,
                           ),
                         ),
                       ],
@@ -342,8 +344,9 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
                         ),
                         ...unscheduledSessions.map(
                           (session) => _SessionTile(
+                            key: ValueKey(session.id),
                             session: session,
-                            onToggle: () => _toggleSessionCompletion(session),
+                            onSessionsChanged: widget.onSessionsChanged,
                           ),
                         ),
                       ],
@@ -464,11 +467,38 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
   }
 }
 
-class _SessionTile extends StatelessWidget {
+class _SessionTile extends StatefulWidget {
   final PlannedSession session;
-  final VoidCallback onToggle;
+  final VoidCallback onSessionsChanged;
 
-  const _SessionTile({required this.session, required this.onToggle});
+  const _SessionTile({
+    super.key,
+    required this.session,
+    required this.onSessionsChanged,
+  });
+
+  @override
+  State<_SessionTile> createState() => _SessionTileState();
+}
+
+class _SessionTileState extends State<_SessionTile> {
+  final _repository = DataRepository();
+  bool? _localIsCompleted;
+
+  bool get isCompleted => _localIsCompleted ?? widget.session.isCompleted;
+
+  void _toggle() async {
+    setState(() {
+      _localIsCompleted = !isCompleted;
+    });
+
+    await _repository.toggleTaskCompletion(widget.session);
+    widget.onSessionsChanged();
+  }
+
+  String _getDisplayTitle() {
+    return widget.session.area;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -491,25 +521,25 @@ class _SessionTile extends StatelessWidget {
           // Larger tap area for checkbox
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: onToggle,
+            onTap: _toggle,
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Container(
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: session.isCompleted
+                  color: isCompleted
                       ? const Color(0xFFB794F6)
                       : Colors.white,
                   border: Border.all(
-                    color: session.isCompleted
+                    color: isCompleted
                         ? const Color(0xFFB794F6)
                         : const Color(0xFFD1D5DB),
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: session.isCompleted
+                child: isCompleted
                     ? const Icon(Icons.check, size: 16, color: Colors.white)
                     : null,
               ),
@@ -521,23 +551,23 @@ class _SessionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  session.title,
+                  _getDisplayTitle(),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: session.isCompleted
+                    color: isCompleted
                         ? const Color(0xFF9CA3AF)
                         : const Color(0xFF111827),
-                    decoration: session.isCompleted
+                    decoration: isCompleted
                         ? TextDecoration.lineThrough
                         : null,
                   ),
                 ),
-                if (session.scheduledTime != null)
+                if (widget.session.scheduledTime != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      session.scheduledTime!,
+                      widget.session.scheduledTime!,
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF6B7280),

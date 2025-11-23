@@ -980,6 +980,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (sheetContext) {
+        final completionOverrides = <String, bool>{};
+
         return StatefulBuilder(
           builder: (builderContext, setModalState) {
             DateTime focusedDay = DateTime.now();
@@ -1158,6 +1160,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               itemCount: sessionsForDay.length,
                               itemBuilder: (context, index) {
                                 final session = sessionsForDay[index];
+                                final isCompleted =
+                                    completionOverrides[session.id] ??
+                                        session.isCompleted;
                                 return Dismissible(
                                   key: Key('${session.id}_cal'),
                                   background: Container(
@@ -1189,6 +1194,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     session,
                                     l10n,
                                     context,
+                                    isCompletedOverride: isCompleted,
+                                    onToggle: () {
+                                      final newValue =
+                                          !(completionOverrides[session.id] ??
+                                              session.isCompleted);
+                                      completionOverrides[session.id] =
+                                          newValue;
+                                      setModalState(() {});
+                                      widget.onTogglePlannedSession(session);
+                                    },
                                   ),
                                 );
                               },
@@ -1404,8 +1419,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildSessionCard(
     PlannedSession session,
     AppLocalizations l10n,
-    BuildContext context,
-  ) {
+    BuildContext context, {
+    bool? isCompletedOverride,
+    VoidCallback? onToggle,
+  }) {
+    final isCompleted = isCompletedOverride ?? session.isCompleted;
+    final displayTitle = session.goal ?? session.title;
+
     // Get color based on session mode
     Color getModeColor() {
       switch (session.mode) {
@@ -1427,7 +1447,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: session.isCompleted
+          color: isCompleted
               ? modeColor.withOpacity(0.3)
               : const Color(0xFFE5E7EA),
         ),
@@ -1456,13 +1476,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: session.isCompleted
+              color: isCompleted
                   ? modeColor.withOpacity(0.2)
                   : modeColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              session.isCompleted
+              isCompleted
                   ? Icons.check_circle_rounded
                   : _getIconForMode(session.mode),
               color: modeColor,
@@ -1476,20 +1496,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${session.mode.displayName(l10n)} - ${session.area}',
+                  displayTitle,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1C1C1E),
-                    decoration: session.isCompleted
-                        ? TextDecoration.lineThrough
-                        : null,
+                    decoration:
+                        isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    if (session.isCompleted)
+                    if (isCompleted)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -1508,7 +1527,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                       ),
-                    if (session.isCompleted && session.goal != null) ...[
+                    if (isCompleted &&
+                        session.goal != null &&
+                        session.goal != displayTitle) ...[
                       const SizedBox(width: 8),
                       Text(
                         '• ${session.goal}',
@@ -1518,7 +1539,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                     ],
-                    if (!session.isCompleted) ...[
+                    if (!isCompleted) ...[
                       Icon(
                         Icons.access_time,
                         size: 14,
@@ -1548,9 +1569,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(width: 8),
           // Checkbox
           Checkbox(
-            value: session.isCompleted,
+            value: isCompleted,
             onChanged: (value) {
-              widget.onTogglePlannedSession(session);
+              if (onToggle != null) {
+                onToggle();
+              } else {
+                widget.onTogglePlannedSession(session);
+              }
             },
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(4),
@@ -2375,11 +2400,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Builder(
                         builder: (context) {
                           final todoSessions = widget.plannedSessions
-                              .where(
-                                (session) =>
-                                    session.area == 'General' &&
-                                    !session.isCompleted,
-                              )
+                              .where((session) => !session.isCompleted)
                               .toList();
                           final displaySessions = todoSessions.take(3).toList();
 
