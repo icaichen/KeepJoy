@@ -216,9 +216,21 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     AppLocalizations l10n,
     List<DeepCleaningSession> sessions,
   ) {
-    final sortedSessions = sessions.isEmpty
-        ? <DeepCleaningSession>[]
-        : ([...sessions]..sort((a, b) => b.startTime.compareTo(a.startTime)));
+    // Group sessions by area (normalized to use CleaningArea.key for standard areas)
+    final sessionsByArea = <String, List<DeepCleaningSession>>{};
+    for (final session in sessions) {
+      final cleaningArea = CleaningArea.fromString(session.area);
+      final areaKey = cleaningArea?.key ?? session.area;
+      sessionsByArea.putIfAbsent(areaKey, () => []).add(session);
+    }
+
+    // Sort areas by session count (descending)
+    final sortedAreas = sessionsByArea.keys.toList()
+      ..sort((a, b) {
+        final countB = sessionsByArea[b]!.length;
+        final countA = sessionsByArea[a]!.length;
+        return countB.compareTo(countA);
+      });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,10 +251,168 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
             ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
           )
         else
-          ...sortedSessions.map(
-            (session) => _buildComparisonRow(context, l10n, session),
+          ...sortedAreas.map(
+            (area) => _buildAreaGroupRow(
+              context,
+              l10n,
+              area,
+              sessionsByArea[area]!,
+            ),
           ),
       ],
+    );
+  }
+
+  Widget _buildAreaGroupRow(
+    BuildContext context,
+    AppLocalizations l10n,
+    String area,
+    List<DeepCleaningSession> areaSessions,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _showAreaSessionsSheet(context, l10n, area, areaSessions),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EA)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _getIconForArea(area),
+                  color: const Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  CleaningArea.getDisplayName(area, context),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAreaSessionsSheet(
+    BuildContext context,
+    AppLocalizations l10n,
+    String area,
+    List<DeepCleaningSession> areaSessions,
+  ) {
+    // Sort sessions by date (newest first)
+    final sortedSessions = [...areaSessions]
+      ..sort((a, b) => b.startTime.compareTo(a.startTime));
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            expand: false,
+            builder: (context, scrollController) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5E7EA),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F4F6),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            _getIconForArea(area),
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                CleaningArea.getDisplayName(area, context),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                              Text(
+                                '${sortedSessions.length} ${sortedSessions.length == 1 ? 'session' : 'sessions'}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: sortedSessions.length,
+                        itemBuilder: (context, index) {
+                          final session = sortedSessions[index];
+                          return _buildComparisonRow(context, l10n, session);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
