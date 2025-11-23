@@ -767,8 +767,8 @@ class _JoyQuestionPageState extends State<_JoyQuestionPage> {
                             children: [
                               Text(
                                 isChinese
-                                    ? '这件物品是否能带来怦然心动的感觉？'
-                                    : 'Does this item spark joy?',
+                                    ? '这件物品能带来快乐的感觉吗？'
+                                  : 'Does this item bring you joy?',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,

@@ -1,7 +1,7 @@
 # Joy Declutter Feature - Complete Guide
 
 ## Overview
-Joy Declutter is a mindful decluttering feature inspired by Marie Kondo's KonMari method. It helps users thoughtfully evaluate items based on whether they spark joy.
+Joy Declutter is a mindful decluttering feature inspired by Marie Kondo's KonMari method. It helps users thoughtfully evaluate items based on whether they bring joy.
 
 ## Feature Flow
 
@@ -20,7 +20,7 @@ Joy Declutter is a mindful decluttering feature inspired by Marie Kondo's KonMar
 - Click "Next Step" (下一步) to proceed
 
 ### 💫 Step 3: Joy Question
-**"Does this item spark joy?"** (这件物品能带给你喜悦吗？)
+**"Does this item bring you joy?"** (这件物品能让你开心吗？)
 
 The user is presented with the item photo and name, with two options:
 
@@ -145,7 +145,7 @@ All text is fully localized in English and Chinese:
 
 ### English Keys
 - `joyDeclutterTitle`: "Joy Declutter"
-- `doesItSparkJoy`: "Does this item spark joy?"
+- `doesItSparkJoy`: "Does this item bring you joy?"
 - `keepItem`: "Yes, Keep It"
 - `letGoItem`: "No, Let It Go"
 - `routeResell`: "Resell"

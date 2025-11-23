@@ -15,7 +15,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goodAfternoon => '下午好';
 
   @override
-  String get readyToSparkJoy => '准备好开启怦然心动之旅了吗？';
+  String get readyToSparkJoy => '准备好开启轻盈整理之旅了吗？';
 
   @override
   String get startYourDeclutterJourney => '开始你的断舍离旅程';
@@ -48,7 +48,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dailyInspiration => '每日灵感';
 
   @override
-  String get welcomeBack => '欢迎回到你的怦然心动之旅';
+  String get welcomeBack => '欢迎回到你的轻盈整理之旅';
 
   @override
   String get continueYourJoyJourney => '继续你的旅程';
@@ -239,7 +239,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardFocusLabel => '专注度';
 
   @override
-  String get dashboardJoyLabel => '愉悦度';
+  String get dashboardJoyLabel => '轻盈感';
 
   @override
   String get dashboardItemsCleanedLabel => '清理物品';
@@ -504,7 +504,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deepCleaningSubtitle => '拍照整理空间';
 
   @override
-  String get doesItSparkJoy => '这件物品能带给你喜悦吗？';
+  String get doesItSparkJoy => '这件物品能让你开心吗？';
 
   @override
   String get yes => '是的';

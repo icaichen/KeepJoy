@@ -256,7 +256,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           ),
                         if (session.moodIndex != null)
                           _buildMetricRow(
-                            label: isChinese ? '愉悦度' : 'Joy',
+                            label: isChinese ? '轻盈感' : 'Joy',
                             value: '${session.moodIndex}/5',
                           ),
                         if (session.beforeMessinessIndex != null &&
@@ -563,7 +563,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${isChinese ? '愉悦度' : 'Joy'}: ${session.moodIndex}/5',
+                                        '${isChinese ? '轻盈感' : 'Joy'}: ${session.moodIndex}/5',
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.grey[600],

@@ -3,7 +3,7 @@
 
   "goodMorning": "早上好",
   "goodAfternoon": "下午好",
-  "readyToSparkJoy": "准备好开启怦然心动之旅了吗？",
+  "readyToSparkJoy": "准备好开启轻盈整理之旅了吗？",
   "startYourDeclutterJourney": "开始你的断舍离旅程",
   "chooseFlowTitle": "选择整理方式",
   "chooseFlowSubtitle": "根据当前状态选择最合适的整理体验。",
@@ -15,7 +15,7 @@
   "startAction": "开始",
 
   "dailyInspiration": "每日灵感",
-  "welcomeBack": "欢迎回到你的怦然心动之旅",
+  "welcomeBack": "欢迎回到你的轻盈整理之旅",
   "continueYourJoyJourney": "继续你的旅程",
   "tagline1": "用正念继续整理你的空间",
   "tagline2": "一次一件物品，改变空间",
@@ -87,7 +87,7 @@
     }
   },
   "dashboardFocusLabel": "专注度",
-  "dashboardJoyLabel": "愉悦度",
+  "dashboardJoyLabel": "轻盈感",
   "dashboardItemsCleanedLabel": "清理物品",
   "dashboardSessionData": "整理数据",
   "dashboardBefore": "整理前",
@@ -204,7 +204,7 @@
   "joyDeclutterSubtitle": "开始引导流程",
   "quickDeclutterSubtitle": "15分钟计时",
   "deepCleaningSubtitle": "拍照整理空间",
-  "doesItSparkJoy": "这件物品能带给你喜悦吗？",
+  "doesItSparkJoy": "这件物品能让你开心吗？",
   "yes": "是的",
   "no": "不能",
   "next": "下一步",
@@ -277,7 +277,7 @@
   "joyDeclutterTitle": "喜悦整理",
   "joyDeclutterCaptureTitle": "拍摄物品",
   "nextStep": "下一步",
-  "doesItSparkJoy": "这件物品能带给你喜悦吗？",
+  "doesItSparkJoy": "这件物品能让你开心吗？",
   "joyQuestionDescription": "把物品拿在手中，问问自己：它能为我的生活带来喜悦吗？",
   "joyQuestionProgress": "问题 {current}/{total}",
   "@joyQuestionProgress": {

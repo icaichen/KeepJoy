@@ -588,7 +588,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
       status: status,
       localPhotoPath: widget.photoPath,
       remotePhotoPath: null,
-      joyLevel: 3, // Set joy level to 3 for "No, doesn't spark joy"
+      joyLevel: 3, // Set joy level to 3 for "No, doesn't bring joy"
     );
 
     widget.onItemCreated(item);
@@ -794,7 +794,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
               if (_decision == null) ...[
                 Center(
                   child: Text(
-                    isChinese ? '这件物品让你心动吗？' : 'Does it spark joy?',
+                  isChinese ? '这件物品让你开心吗？' : 'Does it bring you joy?',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF111827),
@@ -949,7 +949,7 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
   }
 }
 
-// Quick Decision Page - Shows "Does it spark joy?" for pending items
+// Quick Decision Page - Shows "Does it bring you joy?" for pending items
 class _QuickDecisionPage extends StatefulWidget {
   const _QuickDecisionPage({
     required this.item,
@@ -1316,9 +1316,9 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
                           ),
                           const SizedBox(height: 24),
 
-                          // "Does it spark joy?" question
+                          // Joy check question
                           Text(
-                            isChinese ? '这件物品让你心动吗？' : 'Does it spark joy?',
+                            isChinese ? '这件物品让你开心吗？' : 'Does it bring you joy?',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: _quickPrimaryColor,
@@ -1341,7 +1341,7 @@ class _QuickDecisionPageState extends State<_QuickDecisionPage> {
                                     ),
                                   ),
                                   Text(
-                                    isChinese ? '很心动' : 'Sparks Joy',
+                        isChinese ? '很喜欢' : 'Brings Joy',
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: const Color(0xFF6B7280),
                                     ),

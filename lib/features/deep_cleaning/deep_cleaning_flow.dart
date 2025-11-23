@@ -1378,21 +1378,15 @@ class UserInputPage extends StatefulWidget {
 }
 
 class _UserInputPageState extends State<UserInputPage> {
-  final TextEditingController _itemsController = TextEditingController(
-    text: '0',
-  );
   double _focusIndex = 3.0; // Changed to 0-5 scale, starting at middle
   double _moodIndex = 3.0; // Changed to 0-5 scale, starting at middle
 
   @override
   void dispose() {
-    _itemsController.dispose();
     super.dispose();
   }
 
   void _continue() {
-    final itemsCount = int.tryParse(_itemsController.text) ?? 0;
-
     // Navigate to Summary page
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -1401,7 +1395,7 @@ class _UserInputPageState extends State<UserInputPage> {
           beforePhotoPath: widget.beforePhotoPath,
           afterPhotoPath: widget.afterPhotoPath,
           elapsedSeconds: widget.elapsedSeconds,
-          itemsCount: itemsCount,
+          itemsCount: 0,
           focusIndex: _focusIndex.round(),
           moodIndex: _moodIndex.round(),
           onStopSession: widget.onStopSession,
@@ -1447,38 +1441,7 @@ class _UserInputPageState extends State<UserInputPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      l10n.howManyItems,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: _deepCleaningPrimaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _itemsController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: l10n.enterItemsCount,
-                        prefixIcon: const Icon(Icons.inventory_2_outlined),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE1E7EF),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(
-                            color: _deepCleaningPrimaryColor.withOpacity(0.6),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.035),
+                    SizedBox(height: screenHeight * 0.01),
                     Text(
                       l10n.focusIndex,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -1625,18 +1588,22 @@ class SummaryPage extends StatefulWidget {
 
 class _SummaryPageState extends State<SummaryPage> {
   final MessinessAnalysisService _messinessService = MessinessAnalysisService();
+  final TextEditingController _itemsController = TextEditingController();
   double? _beforeMessiness;
   double? _afterMessiness;
+  int? _autoItemsRemoved;
   bool _isAnalyzing = true;
 
   @override
   void initState() {
     super.initState();
+    _itemsController.text = widget.itemsCount.toString();
     _analyzePhotos();
   }
 
   @override
   void dispose() {
+    _itemsController.dispose();
     _messinessService.dispose();
     super.dispose();
   }
@@ -1645,18 +1612,26 @@ class _SummaryPageState extends State<SummaryPage> {
     try {
       await _messinessService.initialize();
 
-      // Analyze before photo if available
       if (widget.beforePhotoPath != null) {
-        _beforeMessiness = await _messinessService.analyzeMessiness(
-          widget.beforePhotoPath!,
-        );
-      }
-
-      // Analyze after photo if available
-      if (widget.afterPhotoPath != null) {
-        _afterMessiness = await _messinessService.analyzeMessiness(
-          widget.afterPhotoPath!,
-        );
+        if (widget.afterPhotoPath != null) {
+          final locale = Localizations.localeOf(context);
+          final result = await _messinessService.analyzeBeforeAfter(
+            widget.beforePhotoPath!,
+            widget.afterPhotoPath!,
+            locale,
+          );
+          _beforeMessiness = result.beforeScore;
+          _afterMessiness = result.afterScore;
+          _autoItemsRemoved = result.itemsRemoved;
+          if (_autoItemsRemoved != null && _autoItemsRemoved! > 0) {
+            _itemsController.text = _autoItemsRemoved.toString();
+          }
+        } else {
+          // Only before photo available
+          _beforeMessiness = await _messinessService.analyzeMessiness(
+            widget.beforePhotoPath!,
+          );
+        }
       }
 
       if (mounted) {
@@ -1701,6 +1676,9 @@ class _SummaryPageState extends State<SummaryPage> {
         ? ((_beforeMessiness! - _afterMessiness!) / _beforeMessiness! * 100)
               .round()
         : 0;
+
+    final resolvedItemsCount =
+        int.tryParse(_itemsController.text.trim()) ?? widget.itemsCount;
 
     final isChinese = Localizations.localeOf(
       context,
@@ -2024,10 +2002,76 @@ class _SummaryPageState extends State<SummaryPage> {
                           value: _formatTime(widget.elapsedSeconds),
                         ),
                         const Divider(height: 24, color: Color(0xFFE5E7EA)),
-                        _StatRow(
-                          icon: Icons.inventory_2_outlined,
-                          label: l10n.itemsDecluttered,
-                          value: widget.itemsCount.toString(),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 10),
+                              child: Icon(
+                                Icons.inventory_2_outlined,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.itemsDecluttered,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF111827),
+                                        ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextField(
+                                    controller: _itemsController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      hintText: l10n.enterItemsCount,
+                                      suffixText: _autoItemsRemoved != null &&
+                                              _autoItemsRemoved! > 0
+                                          ? 'AI'
+                                          : null,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFE5E7EA),
+                                        ),
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                    ),
+                                  ),
+                                  if (_autoItemsRemoved != null &&
+                                      _autoItemsRemoved! > 0)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 6),
+                                      child: Text(
+                                        Localizations.localeOf(
+                                          context,
+                                        ).languageCode
+                                                .toLowerCase()
+                                                .startsWith('zh')
+                                            ? 'AI 估算，可自行修改'
+                                            : 'AI suggested, you can adjust.',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF6B7280),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                         const Divider(height: 24, color: Color(0xFFE5E7EA)),
                         _StatRow(
@@ -2055,7 +2099,7 @@ class _SummaryPageState extends State<SummaryPage> {
                         widget.onStopSession(
                           afterPhotoPath: widget.afterPhotoPath,
                           elapsedSeconds: widget.elapsedSeconds,
-                          itemsCount: widget.itemsCount,
+                          itemsCount: resolvedItemsCount,
                           focusIndex: widget.focusIndex,
                           moodIndex: widget.moodIndex,
                           beforeMessinessIndex: _beforeMessiness,

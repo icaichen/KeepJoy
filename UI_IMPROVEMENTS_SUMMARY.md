@@ -39,7 +39,7 @@
    - Have `joyLevel` set to `null` or `0`
    - Are NOT counted in the heart index
 
-**Conclusion:** The heart index correctly reflects items that user decided to keep because they spark joy. No changes needed.
+**Conclusion:** The heart index correctly reflects items that user decided to keep because they bring joy. No changes needed.
 
 ---
 
@@ -154,4 +154,3 @@ All changes follow the app's design principles:
 ---
 
 Enjoy your improved UI! 🎉
-

@@ -1422,6 +1422,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  String _localizedSessionTitle(
+    PlannedSession session,
+    AppLocalizations l10n,
+  ) {
+    String localizedArea(String area) {
+      final lower = area.toLowerCase().trim();
+      const areaPairs = [
+        ('living room', '客厅'),
+        ('bedroom', '卧室'),
+        ('wardrobe', '衣柜'),
+        ('closet', '衣柜'),
+        ('bookshelf', '书柜'),
+        ('study', '书房'),
+        ('kitchen', '厨房'),
+        ('desk', '书桌'),
+      ];
+
+      for (final pair in areaPairs) {
+        final en = pair.$1;
+        final zh = pair.$2;
+        if (lower == en || lower == zh) {
+          final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
+          return isChinese ? zh : en[0].toUpperCase() + en.substring(1);
+        }
+      }
+      return area;
+    }
+
+    if (session.goal != null && session.goal!.isNotEmpty) {
+      return session.goal!;
+    }
+
+    final modeLabel = session.mode.displayName(l10n);
+    if (session.mode == SessionMode.deepCleaning && session.area.isNotEmpty) {
+      return '${localizedArea(session.area)} $modeLabel';
+    }
+
+    return modeLabel;
+  }
+
   Widget _buildSessionCard(
     PlannedSession session,
     AppLocalizations l10n,
@@ -1430,7 +1470,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     VoidCallback? onToggle,
   }) {
     final isCompleted = isCompletedOverride ?? session.isCompleted;
-    final displayTitle = session.goal ?? session.title;
+    final displayTitle = _localizedSessionTitle(session, l10n);
 
     // Get color based on session mode
     Color getModeColor() {
@@ -2540,15 +2580,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                session.goal ??
-                                                    (session.mode ==
-                                                            SessionMode
-                                                                .deepCleaning
-                                                        ? session.area
-                                                        : session.mode
-                                                              .displayName(
-                                                                l10n,
-                                                              )),
+                                                _localizedSessionTitle(
+                                                  session,
+                                                  l10n,
+                                                ),
                                                 style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,

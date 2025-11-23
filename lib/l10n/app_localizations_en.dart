@@ -15,7 +15,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goodAfternoon => 'Good Afternoon';
 
   @override
-  String get readyToSparkJoy => 'Ready to spark joy today?';
+  String get readyToSparkJoy => 'Ready to bring some joy today?';
 
   @override
   String get startYourDeclutterJourney => 'Start your declutter journey';
@@ -527,7 +527,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deepCleaningSubtitle => 'Photo-based cleaning';
 
   @override
-  String get doesItSparkJoy => 'Does this item spark joy?';
+  String get doesItSparkJoy => 'Does this item bring you joy?';
 
   @override
   String get yes => 'Yes';
@@ -1696,7 +1696,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todaysTip2 =>
-      'Joy Declutter Method: Having trouble deciding what to keep? Try \'Joy Declutter\' from the home screen. Take a photo of any item, and we\'ll guide you through the KonMari question: \'Does this spark joy?\' Hold it in your hands and trust your feelings. If it doesn\'t bring joy, we\'ll help you let it go with gratitude.';
+      'Joy Declutter Method: Having trouble deciding what to keep? Try \'Joy Declutter\' from the home screen. Take a photo of any item, and we\'ll guide you through the KonMari question: \'Does this bring you joy?\' Hold it in your hands and trust your feelings. If it doesn\'t bring joy, we\'ll help you let it go with gratitude.';
 
   @override
   String get todaysTip3 =>
@@ -1715,7 +1715,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Quick Declutter Scan: Fastest way to declutter! Tap \'Quick Declutter\' and scan items one by one. Our AI identifies each item instantly. Simply decide: Keep or Let Go? Perfect for rapid decluttering sessions when you need to clear out fast!';
 
   @override
-  String get welcomeTagline => 'Transform your space, spark joy in your life';
+  String get welcomeTagline =>
+      'Transform your space, bring more joy to your life';
 
   @override
   String get getStarted => 'Get Started';
@@ -1816,7 +1817,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get whatBroughtYouJoy =>
-      'Which items sparked joy and are worth remembering?';
+      'You can let go of an item, but keep its memory close.';
 
   @override
   String get shareYourJoy => 'Share Your Joy';

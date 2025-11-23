@@ -3,7 +3,7 @@
 
   "goodMorning": "Good Morning",
   "goodAfternoon": "Good Afternoon",
-  "readyToSparkJoy": "Ready to spark joy today?",
+  "readyToSparkJoy": "Ready to bring some joy today?",
   "startYourDeclutterJourney": "Start your declutter journey",
   "chooseFlowTitle": "Choose a flow",
   "chooseFlowSubtitle": "Pick the experience that fits your current energy.",
@@ -222,7 +222,7 @@
   "joyDeclutterSubtitle": "Start guided session",
   "quickDeclutterSubtitle": "15-min timer session",
   "deepCleaningSubtitle": "Photo-based cleaning",
-  "doesItSparkJoy": "Does this item spark joy?",
+  "doesItSparkJoy": "Does this item bring you joy?",
   "yes": "Yes",
   "no": "No",
   "next": "Next",
@@ -337,7 +337,7 @@
   "joyDeclutterTitle": "Joy Declutter",
   "joyDeclutterCaptureTitle": "Capture Item",
   "nextStep": "Next Step",
-  "doesItSparkJoy": "Does this item spark joy?",
+  "doesItSparkJoy": "Does this item bring you joy?",
   "joyQuestionDescription": "Hold the item in your hands and ask yourself: Does this bring joy to my life?",
   "joyQuestionProgress": "Question {current}/{total}",
   "@joyQuestionProgress": {
@@ -763,13 +763,13 @@
 
   "todaysTip": "Today's Tip",
   "todaysTip1": "Clean Sweep Mode: Tap 'Clean Sweep' to capture before/after photos of your space. Start the timer and watch your transformation unfold! The app tracks your progress, measures messiness improvement using AI, and helps you see how much you've accomplished. Perfect for tackling entire rooms!",
-  "todaysTip2": "Joy Declutter Method: Having trouble deciding what to keep? Try 'Joy Declutter' from the home screen. Take a photo of any item, and we'll guide you through the KonMari question: 'Does this spark joy?' Hold it in your hands and trust your feelings. If it doesn't bring joy, we'll help you let it go with gratitude.",
+  "todaysTip2": "Joy Declutter Method: Having trouble deciding what to keep? Try 'Joy Declutter' from the home screen. Take a photo of any item, and we'll guide you through the KonMari question: 'Does this bring you joy?' Hold it in your hands and trust your feelings. If it doesn't bring joy, we'll help you let it go with gratitude.",
   "todaysTip3": "Create Lasting Memories: Before letting go of sentimental items, create a memory! Tap the memory icon when decluttering. Capture a photo, write down what this item meant to you, and preserve the story. The physical item may be gone, but your cherished memory lives forever in the app.",
   "todaysTip4": "Quick Sweep Timer: Need motivation? Try 'Quick Sweep' for a 15-minute power session! Pick any area (living room, closet, desk), start the timer, and race against the clock. It turns decluttering into an exciting game. See how many items you can clear before time runs out!",
   "todaysTip5": "Resell Tracker: Planning to sell items? Use our Resell Tracker! When letting go of items, select 'Resell' and we'll add them to your selling list. Track listings, record sold prices, and watch your monthly earnings grow. Transform clutter into cash!",
   "todaysTip6": "Quick Declutter Scan: Fastest way to declutter! Tap 'Quick Declutter' and scan items one by one. Our AI identifies each item instantly. Simply decide: Keep or Let Go? Perfect for rapid decluttering sessions when you need to clear out fast!",
 
-  "welcomeTagline": "Transform your space, spark joy in your life",
+  "welcomeTagline": "Transform your space, bring more joy to your life",
   "getStarted": "Get Started",
   "alreadyHaveAccount": "Already have an account? Sign In",
   "signIn": "Sign In",
@@ -809,7 +809,7 @@
   "resetPasswordEmailSent": "Password reset email sent! Please check your inbox.",
 
   "quickTip": "Quick Tip",
-  "whatBroughtYouJoy": "Which items sparked joy and are worth remembering?",
+  "whatBroughtYouJoy": "You can let go of an item, but keep its memory close.",
   "shareYourJoy": "Share Your Joy",
 
   "monthlyReport": "Monthly Report",

@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @readyToSparkJoy.
   ///
   /// In en, this message translates to:
-  /// **'Ready to spark joy today?'**
+  /// **'Ready to bring some joy today?'**
   String get readyToSparkJoy;
 
   /// No description provided for @startYourDeclutterJourney.
@@ -1035,7 +1035,7 @@ abstract class AppLocalizations {
   /// No description provided for @doesItSparkJoy.
   ///
   /// In en, this message translates to:
-  /// **'Does this item spark joy?'**
+  /// **'Does this item bring you joy?'**
   String get doesItSparkJoy;
 
   /// No description provided for @yes.
@@ -3207,7 +3207,7 @@ abstract class AppLocalizations {
   /// No description provided for @todaysTip2.
   ///
   /// In en, this message translates to:
-  /// **'Joy Declutter Method: Having trouble deciding what to keep? Try \'Joy Declutter\' from the home screen. Take a photo of any item, and we\'ll guide you through the KonMari question: \'Does this spark joy?\' Hold it in your hands and trust your feelings. If it doesn\'t bring joy, we\'ll help you let it go with gratitude.'**
+  /// **'Joy Declutter Method: Having trouble deciding what to keep? Try \'Joy Declutter\' from the home screen. Take a photo of any item, and we\'ll guide you through the KonMari question: \'Does this bring you joy?\' Hold it in your hands and trust your feelings. If it doesn\'t bring joy, we\'ll help you let it go with gratitude.'**
   String get todaysTip2;
 
   /// No description provided for @todaysTip3.
@@ -3237,7 +3237,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeTagline.
   ///
   /// In en, this message translates to:
-  /// **'Transform your space, spark joy in your life'**
+  /// **'Transform your space, bring more joy to your life'**
   String get welcomeTagline;
 
   /// No description provided for @getStarted.
@@ -3429,7 +3429,7 @@ abstract class AppLocalizations {
   /// No description provided for @whatBroughtYouJoy.
   ///
   /// In en, this message translates to:
-  /// **'Which items sparked joy and are worth remembering?'**
+  /// **'You can let go of an item, but keep its memory close.'**
   String get whatBroughtYouJoy;
 
   /// No description provided for @shareYourJoy.
