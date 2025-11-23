@@ -981,12 +981,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       builder: (sheetContext) {
         final completionOverrides = <String, bool>{};
+        DateTime focusedDay = DateTime.now();
+        DateTime selectedDay = DateTime.now();
 
         return StatefulBuilder(
           builder: (builderContext, setModalState) {
-            DateTime focusedDay = DateTime.now();
-            DateTime selectedDay = DateTime.now();
-
             // Group sessions by date
             Map<DateTime, List<PlannedSession>> getEventsForCalendar() {
               Map<DateTime, List<PlannedSession>> events = {};
@@ -1062,9 +1061,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: TableCalendar(
-                          firstDay: DateTime.now(),
-                          lastDay: DateTime.now().add(
-                            const Duration(days: 365),
+                          // Allow browsing wider range to make day selection usable across devices
+                          firstDay: DateTime.utc(
+                            DateTime.now().year - 1,
+                            1,
+                            1,
+                          ),
+                          lastDay: DateTime.utc(
+                            DateTime.now().year + 2,
+                            12,
+                            31,
                           ),
                           focusedDay: focusedDay,
                           selectedDayPredicate: (day) =>
