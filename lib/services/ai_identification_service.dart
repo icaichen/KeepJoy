@@ -59,10 +59,9 @@ class AIIdentificationService {
   factory AIIdentificationService() => _instance;
   AIIdentificationService._internal();
 
-  // TODO: Add your OpenRouter API key here for cloud-based brand detection
-  // Get your key from: https://openrouter.ai/keys
-  static const String _openRouterApiKey =
-      ''; // Leave empty for now - will be paid feature
+  // Qwen VL Plus API (Singapore region)
+  static const String _qwenApiKey = 'sk-cf4b75178c3245fd8b04e149af1a0d2a';
+  static const String _qwenBaseUrl = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
 
   /// Initialize the service (no-op)
   Future<void> initialize() async {}
@@ -78,16 +77,11 @@ class AIIdentificationService {
     return null;
   }
 
-  /// Detailed identification using OpenRouter API (Qwen vision model)
+  /// Detailed identification using Qwen VL Plus API (Singapore)
   Future<AIIdentificationResult?> identifyDetailed(
     String imagePath,
     Locale locale,
   ) async {
-    if (_openRouterApiKey.isEmpty) {
-      print('OpenRouter API key not configured. This will be a paid feature.');
-      return null;
-    }
-
     try {
       final imageBytes = await File(imagePath).readAsBytes();
       final base64Image = base64Encode(imageBytes);
@@ -96,17 +90,16 @@ class AIIdentificationService {
         locale.languageCode,
         locale.countryCode,
       );
-      const language = 'English';
+      final language = locale.languageCode == 'zh' ? 'Chinese' : 'English';
 
       final response = await http.post(
-        Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
+        Uri.parse('$_qwenBaseUrl/chat/completions'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_openRouterApiKey',
-          'HTTP-Referer': 'https://keepjoy.app',
+          'Authorization': 'Bearer $_qwenApiKey',
         },
         body: jsonEncode({
-          'model': 'qwen/qwen-2-vl-7b-instruct:free',
+          'model': 'qwen-vl-plus',
           'messages': [
             {
               'role': 'user',
@@ -135,7 +128,16 @@ Respond in JSON format:
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final content = data['choices'][0]['message']['content'];
-        final result = jsonDecode(content);
+
+        // Extract JSON from response (handle markdown code blocks)
+        String jsonStr = content.trim();
+        if (jsonStr.contains('```json')) {
+          jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();
+        } else if (jsonStr.contains('```')) {
+          jsonStr = jsonStr.split('```')[1].split('```')[0].trim();
+        }
+
+        final result = jsonDecode(jsonStr);
 
         final localizedNames = _buildLocalizedNames(
           result['name'] ?? 'Unknown item',
@@ -150,7 +152,7 @@ Respond in JSON format:
           method: 'cloud',
         );
       } else {
-        print('OpenRouter API error: ${response.statusCode}');
+        print('Qwen API error: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {

@@ -11,6 +11,7 @@ import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
+import 'package:keepjoy_app/services/ai_identification_service.dart';
 
 class CreateMemoryPage extends StatefulWidget {
   const CreateMemoryPage({
@@ -34,6 +35,7 @@ class CreateMemoryPage extends StatefulWidget {
 
 class _CreateMemoryPageState extends State<CreateMemoryPage> {
   final _authService = AuthService();
+  final _aiService = AIIdentificationService();
   final TextEditingController _itemNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -41,6 +43,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
   MemorySentiment? _selectedSentiment;
   DeclutterStatus? _selectedStatus;
   bool _isLoading = false;
+  bool _isIdentifying = false;
   String? _capturedPhotoPath;
 
   @override
@@ -109,6 +112,9 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
           setState(() {
             _capturedPhotoPath = permanentPath;
           });
+
+          // Run AI identification
+          _identifyItem(permanentPath);
         }
       }
     } catch (e) {
@@ -117,6 +123,40 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.failedToPickImage('$e'))));
+      }
+    }
+  }
+
+  Future<void> _identifyItem(String imagePath) async {
+    setState(() => _isIdentifying = true);
+
+    try {
+      final locale = Localizations.localeOf(context);
+      print('🎯 Memory Creation: Starting Qwen AI identification');
+
+      // Use Qwen VL Plus for detailed identification
+      final result = await _aiService.identifyDetailed(imagePath, locale);
+
+      print('🎯 Memory Creation: Qwen AI result received: ${result != null ? "name=${result.itemName}, category=${result.suggestedCategory}" : "null"}');
+
+      if (result != null && mounted) {
+        setState(() {
+          // Only auto-fill if fields are empty
+          if (_itemNameController.text.isEmpty) {
+            _itemNameController.text = result.nameForLocale(locale);
+          }
+          if (_selectedCategory == null) {
+            _selectedCategory = result.suggestedCategory;
+          }
+        });
+        print('🎯 Memory Creation: UI updated with Qwen AI result');
+      }
+    } catch (e) {
+      print('❌ Memory Creation: Qwen AI identification error: $e');
+      // Silently fail - user can still enter manually
+    } finally {
+      if (mounted) {
+        setState(() => _isIdentifying = false);
       }
     }
   }
@@ -408,6 +448,21 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                         fontFamily: 'SF Pro Text',
                         color: Color(0xFF9CA3AF),
                       ),
+                      suffixIcon: _isIdentifying
+                          ? const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFFB794F6),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : null,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE5E7EA)),

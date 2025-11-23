@@ -374,7 +374,8 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
 
     try {
       final locale = Localizations.localeOf(context);
-      final result = await _aiService.identifyBasic(widget.photoPath, locale);
+      // Use Qwen VL Plus for detailed identification
+      final result = await _aiService.identifyDetailed(widget.photoPath, locale);
 
       if (result != null && mounted) {
         setState(() {

@@ -374,13 +374,14 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
     try {
       final locale = Localizations.localeOf(context);
       print(
-        '🎯 Quick Declutter: Starting AI identification, locale: ${locale.languageCode}',
+        '🎯 Quick Declutter: Starting Qwen AI identification, locale: ${locale.languageCode}',
       );
 
-      final result = await _aiService.identifyBasic(widget.photoPath, locale);
+      // Use Qwen VL Plus for detailed identification
+      final result = await _aiService.identifyDetailed(widget.photoPath, locale);
 
       print(
-        '🎯 Quick Declutter: AI result received: ${result != null ? "name=${result.itemName}, category=${result.suggestedCategory}" : "null"}',
+        '🎯 Quick Declutter: Qwen AI result received: ${result != null ? "name=${result.itemName}, category=${result.suggestedCategory}" : "null"}',
       );
 
       if (result != null && mounted) {
@@ -390,10 +391,10 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
           _selectedCategory = result.suggestedCategory;
           _isAISuggested = true;
         });
-        print('🎯 Quick Declutter: UI updated with AI result');
+        print('🎯 Quick Declutter: UI updated with Qwen AI result');
       }
     } catch (e) {
-      print('❌ Quick Declutter: AI identification error: $e');
+      print('❌ Quick Declutter: Qwen AI identification error: $e');
       // Silently fail - user can still enter manually
     } finally {
       if (mounted) {
