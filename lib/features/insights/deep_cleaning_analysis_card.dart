@@ -187,7 +187,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '$displayName ($count)',
+                        displayName,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: entry.textColor,
                           fontWeight: FontWeight.w500,
@@ -269,6 +269,8 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     String area,
     List<DeepCleaningSession> areaSessions,
   ) {
+    final sessionCount = areaSessions.length;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -297,13 +299,26 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  CleaningArea.getDisplayName(area, context),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      CleaningArea.getDisplayName(area, context),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.dashboardSessionTotal(sessionCount),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
@@ -384,7 +399,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '${sortedSessions.length} ${sortedSessions.length == 1 ? 'session' : 'sessions'}',
+                                l10n.dashboardSessionTotal(sortedSessions.length),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Color(0xFF6B7280),
