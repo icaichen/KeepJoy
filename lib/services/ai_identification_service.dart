@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -53,112 +52,30 @@ class AIIdentificationResult {
   }
 }
 
-/// AI-powered object and brand identification service
-/// Uses Google ML Kit for both iOS and Android (70%+ accuracy, 1000+ objects)
-/// Cloud: OpenRouter API (Qwen) for brand recognition (paid feature)
+/// AI-powered object identification service (ML Kit removed)
 class AIIdentificationService {
   static final AIIdentificationService _instance =
       AIIdentificationService._internal();
   factory AIIdentificationService() => _instance;
   AIIdentificationService._internal();
 
-  // Google ML Kit image labeler (both iOS and Android)
-  ImageLabeler? _imageLabeler;
-
   // TODO: Add your OpenRouter API key here for cloud-based brand detection
   // Get your key from: https://openrouter.ai/keys
   static const String _openRouterApiKey =
       ''; // Leave empty for now - will be paid feature
 
-  /// Initialize the service
-  Future<void> initialize() async {
-    try {
-      // Initialize ML Kit
-      final options = ImageLabelerOptions(confidenceThreshold: 0.5);
-      _imageLabeler = ImageLabeler(options: options);
-    } catch (e) {
-      print('Failed to initialize ML Kit: $e');
-    }
-  }
+  /// Initialize the service (no-op)
+  Future<void> initialize() async {}
 
-  /// Dispose resources
-  void dispose() {
-    _imageLabeler?.close();
-  }
+  /// Dispose resources (no-op)
+  void dispose() {}
 
-  /// Quick on-device identification using Google ML Kit (both iOS & Android)
+  /// Quick on-device identification - disabled (ML Kit removed)
   Future<AIIdentificationResult?> identifyBasic(
     String imagePath,
     Locale locale,
   ) async {
-    return _identifyWithMLKit(imagePath, locale);
-  }
-
-  /// ML Kit identification (iOS & Android)
-  Future<AIIdentificationResult?> _identifyWithMLKit(
-    String imagePath,
-    Locale locale,
-  ) async {
-    try {
-      print('🔍 ML Kit: Starting identification for $imagePath');
-
-      if (_imageLabeler == null) {
-        print('🔍 ML Kit: Initializing image labeler...');
-        await initialize();
-      }
-
-      print('🔍 ML Kit: Creating input image from file path');
-      final inputImage = InputImage.fromFilePath(imagePath);
-
-      print('🔍 ML Kit: Processing image with ML Kit...');
-      final labels = await _imageLabeler!.processImage(inputImage);
-      print('🔍 ML Kit: Got ${labels.length} labels');
-
-      if (labels.isEmpty) {
-        print('🔍 ML Kit: No labels returned');
-        return null;
-      }
-
-      final topLabel = labels.first;
-      print(
-        '🔍 ML Kit: Top label - text: "${topLabel.label}", confidence: ${topLabel.confidence}',
-      );
-
-      final localeCode = _normalizeLocaleCode(
-        locale.languageCode,
-        locale.countryCode,
-      );
-      print(
-        '🔍 ML Kit: Locale: ${_localeTag(locale)}, normalized: $localeCode',
-      );
-
-      final localizedNames = _buildLocalizedNames(topLabel.label);
-      final displayName = _nameForLocale(localizedNames, localeCode);
-      print('🔍 ML Kit: Display name: "$displayName"');
-
-      final category = _mapLabelToCategory(topLabel.label);
-      print('🔍 ML Kit: Mapped category: $category');
-
-      final alternatives = labels.skip(1).take(2).map((l) {
-        final altNames = _buildLocalizedNames(l.label);
-        return _nameForLocale(altNames, localeCode);
-      }).toList();
-
-      print(
-        '🔍 ML Kit: Returning result - name: "$displayName", category: $category, confidence: ${topLabel.confidence * 100}%',
-      );
-      return AIIdentificationResult(
-        itemName: displayName,
-        localizedNames: localizedNames,
-        suggestedCategory: category,
-        confidence: topLabel.confidence * 100,
-        method: 'on-device',
-        alternativeNames: alternatives,
-      );
-    } catch (e) {
-      print('❌ ML Kit identification failed: $e');
-      return null;
-    }
+    return null;
   }
 
   /// Detailed identification using OpenRouter API (Qwen vision model)
