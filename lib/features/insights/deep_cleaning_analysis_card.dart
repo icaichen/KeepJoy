@@ -647,7 +647,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 180,
+      height: 450,
       child: PageView.builder(
         itemCount: slides.length,
         itemBuilder: (context, index) {
@@ -943,7 +943,7 @@ class _PhotoPage extends StatelessWidget {
                     : SmartImageWidget(
                         localPath: localPath,
                         remotePath: remotePath,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         errorWidget: const Center(
                           child: Icon(
                             Icons.broken_image_outlined,
