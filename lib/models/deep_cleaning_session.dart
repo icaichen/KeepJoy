@@ -110,10 +110,10 @@ class DeepCleaningSession {
       'id': id,
       'user_id': userId,
       'area': area,
-      'start_time': startTime.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-      'deleted_at': deletedAt?.toIso8601String(),
+      'start_time': startTime.toUtc().toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt?.toUtc().toIso8601String(),
+      'deleted_at': deletedAt?.toUtc().toIso8601String(),
       'device_id': deviceId,
       'session_status': sessionStatus?.name,
       'before_photo_path': remoteBeforePhotoPath, // Supabase stores remote URL only
@@ -156,12 +156,14 @@ class DeepCleaningSession {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       area: json['area'] as String,
-      startTime: DateTime.parse(json['start_time'] as String),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      startTime: DateTime.parse(json['start_time'] as String).toLocal(),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
+          ? DateTime.parse(json['updated_at'] as String).toLocal()
           : null,
-      deletedAt: json['deleted_at'] != null ? DateTime.parse(json['deleted_at'] as String) : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'] as String).toLocal()
+          : null,
       deviceId: json['device_id'] as String?,
       sessionStatus: json['session_status'] != null ? SessionStatus.values.firstWhere((e) => e.name == json['session_status'], orElse: () => SessionStatus.completed) : SessionStatus.completed,
       localBeforePhotoPath: localBeforePath,

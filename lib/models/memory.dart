@@ -146,9 +146,9 @@ class Memory {
       'title': title,
       'description': description,
       'photo_path': remotePhotoPath, // Supabase stores remote URL only
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-      'deleted_at': deletedAt?.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt?.toUtc().toIso8601String(),
+      'deleted_at': deletedAt?.toUtc().toIso8601String(),
       'device_id': deviceId,
       'type': type.name,
       'item_name': itemName,
@@ -193,12 +193,12 @@ class Memory {
       description: json['description'] as String?,
       localPhotoPath: localPath,
       remotePhotoPath: remotePath,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
+          ? DateTime.parse(json['updated_at'] as String).toLocal()
           : null,
       deletedAt: json['deleted_at'] != null
-          ? DateTime.parse(json['deleted_at'] as String)
+          ? DateTime.parse(json['deleted_at'] as String).toLocal()
           : null,
       deviceId: json['device_id'] as String?,
       type: MemoryType.values.firstWhere((e) => e.name == json['type']),

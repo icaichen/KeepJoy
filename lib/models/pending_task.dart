@@ -32,9 +32,9 @@ class PendingTask {
       ),
       retryCount: map['retryCount'] as int? ?? 0,
       lastAttemptAt: map['lastAttemptAt'] != null
-          ? DateTime.parse(map['lastAttemptAt'] as String)
+          ? DateTime.parse(map['lastAttemptAt'] as String).toLocal()
           : null,
-      nextAttemptAt: DateTime.parse(map['nextAttemptAt'] as String),
+      nextAttemptAt: DateTime.parse(map['nextAttemptAt'] as String).toLocal(),
     );
   }
 
@@ -53,8 +53,8 @@ class PendingTask {
       'entityId': entityId,
       'payload': jsonEncode(payload),
       'retryCount': retryCount,
-      'lastAttemptAt': lastAttemptAt?.toIso8601String(),
-      'nextAttemptAt': nextAttemptAt.toIso8601String(),
+      'lastAttemptAt': lastAttemptAt?.toUtc().toIso8601String(),
+      'nextAttemptAt': nextAttemptAt.toUtc().toIso8601String(),
     };
   }
 

@@ -101,20 +101,28 @@ class PlannedSession {
 
   // Convert to JSON for Supabase
   Map<String, dynamic> toJson() {
+    final utcScheduledDate = scheduledDate != null
+        ? DateTime.utc(
+            scheduledDate!.year,
+            scheduledDate!.month,
+            scheduledDate!.day,
+          )
+        : null;
+
     return {
       'id': id,
       'user_id': userId,
       'title': title,
       'area': area,
-      'scheduled_date': scheduledDate?.toIso8601String(),
+      'scheduled_date': utcScheduledDate?.toIso8601String(),
       'scheduled_time': scheduledTime,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-      'deleted_at': deletedAt?.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt?.toUtc().toIso8601String(),
+      'deleted_at': deletedAt?.toUtc().toIso8601String(),
       'device_id': deviceId,
       'notes': notes,
       'is_completed': isCompleted,
-      'completed_at': completedAt?.toIso8601String(),
+      'completed_at': completedAt?.toUtc().toIso8601String(),
       'priority': priority.name,
       'mode': mode.name,
       'goal': goal,
@@ -123,27 +131,31 @@ class PlannedSession {
 
   // Create from JSON from Supabase
   factory PlannedSession.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedScheduledDate;
+    if (json['scheduled_date'] != null) {
+      final dt = DateTime.parse(json['scheduled_date'] as String);
+      parsedScheduledDate = DateTime.utc(dt.year, dt.month, dt.day);
+    }
+
     return PlannedSession(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       title: json['title'] as String,
       area: json['area'] as String,
-      scheduledDate: json['scheduled_date'] != null
-          ? DateTime.parse(json['scheduled_date'] as String)
-          : null,
+      scheduledDate: parsedScheduledDate,
       scheduledTime: json['scheduled_time'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
+          ? DateTime.parse(json['updated_at'] as String).toLocal()
           : null,
       deletedAt: json['deleted_at'] != null
-          ? DateTime.parse(json['deleted_at'] as String)
+          ? DateTime.parse(json['deleted_at'] as String).toLocal()
           : null,
       deviceId: json['device_id'] as String?,
       notes: json['notes'] as String?,
       isCompleted: json['is_completed'] as bool? ?? false,
       completedAt: json['completed_at'] != null
-          ? DateTime.parse(json['completed_at'] as String)
+          ? DateTime.parse(json['completed_at'] as String).toLocal()
           : null,
       priority: json['priority'] != null
           ? TaskPriority.values.firstWhere(
