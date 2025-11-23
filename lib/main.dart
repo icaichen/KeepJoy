@@ -181,6 +181,56 @@ class _MainNavigatorState extends State<MainNavigator>
   final List<ActivityEntry> _activityHistory = [];
   final Set<String> _activityDates =
       {}; // Track dates when user was active (format: yyyy-MM-dd)
+  void _rebuildActivityHistoryFromData() {
+    final entries = <ActivityEntry>[];
+
+    // Deep cleaning sessions
+    for (final session in _completedSessions) {
+      entries.add(
+        ActivityEntry(
+          type: ActivityType.deepCleaning,
+          timestamp: session.startTime.toLocal(),
+          description: session.area,
+          itemCount: session.itemsCount,
+        ),
+      );
+    }
+
+    // Decluttered items (treat as joy declutter by default)
+    for (final item in _declutteredItems) {
+      entries.add(
+        ActivityEntry(
+          type: ActivityType.joyDeclutter,
+          timestamp: item.createdAt.toLocal(),
+          description: item.displayName(context),
+          itemCount: 1,
+        ),
+      );
+    }
+
+    // Sort by time desc and keep latest 20
+    entries.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    _activityHistory
+      ..clear()
+      ..addAll(entries.take(20));
+  }
+  void _rebuildActivityDatesFromData() {
+    _activityDates.clear();
+
+    void addDate(DateTime dt) {
+      final d = dt.toLocal();
+      final dateStr =
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      _activityDates.add(dateStr);
+    }
+
+    for (final item in _declutteredItems) {
+      addDate(item.createdAt);
+    }
+    for (final session in _completedSessions) {
+      addDate(session.startTime);
+    }
+  }
   bool _hasFullAccess = false; // Default to false until verified
   StreamSubscription<SyncStatus>? _syncSubscription;
   DateTime? _lastLocalUpdate; // Track when user made a local change
@@ -267,6 +317,9 @@ class _MainNavigatorState extends State<MainNavigator>
 
           _plannedSessions.clear();
           _plannedSessions.addAll(results[4] as List<PlannedSession>);
+
+          _rebuildActivityDatesFromData();
+          _rebuildActivityHistoryFromData();
         });
 
         debugPrint(
