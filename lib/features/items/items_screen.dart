@@ -6,6 +6,7 @@ import 'package:keepjoy_app/features/memories/create_memory_page.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/widgets/create_memory_prompt_sheet.dart';
 import 'package:keepjoy_app/widgets/smart_image_widget.dart';
+import 'package:keepjoy_app/utils/responsive_utils.dart';
 
 class ItemsScreen extends StatefulWidget {
   const ItemsScreen({
@@ -51,6 +52,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
       context,
     ).languageCode.toLowerCase().startsWith('zh');
     final topPadding = MediaQuery.of(context).padding.top;
+    final responsive = context.responsive;
 
     // Calculate stats
     final keptItems = widget.items
@@ -61,7 +63,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
         .toList();
 
     // Calculate scroll-based animations
-    const headerHeight = 100.0;
+    final headerHeight = responsive.headerHeight;
     final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
     final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
     final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
@@ -77,7 +79,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
-              SliverToBoxAdapter(child: SizedBox(height: topPadding + 80)),
+              SliverToBoxAdapter(
+                child: SizedBox(height: topPadding + headerHeight),
+              ),
               SliverToBoxAdapter(
                 child: _buildAllItemsTab(keptItems, letGoItems, isChinese),
               ),
@@ -94,7 +98,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
               child: Opacity(
                 opacity: collapsedHeaderOpacity,
                 child: Container(
-                  height: topPadding + kToolbarHeight,
+                  height: responsive.collapsedHeaderHeight,
                   decoration: const BoxDecoration(
                     color: Color(0xFFF5F6F7),
                     border: Border(
@@ -105,11 +109,13 @@ class _ItemsScreenState extends State<ItemsScreen> {
                   alignment: Alignment.center,
                   child: Text(
                     pageName,
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: responsive.titleFontSize,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1C1C1E),
+                      color: const Color(0xFF1C1C1E),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -121,28 +127,31 @@ class _ItemsScreenState extends State<ItemsScreen> {
             top: 0,
             left: 0,
             right: 0,
-            child: SizedBox(
-              height: 100,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 24,
-                  right: 24,
-                  top: topPadding + 12,
-                ),
-                child: Opacity(
-                  opacity: headerOpacity,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      pageName,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1C1C1E),
-                        letterSpacing: -0.5,
-                        height: 1.0,
-                      ),
+            child: Container(
+              padding: EdgeInsets.only(
+                left: responsive.horizontalPadding,
+                right: responsive.horizontalPadding,
+                top: topPadding + 12,
+                bottom: 12,
+              ),
+              constraints: BoxConstraints(
+                minHeight: topPadding + headerHeight,
+              ),
+              child: Opacity(
+                opacity: headerOpacity,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    pageName,
+                    style: TextStyle(
+                      fontSize: responsive.largeTitleFontSize,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1C1C1E),
+                      letterSpacing: -0.5,
+                      height: 1.2,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),

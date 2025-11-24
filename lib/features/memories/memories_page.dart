@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/smart_image_widget.dart';
 import 'package:keepjoy_app/models/memory.dart';
+import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'memory_detail_page.dart';
 
 enum MemoryViewMode { grid, timeline }
@@ -51,9 +52,10 @@ class _MemoriesPageState extends State<MemoriesPage> {
     final l10n = AppLocalizations.of(context)!;
     final memories = widget.memories;
     final topPadding = MediaQuery.of(context).padding.top;
+    final responsive = context.responsive;
 
     // Calculate scroll-based animations
-    const headerHeight = 100.0;
+    final headerHeight = responsive.headerHeight;
     final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
     final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
     final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
@@ -123,14 +125,19 @@ class _MemoriesPageState extends State<MemoriesPage> {
                           ),
                         ),
                       ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsive.horizontalPadding,
+                      ),
                       alignment: Alignment.center,
                       child: Text(
                         pageName,
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: responsive.titleFontSize,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1C1C1E),
+                          color: const Color(0xFF1C1C1E),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -144,58 +151,62 @@ class _MemoriesPageState extends State<MemoriesPage> {
             top: 0,
             left: 0,
             right: 0,
-            child: SizedBox(
-              height: 100,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 24,
-                  right: 24,
-                  top: topPadding + 12,
-                ),
-                child: Opacity(
-                  opacity: headerOpacity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
+            child: Container(
+              padding: EdgeInsets.only(
+                left: responsive.horizontalPadding,
+                right: responsive.horizontalPadding,
+                top: topPadding + 12,
+                bottom: 12,
+              ),
+              constraints: BoxConstraints(
+                minHeight: topPadding + headerHeight,
+              ),
+              child: Opacity(
+                opacity: headerOpacity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
                         pageName,
-                        style: const TextStyle(
-                          fontSize: 32,
+                        style: TextStyle(
+                          fontSize: responsive.largeTitleFontSize,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1C1C1E),
+                          color: const Color(0xFF1C1C1E),
                           letterSpacing: -0.5,
-                          height: 1.0,
+                          height: 1.2,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      Container(
-                        height: 40,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildViewModeButton(
-                              icon: Icons.grid_view_rounded,
-                              mode: MemoryViewMode.grid,
-                              isSelected: _viewMode == MemoryViewMode.grid,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildViewModeButton(
-                              icon: Icons.timeline_rounded,
-                              mode: MemoryViewMode.timeline,
-                              isSelected: _viewMode == MemoryViewMode.timeline,
-                            ),
-                          ],
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      height: 40,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildViewModeButton(
+                            icon: Icons.grid_view_rounded,
+                            mode: MemoryViewMode.grid,
+                            isSelected: _viewMode == MemoryViewMode.grid,
+                          ),
+                          const SizedBox(width: 4),
+                          _buildViewModeButton(
+                            icon: Icons.timeline_rounded,
+                            mode: MemoryViewMode.timeline,
+                            isSelected: _viewMode == MemoryViewMode.timeline,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

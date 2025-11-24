@@ -21,6 +21,7 @@ import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
+import 'package:keepjoy_app/utils/responsive_utils.dart';
 
 class _ModeMeta {
   final IconData icon;
@@ -1863,6 +1864,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ).languageCode.toLowerCase().startsWith('zh');
     final screenWidth = MediaQuery.of(context).size.width;
     final topPadding = MediaQuery.of(context).padding.top;
+    final responsive = context.responsive;
 
     final quoteOfDay = _getQuoteOfDay(l10n);
 
@@ -1888,7 +1890,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         : soldItems.map((item) => item.soldPrice!).reduce((a, b) => a + b);
 
     // Calculate scroll-based animations
-    const headerHeight = 100.0;
+    // Dashboard needs MORE space for greeting + subtitle
+    // Add extra space for devices with large safe area to prevent overflow
+    final baseHeaderHeight = 120.0;
+    final extraSpace = topPadding > 59 ? 20.0 : 0.0; // Extra 20px for Pro Max models
+    final headerHeight = baseHeaderHeight + extraSpace;
     final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
     final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
     final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
@@ -1904,7 +1910,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 120),
+                SizedBox(height: headerHeight),
 
                 // Inspirational Section
                 Container(
@@ -2978,7 +2984,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Opacity(
                 opacity: collapsedHeaderOpacity,
                 child: Container(
-                  height: topPadding + kToolbarHeight,
+                  height: responsive.collapsedHeaderHeight,
                   decoration: const BoxDecoration(
                     color: Color(0xFFF5F5F7),
                     border: Border(
@@ -2987,10 +2993,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   padding: EdgeInsets.only(top: topPadding),
                   alignment: Alignment.center,
-                  child: const Text(
+                  child: Text(
                     'KeepJoy',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: responsive.titleFontSize,
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
                     ),
@@ -3005,73 +3011,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
             top: 0,
             left: 0,
             right: 0,
-            child: SizedBox(
-              height: 120,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 24,
-                  right: 16,
-                  top: topPadding + 12,
-                ),
-                child: Opacity(
-                  opacity: headerOpacity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Column(
+            child: Container(
+              constraints: BoxConstraints(
+                minHeight: headerHeight,
+                maxHeight: headerHeight + 20,
+              ),
+              padding: EdgeInsets.only(
+                left: responsive.horizontalPadding,
+                right: responsive.horizontalPadding,
+                top: topPadding + 12,
+                bottom: 12,
+              ),
+              child: Opacity(
+                opacity: headerOpacity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             _getGreeting(l10n),
-                            style: const TextStyle(
-                              fontSize: 32,
+                            style: TextStyle(
+                              fontSize: responsive.largeTitleFontSize,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF111827),
+                              color: const Color(0xFF111827),
                               letterSpacing: -0.5,
-                              height: 1.0,
+                              height: 1.2,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: responsive.scaledSpacing(4)),
                           Text(
                             l10n.startYourDeclutterJourney,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'SF Pro Display',
-                              fontSize: 15,
+                              fontSize: responsive.bodyFontSize,
                               fontWeight: FontWeight.w400,
-                              color: Color(0xFF6B7280),
+                              color: const Color(0xFF6B7280),
                               letterSpacing: 0,
+                              height: 1.2,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ProfilePage(
-                                onLocaleChange: widget.onLocaleChange,
-                              ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProfilePage(
+                              onLocaleChange: widget.onLocaleChange,
                             ),
-                          );
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFB794F6),
-                            shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.person,
-                            color: Colors.white,
-                            size: 22,
-                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFB794F6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 22,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
