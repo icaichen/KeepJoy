@@ -735,6 +735,21 @@ class _MainNavigatorState extends State<MainNavigator>
     }
   }
 
+  Future<void> _deleteDeepCleaningSession(DeepCleaningSession session) async {
+    try {
+      _lastLocalUpdate = DateTime.now(); // Track local update time
+      final repository = DataRepository();
+      await repository.deleteDeepCleaningSession(session.id);
+
+      setState(() {
+        _completedSessions.removeWhere((s) => s.id == session.id);
+      });
+      debugPrint('🗑️ 深度清洁会话已删除: ${session.id}');
+    } catch (e) {
+      debugPrint('❌ 删除深度清洁会话失败: $e');
+    }
+  }
+
   Future<void> _showUpgradeDialog() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -878,14 +893,15 @@ class _MainNavigatorState extends State<MainNavigator>
   }
 
   Future<void> _deletePlannedSession(PlannedSession session) async {
+    // Remove locally first so Dismissible items disappear immediately
+    setState(() {
+      _plannedSessions.removeWhere((s) => s.id == session.id);
+    });
+
     try {
       _lastLocalUpdate = DateTime.now(); // Track local update time
       final repository = DataRepository();
       await repository.deletePlannedSession(session.id);
-
-      setState(() {
-        _plannedSessions.removeWhere((s) => s.id == session.id);
-      });
       debugPrint('✅ 计划任务已删除: ${session.id}');
     } catch (e) {
       debugPrint('❌ 删除计划任务失败: $e');
@@ -975,6 +991,7 @@ class _MainNavigatorState extends State<MainNavigator>
         onAddItem: _addDeclutteredItem,
         hasFullAccess: _hasFullAccess,
         onRequestUpgrade: () => _showUpgradeDialog(),
+        onDeleteDeepCleaningSession: _deleteDeepCleaningSession,
       ),
       ItemsScreen(
         items: List.unmodifiable(_declutteredItems),

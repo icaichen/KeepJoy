@@ -74,18 +74,25 @@ class ResponsiveUtils {
     return 13.0;
   }
 
-  /// Get responsive header height
-  /// This is the content area height (not including safe area padding)
-  double get headerHeight {
-    // Fixed height for header content area
-    // This doesn't include safe area - that's added separately
-    return 100.0;
-  }
 
   /// Get responsive collapsed header height
   double get collapsedHeaderHeight {
     return safeAreaPadding.top + kToolbarHeight;
   }
+
+  /// Get the actual content height for single-line headers (excluding safe area)
+  /// This is the space needed for the header text and padding
+  double get headerContentHeight => 88.0;
+
+  /// Get the total height needed for single-line header (safe area + content)
+  /// Use this for BOTH the spacer and the container minHeight
+  double get totalHeaderHeight => safeAreaPadding.top + headerContentHeight;
+
+  /// Get the actual content height for two-line headers (like dashboard)
+  double get twoLineHeaderContentHeight => 108.0;
+
+  /// Get the total height needed for two-line header (safe area + content)
+  double get totalTwoLineHeaderHeight => safeAreaPadding.top + twoLineHeaderContentHeight;
 }
 
 /// Extension on BuildContext for easy access to responsive utils

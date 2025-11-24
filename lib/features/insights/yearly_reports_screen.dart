@@ -18,11 +18,13 @@ class YearlyReportsScreen extends StatefulWidget {
     required this.declutteredItems,
     required this.resellItems,
     required this.deepCleaningSessions,
+    this.onDeleteSession,
   });
 
   final List<DeclutterItem> declutteredItems;
   final List<ResellItem> resellItems;
   final List<DeepCleaningSession> deepCleaningSessions;
+  final void Function(DeepCleaningSession session)? onDeleteSession;
 
   @override
   State<YearlyReportsScreen> createState() => _YearlyReportsScreenState();
@@ -1131,6 +1133,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               emptyStateMessage: isChinese
                                   ? '今年还没有大扫除记录，开始一次专注的整理吧。'
                                   : 'No deep cleaning records yet this year. Start your first focused session.',
+                              onDeleteSession: widget.onDeleteSession,
                             ),
                             const SizedBox(height: 20),
 

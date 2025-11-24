@@ -7,6 +7,8 @@ import 'package:path/path.dart' as path;
 
 import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
+import '../../services/image_compression_service.dart';
+import '../../services/storage_service.dart';
 import '../../widgets/gradient_button.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -21,6 +23,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _authService = AuthService();
+  final _storageService = StorageService();
 
   bool _isLoading = false;
   String? _avatarPath;
@@ -59,6 +62,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _nameController.dispose();
     _emailController.dispose();
     super.dispose();
+  }
+
+  ImageProvider? _avatarImageProvider() {
+    if (_avatarPath == null) return null;
+    final path = _avatarPath!;
+    if (path.startsWith('http')) {
+      return NetworkImage(path);
+    }
+    final file = File(path);
+    return file.existsSync() ? FileImage(file) : null;
+  }
+
+  bool get _hasAvatarImage {
+    if (_avatarPath == null) return false;
+    final path = _avatarPath!;
+    if (path.startsWith('http')) return true;
+    return File(path).existsSync();
   }
 
   Future<String?> _saveImagePermanently(String tempPath) async {
@@ -115,13 +135,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final l10n = AppLocalizations.of(context)!;
 
     try {
+      String? avatarUrlToSave;
+
+      // Upload avatar if a local image is selected
+      if (_avatarPath != null && !_avatarPath!.startsWith('http')) {
+        final file = File(_avatarPath!);
+        if (file.existsSync()) {
+          final compressed =
+              await ImageCompressionService.compressAvatarImage(file);
+          avatarUrlToSave =
+              await _storageService.uploadProfileImage(compressed);
+        }
+      } else if (_avatarPath != null) {
+        avatarUrlToSave = _avatarPath;
+      }
+
       // Update user metadata
       if (_authService.client == null) return;
       await _authService.client!.auth.updateUser(
         UserAttributes(
           data: {
             'name': _nameController.text.trim(),
-            if (_avatarPath != null) 'avatar_url': _avatarPath,
+            if (avatarUrlToSave != null) 'avatar_url': avatarUrlToSave,
           },
         ),
       );
@@ -208,13 +243,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       backgroundColor: const Color(
                         0xFFB794F6,
                       ).withValues(alpha: 0.15),
-                      backgroundImage:
-                          _avatarPath != null && File(_avatarPath!).existsSync()
-                          ? FileImage(File(_avatarPath!))
-                          : null,
-                      child:
-                          _avatarPath == null ||
-                              !File(_avatarPath!).existsSync()
+                      backgroundImage: _avatarImageProvider(),
+                      child: !_hasAvatarImage
                           ? Text(
                               _nameController.text.isNotEmpty
                                   ? _nameController.text[0].toUpperCase()

@@ -63,6 +63,23 @@ class _ProfilePageState extends State<ProfilePage> {
     return null;
   }
 
+  ImageProvider? _avatarImageProvider() {
+    if (_avatarPath == null) return null;
+    final path = _avatarPath!;
+    if (path.startsWith('http')) {
+      return NetworkImage(path);
+    }
+    final file = File(path);
+    return file.existsSync() ? FileImage(file) : null;
+  }
+
+  bool get _hasAvatarImage {
+    if (_avatarPath == null) return false;
+    final path = _avatarPath!;
+    if (path.startsWith('http')) return true;
+    return File(path).existsSync();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -153,13 +170,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       backgroundColor: const Color(
                         0xFFB794F6,
                       ).withValues(alpha: 0.15),
-                      backgroundImage:
-                          _avatarPath != null && File(_avatarPath!).existsSync()
-                          ? FileImage(File(_avatarPath!))
-                          : null,
-                      child:
-                          _avatarPath == null ||
-                              !File(_avatarPath!).existsSync()
+                      backgroundImage: _avatarImageProvider(),
+                      child: !_hasAvatarImage
                           ? Text(
                               _userInitial,
                               style: const TextStyle(

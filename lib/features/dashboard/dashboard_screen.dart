@@ -69,6 +69,7 @@ class DashboardScreen extends StatefulWidget {
   final Function(DeclutterItem) onAddItem;
   final bool hasFullAccess;
   final VoidCallback onRequestUpgrade;
+  final void Function(DeepCleaningSession) onDeleteDeepCleaningSession;
 
   const DashboardScreen({
     super.key,
@@ -94,6 +95,7 @@ class DashboardScreen extends StatefulWidget {
     required this.onAddItem,
     required this.hasFullAccess,
     required this.onRequestUpgrade,
+    required this.onDeleteDeepCleaningSession,
   });
 
   @override
@@ -1187,6 +1189,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   direction: DismissDirection.endToStart,
                                   onDismissed: (direction) {
+                                    // Remove from current list immediately to satisfy Dismissible contract
+                                    setModalState(() {
+                                      sessionsForDay.removeAt(index);
+                                    });
                                     widget.onDeletePlannedSession(session);
                                     setModalState(() {});
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -1890,12 +1896,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         : soldItems.map((item) => item.soldPrice!).reduce((a, b) => a + b);
 
     // Calculate scroll-based animations
-    // Dashboard needs MORE space for greeting + subtitle
-    // Add extra space for devices with large safe area to prevent overflow
-    final baseHeaderHeight = 120.0;
-    final extraSpace = topPadding > 59 ? 20.0 : 0.0; // Extra 20px for Pro Max models
-    final headerHeight = baseHeaderHeight + extraSpace;
-    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
+    // Dashboard uses two-line header (greeting + subtitle)
+    final scrollProgress = (_scrollOffset / responsive.twoLineHeaderContentHeight).clamp(0.0, 1.0);
     final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
     final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
@@ -1910,7 +1912,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: headerHeight),
+                SizedBox(height: responsive.totalTwoLineHeaderHeight),
 
                 // Inspirational Section
                 Container(
@@ -2104,7 +2106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 20),
 
                       // Joy Check Card
                       Container(
@@ -2127,12 +2129,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 6),
                               Text(
                                 l10n.whatBroughtYouJoy,
-                                style: AppTypography.subtitle.copyWith(
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w400,
+                                  color: Color(0xFF6B7280),
+                                  letterSpacing: 0,
+                                  height: 1.5,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 14),
                               GradientButton(
                                 onPressed: () async {
                                   if (!widget.hasFullAccess) {
@@ -2224,8 +2231,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 12),
 
                 // Active Session (if exists)
                 if (widget.activeSession != null) ...[
@@ -2508,6 +2513,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             child: Column(
                               children: displaySessions.map((session) {
+                                final itemIndex = displaySessions.indexOf(
+                                  session,
+                                );
                                 return Dismissible(
                                   key: Key(session.id),
                                   background: Container(
@@ -2523,6 +2531,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   direction: DismissDirection.endToStart,
                                   onDismissed: (direction) {
+                                    // Remove from the current list immediately
+                                    setState(() {
+                                      displaySessions.removeAt(itemIndex);
+                                    });
                                     widget.onDeletePlannedSession(session);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -2727,7 +2739,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -2957,6 +2969,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       resellItems: widget.resellItems,
                                       deepCleaningSessions:
                                           widget.deepCleaningSessions,
+                                      onDeleteSession:
+                                          widget.onDeleteDeepCleaningSession,
                                     ),
                                   ),
                                 );
@@ -3013,8 +3027,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             right: 0,
             child: Container(
               constraints: BoxConstraints(
-                minHeight: headerHeight,
-                maxHeight: headerHeight + 20,
+                minHeight: responsive.totalTwoLineHeaderHeight,
+                maxHeight: responsive.totalTwoLineHeaderHeight + 20,
               ),
               padding: EdgeInsets.only(
                 left: responsive.horizontalPadding,
@@ -3077,8 +3091,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Container(
                         width: 40,
                         height: 40,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFB794F6),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF5ECFB8), Color(0xFFB794F6)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -3685,6 +3703,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       emptyStateMessage: isChinese
           ? '本月还没有大扫除记录，开始一次专注的整理吧。'
           : 'No deep cleaning records yet this month. Start your first focused session.',
+      onDeleteSession: widget.onDeleteDeepCleaningSession,
     );
   }
 

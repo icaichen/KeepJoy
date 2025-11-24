@@ -63,8 +63,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
         .toList();
 
     // Calculate scroll-based animations
-    final headerHeight = responsive.headerHeight;
-    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
+    final scrollProgress = (_scrollOffset / responsive.headerContentHeight).clamp(0.0, 1.0);
     final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
     final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
@@ -80,7 +79,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
             physics: const BouncingScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
-                child: SizedBox(height: topPadding + headerHeight),
+                child: SizedBox(height: responsive.totalHeaderHeight),
               ),
               SliverToBoxAdapter(
                 child: _buildAllItemsTab(keptItems, letGoItems, isChinese),
@@ -135,7 +134,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 bottom: 12,
               ),
               constraints: BoxConstraints(
-                minHeight: topPadding + headerHeight,
+                minHeight: responsive.totalHeaderHeight,
               ),
               child: Opacity(
                 opacity: headerOpacity,
@@ -168,6 +167,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
     bool isChinese,
   ) {
     final categoryStats = _calculateCategoryStats(widget.items);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
@@ -190,7 +190,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  icon: Icons.check_circle_outline_rounded,
+                  icon: Icons.flight_takeoff_rounded,
                   iconColor: const Color(0xFF5ECFB8),
                   title: isChinese ? '已整理' : 'Let Go',
                   count: letGoItems.length,
@@ -199,47 +199,70 @@ class _ItemsScreenState extends State<ItemsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          // Categories Section - Always show all categories
-          Text(
-            isChinese ? '分类' : 'Categories',
-            style: const TextStyle(
-              fontFamily: 'SF Pro Display',
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1C1C1E),
-            ),
-          ),
           const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
-            ),
-            itemCount: DeclutterCategory.values.length,
-            itemBuilder: (context, index) {
-              final category = DeclutterCategory.values[index];
-              final stats = categoryStats[category] ?? {'total': 0, 'kept': 0};
-              return GestureDetector(
-                onTap: () {
-                  debugPrint(
-                    '📱 Items: Category tapped - ${category.label(context)}',
-                  );
-                  _showCategoryItems(category, isChinese);
-                },
-                child: _buildCategoryCard(
-                  category,
-                  stats['total']!,
-                  stats['kept']!,
-                  isChinese,
+
+          // Categories Section - Wrapped in a container
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFE5E7EA)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x10111827),
+                  blurRadius: 18,
+                  offset: Offset(0, 8),
                 ),
-              );
-            },
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    isChinese ? '分类' : 'Categories',
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1C1C1E),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: screenWidth < 360 ? 0.90 : (screenWidth < 400 ? 1.05 : 1.1),
+                  ),
+                  itemCount: DeclutterCategory.values.length,
+                  itemBuilder: (context, index) {
+                    final category = DeclutterCategory.values[index];
+                    final stats = categoryStats[category] ?? {'total': 0, 'kept': 0};
+                    return GestureDetector(
+                      onTap: () {
+                        debugPrint(
+                          '📱 Items: Category tapped - ${category.label(context)}',
+                        );
+                        _showCategoryItems(category, isChinese);
+                      },
+                      child: _buildCategoryCard(
+                        category,
+                        stats['total']!,
+                        stats['kept']!,
+                        isChinese,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),

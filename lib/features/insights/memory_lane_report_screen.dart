@@ -1165,42 +1165,48 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        for (final emotion in emotions)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: emotion['color'] as Color,
-                      shape: BoxShape.circle,
-                    ),
+      children: emotions.map((emotion) {
+        final count =
+            sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: emotion['color'] as Color,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
+                ),
+                const SizedBox(height: 6),
+                SizedBox(
+                  height: 32,
+                  child: Text(
                     emotion['label'] as String,
                     textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: const Color(0xFF111827),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: const Color(0xFF111827),
-                    ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$count',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: const Color(0xFF111827),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-      ],
+        );
+      }).toList(),
     );
   }
 }

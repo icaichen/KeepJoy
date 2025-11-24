@@ -242,10 +242,15 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  AutoScaleText(
-                    breakdown.label,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF111827),
+                  SizedBox(
+                    height: 32,
+                    child: AutoScaleText(
+                      breakdown.label,
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF111827),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 2),

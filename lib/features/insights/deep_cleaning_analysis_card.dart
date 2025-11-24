@@ -11,12 +11,14 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
   final List<DeepCleaningSession> sessions;
   final String title;
   final String? emptyStateMessage;
+  final void Function(DeepCleaningSession session)? onDeleteSession;
 
   const DeepCleaningAnalysisCard({
     super.key,
     required this.sessions,
     required this.title,
     this.emptyStateMessage,
+    this.onDeleteSession,
   });
 
   @override
@@ -443,7 +445,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         '${Duration(seconds: session.elapsedSeconds!).inMinutes} min',
     ];
 
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -498,6 +500,32 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    if (onDeleteSession == null) {
+      return row;
+    }
+
+    return Dismissible(
+      key: Key('deep_cleaning_session_${session.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerRight,
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      onDismissed: (_) {
+        onDeleteSession?.call(session);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.dashboardSessionDeleted)),
+        );
+      },
+      child: row,
     );
   }
 

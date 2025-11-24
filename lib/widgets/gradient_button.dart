@@ -60,33 +60,27 @@ class GradientButton extends StatelessWidget {
                       ),
                     ],
             ),
-            child: Padding(
-              padding: padding,
+            child: Center(
               child: isLoading
-                  ? const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.white,
                         ),
                       ),
                     )
-                  : UnconstrainedBox(
-                      constrainedAxis: Axis.vertical,
-                      child: DefaultTextStyle(
-                        style: const TextStyle(
-                          fontFamily: 'SF Pro Text',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0,
-                        ),
-                        child: child,
+                  : DefaultTextStyle(
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: 0,
                       ),
+                      child: child,
                     ),
             ),
           ),

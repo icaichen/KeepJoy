@@ -89,8 +89,7 @@ class _ResellScreenState extends State<ResellScreen> {
     }
 
     // Calculate scroll-based animations
-    final headerHeight = responsive.headerHeight;
-    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
+    final scrollProgress = (_scrollOffset / responsive.headerContentHeight).clamp(0.0, 1.0);
     final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
     final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
@@ -106,7 +105,7 @@ class _ResellScreenState extends State<ResellScreen> {
             physics: const BouncingScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
-                child: SizedBox(height: topPadding + headerHeight),
+                child: SizedBox(height: responsive.totalHeaderHeight),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -341,7 +340,7 @@ class _ResellScreenState extends State<ResellScreen> {
                 bottom: 12,
               ),
               constraints: BoxConstraints(
-                minHeight: topPadding + headerHeight,
+                minHeight: responsive.totalHeaderHeight,
               ),
               child: Opacity(
                 opacity: headerOpacity,
