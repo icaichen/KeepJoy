@@ -146,12 +146,12 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
     }
   }
 
-  Future<void> _takePicture() async {
+  Future<void> _handleImage(ImageSource source) async {
     setState(() => _isProcessing = true);
 
     try {
       final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
+        source: source,
         imageQuality: 85,
       );
 
@@ -186,6 +186,41 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
         setState(() => _isProcessing = false);
       }
     }
+  }
+
+  void _showImageSourceSheet() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: Text(l10n.takePicture),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _handleImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: Text(l10n.chooseFromGallery),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _handleImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -293,7 +328,7 @@ class _QuickDeclutterFlowPageState extends State<QuickDeclutterFlowPage> {
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
-                          onPressed: _isProcessing ? null : _takePicture,
+                          onPressed: _isProcessing ? null : _showImageSourceSheet,
                           style: FilledButton.styleFrom(
                             backgroundColor: _quickPrimaryColor,
                           ),

@@ -406,10 +406,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return showModalBottomSheet<DateTime>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.45),
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
@@ -1324,78 +1322,82 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) async {
     return showModalBottomSheet<SessionMode>(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.45),
       builder: (sheetContext) {
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    l10n.dashboardModeLabel,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                ...modeOrder.map((mode) {
-                  final meta = _modeMeta(mode, l10n);
-                  final isSelected = mode == selectedMode;
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: meta.colors),
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      l10n.dashboardModeLabel,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
                       ),
-                      child: Icon(meta.icon, color: Colors.white),
                     ),
-                    title: Text(
-                      meta.title,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      meta.subtitle,
-                      style: const TextStyle(color: Color(0xFF6B7280)),
-                    ),
-                    trailing: isSelected
-                        ? const Icon(
-                            Icons.check_circle,
-                            color: Color(0xFF414B5A),
-                          )
-                        : null,
-                    onTap: () => Navigator.pop(sheetContext, mode),
-                  );
-                }).toList(),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(sheetContext),
-                    child: Text(l10n.cancel),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  ...modeOrder.map((mode) {
+                    final meta = _modeMeta(mode, l10n);
+                    final isSelected = mode == selectedMode;
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: meta.colors),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(meta.icon, color: Colors.white),
+                      ),
+                      title: Text(
+                        meta.title,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        meta.subtitle,
+                        style: const TextStyle(color: Color(0xFF6B7280)),
+                      ),
+                      trailing: isSelected
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: Color(0xFF414B5A),
+                            )
+                          : null,
+                      onTap: () => Navigator.pop(sheetContext, mode),
+                    );
+                  }).toList(),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      child: Text(l10n.cancel),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

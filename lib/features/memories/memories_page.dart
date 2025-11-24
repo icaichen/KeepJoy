@@ -548,38 +548,6 @@ class _TimelineMemoryItem extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const Spacer(),
-                        // Memory type badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getTypeColor(
-                              memory.type,
-                            ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                memory.type.icon,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                memory.type.label(context),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: _getTypeColor(memory.type),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 12),

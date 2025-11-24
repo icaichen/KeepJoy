@@ -150,30 +150,37 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
     }
   }
 
-  Future<void> _takePicture() async {
+  Future<void> _handlePhoto({
+    required ImageSource source,
+    bool replaceCurrent = false,
+  }) async {
     setState(() => _isProcessing = true);
 
     try {
       final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
+        source: source,
         imageQuality: 85,
       );
 
       if (photo != null && mounted) {
-        // Save to permanent storage
         final permanentPath = await _saveImagePermanently(photo.path);
         if (permanentPath != null) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => _PhotoReviewPage(
-                photoPath: permanentPath,
-                onItemCompleted: widget.onItemCompleted,
-                onMemoryCreated: widget.onMemoryCreated,
-                hasFullAccess: widget.hasFullAccess,
-                onRequestUpgrade: widget.onRequestUpgrade,
-              ),
-            ),
+          final page = _PhotoReviewPage(
+            photoPath: permanentPath,
+            onItemCompleted: widget.onItemCompleted,
+            onMemoryCreated: widget.onMemoryCreated,
+            hasFullAccess: widget.hasFullAccess,
+            onRequestUpgrade: widget.onRequestUpgrade,
           );
+          if (replaceCurrent) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => page),
+            );
+          } else {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => page),
+            );
+          }
         }
       }
     } catch (e) {
@@ -189,6 +196,47 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
         setState(() => _isProcessing = false);
       }
     }
+  }
+
+  void _showImageSourceSheet({bool replaceCurrent = false}) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: Text(l10n.takePicture),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _handlePhoto(
+                    source: ImageSource.camera,
+                    replaceCurrent: replaceCurrent,
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: Text(l10n.chooseFromGallery),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _handlePhoto(
+                    source: ImageSource.gallery,
+                    replaceCurrent: replaceCurrent,
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -260,10 +308,11 @@ class _JoyDeclutterFlowPageState extends State<JoyDeclutterFlowPage> {
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
-                          onPressed: _isProcessing ? null : _takePicture,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: _joyPrimaryColor,
-                          ),
+                      onPressed:
+                          _isProcessing ? null : () => _showImageSourceSheet(),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _joyPrimaryColor,
+                      ),
                           icon: _isProcessing
                               ? const SizedBox(
                                   width: 18,
@@ -369,6 +418,89 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
     super.dispose();
   }
 
+  Future<void> _handlePhoto({
+    required ImageSource source,
+    bool replaceCurrent = false,
+  }) async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+      );
+
+      if (photo != null && mounted) {
+        final permanentPath = await _saveImagePermanently(photo.path);
+        if (permanentPath != null) {
+          final page = _PhotoReviewPage(
+            photoPath: permanentPath,
+            onItemCompleted: widget.onItemCompleted,
+            onMemoryCreated: widget.onMemoryCreated,
+            hasFullAccess: widget.hasFullAccess,
+            onRequestUpgrade: widget.onRequestUpgrade,
+          );
+          if (replaceCurrent) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => page),
+            );
+          } else {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => page),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.couldNotAccessCamera),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showImageSourceSheet({bool replaceCurrent = false}) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: Text(l10n.takePicture),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _handlePhoto(
+                    source: ImageSource.camera,
+                    replaceCurrent: replaceCurrent,
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: Text(l10n.chooseFromGallery),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _handlePhoto(
+                    source: ImageSource.gallery,
+                    replaceCurrent: replaceCurrent,
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _identifyItem() async {
     setState(() => _isIdentifying = true);
 
@@ -418,38 +550,7 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
   }
 
   Future<void> _retakePicture() async {
-    try {
-      final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 85,
-      );
-
-      if (photo != null && mounted) {
-        // Save to permanent storage
-        final permanentPath = await _saveImagePermanently(photo.path);
-        if (permanentPath != null) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => _PhotoReviewPage(
-                photoPath: permanentPath,
-                onItemCompleted: widget.onItemCompleted,
-                onMemoryCreated: widget.onMemoryCreated,
-                hasFullAccess: widget.hasFullAccess,
-                onRequestUpgrade: widget.onRequestUpgrade,
-              ),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.couldNotAccessCamera),
-          ),
-        );
-      }
-    }
+    _showImageSourceSheet(replaceCurrent: true);
   }
 
   void _startQuestions() {

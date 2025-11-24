@@ -387,8 +387,8 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
-                              Icons.add_photo_alternate_rounded,
-                              size: 32,
+                              Icons.camera_alt_rounded,
+                              size: 48,
                               color: Color(0xFFB794F6),
                             ),
                           ),
@@ -400,15 +400,6 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF111827),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.captureSpecialMoment,
-                            style: const TextStyle(
-                              fontFamily: 'SF Pro Text',
-                              fontSize: 14,
-                              color: Color(0xFF6B7280),
                             ),
                           ),
                         ],

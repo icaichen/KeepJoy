@@ -430,24 +430,19 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
     }
   }
 
-  Future<void> _takePicture() async {
-    setState(() {
-      _isProcessing = true;
-    });
+  Future<void> _pickImage(ImageSource source) async {
+    setState(() => _isProcessing = true);
 
     try {
       final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
+        source: source,
         imageQuality: 85,
       );
 
       if (photo != null && mounted) {
-        // Save to permanent storage
         final permanentPath = await _saveImagePermanently(photo.path);
         if (permanentPath != null) {
-          setState(() {
-            _photoPath = permanentPath;
-          });
+          setState(() => _photoPath = permanentPath);
         }
       }
     } catch (e) {
@@ -460,11 +455,44 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        setState(() => _isProcessing = false);
       }
     }
+  }
+
+  void _showImageSourceSheet({bool replace = false}) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: Text(l10n.takePicture),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: Text(l10n.chooseFromGallery),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _continue() {
@@ -547,15 +575,17 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
                                   fit: BoxFit.cover,
                                 ),
                               ),
-                              Positioned(
-                                top: 12,
-                                right: 12,
-                                child: IconButton.filledTonal(
-                                  onPressed: _takePicture,
-                                  icon: const Icon(Icons.refresh),
-                                  tooltip: l10n.retakePhoto,
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: IconButton.filledTonal(
+                                onPressed: () => _showImageSourceSheet(
+                                  replace: true,
                                 ),
+                                icon: const Icon(Icons.refresh),
+                                tooltip: l10n.retakePhoto,
                               ),
+                            ),
                             ],
                           )
                         : Column(
@@ -606,7 +636,8 @@ class _BeforePhotoPageState extends State<BeforePhotoPage> {
                   width: double.infinity,
                   height: 56,
                   child: FilledButton.icon(
-                    onPressed: _isProcessing ? null : _takePicture,
+                    onPressed:
+                        _isProcessing ? null : () => _showImageSourceSheet(),
                     icon: const Icon(Icons.camera_alt),
                     label: Text(l10n.takeBeforePhoto),
                     style: FilledButton.styleFrom(
@@ -1128,24 +1159,19 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
     }
   }
 
-  Future<void> _takePicture() async {
-    setState(() {
-      _isProcessing = true;
-    });
+  Future<void> _pickImage(ImageSource source) async {
+    setState(() => _isProcessing = true);
 
     try {
       final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
+        source: source,
         imageQuality: 85,
       );
 
       if (photo != null && mounted) {
-        // Save to permanent storage
         final permanentPath = await _saveImagePermanently(photo.path);
         if (permanentPath != null) {
-          setState(() {
-            _photoPath = permanentPath;
-          });
+          setState(() => _photoPath = permanentPath);
         }
       }
     } catch (e) {
@@ -1158,11 +1184,44 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        setState(() => _isProcessing = false);
       }
     }
+  }
+
+  void _showImageSourceSheet({bool replace = false}) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: Text(l10n.takePicture),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: Text(l10n.chooseFromGallery),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _continue() {
@@ -1243,15 +1302,17 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
                                   fit: BoxFit.cover,
                                 ),
                               ),
-                              Positioned(
-                                top: 12,
-                                right: 12,
-                                child: IconButton.filledTonal(
-                                  onPressed: _takePicture,
-                                  icon: const Icon(Icons.refresh),
-                                  tooltip: l10n.retakePhoto,
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: IconButton.filledTonal(
+                                onPressed: () => _showImageSourceSheet(
+                                  replace: true,
                                 ),
+                                icon: const Icon(Icons.refresh),
+                                tooltip: l10n.retakePhoto,
                               ),
+                            ),
                             ],
                           )
                         : Column(
@@ -1302,7 +1363,8 @@ class _AfterPhotoPageState extends State<AfterPhotoPage> {
                   width: double.infinity,
                   height: 56,
                   child: FilledButton.icon(
-                    onPressed: _isProcessing ? null : _takePicture,
+                    onPressed:
+                        _isProcessing ? null : () => _showImageSourceSheet(),
                     icon: const Icon(Icons.camera_alt),
                     label: Text(l10n.takeAfterPhoto),
                     style: FilledButton.styleFrom(
