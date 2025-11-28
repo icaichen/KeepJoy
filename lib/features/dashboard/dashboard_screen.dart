@@ -161,14 +161,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       l10n.quote7,
       l10n.quote8,
       l10n.quote9,
+      l10n.quote10,
       l10n.quote11,
       l10n.quote12,
       l10n.quote13,
       l10n.quote14,
       l10n.quote15,
-      l10n.quote16,
-      l10n.quote17,
-      l10n.quote18,
     ];
     return quotes[dayOfYear % quotes.length];
   }

@@ -328,55 +328,49 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profile => '个人资料';
 
   @override
-  String get quote1 => '\"我们居住的空间应该是为现在的自己，而不是过去的自己。\" — 近藤麻理惠';
+  String get quote1 => '\"家中只留下你认为有用或美丽的东西。\" — 威廉·莫里斯';
 
   @override
-  String get quote2 => '\"外在的秩序有助于内心的平静。\" — 格雷琴·鲁宾';
+  String get quote2 => '\"简约是终极的精致。\" — 列奥纳多·达·芬奇';
 
   @override
-  String get quote3 => '\"家中只留下你认为有用或美丽的东西。\" — 威廉·莫里斯';
+  String get quote3 => '\"你拥有的越多，你就越忙碌。你拥有的越少，你就越自由。\" — 特蕾莎修女';
 
   @override
-  String get quote4 => '\"杂乱不仅仅是物质上的，还包括旧观念、有毒的关系和坏习惯。\" — 埃莉诺·布朗';
+  String get quote4 => '\"生活其实很简单，但我们坚持把它复杂化。\" — 孔子';
 
   @override
-  String get quote5 => '\"清洁的目的不仅仅是清洁，而是在这个环境中感到幸福。\" — 近藤麻理惠';
+  String get quote5 => '\"少即是多。\" — 路德维希·密斯·凡德罗';
 
   @override
-  String get quote6 => '\"简约是终极的精致。\" — 列奥纳多·达·芬奇';
+  String get quote6 => '\"当不再需要删减任何东西时，完美才算达成。\" — 安托万·德·圣-埃克苏佩里';
 
   @override
-  String get quote7 => '\"当你的房间干净整洁时，你别无选择，只能审视自己的内心状态。\" — 近藤麻理惠';
+  String get quote7 => '\"欲望越少，拥有越多。\" — 伊壁鸠鲁';
 
   @override
-  String get quote8 => '\"清除杂物，为自己腾出空间。\" — 玛格达莱娜·范登堡';
+  String get quote8 => '\"富有不在于拥有很多，而在于需要很少。\" — 爱比克泰德';
 
   @override
-  String get quote9 => '\"打造理想生活的第一步是摆脱你不需要的一切。\" — 约书亚·贝克尔';
+  String get quote9 => '\"自然从不做无用之事。\" — 亚里士多德';
 
   @override
-  String get quote11 => '\"你拥有的越多，你就越忙碌。你拥有的越少，你就越自由。\" — 特蕾莎修女';
+  String get quote10 => '\"秩序是美的基础。\" — 赛珍珠';
 
   @override
-  String get quote12 => '\"生活其实很简单，但我们坚持把它复杂化。\" — 孔子';
+  String get quote11 => '\"最大的财富，是少欲而心安。\" — 柏拉图';
 
   @override
-  String get quote13 => '\"极简主义不是缺少什么，而是恰到好处。\" — 尼古拉斯·伯罗斯';
+  String get quote12 => '\"简单，是所有优雅的核心。\" — 可可·香奈儿';
 
   @override
-  String get quote14 => '\"你的家应该讲述你是谁的故事，是你所爱之物的集合。\" — 内特·伯库斯';
+  String get quote13 => '\"活着是最罕见的事，大多数人只是存在。\" — 奥斯卡·王尔德';
 
   @override
-  String get quote15 => '\"摆脱所有无关紧要的东西，让你记起自己是谁。\" — 佚名';
+  String get quote14 => '\"灵魂的成长在于减法，而非加法。\" — 古修行格言';
 
   @override
-  String get quote16 => '\"少即是多。\" — 路德维希·密斯·凡德罗';
-
-  @override
-  String get quote17 => '\"当不再需要删减任何东西时，完美才算达成。\" — 安托万·德·圣-埃克苏佩里';
-
-  @override
-  String get quote18 => '\"你的家是用来生活的空间，而不是储物间。\" — 弗朗辛·杰伊';
+  String get quote15 => '\"美好的人生由理性引导，由爱点亮。\" — 伯特兰·罗素';
 
   @override
   String get goodEvening => '晚上好';

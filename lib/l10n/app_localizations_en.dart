@@ -335,70 +335,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quote1 =>
-      '\"The space in which we live should be for the person we are becoming now, not for the person we were in the past.\" — Marie Kondo';
-
-  @override
-  String get quote2 =>
-      '\"Outer order contributes to inner calm.\" — Gretchen Rubin';
-
-  @override
-  String get quote3 =>
       '\"Have nothing in your house that you do not know to be useful, or believe to be beautiful.\" — William Morris';
 
   @override
-  String get quote4 =>
-      '\"Clutter is not just physical stuff. It\'s old ideas, toxic relationships, and bad habits.\" — Eleanor Brownn';
-
-  @override
-  String get quote5 =>
-      '\"The objective of cleaning is not just to clean, but to feel happiness living within that environment.\" — Marie Kondo';
-
-  @override
-  String get quote6 =>
+  String get quote2 =>
       '\"Simplicity is the ultimate sophistication.\" — Leonardo da Vinci';
 
   @override
-  String get quote7 =>
-      '\"When your room is clean and uncluttered, you have no choice but to examine your inner state.\" — Marie Kondo';
-
-  @override
-  String get quote8 =>
-      '\"Clear clutter. Make space for you.\" — Magdalena VandenBerg';
-
-  @override
-  String get quote9 =>
-      '\"The first step in crafting the life you want is to get rid of everything you don\'t.\" — Joshua Becker';
-
-  @override
-  String get quote11 =>
+  String get quote3 =>
       '\"The more you have, the more you are occupied. The less you have, the more free you are.\" — Mother Teresa';
 
   @override
-  String get quote12 =>
+  String get quote4 =>
       '\"Life is really simple, but we insist on making it complicated.\" — Confucius';
 
   @override
-  String get quote13 =>
-      '\"Minimalism is not a lack of something. It\'s simply the perfect amount of something.\" — Nicholas Burroughs';
+  String get quote5 => '\"Less is more.\" — Ludwig Mies van der Rohe';
 
   @override
-  String get quote14 =>
-      '\"Your home should tell the story of who you are, and be a collection of what you love.\" — Nate Berkus';
-
-  @override
-  String get quote15 =>
-      '\"Getting rid of everything that doesn\'t matter allows you to remember who you are.\" — Unknown';
-
-  @override
-  String get quote16 => '\"Less is more.\" — Ludwig Mies van der Rohe';
-
-  @override
-  String get quote17 =>
+  String get quote6 =>
       '\"Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.\" — Antoine de Saint-Exupéry';
 
   @override
-  String get quote18 =>
-      '\"Your home is living space, not storage space.\" — Francine Jay';
+  String get quote7 =>
+      '\"He who has little desires, has everything.\" — Epicurus';
+
+  @override
+  String get quote8 =>
+      '\"Wealth consists not in having great possessions, but in having few wants.\" — Epictetus';
+
+  @override
+  String get quote9 => '\"Nature does nothing uselessly.\" — Aristotle';
+
+  @override
+  String get quote10 =>
+      '\"Order is the shape upon which beauty depends.\" — Pearl S. Buck';
+
+  @override
+  String get quote11 =>
+      '\"The greatest wealth is to live content with little.\" — Plato';
+
+  @override
+  String get quote12 =>
+      '\"Simplicity is the keynote of all true elegance.\" — Coco Chanel';
+
+  @override
+  String get quote13 =>
+      '\"To live is the rarest thing in the world. Most people just exist.\" — Oscar Wilde';
+
+  @override
+  String get quote14 =>
+      '\"The soul grows by subtraction, not addition.\" — Ascetic proverb';
+
+  @override
+  String get quote15 =>
+      '\"A good life is one guided by reason and inspired by love.\" — Bertrand Russell';
 
   @override
   String get goodEvening => 'Good Evening';

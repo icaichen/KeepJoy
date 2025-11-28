@@ -687,104 +687,92 @@ abstract class AppLocalizations {
   /// No description provided for @quote1.
   ///
   /// In en, this message translates to:
-  /// **'\"The space in which we live should be for the person we are becoming now, not for the person we were in the past.\" — Marie Kondo'**
+  /// **'\"Have nothing in your house that you do not know to be useful, or believe to be beautiful.\" — William Morris'**
   String get quote1;
 
   /// No description provided for @quote2.
   ///
   /// In en, this message translates to:
-  /// **'\"Outer order contributes to inner calm.\" — Gretchen Rubin'**
+  /// **'\"Simplicity is the ultimate sophistication.\" — Leonardo da Vinci'**
   String get quote2;
 
   /// No description provided for @quote3.
   ///
   /// In en, this message translates to:
-  /// **'\"Have nothing in your house that you do not know to be useful, or believe to be beautiful.\" — William Morris'**
+  /// **'\"The more you have, the more you are occupied. The less you have, the more free you are.\" — Mother Teresa'**
   String get quote3;
 
   /// No description provided for @quote4.
   ///
   /// In en, this message translates to:
-  /// **'\"Clutter is not just physical stuff. It\'s old ideas, toxic relationships, and bad habits.\" — Eleanor Brownn'**
+  /// **'\"Life is really simple, but we insist on making it complicated.\" — Confucius'**
   String get quote4;
 
   /// No description provided for @quote5.
   ///
   /// In en, this message translates to:
-  /// **'\"The objective of cleaning is not just to clean, but to feel happiness living within that environment.\" — Marie Kondo'**
+  /// **'\"Less is more.\" — Ludwig Mies van der Rohe'**
   String get quote5;
 
   /// No description provided for @quote6.
   ///
   /// In en, this message translates to:
-  /// **'\"Simplicity is the ultimate sophistication.\" — Leonardo da Vinci'**
+  /// **'\"Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.\" — Antoine de Saint-Exupéry'**
   String get quote6;
 
   /// No description provided for @quote7.
   ///
   /// In en, this message translates to:
-  /// **'\"When your room is clean and uncluttered, you have no choice but to examine your inner state.\" — Marie Kondo'**
+  /// **'\"He who has little desires, has everything.\" — Epicurus'**
   String get quote7;
 
   /// No description provided for @quote8.
   ///
   /// In en, this message translates to:
-  /// **'\"Clear clutter. Make space for you.\" — Magdalena VandenBerg'**
+  /// **'\"Wealth consists not in having great possessions, but in having few wants.\" — Epictetus'**
   String get quote8;
 
   /// No description provided for @quote9.
   ///
   /// In en, this message translates to:
-  /// **'\"The first step in crafting the life you want is to get rid of everything you don\'t.\" — Joshua Becker'**
+  /// **'\"Nature does nothing uselessly.\" — Aristotle'**
   String get quote9;
+
+  /// No description provided for @quote10.
+  ///
+  /// In en, this message translates to:
+  /// **'\"Order is the shape upon which beauty depends.\" — Pearl S. Buck'**
+  String get quote10;
 
   /// No description provided for @quote11.
   ///
   /// In en, this message translates to:
-  /// **'\"The more you have, the more you are occupied. The less you have, the more free you are.\" — Mother Teresa'**
+  /// **'\"The greatest wealth is to live content with little.\" — Plato'**
   String get quote11;
 
   /// No description provided for @quote12.
   ///
   /// In en, this message translates to:
-  /// **'\"Life is really simple, but we insist on making it complicated.\" — Confucius'**
+  /// **'\"Simplicity is the keynote of all true elegance.\" — Coco Chanel'**
   String get quote12;
 
   /// No description provided for @quote13.
   ///
   /// In en, this message translates to:
-  /// **'\"Minimalism is not a lack of something. It\'s simply the perfect amount of something.\" — Nicholas Burroughs'**
+  /// **'\"To live is the rarest thing in the world. Most people just exist.\" — Oscar Wilde'**
   String get quote13;
 
   /// No description provided for @quote14.
   ///
   /// In en, this message translates to:
-  /// **'\"Your home should tell the story of who you are, and be a collection of what you love.\" — Nate Berkus'**
+  /// **'\"The soul grows by subtraction, not addition.\" — Ascetic proverb'**
   String get quote14;
 
   /// No description provided for @quote15.
   ///
   /// In en, this message translates to:
-  /// **'\"Getting rid of everything that doesn\'t matter allows you to remember who you are.\" — Unknown'**
+  /// **'\"A good life is one guided by reason and inspired by love.\" — Bertrand Russell'**
   String get quote15;
-
-  /// No description provided for @quote16.
-  ///
-  /// In en, this message translates to:
-  /// **'\"Less is more.\" — Ludwig Mies van der Rohe'**
-  String get quote16;
-
-  /// No description provided for @quote17.
-  ///
-  /// In en, this message translates to:
-  /// **'\"Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.\" — Antoine de Saint-Exupéry'**
-  String get quote17;
-
-  /// No description provided for @quote18.
-  ///
-  /// In en, this message translates to:
-  /// **'\"Your home is living space, not storage space.\" — Francine Jay'**
-  String get quote18;
 
   /// No description provided for @goodEvening.
   ///
