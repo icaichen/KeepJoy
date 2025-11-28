@@ -29,17 +29,6 @@ class MemoriesPage extends StatefulWidget {
 class _MemoriesPageState extends State<MemoriesPage> {
   MemoryViewMode _viewMode = MemoryViewMode.grid;
   final ScrollController _scrollController = ScrollController();
-  double _scrollOffset = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(() {
-      setState(() {
-        _scrollOffset = _scrollController.offset;
-      });
-    });
-  }
 
   @override
   void dispose() {
@@ -53,11 +42,6 @@ class _MemoriesPageState extends State<MemoriesPage> {
     final memories = widget.memories;
     final topPadding = MediaQuery.of(context).padding.top;
     final responsive = context.responsive;
-
-    // Calculate scroll-based animations
-    final scrollProgress = (_scrollOffset / responsive.headerContentHeight).clamp(0.0, 1.0);
-    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
-    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     final pageName = l10n.memoriesTitle;
 
@@ -97,116 +81,133 @@ class _MemoriesPageState extends State<MemoriesPage> {
             ],
           ),
 
-          // Collapsed header
+          // Collapsed header - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: IgnorePointer(
-              ignoring: collapsedHeaderOpacity < 0.5,
-              child: Opacity(
-                opacity: collapsedHeaderOpacity,
-                child: Column(
-                  children: [
-                    Container(
-                      height: topPadding,
-                      color: const Color(0xFFF5F5F7),
-                    ),
-                    Container(
-                      height: kToolbarHeight,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF5F5F7),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFFE5E5EA),
-                            width: 0.5,
-                          ),
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / responsive.headerContentHeight).clamp(0.0, 1.0);
+                final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                return IgnorePointer(
+                  ignoring: collapsedHeaderOpacity < 0.5,
+                  child: Opacity(
+                    opacity: collapsedHeaderOpacity,
+                    child: child,
+                  ),
+                );
+              },
+              child: Column(
+                children: [
+                  Container(
+                    height: topPadding,
+                    color: const Color(0xFFF5F5F7),
+                  ),
+                  Container(
+                    height: kToolbarHeight,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF5F5F7),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0xFFE5E5EA),
+                          width: 0.5,
                         ),
                       ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: responsive.horizontalPadding,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        pageName,
-                        style: TextStyle(
-                          fontSize: responsive.titleFontSize,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1C1C1E),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
                     ),
-                  ],
-                ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: responsive.horizontalPadding,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      pageName,
+                      style: TextStyle(
+                        fontSize: responsive.titleFontSize,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1C1C1E),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
 
-          // Original header with view mode toggle
+          // Original header with view mode toggle - only opacity rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              padding: EdgeInsets.only(
-                left: responsive.horizontalPadding,
-                right: responsive.horizontalPadding,
-                top: topPadding + 12,
-                bottom: 12,
-              ),
-              constraints: BoxConstraints(
-                minHeight: responsive.totalHeaderHeight,
-              ),
-              child: Opacity(
-                opacity: headerOpacity,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        pageName,
-                        style: TextStyle(
-                          fontSize: responsive.largeTitleFontSize,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1C1C1E),
-                          letterSpacing: -0.5,
-                          height: 1.2,
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, _) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / responsive.headerContentHeight).clamp(0.0, 1.0);
+                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+                return Container(
+                  padding: EdgeInsets.only(
+                    left: responsive.horizontalPadding,
+                    right: responsive.horizontalPadding,
+                    top: topPadding + 12,
+                    bottom: 12,
+                  ),
+                  constraints: BoxConstraints(
+                    minHeight: responsive.totalHeaderHeight,
+                  ),
+                  child: Opacity(
+                    opacity: headerOpacity,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            pageName,
+                            style: TextStyle(
+                              fontSize: responsive.largeTitleFontSize,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1C1C1E),
+                              letterSpacing: -0.5,
+                              height: 1.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      height: 40,
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildViewModeButton(
-                            icon: Icons.grid_view_rounded,
-                            mode: MemoryViewMode.grid,
-                            isSelected: _viewMode == MemoryViewMode.grid,
+                        const SizedBox(width: 12),
+                        Container(
+                          height: 40,
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F4F6),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          const SizedBox(width: 4),
-                          _buildViewModeButton(
-                            icon: Icons.timeline_rounded,
-                            mode: MemoryViewMode.timeline,
-                            isSelected: _viewMode == MemoryViewMode.timeline,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildViewModeButton(
+                                icon: Icons.grid_view_rounded,
+                                mode: MemoryViewMode.grid,
+                                isSelected: _viewMode == MemoryViewMode.grid,
+                              ),
+                              const SizedBox(width: 4),
+                              _buildViewModeButton(
+                                icon: Icons.timeline_rounded,
+                                mode: MemoryViewMode.timeline,
+                                isSelected: _viewMode == MemoryViewMode.timeline,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ],

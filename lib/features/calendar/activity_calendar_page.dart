@@ -26,17 +26,11 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   final ScrollController _scrollController = ScrollController();
-  double _scrollOffset = 0.0;
 
   @override
   void initState() {
     super.initState();
     _selectedDay = DateTime.now();
-    _scrollController.addListener(() {
-      setState(() {
-        _scrollOffset = _scrollController.offset;
-      });
-    });
   }
 
   @override
@@ -175,11 +169,7 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
     final hasAnySessions =
         scheduledSessions.isNotEmpty || unscheduledSessions.isNotEmpty;
 
-    // Calculate scroll-based animations
     const headerHeight = 100.0;
-    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
-    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
-    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
@@ -358,109 +348,124 @@ class _ActivityCalendarPageState extends State<ActivityCalendarPage> {
             ),
           ),
 
-          // Collapsed header
+          // Collapsed header - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: IgnorePointer(
-              ignoring: collapsedHeaderOpacity < 0.5,
-              child: Opacity(
-                opacity: collapsedHeaderOpacity,
-                child: Container(
-                  height: topPadding + kToolbarHeight,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF5F5F7),
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
-                    ),
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
+                final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                return IgnorePointer(
+                  ignoring: collapsedHeaderOpacity < 0.5,
+                  child: Opacity(
+                    opacity: collapsedHeaderOpacity,
+                    child: child,
                   ),
-                  padding: EdgeInsets.only(top: topPadding),
-                  alignment: Alignment.center,
-                  child: Text(
-                    l10n.calendarTitle,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
+                );
+              },
+              child: Container(
+                height: topPadding + kToolbarHeight,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F5F7),
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
+                  ),
+                ),
+                padding: EdgeInsets.only(top: topPadding),
+                alignment: Alignment.center,
+                child: Text(
+                  l10n.calendarTitle,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
                   ),
                 ),
               ),
             ),
           ),
 
-          // Original header - allows touches to pass through
+          // Original header - only opacity rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: IgnorePointer(
-              ignoring: true,
-              child: Opacity(
-                opacity: headerOpacity,
-                child: Container(
-                  height: 120,
-                  color: Colors.transparent,
-                  padding: EdgeInsets.only(
-                    left: 24,
-                    right: 16,
-                    top: topPadding + 12,
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
+                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+                return IgnorePointer(
+                  ignoring: headerOpacity < 0.5,
+                  child: Opacity(
+                    opacity: headerOpacity,
+                    child: child,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        l10n.calendarTitle,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          letterSpacing: -0.5,
+                );
+              },
+              child: Container(
+                height: 120,
+                color: Colors.transparent,
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 16,
+                  top: topPadding + 12,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      l10n.calendarTitle,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _addNewPlan,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              l10n.calendarAddNewPlan,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      IgnorePointer(
-                        ignoring: false,
-                        child: GestureDetector(
-                          onTap: _addNewPlan,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  l10n.calendarAddNewPlan,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        ),
-                      ],
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
+          ),
         ],
       ),
     );

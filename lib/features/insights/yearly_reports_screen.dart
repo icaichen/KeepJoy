@@ -33,17 +33,6 @@ class YearlyReportsScreen extends StatefulWidget {
 class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   bool _showJoyPercent = true; // true = Joy Percent, false = Joy Count
   final ScrollController _scrollController = ScrollController();
-  double _scrollOffset = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(() {
-      setState(() {
-        _scrollOffset = _scrollController.offset;
-      });
-    });
-  }
 
   void _showSessionDetail(
     BuildContext context,
@@ -729,11 +718,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
 
     // Disposal method counts
-    // Calculate scroll-based animations
     const titleAreaHeight = 120.0;
-    final scrollProgress = (_scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
-    final titleOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
-    final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
@@ -775,25 +760,22 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             right: 16,
                             top: topPadding + 12,
                           ),
-                          child: Opacity(
-                            opacity: titleOpacity,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // Large title on the left
-                                Text(
-                                  pageName,
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                    letterSpacing: -0.5,
-                                    height: 1.0,
-                                  ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Large title on the left
+                              Text(
+                                pageName,
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: -0.5,
+                                  height: 1.0,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -1158,49 +1140,59 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           ),
 
           // Real header that appears when scrolling is complete
+          // Real header - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: IgnorePointer(
-              ignoring: realHeaderOpacity < 0.5,
-              child: Opacity(
-                opacity: realHeaderOpacity,
-                child: Container(
-                  height: topPadding + kToolbarHeight,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
-                    ),
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
+                final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                return IgnorePointer(
+                  ignoring: realHeaderOpacity < 0.5,
+                  child: Opacity(
+                    opacity: realHeaderOpacity,
+                    child: child,
                   ),
-                  child: Stack(
-                    children: [
-                      // Back button
-                      Positioned(
-                        left: 0,
-                        top: topPadding,
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_rounded),
-                          onPressed: () => Navigator.pop(context),
-                        ),
+                );
+              },
+              child: Container(
+                height: topPadding + kToolbarHeight,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // Back button
+                    Positioned(
+                      left: 0,
+                      top: topPadding,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_rounded),
+                        onPressed: () => Navigator.pop(context),
                       ),
-                      // Centered title
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: topPadding),
-                          child: Text(
-                            pageName,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black87,
-                            ),
+                    ),
+                    // Centered title
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: topPadding),
+                        child: Text(
+                          pageName,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

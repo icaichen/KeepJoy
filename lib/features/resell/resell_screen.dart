@@ -28,17 +28,6 @@ class ResellScreen extends StatefulWidget {
 class _ResellScreenState extends State<ResellScreen> {
   int _selectedTab = 0; // 0 = To Sell, 1 = Listing, 2 = Sold
   final ScrollController _scrollController = ScrollController();
-  double _scrollOffset = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(() {
-      setState(() {
-        _scrollOffset = _scrollController.offset;
-      });
-    });
-  }
 
   @override
   void dispose() {
@@ -87,11 +76,6 @@ class _ResellScreenState extends State<ResellScreen> {
       default:
         displayItems = [];
     }
-
-    // Calculate scroll-based animations
-    final scrollProgress = (_scrollOffset / responsive.headerContentHeight).clamp(0.0, 1.0);
-    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
-    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     final pageName = isChinese ? '转售' : 'Resell';
 
@@ -289,61 +273,79 @@ class _ResellScreenState extends State<ResellScreen> {
             ],
           ),
 
-          // Collapsed header
+          // Collapsed header - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: IgnorePointer(
-              ignoring: collapsedHeaderOpacity < 0.5,
-              child: Opacity(
-                opacity: collapsedHeaderOpacity,
-                child: Container(
-                  height: responsive.collapsedHeaderHeight,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF5F6F7),
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
-                    ),
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / responsive.headerContentHeight).clamp(0.0, 1.0);
+                final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                return IgnorePointer(
+                  ignoring: collapsedHeaderOpacity < 0.5,
+                  child: Opacity(
+                    opacity: collapsedHeaderOpacity,
+                    child: child,
                   ),
-                  padding: EdgeInsets.only(
-                    top: topPadding,
-                    left: responsive.horizontalPadding,
-                    right: responsive.horizontalPadding,
+                );
+              },
+              child: Container(
+                height: responsive.collapsedHeaderHeight,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F6F7),
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
                   ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    pageName,
-                    style: TextStyle(
-                      fontSize: responsive.titleFontSize,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1C1C1E),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                ),
+                padding: EdgeInsets.only(
+                  top: topPadding,
+                  left: responsive.horizontalPadding,
+                  right: responsive.horizontalPadding,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  pageName,
+                  style: TextStyle(
+                    fontSize: responsive.titleFontSize,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1C1C1E),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
           ),
 
-          // Original header
+          // Original header - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              padding: EdgeInsets.only(
-                left: responsive.horizontalPadding,
-                right: responsive.horizontalPadding,
-                top: topPadding + 12,
-                bottom: 12,
-              ),
-              constraints: BoxConstraints(
-                minHeight: responsive.totalHeaderHeight,
-              ),
-              child: Opacity(
-                opacity: headerOpacity,
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / responsive.headerContentHeight).clamp(0.0, 1.0);
+                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+                return Opacity(
+                  opacity: headerOpacity,
+                  child: child,
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.only(
+                  left: responsive.horizontalPadding,
+                  right: responsive.horizontalPadding,
+                  top: topPadding + 12,
+                  bottom: 12,
+                ),
+                constraints: BoxConstraints(
+                  minHeight: responsive.totalHeaderHeight,
+                ),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(

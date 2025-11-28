@@ -1402,7 +1402,6 @@ class _HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<_HomeScreen> {
   Timer? _timer;
   final ScrollController _scrollController = ScrollController();
-  double _scrollOffset = 0.0;
 
   @override
   void initState() {
@@ -1415,12 +1414,6 @@ class _HomeScreenState extends State<_HomeScreen> {
         }
       });
     }
-    // Listen to scroll changes
-    _scrollController.addListener(() {
-      setState(() {
-        _scrollOffset = _scrollController.offset;
-      });
-    });
   }
 
   @override
@@ -2070,11 +2063,7 @@ class _HomeScreenState extends State<_HomeScreen> {
     // Get quote of the day
     final quoteOfDay = _getQuoteOfDay(l10n);
 
-    // Calculate scroll-based animations
     const headerHeight = 100.0;
-    final scrollProgress = (_scrollOffset / headerHeight).clamp(0.0, 1.0);
-    final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
-    final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
@@ -2695,53 +2684,71 @@ class _HomeScreenState extends State<_HomeScreen> {
             ),
           ),
 
-          // Collapsed header (appears when scrolling)
+          // Collapsed header (appears when scrolling) - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: IgnorePointer(
-              ignoring: collapsedHeaderOpacity < 0.5,
-              child: Opacity(
-                opacity: collapsedHeaderOpacity,
-                child: Container(
-                  height: topPadding + kToolbarHeight,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF5F5F7),
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
-                    ),
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
+                final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                return IgnorePointer(
+                  ignoring: collapsedHeaderOpacity < 0.5,
+                  child: Opacity(
+                    opacity: collapsedHeaderOpacity,
+                    child: child,
                   ),
-                  padding: EdgeInsets.only(top: topPadding),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'KeepJoy',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
+                );
+              },
+              child: Container(
+                height: topPadding + kToolbarHeight,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F5F7),
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
+                  ),
+                ),
+                padding: EdgeInsets.only(top: topPadding),
+                alignment: Alignment.center,
+                child: const Text(
+                  'KeepJoy',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
                   ),
                 ),
               ),
             ),
           ),
 
-          // Original header (fades out when scrolling)
+          // Original header (fades out when scrolling) - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: SizedBox(
-              height: 120,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 24,
-                  right: 16,
-                  top: topPadding + 12,
-                ),
-                child: Opacity(
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
+                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+                return Opacity(
                   opacity: headerOpacity,
+                  child: child,
+                );
+              },
+              child: SizedBox(
+                height: 120,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 24,
+                    right: 16,
+                    top: topPadding + 12,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
