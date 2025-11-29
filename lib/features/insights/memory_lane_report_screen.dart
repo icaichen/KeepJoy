@@ -288,14 +288,18 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           ),
           const SizedBox(height: 24),
           Center(
-            child: _buildEmotionDonut(
-              context: context,
-              chartSize: 220,
-              emotions: emotions,
-              sentimentCounts: sentimentCounts,
-              totalCount: totalCount,
-              hasData: hasData,
-              isChinese: isChinese,
+            child: SizedBox(
+              height: 240,
+              width: 240,
+              child: CustomPaint(
+                painter: _EmotionPieChartPainter(
+                  emotions: emotions,
+                  sentimentCounts: sentimentCounts,
+                  totalCount: totalCount,
+                  hasData: hasData,
+                  isChinese: isChinese,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -632,10 +636,13 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     // Count memories by category
     for (final memory in widget.memories) {
       if (memory.category != null && memory.category!.isNotEmpty) {
-        // Find matching enum category
+        final catValue = memory.category!;
+        // Find matching enum category (match enum name/english/chinese)
         final declutterCategory = DeclutterCategory.values.firstWhere(
           (cat) =>
-              cat.english == memory.category || cat.chinese == memory.category,
+              cat.name == catValue ||
+              cat.english == catValue ||
+              cat.chinese == catValue,
           orElse: () => DeclutterCategory.miscellaneous,
         );
         categoryCounts[declutterCategory] =
@@ -688,19 +695,17 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   ?.copyWith(color: Colors.black54),
             )
           else ...[
-            for (final category in sortedCategories) ...[
-              _buildCategoryStatRow(
-                context,
-                category: category,
-                count: categoryCounts[category] ?? 0,
-                maxCount: categoryCounts.values.isEmpty
-                    ? 1
-                    : categoryCounts.values.reduce(
-                        (a, b) => a > b ? a : b,
-                      ),
+            SizedBox(
+              height: 260,
+              width: double.infinity,
+              child: CustomPaint(
+                painter: _CategoryVerticalBarChartPainter(
+                  categories: sortedCategories,
+                  counts: categoryCounts,
+                  isChinese: isChinese,
+                ),
               ),
-              if (category != sortedCategories.last) const SizedBox(height: 10),
-            ],
+            ),
           ],
         ],
       ),
@@ -1188,50 +1193,59 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     required BuildContext context,
   }) {
     final theme = Theme.of(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: emotions.map((emotion) {
-        final count =
-            sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: emotion['color'] as Color,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                SizedBox(
-                  height: 32,
-                  child: Text(
-                    emotion['label'] as String,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF111827),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 3 列布局
+        final itemWidth = (constraints.maxWidth - 2 * 8) / 3;
+        return Wrap(
+          spacing: 8,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: emotions.map((emotion) {
+            final count =
+                sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
+            return SizedBox(
+              width: itemWidth,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: emotion['color'] as Color,
+                      shape: BoxShape.circle,
                     ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$count',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: const Color(0xFF111827),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          emotion['label'] as String,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF111827),
+                          ),
+                        ),
+                        Text(
+                          '$count',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: const Color(0xFF4B5563),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 }
@@ -1691,12 +1705,14 @@ class _EmotionPieChartPainter extends CustomPainter {
   final Map<MemorySentiment, int> sentimentCounts;
   final int totalCount;
   final bool hasData;
+  final bool isChinese;
 
   _EmotionPieChartPainter({
     required this.emotions,
     required this.sentimentCounts,
     required this.totalCount,
     required this.hasData,
+    required this.isChinese,
   });
 
   @override
@@ -1746,10 +1762,10 @@ class _EmotionPieChartPainter extends CustomPainter {
 
     canvas.drawCircle(center, radius * 0.5, centerCirclePaint);
 
-    // Draw total count in center
+    // Draw total count in center with label
     final textPainter = TextPainter(
       text: TextSpan(
-        text: totalCount.toString(),
+        text: '$totalCount',
         style: const TextStyle(
           color: Color(0xFF111827),
           fontSize: 32,
@@ -1763,7 +1779,27 @@ class _EmotionPieChartPainter extends CustomPainter {
       canvas,
       Offset(
         center.dx - textPainter.width / 2,
-        center.dy - textPainter.height / 2,
+        center.dy - textPainter.height / 2 - 8,
+      ),
+    );
+
+    final subPainter = TextPainter(
+      text: TextSpan(
+        text: isChinese ? '回忆' : 'memories',
+        style: const TextStyle(
+          color: Color(0xFF6B7280),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    subPainter.layout();
+    subPainter.paint(
+      canvas,
+      Offset(
+        center.dx - subPainter.width / 2,
+        center.dy - subPainter.height / 2 + 16,
       ),
     );
   }

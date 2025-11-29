@@ -32,7 +32,7 @@ class YearlyReportsScreen extends StatefulWidget {
 }
 
 class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
-  bool _showJoyPercent = true; // true = Joy Percent, false = Joy Count
+  bool _showJoyPercent = true; // true = Joy Rate, false = Joy Count
   final ScrollController _scrollController = ScrollController();
 
   void _showSessionDetail(
@@ -1234,6 +1234,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     required String label,
   }) {
     return Container(
+      constraints: const BoxConstraints(minHeight: 132),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1242,7 +1243,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
+        children: [
           Icon(icon, color: iconColor, size: 24),
           const SizedBox(height: 10),
           AutoScaleText(
@@ -1257,6 +1258,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           const SizedBox(height: 4),
           AutoScaleText(
             label,
+            maxLines: 2,
             style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
             textAlign: TextAlign.center,
           ),
@@ -1507,7 +1509,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       }
     }
 
-    // Calculate monthly joy percent for all 12 months
+    // Calculate monthly joy rate for all 12 months
     final monthlyJoyPercent = <int, double>{};
     for (int month = 1; month <= 12; month++) {
       final total = monthlyTotalCount[month] ?? 0;
@@ -1515,7 +1517,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       monthlyJoyPercent[month] = total > 0 ? (joyCount / total * 100) : 0.0;
     }
 
-    // Calculate average joy percent (excluding months with no data)
+    // Calculate average joy rate (excluding months with no data)
     final monthsWithData = monthlyJoyPercent.values
         .where((v) => v > 0)
         .toList();
@@ -1626,7 +1628,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Metric dropdown for Joy Percent vs Joy Count
+          // Metric dropdown for Joy Rate vs Joy Count
           Row(
             children: [
               SizedBox(
@@ -1670,7 +1672,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                         DropdownMenuItem<bool>(
                           value: true,
                           child: Text(
-                            isChinese ? '心动比例' : 'Joy Percent',
+                            isChinese ? '心动率' : 'Joy Rate',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontSize: 14,
@@ -1725,7 +1727,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             children: [
               _buildStatItem(
                 context,
-                label: isChinese ? '平均心动比例' : 'Avg Joy %',
+                label: isChinese ? '平均心动率' : 'Avg Joy Rate',
                 value: '${avgJoyPercent.toStringAsFixed(0)}%',
                 color: const Color(0xFFFF9AA2),
               ),
@@ -1817,8 +1819,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                   Expanded(
                     child: Text(
                       isChinese
-                          ? '心动比例 = 心动物品数 ÷ 快速整理已回答心动问题的总物品数。'
-                          : 'Joy Percent = Joy Count ÷ all Quick Declutter items with a joy answer.',
+                          ? '心动率 = 心动物品数 ÷ 快速整理已回答心动问题的总物品数。'
+                          : 'Joy Rate = Joy Count ÷ all Quick Declutter items with a joy answer.',
                       style: const TextStyle(
                         color: Color(0xFF4B5563),
                         height: 1.45,

@@ -60,6 +60,102 @@ class _ResellAnalysisReportScreenState
     super.dispose();
   }
 
+  Widget _buildTrendSummary(
+    BuildContext context,
+    bool isChinese,
+    Map<int, double> trendData,
+  ) {
+    final now = DateTime.now();
+    final soldThisYear = widget.resellItems
+        .where((item) =>
+            item.status == ResellStatus.sold &&
+            item.createdAt.year == now.year)
+        .length;
+    final monthsElapsed = now.month;
+    final avgPerMonth =
+        monthsElapsed > 0 ? (soldThisYear / monthsElapsed) : 0.0;
+
+    // Compute trend: compare recent 3 months vs previous 3 months
+    double recent = 0;
+    double previous = 0;
+    int recentCount = 0;
+    int previousCount = 0;
+    for (int m = monthsElapsed; m >= 1 && m >= monthsElapsed - 2; m--) {
+      recent += trendData[m] ?? 0;
+      recentCount++;
+    }
+    for (int m = monthsElapsed - 3; m >= 1 && m >= monthsElapsed - 5; m--) {
+      previous += trendData[m] ?? 0;
+      previousCount++;
+    }
+    final recentAvg =
+        recentCount > 0 ? recent / recentCount : 0.0;
+    final previousAvg =
+        previousCount > 0 ? previous / previousCount : 0.0;
+    final diff = recentAvg - previousAvg;
+    final trendUp = diff >= 0;
+    final trendText = isChinese
+        ? (trendUp ? '上升' : '下降')
+        : (trendUp ? 'Up' : 'Down');
+    final trendValue = diff.abs();
+
+    Widget pill(String label, String value, Color color) {
+      return Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFF6B7280),
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        pill(
+          isChinese ? '已售件数' : 'Sold Items',
+          soldThisYear.toString(),
+          const Color(0xFF111827),
+        ),
+        const SizedBox(width: 12),
+        pill(
+          isChinese ? '月均售出' : 'Avg / Month',
+          avgPerMonth.toStringAsFixed(1),
+          const Color(0xFF10B981),
+        ),
+        const SizedBox(width: 12),
+        pill(
+          isChinese ? '趋势' : 'Trend',
+          trendUp
+              ? '+${trendValue.toStringAsFixed(1)}'
+              : '-${trendValue.toStringAsFixed(1)}',
+          trendUp ? const Color(0xFF10B981) : const Color(0xFFF97316),
+        ),
+      ],
+    );
+  }
+
   String get _currencySymbol {
     final locale = Localizations.localeOf(context);
     final isZh = locale.languageCode.toLowerCase().startsWith('zh');
@@ -92,16 +188,20 @@ class _ResellAnalysisReportScreenState
                   .reduce((a, b) => a + b) /
               totalSoldItems;
 
-    // Average days to sell
-    final avgDays = soldItems.isEmpty
+    // Average listed days (sold: created->sold, unsold: created->now)
+    final nowTime = DateTime.now();
+    final avgDays = widget.resellItems.isEmpty
         ? 0.0
-        : soldItems
-                  .where((item) => item.soldDate != null)
-                  .map(
-                    (item) => item.soldDate!.difference(item.createdAt).inDays,
-                  )
-                  .fold(0, (a, b) => a + b) /
-              soldItems.where((item) => item.soldDate != null).length;
+        : widget.resellItems
+                .map((item) {
+                  final end = (item.status == ResellStatus.sold &&
+                          item.soldDate != null)
+                      ? item.soldDate!
+                      : nowTime;
+                  return end.difference(item.createdAt).inDays;
+                })
+                .fold<int>(0, (a, b) => a + b) /
+            widget.resellItems.length;
 
     // Success rate
     final successRate = widget.resellItems.isEmpty
@@ -455,11 +555,11 @@ class _ResellAnalysisReportScreenState
                                 const SizedBox(height: 24),
 
                                 // Chart (always show, even with no data)
-                                ClipRect(
-                                  child: SizedBox(
-                                    height: 250,
-                                    width: double.infinity,
-                                    child: CustomPaint(
+                        ClipRect(
+                          child: SizedBox(
+                            height: 250,
+                            width: double.infinity,
+                            child: CustomPaint(
                                       size: const Size(double.infinity, 250),
                                       painter: _TrendChartPainter(
                                         trendData: trendData,
@@ -468,13 +568,15 @@ class _ResellAnalysisReportScreenState
                                         currencySymbol: _currencySymbol,
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTrendSummary(context, isChinese, trendData),
+                      ],
+                    ),
+                  ),
 
-                          const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
                           // 30+ Days Unsold Items
                           Container(
