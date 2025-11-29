@@ -367,6 +367,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,11 +651,12 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Color(0x08000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -669,20 +678,30 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               context,
             ).textTheme.bodySmall?.copyWith(color: Colors.black54),
           ),
-          const SizedBox(height: 20),
-          ClipRRect(
-            child: SizedBox(
-              width: double.infinity,
-              height: 260,
-              child: CustomPaint(
-                painter: _CategoryVerticalBarChartPainter(
-                  categories: sortedCategories,
-                  counts: categoryCounts,
-                  isChinese: isChinese,
-                ),
+          const SizedBox(height: 16),
+          if (sortedCategories.isEmpty)
+            Text(
+              isChinese ? '暂无分类数据' : 'No category data yet',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Colors.black54),
+            )
+          else ...[
+            for (final category in sortedCategories) ...[
+              _buildCategoryStatRow(
+                context,
+                category: category,
+                count: categoryCounts[category] ?? 0,
+                maxCount: categoryCounts.values.isEmpty
+                    ? 1
+                    : categoryCounts.values.reduce(
+                        (a, b) => a > b ? a : b,
+                      ),
               ),
-            ),
-          ),
+              if (category != sortedCategories.last) const SizedBox(height: 10),
+            ],
+          ],
         ],
       ),
     );
@@ -1325,6 +1344,75 @@ class _VerticalBarChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
+  Widget _buildCategoryStatRow(
+    BuildContext context, {
+    required DeclutterCategory category,
+    required int count,
+    required int maxCount,
+  }) {
+    final ratio = maxCount == 0 ? 0.0 : (count / maxCount).clamp(0.0, 1.0);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8FA),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                category.label(context),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              Text(
+                '$count',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF4B5563),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Stack(
+            children: [
+              Container(
+                height: 10,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE5E7EB),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              FractionallySizedBox(
+                widthFactor: ratio,
+                child: Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFFB794F6),
+                        const Color(0xFF7C3AED).withValues(alpha: 0.9),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
 // MONTHLY HEATMAP PAINTER (12 squares, 2 rows x 6 cols)
 class _MonthlyHeatmapPainter extends CustomPainter {

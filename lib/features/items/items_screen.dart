@@ -192,9 +192,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  icon: Icons.flight_takeoff_rounded,
+                  icon: Icons.logout_rounded,
                   iconColor: const Color(0xFF5ECFB8),
-                  title: isChinese ? '已整理' : 'Let Go',
+                  title: isChinese ? '已放手' : 'Let Go',
                   count: letGoItems.length,
                   subtitle: isChinese ? '件放手' : 'let go',
                 ),

@@ -429,13 +429,24 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               ),
-              child: _SettingsTile(
-                icon: Icons.logout,
-                title: l10n.logout,
-                textColor: Colors.red,
-                onTap: () {
-                  _showLogoutDialog(context);
-                },
+              child: Column(
+                children: [
+                  _SettingsTile(
+                    icon: Icons.delete_forever_outlined,
+                    title: l10n.deleteAccount,
+                    textColor: Colors.red,
+                    onTap: () => _confirmDeleteAccount(context, l10n),
+                  ),
+                  const Divider(height: 1, indent: 56),
+                  _SettingsTile(
+                    icon: Icons.logout,
+                    title: l10n.logout,
+                    textColor: Colors.red,
+                    onTap: () {
+                      _showLogoutDialog(context);
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 32),
@@ -559,6 +570,117 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteAccount(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    final isChinese =
+        Localizations.localeOf(context).languageCode.toLowerCase() == 'zh';
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          l10n.deleteAccountConfirmTitle,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
+        content: Text(
+          l10n.deleteAccountConfirmMessage,
+          style: const TextStyle(
+            fontFamily: 'SF Pro Text',
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF111827),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              l10n.deleteAccountButton,
+              style: const TextStyle(
+                fontFamily: 'SF Pro Text',
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true) return;
+
+    // Show a simple loading dialog
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          content: Row(
+            children: [
+              const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+              const SizedBox(width: 16),
+              Flexible(
+                child: Text(
+                  l10n.deletingAccount,
+                  style: const TextStyle(
+                    fontFamily: 'SF Pro Text',
+                    fontSize: 15,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      await _authService.deleteAccount();
+      if (!mounted) return;
+      Navigator.of(context)
+        ..pop() // loading
+        ..pop(); // profile
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isChinese ? '删除账号失败，请重试' : 'Failed to delete account. Please try again.',
+          ),
+        ),
+      );
+    }
   }
 
   void _showLogoutDialog(BuildContext context) {

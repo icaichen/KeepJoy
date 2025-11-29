@@ -58,6 +58,12 @@ class _ResellAnalysisReportScreenState
     super.dispose();
   }
 
+  String get _currencySymbol {
+    final locale = Localizations.localeOf(context);
+    final isZh = locale.languageCode.toLowerCase().startsWith('zh');
+    return isZh ? '¥' : '\$';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -68,6 +74,7 @@ class _ResellAnalysisReportScreenState
     final horizontalPadding = responsive.horizontalPadding;
     final headerHeight = responsive.totalTwoLineHeaderHeight;
     final topPadding = responsive.safeAreaPadding.top;
+    final currencySymbol = isChinese ? '¥' : '\$';
 
     // Calculate metrics
     final soldItems = widget.resellItems
@@ -229,7 +236,8 @@ class _ResellAnalysisReportScreenState
                                         context,
                                         label:
                                             isChinese ? '平均交易价' : 'Avg Price',
-                                        value: '¥${avgPrice.toStringAsFixed(0)}',
+                                        value:
+                                            '$currencySymbol${avgPrice.toStringAsFixed(0)}',
                                         icon: Icons.payments_rounded,
                                         color: const Color(0xFFFFD93D),
                                       ),
@@ -268,7 +276,7 @@ class _ResellAnalysisReportScreenState
                                         label:
                                             isChinese ? '总收入' : 'Total Revenue',
                                         value:
-                                            '¥${totalRevenue.toStringAsFixed(0)}',
+                                            '$currencySymbol${totalRevenue.toStringAsFixed(0)}',
                                         icon: Icons.account_balance_wallet_rounded,
                                         color: const Color(0xFFFF9AA2),
                                       ),
@@ -400,20 +408,21 @@ class _ResellAnalysisReportScreenState
                                 const SizedBox(height: 24),
 
                                 // Chart (always show, even with no data)
-                                ClipRect(
-                                  child: SizedBox(
-                                    height: 250,
-                                    width: double.infinity,
-                                    child: CustomPaint(
-                                      size: const Size(double.infinity, 250),
-                                      painter: _TrendChartPainter(
-                                        trendData: trendData,
-                                        selectedMetric: _selectedMetric,
-                                        isChinese: isChinese,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                        ClipRect(
+                                          child: SizedBox(
+                                            height: 250,
+                                            width: double.infinity,
+                                            child: CustomPaint(
+                                              size: const Size(double.infinity, 250),
+                                              painter: _TrendChartPainter(
+                                                trendData: trendData,
+                                                selectedMetric: _selectedMetric,
+                                                isChinese: isChinese,
+                                                currencySymbol: _currencySymbol,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                               ],
                             ),
                           ),
@@ -749,20 +758,25 @@ class _ResellAnalysisReportScreenState
             // Calculate bar width based on selected metric
             double barValue;
             String valueText;
-            Color barColor;
+            List<Color> barColors;
 
             if (_selectedCategoryMetric == CategoryMetric.revenue) {
               barValue = maxRevenue > 0 ? revenue / maxRevenue : 0;
-              valueText = '¥${revenue.toStringAsFixed(0)}';
-              barColor = const Color(0xFFFFD93D);
+              valueText = '$_currencySymbol${revenue.toStringAsFixed(0)}';
+              barColors = const [Color(0xFFFFD93D), Color(0xFFFFB703)];
             } else {
               barValue = successRate / 100;
               valueText = '${successRate.toStringAsFixed(0)}%';
-              barColor = const Color(0xFF5ECFB8);
+              barColors = const [Color(0xFF5ECFB8), Color(0xFF34D399)];
             }
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF7F8FA),
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -779,30 +793,33 @@ class _ResellAnalysisReportScreenState
                       Text(
                         valueText,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF374151),
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  // Bar
-                  Container(
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0E0E0),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: FractionallySizedBox(
-                      widthFactor: barValue,
-                      alignment: Alignment.centerLeft,
-                      child: Container(
+                  const SizedBox(height: 10),
+                  Stack(
+                    children: [
+                      Container(
+                        height: 12,
                         decoration: BoxDecoration(
-                          color: barColor,
-                          borderRadius: BorderRadius.circular(6),
+                          color: const Color(0xFFE5E7EB),
+                          borderRadius: BorderRadius.circular(999),
                         ),
                       ),
-                    ),
+                      FractionallySizedBox(
+                        widthFactor: barValue.clamp(0.0, 1.0),
+                        child: Container(
+                          height: 12,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: barColors),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1050,7 +1067,7 @@ class _ResellAnalysisReportScreenState
             icon: Icons.attach_money_rounded,
             iconColor: const Color(0xFF5ECFB8),
             label: isChinese ? '最高价格' : 'Highest Price',
-            value: '¥${highestPrice.toStringAsFixed(0)}',
+            value: '$_currencySymbol${highestPrice.toStringAsFixed(0)}',
             isChinese: isChinese,
           ),
       ],
@@ -1217,11 +1234,13 @@ class _TrendChartPainter extends CustomPainter {
   final Map<int, double> trendData;
   final TrendMetric selectedMetric;
   final bool isChinese;
+  final String currencySymbol;
 
   _TrendChartPainter({
     required this.trendData,
     required this.selectedMetric,
     required this.isChinese,
+    required this.currencySymbol,
   });
 
   @override
@@ -1256,6 +1275,13 @@ class _TrendChartPainter extends CustomPainter {
       textAlign: TextAlign.right, // Right-align Y-axis labels
     );
 
+    String formatLabel(double value) {
+      if (selectedMetric == TrendMetric.resellValue) {
+        return '$currencySymbol${value.toStringAsFixed(0)}';
+      }
+      return value.toStringAsFixed(0);
+    }
+
     // Find max value first (ensure at least 1 to avoid division by zero)
     double maxValue = trendData.values.reduce((a, b) => a > b ? a : b);
     if (maxValue == 0) {
@@ -1266,7 +1292,7 @@ class _TrendChartPainter extends CustomPainter {
 
     // Calculate required left padding based on max label width
     textPainter.text = TextSpan(
-      text: maxValue.toStringAsFixed(0),
+      text: formatLabel(maxValue),
       style: const TextStyle(
         color: Color(0xFF9E9E9E),
         fontSize: 11,
@@ -1310,7 +1336,7 @@ class _TrendChartPainter extends CustomPainter {
       // Y-axis labels - corrected to show values from max at top to 0 at bottom
       final value = maxValue * (5 - i) / 5;
       textPainter.text = TextSpan(
-        text: value.toStringAsFixed(0),
+        text: formatLabel(value),
         style: const TextStyle(
           color: Color(0xFF9E9E9E),
           fontSize: 11,

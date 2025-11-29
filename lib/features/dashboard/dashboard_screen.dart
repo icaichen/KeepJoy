@@ -2801,7 +2801,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildMetricCard(
-                                icon: Icons.attach_money_rounded,
+                                icon: isChinese
+                                    ? Icons.currency_yen
+                                    : Icons.attach_money_rounded,
                                 iconColor: const Color(0xFFFFD93D),
                                 value: totalValue.toStringAsFixed(0),
                                 label: l10n.dashboardResellLabel,

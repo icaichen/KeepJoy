@@ -61,28 +61,9 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
                 case 'delete':
                   _showDeleteDialog();
                   break;
-                case 'share':
-                  _shareMemory();
-                  break;
               }
             },
             itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'share',
-                child: Row(
-                  children: [
-                    const Icon(Icons.share, size: 20),
-                    const SizedBox(width: 12),
-                    Text(
-                      l10n.memoryShare,
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Text',
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               PopupMenuItem(
                 value: 'delete',
                 child: Row(
@@ -238,13 +219,7 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
   }
 
   void _shareMemory() {
-    // TODO: Implement sharing functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Sharing functionality coming soon'),
-        backgroundColor: Colors.blue,
-      ),
-    );
+    // Sharing removed per request
   }
 
   String _formatDate(DateTime date) {

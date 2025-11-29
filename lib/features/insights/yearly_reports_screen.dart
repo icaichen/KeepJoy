@@ -829,7 +829,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildAchievementCard(
-                                    icon: Icons.attach_money_rounded,
+                                    icon: isChinese
+                                        ? Icons.currency_yen
+                                        : Icons.attach_money_rounded,
                                     iconColor: const Color(0xFFFFD93D),
                                     value: yearlyResellValueDisplay,
                                     label: isChinese ? '转售收入' : 'Resale Value',
@@ -845,6 +847,14 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: const Color(0xFFE5E7EA)),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x08000000),
+                                    blurRadius: 12,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1224,33 +1234,17 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     required String label,
   }) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 140),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: iconColor.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(height: 12),
+        crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+          Icon(icon, color: iconColor, size: 24),
+          const SizedBox(height: 10),
           AutoScaleText(
             value,
             style: const TextStyle(
@@ -1264,7 +1258,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           AutoScaleText(
             label,
             style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            textAlign: TextAlign.left,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -1579,6 +1573,14 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(24),
       child: Column(
