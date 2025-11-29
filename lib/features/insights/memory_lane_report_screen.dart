@@ -1195,52 +1195,52 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final theme = Theme.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 3 列布局
+        // 3 列布局，图例仅显示色块+标签
         final itemWidth = (constraints.maxWidth - 2 * 8) / 3;
         return Wrap(
           spacing: 8,
           runSpacing: 12,
           alignment: WrapAlignment.center,
           children: emotions.map((emotion) {
-            final count =
-                sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
             return SizedBox(
               width: itemWidth,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: emotion['color'] as Color,
-                      shape: BoxShape.circle,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: emotion['color'] as Color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          emotion['label'] as String,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF111827),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            emotion['label'] as String,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF111827),
+                              height: 1.2,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '$count',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            color: const Color(0xFF4B5563),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           }).toList(),
@@ -1597,17 +1597,17 @@ class _CategoryVerticalBarChartPainter extends CustomPainter {
         barPaint,
       );
 
-      // Count label
+      // Count label (统一置于柱体上方，深色文字)
       textPainter.text = TextSpan(
         text: count.toString(),
         style: TextStyle(
-          color: barHeight > 28 ? Colors.white : const Color(0xFF666666),
+          color: const Color(0xFF111827),
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
       );
       textPainter.layout();
-      final countY = barHeight > 28 ? y + 6 : y - textPainter.height - 4;
+      final countY = y - textPainter.height - 4;
       textPainter.paint(
         canvas,
         Offset(x + (barWidth - textPainter.width) / 2, countY),
@@ -1749,6 +1749,33 @@ class _EmotionPieChartPainter extends CustomPainter {
           sweepAngle,
           true,
           paint,
+        );
+
+        // Label count on slice
+        final midAngle = startAngle + sweepAngle / 2;
+        final labelRadius = radius * 0.58;
+        final labelOffset = Offset(
+          center.dx + labelRadius * math.cos(midAngle),
+          center.dy + labelRadius * math.sin(midAngle),
+        );
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: '$count',
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+        textPainter.paint(
+          canvas,
+          Offset(
+            labelOffset.dx - textPainter.width / 2,
+            labelOffset.dy - textPainter.height / 2,
+          ),
         );
 
         startAngle += sweepAngle;

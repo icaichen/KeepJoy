@@ -99,7 +99,7 @@ class _ResellAnalysisReportScreenState
         : (trendUp ? 'Up' : 'Down');
     final trendValue = diff.abs();
 
-    Widget pill(String label, String value, Color color) {
+    Widget pill(String label, String value) {
       return Expanded(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -122,8 +122,9 @@ class _ResellAnalysisReportScreenState
                 value,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: color,
+                      color: Colors.black87,
                     ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -136,13 +137,11 @@ class _ResellAnalysisReportScreenState
         pill(
           isChinese ? '已售件数' : 'Sold Items',
           soldThisYear.toString(),
-          const Color(0xFF111827),
         ),
         const SizedBox(width: 12),
         pill(
           isChinese ? '月均售出' : 'Avg / Month',
           avgPerMonth.toStringAsFixed(1),
-          const Color(0xFF10B981),
         ),
         const SizedBox(width: 12),
         pill(
@@ -150,7 +149,6 @@ class _ResellAnalysisReportScreenState
           trendUp
               ? '+${trendValue.toStringAsFixed(1)}'
               : '-${trendValue.toStringAsFixed(1)}',
-          trendUp ? const Color(0xFF10B981) : const Color(0xFFF97316),
         ),
       ],
     );
