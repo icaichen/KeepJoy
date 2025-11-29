@@ -30,6 +30,17 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
   bool _showAllAreas = false;
 
   @override
+  void didUpdateWidget(covariant DeepCleaningAnalysisCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Collapse expanded list when underlying data changes (e.g., tab switch)
+    if (_showAllAreas && widget.sessions != oldWidget.sessions) {
+      setState(() {
+        _showAllAreas = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 

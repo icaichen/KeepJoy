@@ -1624,7 +1624,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Toggle between Joy Percent and Joy Count
+          // Metric dropdown for Joy Percent vs Joy Count
           Row(
             children: [
               SizedBox(
@@ -1640,98 +1640,57 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Container(
-                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _showJoyPercent = true;
-                            });
-                          },
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: _showJoyPercent
-                                  ? Colors.white
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: _showJoyPercent
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : [],
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              isChinese ? '心动比例' : 'Joy Percent',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: _showJoyPercent
-                                        ? Colors.black87
-                                        : Colors.black45,
-                                    fontWeight: _showJoyPercent
-                                        ? FontWeight.w600
-                                        : FontWeight.w500,
-                                  ),
-                            ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<bool>(
+                      value: _showJoyPercent,
+                      isExpanded: true,
+                      isDense: true,
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: Color(0xFF6B7280),
+                      ),
+                      dropdownColor: Colors.white,
+                      focusColor: Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _showJoyPercent = value;
+                          });
+                        }
+                      },
+                      items: [
+                        DropdownMenuItem<bool>(
+                          value: true,
+                          child: Text(
+                            isChinese ? '心动比例' : 'Joy Percent',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF111827),
+                                ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _showJoyPercent = false;
-                            });
-                          },
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: !_showJoyPercent
-                                  ? Colors.white
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: !_showJoyPercent
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : [],
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              isChinese ? '心动次数' : 'Joy Count',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: !_showJoyPercent
-                                        ? Colors.black87
-                                        : Colors.black45,
-                                    fontWeight: !_showJoyPercent
-                                        ? FontWeight.w600
-                                        : FontWeight.w500,
-                                  ),
-                            ),
+                        DropdownMenuItem<bool>(
+                          value: false,
+                          child: Text(
+                            isChinese ? '心动次数' : 'Joy Count',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF111827),
+                                ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

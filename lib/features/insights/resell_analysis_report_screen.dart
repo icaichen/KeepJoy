@@ -337,79 +337,60 @@ class _ResellAnalysisReportScreenState
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Container(
-                                        padding: const EdgeInsets.all(4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFF5F5F5),
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
                                         ),
-                                        child: Row(
-                                          children: TrendMetric.values.map((
-                                            metric,
-                                          ) {
-                                            final isSelected =
-                                                _selectedMetric == metric;
-                                            return Expanded(
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    _selectedMetric = metric;
-                                                  });
-                                                },
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                    vertical: 12,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: isSelected
-                                                        ? Colors.white
-                                                        : Colors.transparent,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                    boxShadow: isSelected
-                                                        ? [
-                                                            BoxShadow(
-                                                              color: Colors.black
-                                                                  .withValues(
-                                                                alpha: 0.1,
+                                        child: DropdownButtonHideUnderline(
+                                          child: DropdownButton<TrendMetric>(
+                                            value: _selectedMetric,
+                                            isExpanded: true,
+                                            isDense: true,
+                                            icon: const Icon(
+                                              Icons.keyboard_arrow_down_rounded,
+                                              color: Color(0xFF6B7280),
+                                            ),
+                                            dropdownColor: Colors.white,
+                                            focusColor: Colors.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            onChanged: (value) {
+                                              if (value != null) {
+                                                setState(() {
+                                                  _selectedMetric = value;
+                                                });
+                                              }
+                                            },
+                                            items: TrendMetric.values
+                                                .map(
+                                                  (metric) =>
+                                                      DropdownMenuItem<TrendMetric>(
+                                                    value: metric,
+                                                    child: Text(
+                                                      metric.label(isChinese),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                              ?.copyWith(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight.w600,
+                                                                color: const Color(
+                                                                  0xFF111827,
+                                                                ),
                                                               ),
-                                                              blurRadius: 8,
-                                                              offset:
-                                                                  const Offset(
-                                                                0,
-                                                                2,
-                                                              ),
-                                                            ),
-                                                          ]
-                                                        : [],
+                                                    ),
                                                   ),
-                                                  child: Text(
-                                                    metric.label(isChinese),
-                                                    textAlign: TextAlign.center,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium
-                                                        ?.copyWith(
-                                                          color: isSelected
-                                                              ? Colors.black87
-                                                              : Colors.black54,
-                                                          fontWeight:
-                                                              isSelected
-                                                                  ? FontWeight
-                                                                      .w600
-                                                                  : FontWeight
-                                                                      .w500,
-                                                          fontSize: 13,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          }).toList(),
+                                                )
+                                                .toList(),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -706,61 +687,47 @@ class _ResellAnalysisReportScreenState
             const SizedBox(width: 12),
             Expanded(
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F5F5),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
-                  children: CategoryMetric.values.map((metric) {
-                    final isSelected = _selectedCategoryMetric == metric;
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedCategoryMetric = metric;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ]
-                                : [],
-                          ),
-                          child: AutoScaleText(
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<CategoryMetric>(
+                    value: _selectedCategoryMetric,
+                    isExpanded: true,
+                    isDense: true,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Color(0xFF6B7280),
+                    ),
+                    dropdownColor: Colors.white,
+                    focusColor: Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedCategoryMetric = value;
+                        });
+                      }
+                    },
+                    items: CategoryMetric.values
+                        .map(
+                          (metric) => DropdownMenuItem<CategoryMetric>(
+                            value: metric,
+                          child: Text(
                             metric.label(isChinese),
-                            textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: isSelected
-                                      ? Colors.black87
-                                      : Colors.black54,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w500,
-                                  fontSize: 13,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF111827),
                                 ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      )
+                        .toList(),
+                  ),
                 ),
               ),
             ),

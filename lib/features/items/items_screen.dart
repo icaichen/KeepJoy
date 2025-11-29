@@ -241,7 +241,10 @@ class _ItemsScreenState extends State<ItemsScreen> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: screenWidth < 360 ? 0.90 : (screenWidth < 400 ? 1.05 : 1.1),
+                    // Slightly taller cards to prevent overflow on all devices
+                    childAspectRatio: screenWidth < 360
+                        ? 0.90
+                        : (screenWidth < 400 ? 0.95 : 1.0),
                   ),
                   itemCount: DeclutterCategory.values.length,
                   itemBuilder: (context, index) {
@@ -344,7 +347,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
     bool isChinese,
   ) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -359,7 +362,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
@@ -397,23 +399,19 @@ class _ItemsScreenState extends State<ItemsScreen> {
               ),
             ],
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                category.label(context),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1C1C1E),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '$total ${isChinese ? "已整理" : "decluttered"}',
-                style: const TextStyle(fontSize: 12, color: Color(0xFF7F8289)),
-              ),
-            ],
+          const SizedBox(height: 10),
+          Text(
+            category.label(context),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1C1C1E),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$total ${isChinese ? "已整理" : "decluttered"}',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF7F8289)),
           ),
         ],
       ),

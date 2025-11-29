@@ -1624,7 +1624,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noActivityThisDay => '这天没有活动';
 
   @override
-  String get joyCheck => '快乐提醒';
+  String get joyCheck => '轻盈提醒';
 
   @override
   String get joyCheckMessage1 => '从一年内没用过的物品开始整理';
