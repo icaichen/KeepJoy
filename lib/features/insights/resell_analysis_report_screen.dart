@@ -8,7 +8,7 @@ import 'package:keepjoy_app/l10n/app_localizations.dart';
 enum TrendMetric {
   soldItems('已售物品', 'Sold Items'),
   listedDays('平均上架天数', 'Avg Listed Days'),
-  resellValue('二手收益', 'Resale Value');
+  resellValue('二手收益', 'Resale Earnings');
 
   const TrendMetric(this.chinese, this.english);
   final String chinese;
@@ -41,7 +41,7 @@ enum CategoryMetric {
       case CategoryMetric.revenue:
         return isChinese ? '交易金额' : 'Revenue';
       case CategoryMetric.successRate:
-        return isChinese ? '成交率' : 'Success Rate';
+        return isChinese ? '成交率' : 'Sold Rate';
     }
   }
 }
@@ -254,7 +254,7 @@ class _ResellAnalysisReportScreenState
                                       child: _buildMetricCard(
                                         context,
                                         label:
-                                            isChinese ? '成交率' : 'Success Rate',
+                                            isChinese ? '成交率' : 'Sold Rate',
                                         value:
                                             '${successRate.toStringAsFixed(0)}%',
                                         icon: Icons.check_circle_rounded,
@@ -1013,7 +1013,7 @@ class _ResellAnalysisReportScreenState
           context,
           icon: Icons.trending_up_rounded,
           iconColor: const Color(0xFF10B981),
-          label: isChinese ? '成交表现' : 'Success Rate',
+          label: isChinese ? '成交表现' : 'Sold Rate',
           value: '${successRate.toStringAsFixed(0)}%',
           isChinese: isChinese,
         ),
