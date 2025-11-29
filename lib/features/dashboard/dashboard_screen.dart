@@ -398,8 +398,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return showModalBottomSheet<DateTime>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
       barrierColor: Colors.black.withOpacity(0.45),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {

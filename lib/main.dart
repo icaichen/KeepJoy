@@ -600,37 +600,41 @@ class _MainNavigatorState extends State<MainNavigator>
       itemCount: 1,
     );
 
-    // 保存到数据库
-    try {
-      final repository = DataRepository();
-      final savedItem = await repository.createDeclutterItem(item);
+    // Update UI immediately
+    setState(() {
+      _declutteredItems.insert(0, item);
+    });
 
-      setState(() {
-        _declutteredItems.insert(0, savedItem);
+    // Save to database in background (non-blocking)
+    final repository = DataRepository();
+    unawaited(
+      repository.createDeclutterItem(item).then((savedItem) {
+        // Update with saved item if different
+        setState(() {
+          final index = _declutteredItems.indexWhere((i) => i.id == item.id);
+          if (index != -1) {
+            _declutteredItems[index] = savedItem;
+          }
 
-        // If item is marked for resell, create a ResellItem
-        if (savedItem.status == DeclutterStatus.resell) {
-          final resellItem = ResellItem(
-            id: const Uuid().v4(),
-            userId: _currentUserId,
-            declutterItemId: savedItem.id,
-            status: ResellStatus.toSell,
-            createdAt: DateTime.now(),
-          );
-          _resellItems.insert(0, resellItem);
-          // 同时保存 resell item 到数据库
-          unawaited(repository.createResellItem(resellItem));
-        }
-      });
-
-      debugPrint('✅ 物品已保存到数据库: ${savedItem.id}');
-    } catch (e) {
-      debugPrint('❌ 保存物品失败: $e');
-      // 如果保存失败，仍然添加到本地列表
-      setState(() {
-        _declutteredItems.insert(0, item);
-      });
-    }
+          // If item is marked for resell, create a ResellItem
+          if (savedItem.status == DeclutterStatus.resell) {
+            final resellItem = ResellItem(
+              id: const Uuid().v4(),
+              userId: _currentUserId,
+              declutterItemId: savedItem.id,
+              status: ResellStatus.toSell,
+              createdAt: DateTime.now(),
+            );
+            _resellItems.insert(0, resellItem);
+            // 同时保存 resell item 到数据库
+            unawaited(repository.createResellItem(resellItem));
+          }
+        });
+        debugPrint('✅ 物品已保存到数据库: ${savedItem.id}');
+      }).catchError((e) {
+        debugPrint('❌ 保存物品失败: $e');
+      }),
+    );
 
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
   }
@@ -854,21 +858,27 @@ class _MainNavigatorState extends State<MainNavigator>
   }
 
   Future<void> _onMemoryCreated(Memory memory) async {
-    try {
-      final repository = DataRepository();
-      final savedMemory = await repository.createMemory(memory);
+    // Update UI immediately
+    setState(() {
+      _memories.insert(0, memory);
+    });
 
-      setState(() {
-        _memories.insert(0, savedMemory);
-      });
-      debugPrint('✅ 回忆已保存: ${savedMemory.id}');
-    } catch (e) {
-      debugPrint('❌ 保存回忆失败: $e');
-      // 失败时仍然添加到本地
-      setState(() {
-        _memories.insert(0, memory);
-      });
-    }
+    // Save to database in background (non-blocking)
+    final repository = DataRepository();
+    unawaited(
+      repository.createMemory(memory).then((savedMemory) {
+        // Update with saved memory if different
+        setState(() {
+          final index = _memories.indexWhere((m) => m.id == memory.id);
+          if (index != -1) {
+            _memories[index] = savedMemory;
+          }
+        });
+        debugPrint('✅ 回忆已保存: ${savedMemory.id}');
+      }).catchError((e) {
+        debugPrint('❌ 保存回忆失败: $e');
+      }),
+    );
   }
 
   Future<void> _addPlannedSession(PlannedSession session) async {

@@ -721,7 +721,7 @@ class _PhotoReviewPageState extends State<_PhotoReviewPage> {
                     ),
                     const SizedBox(height: 12),
                     FilledButton(
-                      onPressed: _startQuestions,
+                      onPressed: _isIdentifying ? null : _startQuestions,
                       style: FilledButton.styleFrom(
                         backgroundColor: _joyPrimaryColor,
                         minimumSize: const Size.fromHeight(48),

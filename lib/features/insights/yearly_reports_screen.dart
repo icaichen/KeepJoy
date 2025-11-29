@@ -136,12 +136,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                         ),
                         const SizedBox(height: 16),
                         if (hasPhotos) ...[
-                          Container(
+                          SizedBox(
                             height: 240,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              color: Colors.grey[200],
-                            ),
                             child: PageView(
                               children: [
                                 ClipRRect(
@@ -151,7 +147,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     children: [
                                       Image.file(
                                         File(session.localBeforePhotoPath ?? session.remoteBeforePhotoPath!),
-                                        fit: BoxFit.cover,
+                                        fit: BoxFit.contain,
                                       ),
                                       Positioned(
                                         top: 12,
@@ -189,7 +185,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     children: [
                                       Image.file(
                                         File(session.localAfterPhotoPath ?? session.remoteAfterPhotoPath!),
-                                        fit: BoxFit.cover,
+                                        fit: BoxFit.contain,
                                       ),
                                       Positioned(
                                         top: 12,
@@ -2280,3 +2276,4 @@ class _JoyTrendChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+

@@ -843,60 +843,66 @@ class _QuickItemReviewPageState extends State<_QuickItemReviewPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     GestureDetector(
-                      onTap: _handleLetGo,
-                      child: Column(
-                        children: [
-                          ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ).createShader(bounds),
-                            child: const Icon(
-                              Icons.heart_broken_rounded,
-                              color: Colors.white,
-                              size: 72,
+                      onTap: _isIdentifying ? null : _handleLetGo,
+                      child: Opacity(
+                        opacity: _isIdentifying ? 0.4 : 1.0,
+                        child: Column(
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (bounds) => const LinearGradient(
+                                colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ).createShader(bounds),
+                              child: const Icon(
+                                Icons.heart_broken_rounded,
+                                color: Colors.white,
+                                size: 72,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isChinese ? '不心动' : 'No',
-                            style: const TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                            const SizedBox(height: 8),
+                            Text(
+                              isChinese ? '不心动' : 'No',
+                              style: const TextStyle(
+                                color: Color(0xFF111827),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 60),
                     GestureDetector(
-                      onTap: _handleKeep,
-                      child: Column(
-                        children: [
-                          ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFF10B981), Color(0xFF059669)],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ).createShader(bounds),
-                            child: const Icon(
-                              Icons.favorite_rounded,
-                              color: Colors.white,
-                              size: 72,
+                      onTap: _isIdentifying ? null : _handleKeep,
+                      child: Opacity(
+                        opacity: _isIdentifying ? 0.4 : 1.0,
+                        child: Column(
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (bounds) => const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ).createShader(bounds),
+                              child: const Icon(
+                                Icons.favorite_rounded,
+                                color: Colors.white,
+                                size: 72,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isChinese ? '心动' : 'Yes',
-                            style: const TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                            const SizedBox(height: 8),
+                            Text(
+                              isChinese ? '心动' : 'Yes',
+                              style: const TextStyle(
+                                color: Color(0xFF111827),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
