@@ -140,15 +140,15 @@ class _ResellAnalysisReportScreenState
                 Column(
                   children: [
                     // Top spacing + title
-                    SizedBox(
-                      height: headerHeight,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: horizontalPadding,
-                          right: horizontalPadding,
-                          top: topPadding + 12,
-                          bottom: 12,
-                        ),
+                SizedBox(
+                  height: headerHeight,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: horizontalPadding,
+                      right: horizontalPadding,
+                      top: topPadding + 20,
+                      bottom: 16,
+                    ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -309,13 +309,13 @@ class _ResellAnalysisReportScreenState
                                       ),
                                 ),
                                 const SizedBox(height: 4),
-                                  Text(
-                                    isChinese
-                                        ? '转卖表现随时间的变化趋势'
-                                        : 'Resale performance over time',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: Colors.black54),
-                                  ),
+                                Text(
+                                  isChinese
+                                      ? '转卖表现随时间的变化趋势'
+                                      : 'Resale performance over time',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(color: Colors.black54),
+                                ),
                                 const SizedBox(height: 16),
 
                                 // Metric selector
@@ -378,14 +378,14 @@ class _ResellAnalysisReportScreenState
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .bodyMedium
-                                                              ?.copyWith(
-                                                                fontSize: 14,
-                                                                fontWeight:
-                                                                    FontWeight.w600,
-                                                                color: const Color(
-                                                                  0xFF111827,
-                                                                ),
-                                                              ),
+                                                          ?.copyWith(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: const Color(
+                                                              0xFF111827,
+                                                            ),
+                                                          ),
                                                     ),
                                                   ),
                                                 )
@@ -453,7 +453,7 @@ class _ResellAnalysisReportScreenState
                                 Text(
                                   isChinese
                                       ? '各品类的成交金额和成交率'
-                                      : 'Revenue and success rate by category',
+                                      : 'Revenue and sold rate by category',
                                   style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(color: Colors.black54),
                                 ),

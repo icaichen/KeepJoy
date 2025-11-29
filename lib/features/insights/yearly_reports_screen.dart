@@ -755,8 +755,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           padding: EdgeInsets.only(
                             left: horizontalPadding,
                             right: horizontalPadding,
-                            top: topPadding + 12,
-                            bottom: 12,
+                            top: topPadding + 20,
+                            bottom: 16,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

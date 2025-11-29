@@ -66,15 +66,15 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 Column(
                   children: [
                     // Top spacing + title
-                    SizedBox(
-                      height: headerHeight,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: horizontalPadding,
-                          right: horizontalPadding,
-                          top: topPadding + 12,
-                          bottom: 12,
-                        ),
+                SizedBox(
+                  height: headerHeight,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: horizontalPadding,
+                      right: horizontalPadding,
+                      top: topPadding + 20,
+                      bottom: 16,
+                    ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
