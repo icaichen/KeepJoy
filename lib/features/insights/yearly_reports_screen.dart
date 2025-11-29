@@ -600,7 +600,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
-    final headerHeight = responsive.totalTwoLineHeaderHeight;
+    final headerHeight = responsive.totalTwoLineHeaderHeight + 12;
     final topPadding = responsive.safeAreaPadding.top;
 
     final now = DateTime.now();
@@ -755,8 +755,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           padding: EdgeInsets.only(
                             left: horizontalPadding,
                             right: horizontalPadding,
-                            top: topPadding + 20,
-                            bottom: 16,
+                            top: topPadding + 28,
+                            bottom: 8,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

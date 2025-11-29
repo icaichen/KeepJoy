@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../models/declutter_item.dart';
-import '../../../widgets/auto_scale_text.dart';
 
 class DeclutterResultsDistributionCard extends StatelessWidget {
   const DeclutterResultsDistributionCard({
@@ -120,99 +119,22 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Center(
-            child: _buildOutcomeDonut(
-              theme: theme,
-              chartSize: 220,
-              slices: chartSlices,
-              total: total,
+            child: SizedBox(
+              height: 220,
+              width: 220,
+              child: CustomPaint(
+                painter: _OutcomePiePainter(
+                  slices: chartSlices,
+                  total: total,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 24),
-          _buildOutcomeLegend(breakdowns: breakdowns, theme: theme),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOutcomeDonut({
-    required ThemeData theme,
-    required double chartSize,
-    required List<_OutcomeBreakdown> slices,
-    required int total,
-  }) {
-    final hasData = total > 0;
-    final emptyTitle = isChinese ? '暂无整理数据' : 'No data yet';
-    final emptySubtitle = isChinese
-        ? '记录一次整理后即可看到比例。'
-        : 'Log a letting-go result to see the breakdown.';
-
-    final innerWidth = chartSize * 0.65;
-
-    return SizedBox(
-      width: chartSize,
-      height: chartSize,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: Size.square(chartSize),
-            painter: _OutcomeDonutPainter(
-              slices: hasData ? slices : const <_OutcomeBreakdown>[],
-              total: total,
-            ),
-          ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: hasData
-                ? SizedBox(
-                    key: const ValueKey('letGoData'),
-                    width: innerWidth,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '$total',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF111827),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          totalItemsLabel,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : SizedBox(
-                    key: const ValueKey('letGoEmpty'),
-                    width: innerWidth,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          emptyTitle,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF374151),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          emptySubtitle,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+          _buildOutcomeLegend(
+            breakdowns: breakdowns,
+            total: total,
+            theme: theme,
           ),
         ],
       ),
@@ -221,57 +143,79 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
 
   Widget _buildOutcomeLegend({
     required List<_OutcomeBreakdown> breakdowns,
+    required int total,
     required ThemeData theme,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        for (final breakdown in breakdowns)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: breakdown.color,
-                      shape: BoxShape.circle,
-                    ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemWidth = (constraints.maxWidth - 2 * 8) / 3; // 3 columns
+        return Center(
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: breakdowns.map((b) {
+              final percentValue = total > 0 ? (b.count / total * 100) : 0.0;
+              final percent = percentValue >= 10
+                  ? percentValue.toStringAsFixed(0)
+                  : percentValue.toStringAsFixed(1);
+              const labelColor = Color(0xFF111827);
+              const percentColor = Color(0xFF6B7280);
+              return SizedBox(
+                width: itemWidth,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
                   ),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    height: 32,
-                    child: AutoScaleText(
-                      breakdown.label,
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF111827),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: b.color,
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  AutoScaleText(
-                    '${breakdown.count}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: const Color(0xFF111827),
-                    ),
-                  ),
-                  if (isChinese)
-                    Text(
-                      '件',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF9CA3AF),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                          Text(
+                            b.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: labelColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$percent%',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: percentColor,
+                            ),
+                          ),
+                          ],
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
           ),
-      ],
+        );
+      },
     );
   }
 }
@@ -288,52 +232,73 @@ class _OutcomeBreakdown {
   });
 }
 
-class _OutcomeDonutPainter extends CustomPainter {
+class _OutcomePiePainter extends CustomPainter {
   final List<_OutcomeBreakdown> slices;
   final int total;
 
-  _OutcomeDonutPainter({required this.slices, required this.total});
+  _OutcomePiePainter({required this.slices, required this.total});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    final strokeWidth = radius * 0.32;
-    final rect = Rect.fromCircle(
-      center: center,
-      radius: radius - strokeWidth / 2,
-    );
-
-    final basePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..color = const Color(0xFFE7EAF6);
-
-    canvas.drawArc(rect, 0, math.pi * 2, false, basePaint);
 
     if (total == 0) {
+      final basePaint = Paint()
+        ..color = const Color(0xFFE5E7EB)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, radius, basePaint);
       return;
     }
 
-    final paint = Paint()
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    final separatorPaint = Paint()
+      ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 2.5;
 
     double startAngle = -math.pi / 2;
-
     for (final slice in slices) {
       if (slice.count <= 0) continue;
       final sweepAngle = (slice.count / total) * math.pi * 2;
       if (sweepAngle <= 0) continue;
 
-      paint.shader = SweepGradient(
-        startAngle: startAngle,
-        endAngle: startAngle + sweepAngle,
-        colors: [slice.color.withValues(alpha: 0.65), slice.color],
-      ).createShader(rect);
+      final paint = Paint()
+        ..color = slice.color
+        ..style = PaintingStyle.fill;
 
-      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+      canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
+      canvas.drawArc(rect, startAngle, sweepAngle, true, separatorPaint);
+
+      // Count label inside slice
+      final midAngle = startAngle + sweepAngle / 2;
+      final labelRadius = radius * 0.6;
+      final labelOffset = Offset(
+        center.dx + labelRadius * math.cos(midAngle),
+        center.dy + labelRadius * math.sin(midAngle),
+      );
+      final labelColor =
+          Color.lerp(slice.color, Colors.black, 0.3) ?? Colors.black87;
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: '${slice.count}',
+          style: TextStyle(
+            color: labelColor,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          labelOffset.dx - textPainter.width / 2,
+          labelOffset.dy - textPainter.height / 2,
+        ),
+      );
+
       startAngle += sweepAngle;
     }
   }

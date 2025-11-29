@@ -31,7 +31,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     ).languageCode.toLowerCase().startsWith('zh');
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
-    final headerHeight = responsive.totalTwoLineHeaderHeight;
+    final headerHeight = responsive.totalTwoLineHeaderHeight + 12;
     final topPadding = responsive.safeAreaPadding.top;
 
     final pageName = isChinese ? '年度记忆' : 'Annual Memory';
@@ -72,8 +72,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                     padding: EdgeInsets.only(
                       left: horizontalPadding,
                       right: horizontalPadding,
-                      top: topPadding + 20,
-                      bottom: 16,
+                      top: topPadding + 28,
+                      bottom: 8,
                     ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -289,8 +289,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           const SizedBox(height: 24),
           Center(
             child: SizedBox(
-              height: 240,
-              width: 240,
+              height: 220,
+              width: 220,
               child: CustomPaint(
                 painter: _EmotionPieChartPainter(
                   emotions: emotions,
@@ -695,16 +695,75 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   ?.copyWith(color: Colors.black54),
             )
           else ...[
-            SizedBox(
-              height: 260,
-              width: double.infinity,
-              child: CustomPaint(
-                painter: _CategoryVerticalBarChartPainter(
-                  categories: sortedCategories,
-                  counts: categoryCounts,
-                  isChinese: isChinese,
-                ),
-              ),
+            Column(
+              children: sortedCategories.map((category) {
+                final count = categoryCounts[category] ?? 0;
+                final maxCount = categoryCounts.values.isEmpty
+                    ? 1
+                    : categoryCounts.values.reduce((a, b) => a > b ? a : b);
+                final barValue =
+                    maxCount == 0 ? 0.0 : (count / maxCount).clamp(0.0, 1.0);
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F5FF),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE4D9FF)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            category.label(context),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '$count',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF6D28D9),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Stack(
+                        children: [
+                          Container(
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEDE9FE),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          FractionallySizedBox(
+                            widthFactor: barValue,
+                            child: Container(
+                              height: 10,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFB794F6), Color(0xFF7C3AED)],
+                                ),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ],
@@ -1195,13 +1254,19 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final theme = Theme.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 3 列布局，图例仅显示色块+标签
+        // 3 列布局，显示色块+标签+比例
         final itemWidth = (constraints.maxWidth - 2 * 8) / 3;
         return Wrap(
           spacing: 8,
           runSpacing: 12,
           alignment: WrapAlignment.center,
           children: emotions.map((emotion) {
+            final count =
+                sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
+            final percent = totalCount > 0
+                ? (count / totalCount * 100).toStringAsFixed(
+                    (count / totalCount * 100) >= 10 ? 0 : 1)
+                : '0';
             return SizedBox(
               width: itemWidth,
               child: Container(
@@ -1227,20 +1292,28 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            emotion['label'] as String,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF111827),
-                              height: 1.2,
-                            ),
+                        Text(
+                          emotion['label'] as String,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF111827),
+                            height: 1.2,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$percent%',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF6B7280),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
               ),
             );
           }).toList(),
@@ -1473,8 +1546,8 @@ class _MonthlyHeatmapPainter extends CustomPainter {
       // Calculate color intensity
       final intensity = maxCount > 0 ? (count / maxCount).toDouble() : 0.0;
       final color = Color.lerp(
-        const Color(0xFFE0E0E0),
-        const Color(0xFFB794F6),
+        const Color(0xFFF2E8FF),
+        const Color(0xFF8B5CF6),
         intensity,
       )!;
 
@@ -1730,6 +1803,12 @@ class _EmotionPieChartPainter extends CustomPainter {
     } else {
       double startAngle = -math.pi / 2; // Start from top
 
+      final rect = Rect.fromCircle(center: center, radius: radius);
+      final separatorPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5;
+
       for (final emotion in emotions) {
         final sentiment = emotion['sentiment'] as MemorySentiment;
         final count = sentimentCounts[sentiment] ?? 0;
@@ -1744,27 +1823,38 @@ class _EmotionPieChartPainter extends CustomPainter {
           ..style = PaintingStyle.fill;
 
         canvas.drawArc(
-          Rect.fromCircle(center: center, radius: radius),
+          rect,
           startAngle,
           sweepAngle,
           true,
           paint,
         );
 
-        // Label count on slice
+        // Separator line for better contrast
+        canvas.drawArc(
+          rect,
+          startAngle,
+          sweepAngle,
+          true,
+          separatorPaint,
+        );
+
+        // Label count inside slice
         final midAngle = startAngle + sweepAngle / 2;
-        final labelRadius = radius * 0.58;
+        final labelRadius = radius * 0.6;
         final labelOffset = Offset(
           center.dx + labelRadius * math.cos(midAngle),
           center.dy + labelRadius * math.sin(midAngle),
         );
+        final labelColor = Color.lerp(color, Colors.black, 0.25) ??
+            color.withOpacity(0.9);
         final textPainter = TextPainter(
           text: TextSpan(
             text: '$count',
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+            style: TextStyle(
+              color: labelColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
             ),
           ),
           textDirection: TextDirection.ltr,
@@ -1781,54 +1871,6 @@ class _EmotionPieChartPainter extends CustomPainter {
         startAngle += sweepAngle;
       }
     }
-
-    // Draw white circle in center to create donut effect
-    final centerCirclePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(center, radius * 0.5, centerCirclePaint);
-
-    // Draw total count in center with label
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: '$totalCount',
-        style: const TextStyle(
-          color: Color(0xFF111827),
-          fontSize: 32,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(
-        center.dx - textPainter.width / 2,
-        center.dy - textPainter.height / 2 - 8,
-      ),
-    );
-
-    final subPainter = TextPainter(
-      text: TextSpan(
-        text: isChinese ? '回忆' : 'memories',
-        style: const TextStyle(
-          color: Color(0xFF6B7280),
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    subPainter.layout();
-    subPainter.paint(
-      canvas,
-      Offset(
-        center.dx - subPainter.width / 2,
-        center.dy - subPainter.height / 2 + 16,
-      ),
-    );
   }
 
   @override

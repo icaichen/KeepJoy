@@ -76,28 +76,13 @@ class _ResellAnalysisReportScreenState
         monthsElapsed > 0 ? (soldThisYear / monthsElapsed) : 0.0;
 
     // Compute trend: compare recent 3 months vs previous 3 months
-    double recent = 0;
-    double previous = 0;
-    int recentCount = 0;
-    int previousCount = 0;
-    for (int m = monthsElapsed; m >= 1 && m >= monthsElapsed - 2; m--) {
-      recent += trendData[m] ?? 0;
-      recentCount++;
-    }
-    for (int m = monthsElapsed - 3; m >= 1 && m >= monthsElapsed - 5; m--) {
-      previous += trendData[m] ?? 0;
-      previousCount++;
-    }
-    final recentAvg =
-        recentCount > 0 ? recent / recentCount : 0.0;
-    final previousAvg =
-        previousCount > 0 ? previous / previousCount : 0.0;
-    final diff = recentAvg - previousAvg;
-    final trendUp = diff >= 0;
-    final trendText = isChinese
-        ? (trendUp ? '上升' : '下降')
-        : (trendUp ? 'Up' : 'Down');
-    final trendValue = diff.abs();
+    // Trend: this month vs last month (by sold date)
+    final currentMonthValue = trendData[now.month] ?? 0.0;
+    final prevMonthValue = now.month > 1 ? (trendData[now.month - 1] ?? 0.0) : 0.0;
+    final changePercent = prevMonthValue > 0
+        ? ((currentMonthValue - prevMonthValue) / prevMonthValue) * 100
+        : (currentMonthValue > 0 ? 100.0 : 0.0);
+    final trendUp = changePercent >= 0;
 
     Widget pill(String label, String value) {
       return Expanded(
@@ -147,8 +132,8 @@ class _ResellAnalysisReportScreenState
         pill(
           isChinese ? '趋势' : 'Trend',
           trendUp
-              ? '+${trendValue.toStringAsFixed(1)}'
-              : '-${trendValue.toStringAsFixed(1)}',
+              ? '+${changePercent.abs().toStringAsFixed(changePercent.abs() >= 10 ? 0 : 1)}%'
+              : '-${changePercent.abs().toStringAsFixed(changePercent.abs() >= 10 ? 0 : 1)}%',
         ),
       ],
     );
@@ -168,7 +153,7 @@ class _ResellAnalysisReportScreenState
     ).languageCode.toLowerCase().startsWith('zh');
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
-    final headerHeight = responsive.totalTwoLineHeaderHeight;
+    final headerHeight = responsive.totalTwoLineHeaderHeight + 12;
     final topPadding = responsive.safeAreaPadding.top;
     final currencySymbol = isChinese ? '¥' : '\$';
 
@@ -246,16 +231,16 @@ class _ResellAnalysisReportScreenState
                 // Content on top
                 Column(
                   children: [
-                    // Top spacing + title
-                SizedBox(
-                  height: headerHeight,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: horizontalPadding,
-                      right: horizontalPadding,
-                      top: topPadding + 20,
-                      bottom: 16,
-                    ),
+                      // Top spacing + title
+                      SizedBox(
+                        height: headerHeight,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            left: horizontalPadding,
+                            right: horizontalPadding,
+                            top: topPadding + 28,
+                            bottom: 8,
+                          ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -302,89 +287,55 @@ class _ResellAnalysisReportScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Metrics Section
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildMetricCard(
+                                  context,
+                                  label: isChinese ? '平均交易价' : 'Avg Price',
+                                  value:
+                                      '$currencySymbol${avgPrice.toStringAsFixed(0)}',
+                                  icon: Icons.payments_rounded,
+                                  color: const Color(0xFFFFD93D),
                                 ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isChinese ? '核心指标' : 'Key Metrics',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
-                                      ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildMetricCard(
+                                  context,
+                                  label: isChinese ? '平均售出天数' : 'Avg Days',
+                                  value: avgDays.toStringAsFixed(0),
+                                  icon: Icons.schedule_rounded,
+                                  color: const Color(0xFF89CFF0),
                                 ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        context,
-                                        label:
-                                            isChinese ? '平均交易价' : 'Avg Price',
-                                        value:
-                                            '$currencySymbol${avgPrice.toStringAsFixed(0)}',
-                                        icon: Icons.payments_rounded,
-                                        color: const Color(0xFFFFD93D),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        context,
-                                        label:
-                                            isChinese ? '平均售出天数' : 'Avg Days',
-                                        value: avgDays.toStringAsFixed(0),
-                                        icon: Icons.schedule_rounded,
-                                        color: const Color(0xFF89CFF0),
-                                      ),
-                                    ),
-                                  ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildMetricCard(
+                                  context,
+                                  label: isChinese ? '成交率' : 'Sold Rate',
+                                  value: '${successRate.toStringAsFixed(0)}%',
+                                  icon: Icons.check_circle_rounded,
+                                  color: const Color(0xFF5ECFB8),
                                 ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        context,
-                                        label:
-                                            isChinese ? '成交率' : 'Sold Rate',
-                                        value:
-                                            '${successRate.toStringAsFixed(0)}%',
-                                        icon: Icons.check_circle_rounded,
-                                        color: const Color(0xFF5ECFB8),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        context,
-                                        label:
-                                            isChinese ? '总收入' : 'Total Revenue',
-                                        value:
-                                            '$currencySymbol${totalRevenue.toStringAsFixed(0)}',
-                                        icon: Icons.account_balance_wallet_rounded,
-                                        color: const Color(0xFFFF9AA2),
-                                      ),
-                                    ),
-                                  ],
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildMetricCard(
+                                  context,
+                                  label: isChinese ? '总收入' : 'Total Revenue',
+                                  value:
+                                      '$currencySymbol${totalRevenue.toStringAsFixed(0)}',
+                                  icon:
+                                      Icons.account_balance_wallet_rounded,
+                                  color: const Color(0xFFFF9AA2),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
 
                           const SizedBox(height: 24),
@@ -1037,7 +988,7 @@ class _ResellAnalysisReportScreenState
         final count = entry.value;
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
             color: const Color(0xFFFFF3E0),
@@ -1440,23 +1391,25 @@ class _ResellAnalysisReportScreenState
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(icon, size: 24, color: color),
           const SizedBox(height: 8),
           AutoScaleText(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.black54,
+              color: Colors.grey[600],
               fontSize: 12,
+              fontWeight: FontWeight.w500,
             ),
-            textAlign: TextAlign.left,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           AutoScaleText(
@@ -1464,8 +1417,9 @@ class _ResellAnalysisReportScreenState
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.black87,
+              fontSize: 22,
             ),
-            textAlign: TextAlign.left,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -1483,18 +1437,16 @@ class _ResellAnalysisReportScreenState
 
     // Group data by month (year to date - January to current month)
     for (final item in widget.resellItems) {
-      // Only include items from current year
-      if (item.createdAt.year == now.year) {
-        final month = item.createdAt.month; // 1-12
+      if (item.status != ResellStatus.sold || item.soldDate == null) continue;
+      // Only include items sold this year
+      if (item.soldDate!.year == now.year) {
+        final month = item.soldDate!.month; // 1-12
         switch (_selectedMetric) {
           case TrendMetric.soldItems:
-            // Only count sold items
-            if (item.status == ResellStatus.sold) {
-              monthlyData[month]!.add(1);
-            }
+            monthlyData[month]!.add(1);
             break;
           case TrendMetric.resellValue:
-            if (item.status == ResellStatus.sold && item.soldPrice != null) {
+            if (item.soldPrice != null) {
               monthlyData[month]!.add(item.soldPrice!);
             }
             break;

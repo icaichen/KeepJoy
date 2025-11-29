@@ -517,26 +517,12 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      CleaningArea.getDisplayName(session.area, context),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitleParts.join(' · '),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  subtitleParts.join(' · '),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
               ),
               const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
