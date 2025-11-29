@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../config/revenuecat_config.dart';
@@ -7,11 +8,18 @@ import '../config/revenuecat_config.dart';
 class SubscriptionService {
   SubscriptionService._();
 
+  static const bool _logDebug = kDebugMode;
+  static void _log(Object message) {
+    if (_logDebug) {
+      debugPrint('$message');
+    }
+  }
+
   /// Initialize RevenueCat with platform-specific API keys
   static Future<void> configure() async {
     try {
       // Enable debug logging in development
-      await Purchases.setLogLevel(LogLevel.debug);
+      await Purchases.setLogLevel(_logDebug ? LogLevel.debug : LogLevel.warn);
 
       // Get API key based on platform
       final String apiKey;
@@ -20,7 +28,7 @@ class SubscriptionService {
       } else if (Platform.isAndroid) {
         apiKey = RevenueCatConfig.androidApiKey;
       } else {
-        print('⚠️ RevenueCat: Platform not supported');
+        _log('⚠️ RevenueCat: Platform not supported');
         return;
       }
 
@@ -28,9 +36,9 @@ class SubscriptionService {
       final configuration = PurchasesConfiguration(apiKey);
       await Purchases.configure(configuration);
 
-      print('✅ RevenueCat configured successfully');
+      _log('✅ RevenueCat configured successfully');
     } catch (e) {
-      print('❌ RevenueCat configuration error: $e');
+      _log('❌ RevenueCat configuration error: $e');
     }
   }
 
@@ -39,9 +47,9 @@ class SubscriptionService {
   static Future<void> loginUser(String userId) async {
     try {
       await Purchases.logIn(userId);
-      print('✅ RevenueCat user logged in: $userId');
+      _log('✅ RevenueCat user logged in: $userId');
     } catch (e) {
-      print('❌ RevenueCat login error: $e');
+      _log('❌ RevenueCat login error: $e');
       rethrow;
     }
   }
@@ -50,9 +58,9 @@ class SubscriptionService {
   static Future<void> logoutUser() async {
     try {
       await Purchases.logOut();
-      print('✅ RevenueCat user logged out');
+      _log('✅ RevenueCat user logged out');
     } catch (e) {
-      print('❌ RevenueCat logout error: $e');
+      _log('❌ RevenueCat logout error: $e');
     }
   }
 
@@ -62,16 +70,14 @@ class SubscriptionService {
       final customerInfo = await Purchases.getCustomerInfo();
 
       // Debug: Print all available entitlements
-      print(
-        '🔍 All Entitlements: ${customerInfo.entitlements.all.keys.toList()}',
-      );
-      print(
+      _log('🔍 All Entitlements: ${customerInfo.entitlements.all.keys.toList()}');
+      _log(
         '🔍 Active Entitlements: ${customerInfo.entitlements.active.keys.toList()}',
       );
 
       // Check if user has ANY active entitlement (in case the ID is wrong)
       if (customerInfo.entitlements.active.isNotEmpty) {
-        print(
+        _log(
           '✅ User has active entitlements: ${customerInfo.entitlements.active.keys.toList()}',
         );
         // Return true if ANY entitlement is active
@@ -83,18 +89,18 @@ class SubscriptionService {
           customerInfo.entitlements.all[RevenueCatConfig.premiumEntitlementId];
 
       if (entitlement != null) {
-        print(
+        _log(
           '📦 Premium entitlement found - isActive: ${entitlement.isActive}',
         );
         return entitlement.isActive;
       }
 
-      print(
+      _log(
         '⚠️ No premium entitlement found with ID: ${RevenueCatConfig.premiumEntitlementId}',
       );
       return false;
     } catch (e) {
-      print('❌ Error checking premium status: $e');
+      _log('❌ Error checking premium status: $e');
       return false;
     }
   }
@@ -104,7 +110,7 @@ class SubscriptionService {
     try {
       return await Purchases.getCustomerInfo();
     } catch (e) {
-      print('Error getting customer info: $e');
+      _log('Error getting customer info: $e');
       rethrow;
     }
   }
@@ -114,11 +120,11 @@ class SubscriptionService {
     try {
       final offerings = await Purchases.getOfferings();
       if (offerings.current == null) {
-        print('⚠️ No offerings available');
+        _log('⚠️ No offerings available');
       }
       return offerings;
     } on PlatformException catch (e) {
-      print('Error fetching offerings: $e');
+      _log('Error fetching offerings: $e');
       return null;
     }
   }
@@ -131,9 +137,9 @@ class SubscriptionService {
     } on PlatformException catch (e) {
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
       if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
-        print('User cancelled purchase');
+        _log('User cancelled purchase');
       } else if (errorCode == PurchasesErrorCode.productAlreadyPurchasedError) {
-        print('Product already purchased');
+        _log('Product already purchased');
       }
       rethrow;
     }
@@ -145,7 +151,7 @@ class SubscriptionService {
       final customerInfo = await Purchases.restorePurchases();
       return customerInfo;
     } catch (e) {
-      print('Error restoring purchases: $e');
+      _log('Error restoring purchases: $e');
       rethrow;
     }
   }
@@ -165,7 +171,7 @@ class SubscriptionService {
       return entitlement.willRenew &&
           entitlement.periodType == PeriodType.trial;
     } catch (e) {
-      print('Error checking trial status: $e');
+      _log('Error checking trial status: $e');
       return false;
     }
   }
@@ -185,7 +191,7 @@ class SubscriptionService {
       }
       return null;
     } catch (e) {
-      print('Error getting expiration date: $e');
+      _log('Error getting expiration date: $e');
       return null;
     }
   }
@@ -199,7 +205,7 @@ class SubscriptionService {
 
       return entitlement?.willRenew ?? false;
     } catch (e) {
-      print('Error checking renewal status: $e');
+      _log('Error checking renewal status: $e');
       return false;
     }
   }
@@ -212,12 +218,12 @@ class SubscriptionService {
   ) {
     try {
       Purchases.addCustomerInfoUpdateListener((customerInfo) {
-        print('🔄 RevenueCat: Customer info updated');
+        _log('🔄 RevenueCat: Customer info updated');
         onCustomerInfoUpdate(customerInfo);
       });
-      print('✅ RevenueCat: Customer info listener added');
+      _log('✅ RevenueCat: Customer info listener added');
     } catch (e) {
-      print('❌ Error adding customer info listener: $e');
+      _log('❌ Error adding customer info listener: $e');
     }
   }
 
@@ -227,9 +233,9 @@ class SubscriptionService {
   ) {
     try {
       Purchases.removeCustomerInfoUpdateListener(listener);
-      print('✅ RevenueCat: Customer info listener removed');
+      _log('✅ RevenueCat: Customer info listener removed');
     } catch (e) {
-      print('❌ Error removing customer info listener: $e');
+      _log('❌ Error removing customer info listener: $e');
     }
   }
 }
