@@ -16,6 +16,7 @@ import '../../services/reminder_service.dart';
 import '../../models/declutter_item.dart';
 import '../../providers/subscription_provider.dart';
 import '../../ui/paywall/paywall_page.dart';
+import '../../widgets/smart_image_widget.dart';
 import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -78,6 +79,50 @@ class _ProfilePageState extends State<ProfilePage> {
     final path = _avatarPath!;
     if (path.startsWith('http')) return true;
     return File(path).existsSync();
+  }
+
+  /// Build profile avatar using SmartImageWidget for fast loading
+  /// Same pattern as resell item images - loads instantly with proper caching
+  Widget _buildProfileAvatar() {
+    const avatarSize = 80.0;
+    
+    // Placeholder with user initial
+    Widget placeholder = CircleAvatar(
+      radius: 40,
+      backgroundColor: const Color(0xFFB794F6).withValues(alpha: 0.15),
+      child: Text(
+        _userInitial,
+        style: const TextStyle(
+          fontFamily: 'SF Pro Display',
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFFB794F6),
+          letterSpacing: 0,
+        ),
+      ),
+    );
+
+    if (_avatarPath == null || _avatarPath!.isEmpty) {
+      return placeholder;
+    }
+
+    // Use SmartImageWidget for both local and remote paths
+    // This has the same fast caching as resell item images
+    return ClipOval(
+      child: SizedBox(
+        width: avatarSize,
+        height: avatarSize,
+        child: SmartImageWidget(
+          localPath: _avatarPath!.startsWith('http') ? null : _avatarPath,
+          remotePath: _avatarPath!.startsWith('http') ? _avatarPath : null,
+          fit: BoxFit.cover,
+          width: avatarSize,
+          height: avatarSize,
+          placeholder: placeholder,
+          errorWidget: placeholder,
+        ),
+      ),
+    );
   }
 
   @override
@@ -164,26 +209,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    // Profile Avatar
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: const Color(
-                        0xFFB794F6,
-                      ).withValues(alpha: 0.15),
-                      backgroundImage: _avatarImageProvider(),
-                      child: !_hasAvatarImage
-                          ? Text(
-                              _userInitial,
-                              style: const TextStyle(
-                                fontFamily: 'SF Pro Display',
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFB794F6),
-                                letterSpacing: 0,
-                              ),
-                            )
-                          : null,
-                    ),
+                    // Profile Avatar - uses SmartImageWidget for fast loading
+                    _buildProfileAvatar(),
                     const SizedBox(width: 16),
                     // User Info
                     Expanded(

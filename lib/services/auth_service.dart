@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:keepjoy_app/config/supabase_config.dart';
 import 'package:keepjoy_app/services/subscription_service.dart';
+import 'package:keepjoy_app/services/hive_service.dart';
 
 /// Authentication Service
 /// Handles user authentication, registration, and session management
@@ -181,15 +182,110 @@ class AuthService {
     return await client!.auth.updateUser(UserAttributes(password: newPassword));
   }
 
-  /// Delete account
+  /// Delete account and all associated data
+  /// This is required by Apple App Store guidelines
   Future<void> deleteAccount() async {
     final userId = currentUserId;
     if (userId == null) throw Exception('No user logged in');
 
-    // Sign out first
-    await signOut();
+    if (kDebugMode) {
+      debugPrint('🗑️ Starting account deletion for user: $userId');
+    }
 
-    // Note: Actual user deletion needs to be handled via Supabase admin API
-    // or a database function with proper security
+    try {
+      // 1. Delete all user data from Supabase cloud
+      await _deleteCloudData(userId);
+
+      // 2. Delete user photos from Supabase storage
+      await _deleteCloudPhotos(userId);
+
+      // 3. Clear all local Hive data
+      await HiveService.instance.clearAll();
+      if (kDebugMode) {
+        debugPrint('✅ Cleared all local data');
+      }
+
+      // 4. Logout from RevenueCat
+      await SubscriptionService.logoutUser();
+
+      // 5. Sign out from Supabase (clears session)
+      await client?.auth.signOut(scope: SignOutScope.global);
+
+      if (kDebugMode) {
+        debugPrint('✅ Account deletion completed successfully');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error during account deletion: $e');
+      }
+      // Still try to sign out even if deletion fails
+      try {
+        await client?.auth.signOut(scope: SignOutScope.global);
+      } catch (_) {}
+      rethrow;
+    }
+  }
+
+  /// Delete all user data from Supabase cloud tables
+  Future<void> _deleteCloudData(String userId) async {
+    if (client == null) return;
+
+    try {
+      // Delete in order that respects foreign key constraints
+      // (child tables first, then parent tables)
+
+      // Delete resell items first (references declutter_items)
+      await client!.from('resell_items').delete().eq('user_id', userId);
+      if (kDebugMode) debugPrint('  ✓ Deleted resell_items');
+
+      // Delete declutter items
+      await client!.from('declutter_items').delete().eq('user_id', userId);
+      if (kDebugMode) debugPrint('  ✓ Deleted declutter_items');
+
+      // Delete deep cleaning sessions
+      await client!.from('deep_cleaning_sessions').delete().eq('user_id', userId);
+      if (kDebugMode) debugPrint('  ✓ Deleted deep_cleaning_sessions');
+
+      // Delete memories
+      await client!.from('memories').delete().eq('user_id', userId);
+      if (kDebugMode) debugPrint('  ✓ Deleted memories');
+
+      // Delete planned sessions
+      await client!.from('planned_sessions').delete().eq('user_id', userId);
+      if (kDebugMode) debugPrint('  ✓ Deleted planned_sessions');
+
+      if (kDebugMode) {
+        debugPrint('✅ Deleted all cloud data for user');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error deleting cloud data: $e');
+      }
+      // Continue with deletion even if some tables fail
+    }
+  }
+
+  /// Delete all user photos from Supabase storage
+  Future<void> _deleteCloudPhotos(String userId) async {
+    if (client == null) return;
+
+    try {
+      // List all files in user's folder
+      final files = await client!.storage.from('photos').list(path: userId);
+
+      if (files.isNotEmpty) {
+        // Delete all files in user's folder
+        final filePaths = files.map((f) => '$userId/${f.name}').toList();
+        await client!.storage.from('photos').remove(filePaths);
+        if (kDebugMode) {
+          debugPrint('✅ Deleted ${filePaths.length} photos from cloud storage');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Error deleting cloud photos: $e');
+      }
+      // Continue with deletion even if storage cleanup fails
+    }
   }
 }

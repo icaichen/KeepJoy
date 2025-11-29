@@ -143,7 +143,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardDeclutteredLabel => 'Decluttered Items';
 
   @override
-  String get dashboardResellLabel => 'Resell Earnings';
+  String get dashboardResellLabel => 'Resale Earnings';
 
   @override
   String get dashboardResellReportTitle => 'Resale Insights';
@@ -295,7 +295,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardLettingGoDetailsSubtitle =>
-      'How many items you kept, resold or released';
+      'How many items you kept, resold, recycled, donated, or discarded';
 
   @override
   String get dashboardKeptLabel => 'Kept';
@@ -545,7 +545,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get routeRecycle => 'Recycle';
 
   @override
-  String get routeResell => 'Resell';
+  String get routeResell => 'Resale';
 
   @override
   String get activeQuickSweep => 'Active Quick Sweep';
@@ -620,7 +620,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get memoryCreated => 'Memory created successfully';
 
   @override
-  String get itemsResell => 'Items Resell';
+  String get itemsResell => 'Resale Items';
 
   @override
   String get itemsDashboardComingSoon => 'Items dashboard coming soon';
@@ -1213,7 +1213,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Visualize your decluttering journey over time';
 
   @override
-  String get featureResellTrends => 'Resell Trends';
+  String get featureResellTrends => 'Resale Trends';
 
   @override
   String get featureResellTrendsDesc =>
@@ -1298,6 +1298,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearAllData => 'Clear All Data';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Delete Account?';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      'This will permanently delete your account and all your data including memories, declutter items, and photos. This action cannot be undone.';
+
+  @override
+  String get deleteAccountButton => 'Delete My Account';
+
+  @override
+  String get deletingAccount => 'Deleting account...';
+
+  @override
+  String get accountDeleted => 'Account deleted successfully';
 
   @override
   String get logout => 'Log Out';
@@ -1389,7 +1408,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messiness => 'Messiness';
 
   @override
-  String get resellTracker => 'Resell Tracker';
+  String get resellTracker => 'Resale Tracker';
 
   @override
   String get toSell => 'To Sell';
@@ -1699,7 +1718,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todaysTip5 =>
-      'Resell Tracker: Planning to sell items? Use our Resell Tracker! When letting go of items, select \'Resell\' and we\'ll add them to your selling list. Track listings, record sold prices, and watch your monthly earnings grow. Transform clutter into cash!';
+      'Resale Tracker: Planning to sell items? Use our Resale Tracker! When letting go of items, select \'Resale\' and we\'ll add them to your selling list. Track listings, record sold prices, and watch your monthly earnings grow. Transform clutter into cash!';
 
   @override
   String get todaysTip6 =>

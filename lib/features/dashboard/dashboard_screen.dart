@@ -2824,10 +2824,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     title: l10n.dashboardLettingGoDetailsTitle,
                     subtitle: l10n.dashboardLettingGoDetailsSubtitle,
                     keptLabel: l10n.dashboardKeptLabel,
-                    resellLabel: l10n.routeResell,
-                    recycleLabel: l10n.routeRecycle,
-                    donateLabel: l10n.routeDonation,
-                    discardLabel: l10n.routeDiscard,
+                    resellLabel: DeclutterStatus.resell.label(context),
+                    recycleLabel: DeclutterStatus.recycle.label(context),
+                    donateLabel: DeclutterStatus.donate.label(context),
+                    discardLabel: DeclutterStatus.discard.label(context),
                     totalItemsLabel: l10n.totalItemsDecluttered,
                     isChinese: isChinese,
                   ),
@@ -3436,8 +3436,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         icon: Icons.pie_chart_outline_rounded,
                         title: isChinese ? '成果分布' : 'Outcome Distribution',
                         detail: isChinese
-                            ? '基于每件已整理物品所选择的去向（保留、捐赠、转卖、丢弃等）汇总，展示你让物品离开的方式。'
-                            : 'Aggregates each decluttered item\'s outcome tag (keep, donate, resell, discard, etc.) so you can see how you let things go.',
+                            ? '基于每件已整理物品所选择的去向（保留、捐赠、转售、丢弃等）汇总，展示你让物品离开的方式。'
+                            : 'Aggregates each decluttered item\'s outcome tag (keep, donate, resale, discard, etc.) so you can see how you let things go.',
                         isChinese: isChinese,
                       ),
                     ],
@@ -3855,7 +3855,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _buildRouteOption(
                   context: dialogContext,
                   icon: Icons.shopping_bag_outlined,
-                  title: isChinese ? '转卖' : 'Resell',
+                  title: l10n.routeResell,
                   description: isChinese
                       ? '通过二手平台出售'
                       : 'Sell on secondhand platform',

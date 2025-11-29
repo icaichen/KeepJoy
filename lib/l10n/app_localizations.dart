@@ -359,7 +359,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardResellLabel.
   ///
   /// In en, this message translates to:
-  /// **'Resell Earnings'**
+  /// **'Resale Earnings'**
   String get dashboardResellLabel;
 
   /// No description provided for @dashboardResellReportTitle.
@@ -609,7 +609,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardLettingGoDetailsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'How many items you kept, resold or released'**
+  /// **'How many items you kept, resold, recycled, donated, or discarded'**
   String get dashboardLettingGoDetailsSubtitle;
 
   /// No description provided for @dashboardKeptLabel.
@@ -1077,7 +1077,7 @@ abstract class AppLocalizations {
   /// No description provided for @routeResell.
   ///
   /// In en, this message translates to:
-  /// **'Resell'**
+  /// **'Resale'**
   String get routeResell;
 
   /// No description provided for @activeQuickSweep.
@@ -1227,7 +1227,7 @@ abstract class AppLocalizations {
   /// No description provided for @itemsResell.
   ///
   /// In en, this message translates to:
-  /// **'Items Resell'**
+  /// **'Resale Items'**
   String get itemsResell;
 
   /// No description provided for @itemsDashboardComingSoon.
@@ -2313,7 +2313,7 @@ abstract class AppLocalizations {
   /// No description provided for @featureResellTrends.
   ///
   /// In en, this message translates to:
-  /// **'Resell Trends'**
+  /// **'Resale Trends'**
   String get featureResellTrends;
 
   /// No description provided for @featureResellTrendsDesc.
@@ -2465,6 +2465,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear All Data'**
   String get clearAllData;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account?'**
+  String get deleteAccountConfirmTitle;
+
+  /// No description provided for @deleteAccountConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete your account and all your data including memories, declutter items, and photos. This action cannot be undone.'**
+  String get deleteAccountConfirmMessage;
+
+  /// No description provided for @deleteAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete My Account'**
+  String get deleteAccountButton;
+
+  /// No description provided for @deletingAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting account...'**
+  String get deletingAccount;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted successfully'**
+  String get accountDeleted;
 
   /// No description provided for @logout.
   ///
@@ -2643,7 +2679,7 @@ abstract class AppLocalizations {
   /// No description provided for @resellTracker.
   ///
   /// In en, this message translates to:
-  /// **'Resell Tracker'**
+  /// **'Resale Tracker'**
   String get resellTracker;
 
   /// No description provided for @toSell.
@@ -3213,7 +3249,7 @@ abstract class AppLocalizations {
   /// No description provided for @todaysTip5.
   ///
   /// In en, this message translates to:
-  /// **'Resell Tracker: Planning to sell items? Use our Resell Tracker! When letting go of items, select \'Resell\' and we\'ll add them to your selling list. Track listings, record sold prices, and watch your monthly earnings grow. Transform clutter into cash!'**
+  /// **'Resale Tracker: Planning to sell items? Use our Resale Tracker! When letting go of items, select \'Resale\' and we\'ll add them to your selling list. Track listings, record sold prices, and watch your monthly earnings grow. Transform clutter into cash!'**
   String get todaysTip5;
 
   /// No description provided for @todaysTip6.

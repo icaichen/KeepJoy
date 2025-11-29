@@ -77,7 +77,7 @@ class _ResellScreenState extends State<ResellScreen> {
         displayItems = [];
     }
 
-    final pageName = isChinese ? '转售' : 'Resell';
+    final pageName = isChinese ? '转售' : 'Resale';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F7),

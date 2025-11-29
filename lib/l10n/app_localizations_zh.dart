@@ -1256,6 +1256,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clearAllData => '清除所有数据';
 
   @override
+  String get deleteAccount => '删除账号';
+
+  @override
+  String get deleteAccountConfirmTitle => '确定删除账号？';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      '这将永久删除您的账号及所有数据，包括回忆、整理物品和照片。此操作无法撤销。';
+
+  @override
+  String get deleteAccountButton => '删除我的账号';
+
+  @override
+  String get deletingAccount => '正在删除账号...';
+
+  @override
+  String get accountDeleted => '账号已成功删除';
+
+  @override
   String get logout => '登出';
 
   @override

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/widgets/auto_scale_text.dart';
+import 'package:keepjoy_app/utils/responsive_utils.dart';
 
 enum TrendMetric {
   soldItems('已售物品', 'Sold Items'),
   listedDays('平均上架天数', 'Avg Listed Days'),
-  resellValue('二手收益', 'Resell Value');
+  resellValue('二手收益', 'Resale Value');
 
   const TrendMetric(this.chinese, this.english);
   final String chinese;
@@ -61,6 +62,10 @@ class _ResellAnalysisReportScreenState
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
+    final responsive = context.responsive;
+    final horizontalPadding = responsive.horizontalPadding;
+    final headerHeight = responsive.totalTwoLineHeaderHeight;
+    final topPadding = responsive.safeAreaPadding.top;
 
     // Calculate metrics
     final soldItems = widget.resellItems
@@ -101,11 +106,7 @@ class _ResellAnalysisReportScreenState
 
     // Prepare trend data
     final trendData = _calculateTrendData();
-
-    final topPadding = MediaQuery.of(context).padding.top;
     final pageName = isChinese ? '二手洞察' : 'Resale Insights';
-
-    const titleAreaHeight = 120.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
@@ -129,7 +130,7 @@ class _ResellAnalysisReportScreenState
                         Color(0xFFFFF9E6), // Light yellow
                         Color(0xFFF5F5F7),
                       ],
-                      stops: [0.0, 0.15, 0.33],
+                      stops: [0.0, 0.25, 0.45],
                     ),
                   ),
                 ),
@@ -138,12 +139,13 @@ class _ResellAnalysisReportScreenState
                   children: [
                     // Top spacing + title
                     SizedBox(
-                      height: 120,
+                      height: headerHeight,
                       child: Padding(
                         padding: EdgeInsets.only(
-                          left: 24,
-                          right: 16,
+                          left: horizontalPadding,
+                          right: horizontalPadding,
                           top: topPadding + 12,
+                          bottom: 12,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -155,7 +157,7 @@ class _ResellAnalysisReportScreenState
                               style: const TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: Colors.black,
                                 letterSpacing: -0.5,
                                 height: 1.0,
                               ),
@@ -167,400 +169,382 @@ class _ResellAnalysisReportScreenState
 
                     // Content
                     Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        24,
+                        horizontalPadding,
+                        0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Metrics Section
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.08),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isChinese ? '核心指标' : 'Key Metrics',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.black87,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildMetricCard(
-                                          context,
-                                          label: isChinese
-                                              ? '平均交易价'
-                                              : 'Avg Price',
-                                          value:
-                                              '¥${avgPrice.toStringAsFixed(0)}',
-                                          icon: Icons.payments_rounded,
-                                          color: const Color(0xFFFFD93D),
-                                        ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isChinese ? '核心指标' : 'Key Metrics',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _buildMetricCard(
-                                          context,
-                                          label: isChinese
-                                              ? '平均售出天数'
-                                              : 'Avg Days',
-                                          value: avgDays.toStringAsFixed(0),
-                                          icon: Icons.schedule_rounded,
-                                          color: const Color(0xFF89CFF0),
-                                        ),
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildMetricCard(
+                                        context,
+                                        label:
+                                            isChinese ? '平均交易价' : 'Avg Price',
+                                        value: '¥${avgPrice.toStringAsFixed(0)}',
+                                        icon: Icons.payments_rounded,
+                                        color: const Color(0xFFFFD93D),
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildMetricCard(
-                                          context,
-                                          label: isChinese
-                                              ? '成交率'
-                                              : 'Success Rate',
-                                          value:
-                                              '${successRate.toStringAsFixed(0)}%',
-                                          icon: Icons.check_circle_rounded,
-                                          color: const Color(0xFF5ECFB8),
-                                        ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildMetricCard(
+                                        context,
+                                        label:
+                                            isChinese ? '平均售出天数' : 'Avg Days',
+                                        value: avgDays.toStringAsFixed(0),
+                                        icon: Icons.schedule_rounded,
+                                        color: const Color(0xFF89CFF0),
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _buildMetricCard(
-                                          context,
-                                          label: isChinese
-                                              ? '总收入'
-                                              : 'Total Revenue',
-                                          value:
-                                              '¥${totalRevenue.toStringAsFixed(0)}',
-                                          icon: Icons
-                                              .account_balance_wallet_rounded,
-                                          color: const Color(0xFFFF9AA2),
-                                        ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildMetricCard(
+                                        context,
+                                        label:
+                                            isChinese ? '成交率' : 'Success Rate',
+                                        value:
+                                            '${successRate.toStringAsFixed(0)}%',
+                                        icon: Icons.check_circle_rounded,
+                                        color: const Color(0xFF5ECFB8),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildMetricCard(
+                                        context,
+                                        label:
+                                            isChinese ? '总收入' : 'Total Revenue',
+                                        value:
+                                            '¥${totalRevenue.toStringAsFixed(0)}',
+                                        icon: Icons.account_balance_wallet_rounded,
+                                        color: const Color(0xFFFF9AA2),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
 
                           const SizedBox(height: 24),
 
                           // Trend Analysis Section
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.08),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isChinese ? '趋势分析' : 'Trend Analysis',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.black87,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isChinese ? '趋势分析' : 'Trend Analysis',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
                                   Text(
                                     isChinese
                                         ? '转卖表现随时间的变化趋势'
-                                        : 'Resell performance over time',
+                                        : 'Resale performance over time',
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(color: Colors.black54),
                                   ),
-                                  const SizedBox(height: 16),
+                                const SizedBox(height: 16),
 
-                                  // Metric selector
-                                  Row(
-                                    children: [
-                                      SizedBox(
-                                        width: 60,
-                                        child: Text(
-                                          isChinese ? '指标' : 'Metric',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(
-                                                color: const Color(0xFF6B7280),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFF5F5F5),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
+                                // Metric selector
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 60,
+                                      child: Text(
+                                        isChinese ? '指标' : 'Metric',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: const Color(0xFF6B7280),
+                                              fontWeight: FontWeight.w500,
                                             ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF5F5F5),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
                                           ),
-                                          child: Row(
-                                            children: TrendMetric.values.map((
-                                              metric,
-                                            ) {
-                                              final isSelected =
-                                                  _selectedMetric == metric;
-                                              return Expanded(
-                                                child: GestureDetector(
-                                                  onTap: () {
-                                                    setState(() {
-                                                      _selectedMetric = metric;
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          vertical: 12,
+                                        ),
+                                        child: Row(
+                                          children: TrendMetric.values.map((
+                                            metric,
+                                          ) {
+                                            final isSelected =
+                                                _selectedMetric == metric;
+                                            return Expanded(
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    _selectedMetric = metric;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: isSelected
+                                                        ? Colors.white
+                                                        : Colors.transparent,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
                                                         ),
-                                                    decoration: BoxDecoration(
-                                                      color: isSelected
-                                                          ? Colors.white
-                                                          : Colors.transparent,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                      boxShadow: isSelected
-                                                          ? [
-                                                              BoxShadow(
-                                                                color: Colors
-                                                                    .black
-                                                                    .withValues(
-                                                                      alpha:
-                                                                          0.1,
-                                                                    ),
-                                                                blurRadius: 8,
-                                                                offset:
-                                                                    const Offset(
-                                                                      0,
-                                                                      2,
-                                                                    ),
+                                                    boxShadow: isSelected
+                                                        ? [
+                                                            BoxShadow(
+                                                              color: Colors.black
+                                                                  .withValues(
+                                                                alpha: 0.1,
                                                               ),
-                                                            ]
-                                                          : [],
-                                                    ),
-                                                    child: Text(
-                                                      metric.label(isChinese),
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                            color: isSelected
-                                                                ? Colors.black87
-                                                                : Colors
-                                                                      .black54,
-                                                            fontWeight:
-                                                                isSelected
-                                                                ? FontWeight
+                                                              blurRadius: 8,
+                                                              offset:
+                                                                  const Offset(
+                                                                0,
+                                                                2,
+                                                              ),
+                                                            ),
+                                                          ]
+                                                        : [],
+                                                  ),
+                                                  child: Text(
+                                                    metric.label(isChinese),
+                                                    textAlign: TextAlign.center,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.copyWith(
+                                                          color: isSelected
+                                                              ? Colors.black87
+                                                              : Colors.black54,
+                                                          fontWeight:
+                                                              isSelected
+                                                                  ? FontWeight
                                                                       .w600
-                                                                : FontWeight
+                                                                  : FontWeight
                                                                       .w500,
-                                                            fontSize: 11,
-                                                          ),
-                                                    ),
+                                                          fontSize: 11,
+                                                        ),
                                                   ),
                                                 ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 24),
-
-                                  // Chart (always show, even with no data)
-                                  ClipRect(
-                                    child: SizedBox(
-                                      height: 250,
-                                      width: double.infinity,
-                                      child: CustomPaint(
-                                        size: const Size(double.infinity, 250),
-                                        painter: _TrendChartPainter(
-                                          trendData: trendData,
-                                          selectedMetric: _selectedMetric,
-                                          isChinese: isChinese,
+                                              ),
+                                            );
+                                          }).toList(),
                                         ),
                                       ),
                                     ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                // Chart (always show, even with no data)
+                                ClipRect(
+                                  child: SizedBox(
+                                    height: 250,
+                                    width: double.infinity,
+                                    child: CustomPaint(
+                                      size: const Size(double.infinity, 250),
+                                      painter: _TrendChartPainter(
+                                        trendData: trendData,
+                                        selectedMetric: _selectedMetric,
+                                        isChinese: isChinese,
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
 
                           const SizedBox(height: 24),
 
                           // Category Performance Analysis
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.08),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isChinese
-                                        ? '品类表现分析'
-                                        : 'Category Performance',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.black87,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    isChinese
-                                        ? '各品类的成交金额和成交率'
-                                        : 'Revenue and success rate by category',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: Colors.black54),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildCategoryPerformance(context, isChinese),
-                                ],
-                              ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isChinese
+                                      ? '品类表现分析'
+                                      : 'Category Performance',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  isChinese
+                                      ? '各品类的成交金额和成交率'
+                                      : 'Revenue and success rate by category',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(color: Colors.black54),
+                                ),
+                                const SizedBox(height: 24),
+                                _buildCategoryPerformance(context, isChinese),
+                              ],
                             ),
                           ),
 
                           const SizedBox(height: 24),
 
                           // 30+ Days Unsold Items
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.08),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isChinese
-                                        ? '超过30天未售出统计'
-                                        : '30+ Days Unsold',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.black87,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    isChinese
-                                        ? '按品类统计超过30天未售出的物品'
-                                        : 'Unsold items over 30 days by category',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: Colors.black54),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildUnsoldItems(context, isChinese),
-                                ],
-                              ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isChinese
+                                      ? '超过30天未售出统计'
+                                      : '30+ Days Unsold',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  isChinese
+                                      ? '按品类统计超过30天未售出的物品'
+                                      : 'Unsold items over 30 days by category',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(color: Colors.black54),
+                                ),
+                                const SizedBox(height: 24),
+                                _buildUnsoldItems(context, isChinese),
+                              ],
                             ),
                           ),
 
                           const SizedBox(height: 24),
 
                           // 交易洞察 Summary Section
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.08),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isChinese ? '交易洞察' : 'Transaction Insights',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.black87,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  _buildTransactionInsights(context, isChinese),
-                                ],
-                              ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isChinese
+                                      ? '交易洞察'
+                                      : 'Transaction Insights',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                      ),
+                                ),
+                                const SizedBox(height: 20),
+                                _buildTransactionInsights(context, isChinese),
+                              ],
                             ),
                           ),
 
@@ -584,7 +568,7 @@ class _ResellAnalysisReportScreenState
               listenable: _scrollController,
               builder: (context, child) {
                 final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
+                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
                 final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
                 return IgnorePointer(
                   ignoring: realHeaderOpacity < 0.5,
@@ -595,7 +579,7 @@ class _ResellAnalysisReportScreenState
                 );
               },
               child: Container(
-                height: topPadding + kToolbarHeight,
+                height: responsive.collapsedHeaderHeight,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(

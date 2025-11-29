@@ -11,6 +11,7 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
+import 'package:keepjoy_app/utils/responsive_utils.dart';
 
 class YearlyReportsScreen extends StatefulWidget {
   const YearlyReportsScreen({
@@ -597,11 +598,14 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       context,
     ).languageCode.toLowerCase().startsWith('zh');
     final l10n = AppLocalizations.of(context)!;
+    final responsive = context.responsive;
+    final horizontalPadding = responsive.horizontalPadding;
+    final headerHeight = responsive.totalTwoLineHeaderHeight;
+    final topPadding = responsive.safeAreaPadding.top;
 
     final now = DateTime.now();
     final yearStart = DateTime(now.year, 1, 1);
     final nextYearStart = DateTime(now.year + 1, 1, 1);
-    final topPadding = MediaQuery.of(context).padding.top;
     final pageName = isChinese ? '年度洞察' : 'Year in Review';
 
     // Calculate past 12 months activity (for heatmap)
@@ -713,9 +717,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       yearlyResellValue,
     );
 
-    // Disposal method counts
-    const titleAreaHeight = 120.0;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
       body: Stack(
@@ -738,7 +739,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                         Color(0xFFE6F4F9), // Light blue
                         Color(0xFFF5F5F7),
                       ],
-                      stops: [0.0, 0.15, 0.33],
+                      stops: [0.0, 0.25, 0.45],
                     ),
                   ),
                 ),
@@ -749,12 +750,13 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     children: [
                       // Top spacing + title
                       SizedBox(
-                        height: 120,
+                        height: headerHeight,
                         child: Padding(
                           padding: EdgeInsets.only(
-                            left: 24,
-                            right: 16,
+                            left: horizontalPadding,
+                            right: horizontalPadding,
                             top: topPadding + 12,
+                            bottom: 12,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -766,7 +768,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   letterSpacing: -0.5,
                                   height: 1.0,
                                 ),
@@ -778,7 +780,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
                       // Content
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding,
+                          24,
+                          horizontalPadding,
+                          0,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -811,7 +818,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     icon: Icons.attach_money_rounded,
                                     iconColor: const Color(0xFFFFD93D),
                                     value: yearlyResellValueDisplay,
-                                    label: isChinese ? '转售收入' : 'Resell Value',
+                                    label: isChinese ? '转售收入' : 'Resale Value',
                                   ),
                                 ),
                               ],
@@ -1078,12 +1085,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
                             DeclutterResultsDistributionCard(
                               items: yearlyItems,
-                              title: isChinese
-                                  ? '整理结果分布'
-                                  : 'Declutter Results Distribution',
+                              title: l10n.dashboardLettingGoDetailsTitle,
                               subtitle: isChinese
                                   ? '年初至今的整理结果'
-                                  : 'Year-to-date declutter results',
+                                  : 'Year-to-date outcomes',
                               keptLabel: DeclutterStatus.keep.label(context),
                               resellLabel: DeclutterStatus.resell.label(
                                 context,
@@ -1145,7 +1150,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               listenable: _scrollController,
               builder: (context, child) {
                 final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
+                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
                 final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
                 return IgnorePointer(
                   ignoring: realHeaderOpacity < 0.5,
@@ -1156,7 +1161,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                 );
               },
               child: Container(
-                height: topPadding + kToolbarHeight,
+                height: responsive.collapsedHeaderHeight,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(
@@ -2276,4 +2281,3 @@ class _JoyTrendChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
-

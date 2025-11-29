@@ -569,14 +569,28 @@ class _PaywallPageState extends State<PaywallPage> {
   }
 
   Widget _buildLegalText(AppLocalizations l10n) {
-    return Text(
-      l10n.changePlansAnytime,
-      style: const TextStyle(
-        fontSize: 13,
-        color: Color(0xFF9CA3AF),
-        height: 1.4,
-      ),
-      textAlign: TextAlign.center,
+    return Column(
+      children: [
+        Text(
+          l10n.changePlansAnytime,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF9CA3AF),
+            height: 1.4,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.subscriptionTerms,
+          style: const TextStyle(
+            fontSize: 11,
+            color: Color(0xFF9CA3AF),
+            height: 1.4,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 

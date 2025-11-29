@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:keepjoy_app/config/ai_config.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 
 String _normalizeLocaleCode(String languageCode, String? countryCode) {
@@ -59,9 +60,9 @@ class AIIdentificationService {
   factory AIIdentificationService() => _instance;
   AIIdentificationService._internal();
 
-  // Qwen VL Plus API (Singapore region)
-  static const String _qwenApiKey = 'sk-cf4b75178c3245fd8b04e149af1a0d2a';
-  static const String _qwenBaseUrl = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
+  // Qwen VL Plus API (Singapore region) - credentials from secure config
+  static String get _qwenApiKey => AIConfig.qwenApiKey;
+  static String get _qwenBaseUrl => AIConfig.qwenBaseUrl;
 
   /// Initialize the service (no-op)
   Future<void> initialize() async {}

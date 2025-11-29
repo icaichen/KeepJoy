@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:keepjoy_app/config/ai_config.dart';
 
 class MessinessAnalysisResult {
   final double? beforeScore;
@@ -18,9 +19,9 @@ class MessinessAnalysisResult {
 
 /// Service for analyzing room messiness and estimated decluttered items via Qwen VL Plus
 class MessinessAnalysisService {
-  static const String _qwenApiKey = 'sk-cf4b75178c3245fd8b04e149af1a0d2a';
-  static const String _qwenBaseUrl =
-      'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
+  // Credentials from secure config
+  static String get _qwenApiKey => AIConfig.qwenApiKey;
+  static String get _qwenBaseUrl => AIConfig.qwenBaseUrl;
 
   /// Initialize (no-op)
   Future<void> initialize() async {}

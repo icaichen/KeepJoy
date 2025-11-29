@@ -26,7 +26,7 @@ enum DeclutterStatus {
   discard('Discarded', '丢弃'),
   donate('Donated', '捐赠'),
   recycle('Recycled', '回收'),
-  resell('Resell', '转售');
+  resell('Resold', '已转售');
 
   const DeclutterStatus(this.english, this.chinese);
   final String english;

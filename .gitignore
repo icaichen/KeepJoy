@@ -44,5 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Local Supabase configuration (contains credentials)
+# Local configuration files (contain credentials)
 lib/config/supabase_config_local.dart
+lib/config/ai_config_local.dart

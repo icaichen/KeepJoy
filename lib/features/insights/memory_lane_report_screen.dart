@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
+import 'package:keepjoy_app/utils/responsive_utils.dart';
 
 class MemoryLaneReportScreen extends StatefulWidget {
   const MemoryLaneReportScreen({super.key, required this.memories});
@@ -26,11 +27,12 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
+    final responsive = context.responsive;
+    final horizontalPadding = responsive.horizontalPadding;
+    final headerHeight = responsive.totalTwoLineHeaderHeight;
+    final topPadding = responsive.safeAreaPadding.top;
 
-    final topPadding = MediaQuery.of(context).padding.top;
     final pageName = isChinese ? '年度记忆' : 'Annual Memory';
-
-    const titleAreaHeight = 120.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
@@ -54,7 +56,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                         Color(0xFFF3EBFF), // Light purple
                         Color(0xFFF5F5F7),
                       ],
-                      stops: [0.0, 0.15, 0.33],
+                      stops: [0.0, 0.25, 0.45],
                     ),
                   ),
                 ),
@@ -63,12 +65,13 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   children: [
                     // Top spacing + title
                     SizedBox(
-                      height: 120,
+                      height: headerHeight,
                       child: Padding(
                         padding: EdgeInsets.only(
-                          left: 24,
-                          right: 16,
+                          left: horizontalPadding,
+                          right: horizontalPadding,
                           top: topPadding + 12,
+                          bottom: 12,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,7 +83,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                               style: const TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: Colors.black,
                                 letterSpacing: -0.5,
                                 height: 1.0,
                               ),
@@ -91,36 +94,32 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                     ),
 
                     // Content sections
-                    Column(
-                      children: [
-                        // 1. Category Statistics (moved to top)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          child: _buildEmotionByCategory(context, isChinese),
-                        ),
-                        const SizedBox(height: 20),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        24,
+                        horizontalPadding,
+                        0,
+                      ),
+                      child: Column(
+                        children: [
+                          // 1. Category Statistics (moved to top)
+                          _buildEmotionByCategory(context, isChinese),
+                          const SizedBox(height: 20),
 
-                        // 2. Memory Heatmap
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _buildMemoryHeatmap(context, isChinese),
-                        ),
-                        const SizedBox(height: 20),
+                          // 2. Memory Heatmap
+                          _buildMemoryHeatmap(context, isChinese),
+                          const SizedBox(height: 20),
 
-                        // 3. Emotion Distribution (moved under heatmap)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _buildEmotionDistribution(context, isChinese),
-                        ),
-                        const SizedBox(height: 20),
+                          // 3. Emotion Distribution (moved under heatmap)
+                          _buildEmotionDistribution(context, isChinese),
+                          const SizedBox(height: 20),
 
-                        // 4. Time Markers
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _buildTimeMarkers(context, isChinese),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
+                          // 4. Time Markers
+                          _buildTimeMarkers(context, isChinese),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -137,7 +136,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               listenable: _scrollController,
               builder: (context, child) {
                 final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / titleAreaHeight).clamp(0.0, 1.0);
+                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
                 final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
                 return IgnorePointer(
                   ignoring: realHeaderOpacity < 0.5,
@@ -148,7 +147,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 );
               },
               child: Container(
-                height: topPadding + kToolbarHeight,
+                height: responsive.collapsedHeaderHeight,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(
