@@ -18,6 +18,7 @@ import 'features/resell/resell_screen.dart';
 import 'features/memories/create_memory_page.dart';
 import 'features/auth/welcome_page.dart';
 import 'features/auth/login_page.dart';
+import 'features/auth/reset_password_page.dart';
 import 'ui/paywall/paywall_page.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/typography.dart';
@@ -28,6 +29,7 @@ import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/services/auth_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:keepjoy_app/services/data_repository.dart';
 import 'package:keepjoy_app/services/hive_service.dart';
 import 'package:keepjoy_app/services/connectivity_service.dart';
@@ -92,8 +94,23 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
     super.initState();
     // Listen to auth state changes
     _authSubscription = _authService.authStateChanges?.listen((event) {
+      // Handle password reset flow - when user comes from email link
+      // Supabase automatically handles code exchange, but we need to check
+      // if we're in a password recovery flow
+      final session = event.session;
+      if (session != null && event.event == AuthChangeEvent.passwordRecovery) {
+        // User is in password recovery mode - navigate to reset password page
+        if (mounted) {
+          _navigatorKey.currentState?.pushNamedAndRemoveUntil(
+            '/reset-password',
+            (route) => false,
+          );
+        }
+        return;
+      }
+      
       // When user logs out (session becomes null), navigate to welcome
-      if (event.session == null && mounted) {
+      if (session == null && mounted && event.event == AuthChangeEvent.signedOut) {
         // User logged out - navigate to welcome and clear stack
         _navigatorKey.currentState?.pushNamedAndRemoveUntil(
           '/welcome',
@@ -105,6 +122,20 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
         setState(() {});
       }
     });
+    
+    // Check initial deep link for password reset
+    _checkInitialDeepLink();
+  }
+  
+  void _checkInitialDeepLink() {
+    // Supabase SDK handles deep links automatically, but we can check
+    // if we're starting from a password reset link
+    final authService = AuthService();
+    if (authService.client != null) {
+      // Get the initial session to see if it's a recovery session
+      final session = authService.client!.auth.currentSession;
+      // Note: We'll handle password recovery in the auth state listener
+    }
   }
 
   @override
@@ -152,6 +183,18 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
         routes: {
           '/welcome': (context) => const WelcomePage(),
           '/login': (context) => const LoginPage(),
+          '/reset-password': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments;
+            if (args is Map<String, dynamic>) {
+              return ResetPasswordPage(
+                accessToken: args['access_token'] as String?,
+                refreshToken: args['refresh_token'] as String?,
+                type: args['type'] as String?,
+                code: args['code'] as String?,
+              );
+            }
+            return const ResetPasswordPage();
+          },
           '/home': (context) => MainNavigator(onLocaleChange: _setLocale),
         },
       ),

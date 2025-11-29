@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:keepjoy_app/config/supabase_config.dart';
+import 'package:keepjoy_app/config/app_links.dart';
 import 'package:keepjoy_app/services/subscription_service.dart';
 import 'package:keepjoy_app/services/hive_service.dart';
 
@@ -36,6 +37,10 @@ class AuthService {
       await Supabase.initialize(
         url: SupabaseConfig.supabaseUrl,
         anonKey: SupabaseConfig.supabaseAnonKey,
+        authOptions: const FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.pkce,
+          autoRefreshToken: true,
+        ),
       );
     } catch (e) {
       if (kDebugMode) {
@@ -173,7 +178,55 @@ class AuthService {
   /// Reset password (send reset email)
   Future<void> resetPassword(String email) async {
     if (client == null) return;
-    await client!.auth.resetPasswordForEmail(email);
+    // Use redirect URL if configured; otherwise fallback to default
+    final redirect = AppLinks.resetPasswordRedirect;
+    await client!.auth.resetPasswordForEmail(
+      email,
+      redirectTo: redirect.startsWith('#TODO')
+          ? null
+          : redirect,
+    );
+  }
+
+  /// Exchange code for session (used for password reset from deep link)
+  Future<void> exchangeCodeForSession(String code) async {
+    if (client == null) {
+      throw StateError('Supabase client not available');
+    }
+    await client!.auth.exchangeCodeForSession(code);
+  }
+
+  /// Handle password reset from deep link URL
+  /// Extracts code from URL and exchanges it for a session
+  Future<bool> handlePasswordResetLink(Uri deepLink) async {
+    if (client == null) return false;
+    
+    try {
+      // Extract code from URL parameters
+      final code = deepLink.queryParameters['code'];
+      final type = deepLink.queryParameters['type'];
+      
+      if (code == null) {
+        if (kDebugMode) {
+          debugPrint('⚠️ No code found in password reset link');
+        }
+        return false;
+      }
+
+      // Exchange code for session
+      await exchangeCodeForSession(code);
+      
+      if (kDebugMode) {
+        debugPrint('✅ Successfully exchanged code for session');
+      }
+      
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error handling password reset link: $e');
+      }
+      return false;
+    }
   }
 
   /// Update password (when user is logged in)
@@ -198,6 +251,9 @@ class AuthService {
 
       // 2. Delete user photos from Supabase storage
       await _deleteCloudPhotos(userId);
+
+      // 3. Delete Supabase auth user via Edge Function (requires server role)
+      await _deleteAuthUserViaFunction(userId);
 
       // 3. Clear all local Hive data
       await HiveService.instance.clearAll();
@@ -286,6 +342,45 @@ class AuthService {
         debugPrint('⚠️ Error deleting cloud photos: $e');
       }
       // Continue with deletion even if storage cleanup fails
+    }
+  }
+
+  /// Delete Supabase Auth user via Edge Function "delete-user"
+  /// Requires you to deploy an Edge Function with service role access that deletes the user:
+  ///   import { serve } from 'https://deno.land/std/http/server.ts'
+  ///   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  ///   serve(async (req) => {
+  ///     const { userId } = await req.json()
+  ///     const client = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  ///     const { error } = await client.auth.admin.deleteUser(userId)
+  ///     return error ? new Response(error.message, { status: 400 }) : new Response('ok')
+  ///   })
+  Future<void> _deleteAuthUserViaFunction(String userId) async {
+    if (client == null) return;
+    try {
+      final accessToken = client!.auth.currentSession?.accessToken;
+      final response = await client!.functions.invoke(
+        'delete-user',
+        body: {'userId': userId},
+        headers: accessToken != null
+            ? {'Authorization': 'Bearer $accessToken'}
+            : null,
+      );
+      final status = response.status ?? 200;
+      if (status >= 300) {
+        throw Exception(
+          'delete-user failed (status $status): ${response.data}',
+        );
+      }
+      if (kDebugMode) {
+        debugPrint('✅ Requested auth user deletion via function (status $status)');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Auth user deletion via function failed: $e');
+      }
+      // Surface error so caller can report failure
+      rethrow;
     }
   }
 }

@@ -1812,8 +1812,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeToKeepJoy => 'Welcome to KeepJoy';
 
   @override
+  String get resetPassword => 'Reset Password';
+
+  @override
   String get resetPasswordInstruction =>
       'Enter your email address and we\'ll send you a link to reset your password.';
+
+  @override
+  String get resetPasswordNewPassword => 'Enter your new password below';
+
+  @override
+  String get resetPasswordSuccess =>
+      'Password reset successfully! You can now sign in with your new password.';
+
+  @override
+  String get resetPasswordFailed =>
+      'Failed to reset password. Please try again.';
+
+  @override
+  String get resetPasswordInvalidCode =>
+      'Invalid or expired reset code. Please request a new password reset.';
 
   @override
   String get sendResetLink => 'Send Reset Link';
@@ -1821,6 +1839,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get resetPasswordEmailSent =>
       'Password reset email sent! Please check your inbox.';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 6 characters';
+
+  @override
+  String get networkError =>
+      'Network error. Please check your connection and try again.';
 
   @override
   String get quickTip => 'Quick Tip';

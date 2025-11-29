@@ -3426,11 +3426,41 @@ abstract class AppLocalizations {
   /// **'Welcome to KeepJoy'**
   String get welcomeToKeepJoy;
 
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
+
   /// No description provided for @resetPasswordInstruction.
   ///
   /// In en, this message translates to:
   /// **'Enter your email address and we\'ll send you a link to reset your password.'**
   String get resetPasswordInstruction;
+
+  /// No description provided for @resetPasswordNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new password below'**
+  String get resetPasswordNewPassword;
+
+  /// No description provided for @resetPasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully! You can now sign in with your new password.'**
+  String get resetPasswordSuccess;
+
+  /// No description provided for @resetPasswordFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reset password. Please try again.'**
+  String get resetPasswordFailed;
+
+  /// No description provided for @resetPasswordInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or expired reset code. Please request a new password reset.'**
+  String get resetPasswordInvalidCode;
 
   /// No description provided for @sendResetLink.
   ///
@@ -3443,6 +3473,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password reset email sent! Please check your inbox.'**
   String get resetPasswordEmailSent;
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters'**
+  String get passwordMinLength;
+
+  /// No description provided for @networkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your connection and try again.'**
+  String get networkError;
 
   /// No description provided for @quickTip.
   ///

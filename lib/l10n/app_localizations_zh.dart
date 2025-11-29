@@ -1717,7 +1717,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailRequired => '请输入邮箱';
 
   @override
-  String get passwordRequired => '请输入密码';
+  String get passwordRequired => '密码是必需的';
 
   @override
   String get nameRequired => '请输入姓名';
@@ -1758,13 +1758,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get welcomeToKeepJoy => '欢迎来到KeepJoy';
 
   @override
+  String get resetPassword => '重置密码';
+
+  @override
   String get resetPasswordInstruction => '输入您的邮箱地址，我们将向您发送重置密码的链接。';
+
+  @override
+  String get resetPasswordNewPassword => '请在下方输入您的新密码';
+
+  @override
+  String get resetPasswordSuccess => '密码重置成功！您现在可以使用新密码登录。';
+
+  @override
+  String get resetPasswordFailed => '密码重置失败。请重试。';
+
+  @override
+  String get resetPasswordInvalidCode => '重置代码无效或已过期。请重新申请密码重置。';
 
   @override
   String get sendResetLink => '发送重置链接';
 
   @override
   String get resetPasswordEmailSent => '密码重置邮件已发送！请检查您的收件箱。';
+
+  @override
+  String get passwordMinLength => '密码至少需要6个字符';
+
+  @override
+  String get networkError => '网络错误。请检查您的连接后重试。';
 
   @override
   String get quickTip => '快速提示';

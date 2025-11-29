@@ -667,16 +667,26 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       await _authService.deleteAccount();
       if (!mounted) return;
-      Navigator.of(context)
-        ..pop() // loading
-        ..pop(); // profile
+      // Close loading dialog; auth listener will redirect to welcome.
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isChinese ? '账号已删除' : 'Account deleted.',
+          ),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       Navigator.of(context).pop(); // loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isChinese ? '删除账号失败，请重试' : 'Failed to delete account. Please try again.',
+            isChinese
+                ? '删除账号失败：${e.toString()}'
+                : 'Failed to delete account: ${e.toString()}',
           ),
         ),
       );

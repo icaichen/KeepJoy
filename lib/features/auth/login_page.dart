@@ -119,8 +119,8 @@ class _LoginPageState extends State<LoginPage> {
           } else if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text(
-                  'Sign in failed. Please check your credentials.',
+                content: Text(
+                  _friendlyAuthError('invalid login credentials', l10n),
                 ),
                 backgroundColor: Colors.red,
               ),
@@ -130,12 +130,7 @@ class _LoginPageState extends State<LoginPage> {
       } catch (e) {
         if (mounted) {
           // Extract a user-friendly error message
-          String errorMessage = e.toString();
-          if (errorMessage.contains('StateError:')) {
-            errorMessage = errorMessage.replaceFirst('StateError: ', '');
-          } else if (errorMessage.contains('Exception:')) {
-            errorMessage = errorMessage.replaceFirst('Exception: ', '');
-          }
+          final errorMessage = _friendlyAuthError(e.toString(), l10n);
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -183,6 +178,43 @@ class _LoginPageState extends State<LoginPage> {
       return l10n.passwordsDoNotMatch;
     }
     return null;
+  }
+
+  String _friendlyAuthError(String raw, AppLocalizations l10n) {
+    final lower = raw.toLowerCase();
+    final isChinese =
+        Localizations.localeOf(context).languageCode.toLowerCase() == 'zh';
+
+    String msg;
+    if (lower.contains('invalid login credentials') ||
+        lower.contains('invalid email or password')) {
+      msg = isChinese ? '邮箱或密码不正确' : 'Incorrect email or password.';
+    } else if (lower.contains('user not found') ||
+        lower.contains('no user found') ||
+        lower.contains('user does not exist')) {
+      msg = isChinese ? '账号不存在，请先注册' : 'Account not found. Please sign up first.';
+    } else if (lower.contains('user already registered') ||
+        lower.contains('already registered')) {
+      msg = isChinese ? '该邮箱已注册，请直接登录' : 'This email is already registered.';
+    } else if (lower.contains('email not confirmed')) {
+      msg = isChinese ? '请先验证邮箱后再登录' : 'Please verify your email before signing in.';
+    } else if (lower.contains('network') || lower.contains('timeout')) {
+      msg = isChinese ? '网络异常，请稍后重试' : 'Network error, please try again.';
+    } else if (lower.contains('password')) {
+      msg = isChinese ? '密码不符合要求' : 'Password does not meet requirements.';
+    } else if (lower.contains('too many requests')) {
+      msg = isChinese ? '尝试过多，请稍后重试' : 'Too many attempts. Please try again later.';
+    } else {
+      msg = isChinese ? '操作失败，请稍后重试' : 'Something went wrong. Please try again.';
+    }
+
+    // Strip noisy prefixes if we fall back
+    msg = msg
+        .replaceFirst('stateerror: ', '')
+        .replaceFirst('exception: ', '')
+        .replaceFirst('authexception(', '')
+        .trim();
+    return msg;
   }
 
   @override
@@ -616,7 +648,9 @@ class _LoginPageState extends State<LoginPage> {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(e.toString()),
+                                content: Text(
+                                  _friendlyAuthError(e.toString(), l10n),
+                                ),
                                 backgroundColor: Colors.red,
                               ),
                             );
