@@ -149,7 +149,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardResellReportTitle => 'Resale Insights';
 
   @override
-  String get dashboardResellReportSubtitle => 'Track second-hand performance';
+  String get dashboardResellReportSubtitle => 'Track resale performance';
 
   @override
   String get dashboardMemoryLaneTitle => 'Annual Memory';

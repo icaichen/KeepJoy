@@ -371,7 +371,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardResellReportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Track second-hand performance'**
+  /// **'Track resale performance'**
   String get dashboardResellReportSubtitle;
 
   /// No description provided for @dashboardMemoryLaneTitle.

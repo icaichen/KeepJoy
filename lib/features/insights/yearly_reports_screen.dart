@@ -760,22 +760,36 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Large title on the left
-                              Text(
-                                pageName,
-                                style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black,
-                                  letterSpacing: -0.5,
-                                  height: 1.0,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Large title on the left
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  pageName,
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black,
+                                    letterSpacing: -0.5,
+                                    height: 1.0,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  l10n.dashboardYearlyReportsSubtitle,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF4B5563),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
+                      ),
                       ),
 
                       // Content

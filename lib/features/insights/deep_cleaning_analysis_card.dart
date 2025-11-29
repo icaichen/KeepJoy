@@ -584,18 +584,18 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
                       color: Color(0xFF6B7280),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildPhotoCarousel(context, l10n, session),
-                  const SizedBox(height: 18),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                    ),
-                    child: _buildSessionDetailList(
+          const SizedBox(height: 16),
+          _buildPhotoCarousel(context, l10n, session),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: _buildSessionDetailList(
                       l10n: l10n,
                       colon: l10n.localeName.toLowerCase().startsWith('zh')
                           ? '：'
@@ -674,19 +674,26 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      height: 450,
-      child: PageView.builder(
-        itemCount: slides.length,
-        itemBuilder: (context, index) {
-          final slide = slides[index];
-          return _PhotoPage(
-            label: slide.label,
-            localPath: slide.localPath,
-            remotePath: slide.remotePath,
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 4:3 常见横拍比例，加上标题和间距
+        final photoHeight = (constraints.maxWidth * 3 / 4) + 40;
+        return SizedBox(
+          height: photoHeight,
+          child: PageView.builder(
+            physics: const BouncingScrollPhysics(),
+            itemCount: slides.length,
+            itemBuilder: (context, index) {
+              final slide = slides[index];
+              return _PhotoPage(
+                label: slide.label,
+                localPath: slide.localPath,
+                remotePath: slide.remotePath,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -721,21 +728,21 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     return Column(
       children: [
         buildRow(l10n.dashboardItemsLabel, itemsValue),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         buildRow(l10n.dashboardDurationLabel, durationValue),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         const Divider(height: 1, color: Color(0xFFE5E7EB)),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         buildRow(l10n.messinessBefore, beforeValue),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         buildRow(l10n.messinessAfter, afterValue),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         buildRow(l10n.dashboardMessinessReducedLabel, improvementValue),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         const Divider(height: 1, color: Color(0xFFE5E7EB)),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         buildRow(l10n.dashboardFocusLabel, focusValue),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         buildRow(l10n.dashboardJoyLabel, joyValue),
       ],
     );
@@ -953,7 +960,8 @@ class _PhotoPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Expanded(
+          AspectRatio(
+            aspectRatio: 4 / 3, // 常见横向拍摄比例
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
               child: Container(

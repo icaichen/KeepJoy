@@ -3,6 +3,7 @@ import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
+import 'package:keepjoy_app/l10n/app_localizations.dart';
 
 enum TrendMetric {
   soldItems('已售物品', 'Sold Items'),
@@ -59,6 +60,7 @@ class _ResellAnalysisReportScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
@@ -152,15 +154,29 @@ class _ResellAnalysisReportScreenState
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // Large title on the left
-                            Text(
-                              pageName,
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
-                                letterSpacing: -0.5,
-                                height: 1.0,
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  pageName,
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black,
+                                    letterSpacing: -0.5,
+                                    height: 1.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  l10n.dashboardResellReportSubtitle,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF4B5563),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
