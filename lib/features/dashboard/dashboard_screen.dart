@@ -2893,7 +2893,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               iconColor: const Color(0xFFFFD93D),
                               bgColors: const [
                                 Color(0xFFFFF9E6),
-                                Color(0xFFFFECB3),
+                                Color(0xFFFFD93D),
                               ],
                               title: l10n.dashboardResellReportTitle,
                               subtitle: l10n.dashboardResellReportSubtitle,
@@ -2918,10 +2918,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _buildReportCard(
                               context,
                               icon: Icons.photo_library_rounded,
-                              iconColor: const Color(0xFFFF9AA2),
+                              iconColor: const Color(0xFFB794F6),
                               bgColors: const [
-                                Color(0xFFFFEEF0),
-                                Color(0xFFFFDDE0),
+                                Color(0xFFF3EBFF),
+                                Color(0xFFB794F6),
                               ],
                               title: l10n.dashboardMemoryLaneTitle,
                               subtitle: l10n.dashboardMemoryLaneSubtitle,
@@ -2946,8 +2946,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icon: Icons.calendar_today_rounded,
                               iconColor: const Color(0xFF89CFF0),
                               bgColors: const [
-                                Color(0xFFE6F4F9),
-                                Color(0xFFD4E9F3),
+                                Color(0xFFF5F5F7),
+                                Color(0xFF89CFF0),
                               ],
                               title: l10n.dashboardYearlyReportsTitle,
                               subtitle: l10n.dashboardYearlyReportsSubtitle,

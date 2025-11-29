@@ -392,7 +392,7 @@ class _ResellAnalysisReportScreenState
                                                     textAlign: TextAlign.center,
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .bodySmall
+                                                        .bodyMedium
                                                         ?.copyWith(
                                                           color: isSelected
                                                               ? Colors.black87
@@ -403,7 +403,7 @@ class _ResellAnalysisReportScreenState
                                                                       .w600
                                                                   : FontWeight
                                                                       .w500,
-                                                          fontSize: 11,
+                                                          fontSize: 13,
                                                         ),
                                                   ),
                                                 ),
@@ -754,6 +754,7 @@ class _ResellAnalysisReportScreenState
                                   fontWeight: isSelected
                                       ? FontWeight.w600
                                       : FontWeight.w500,
+                                  fontSize: 13,
                                 ),
                           ),
                         ),

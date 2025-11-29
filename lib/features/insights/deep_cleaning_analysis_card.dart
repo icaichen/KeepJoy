@@ -7,7 +7,7 @@ import '../dashboard/widgets/cleaning_area_legend.dart';
 import '../../widgets/auto_scale_text.dart';
 import '../../widgets/smart_image_widget.dart';
 
-class DeepCleaningAnalysisCard extends StatelessWidget {
+class DeepCleaningAnalysisCard extends StatefulWidget {
   final List<DeepCleaningSession> sessions;
   final String title;
   final String? emptyStateMessage;
@@ -22,17 +22,25 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
   });
 
   @override
+  State<DeepCleaningAnalysisCard> createState() =>
+      _DeepCleaningAnalysisCardState();
+}
+
+class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
+  bool _showAllAreas = false;
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     // Calculate metrics
-    final deepCleaningCount = sessions.length;
-    final cleanedItemsCount = sessions
+    final deepCleaningCount = widget.sessions.length;
+    final cleanedItemsCount = widget.sessions
         .where((session) => session.itemsCount != null)
         .fold(0, (sum, session) => sum + session.itemsCount!);
 
     // Total time (in hours)
-    final totalTimeSeconds = sessions
+    final totalTimeSeconds = widget.sessions
         .where((session) => session.elapsedSeconds != null)
         .fold(0, (sum, session) => sum + session.elapsedSeconds!);
     final totalTimeHours = totalTimeSeconds / 3600;
@@ -43,7 +51,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
     };
 
     // Count sessions for each area
-    for (final session in sessions) {
+    for (final session in widget.sessions) {
       final cleaningArea = CleaningArea.fromString(session.area);
       if (cleaningArea != null) {
         // Standard area - use its key
@@ -86,7 +94,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         children: [
           // Title
           Text(
-            title,
+            widget.title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.black87,
@@ -207,7 +215,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
-          _buildComparisonsSection(context, l10n, sessions),
+          _buildComparisonsSection(context, l10n, widget.sessions),
         ],
       ),
     );
@@ -234,6 +242,14 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         return countB.compareTo(countA);
       });
 
+    final visibleAreas =
+        _showAllAreas ? sortedAreas : sortedAreas.take(3).toList();
+    final hiddenCount = _showAllAreas
+        ? 0
+        : sortedAreas.length > 3
+            ? sortedAreas.length - visibleAreas.length
+            : 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -253,12 +269,29 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
             ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
           )
         else
-          ...sortedAreas.map(
+          ...visibleAreas.map(
             (area) => _buildAreaGroupRow(
               context,
               l10n,
               area,
               sessionsByArea[area]!,
+            ),
+          ),
+        if (hiddenCount > 0)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _showAllAreas = true;
+                });
+              },
+              icon: const Icon(Icons.expand_more_rounded),
+              label: Text(
+                l10n.localeName.toLowerCase().startsWith('zh')
+                    ? '查看更多（$hiddenCount）'
+                    : 'View more ($hiddenCount)',
+              ),
             ),
           ),
       ],
@@ -502,7 +535,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
       ),
     );
 
-    if (onDeleteSession == null) {
+    if (widget.onDeleteSession == null) {
       return row;
     }
 
@@ -520,7 +553,7 @@ class DeepCleaningAnalysisCard extends StatelessWidget {
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       onDismissed: (_) {
-        onDeleteSession?.call(session);
+        widget.onDeleteSession?.call(session);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.dashboardSessionDeleted)),
         );
