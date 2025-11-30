@@ -624,6 +624,18 @@ abstract class AppLocalizations {
   /// **'Session deleted'**
   String get dashboardSessionDeleted;
 
+  /// No description provided for @dashboardDeleteSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Session?'**
+  String get dashboardDeleteSessionTitle;
+
+  /// No description provided for @dashboardDeleteSessionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this session?'**
+  String get dashboardDeleteSessionMessage;
+
   /// No description provided for @dashboardNotScheduled.
   ///
   /// In en, this message translates to:

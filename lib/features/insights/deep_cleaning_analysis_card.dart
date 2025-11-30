@@ -549,6 +549,29 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         alignment: Alignment.centerRight,
         child: const Icon(Icons.delete, color: Colors.white),
       ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: Text(l10n.dashboardDeleteSessionTitle),
+                content: Text(l10n.dashboardDeleteSessionMessage),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: Text(l10n.cancel),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: Text(l10n.delete),
+                  ),
+                ],
+              ),
+            ) ??
+            false;
+      },
       onDismissed: (_) {
         widget.onDeleteSession?.call(session);
         ScaffoldMessenger.of(context).showSnackBar(

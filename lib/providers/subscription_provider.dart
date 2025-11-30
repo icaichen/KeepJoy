@@ -9,8 +9,9 @@ class SubscriptionProvider with ChangeNotifier {
   bool _isInTrial = false;
   DateTime? _expirationDate;
   bool _willRenew = false;
-  bool _isLoading = true;
+  bool _isLoading = false;
   Offerings? _currentOffering;
+  String? _errorMessage;
 
   Timer? _periodicRefreshTimer;
 
@@ -20,6 +21,7 @@ class SubscriptionProvider with ChangeNotifier {
   bool get willRenew => _willRenew;
   bool get isLoading => _isLoading;
   Offerings? get currentOffering => _currentOffering;
+  String? get errorMessage => _errorMessage;
 
   SubscriptionProvider() {
     _initialize();
@@ -34,10 +36,22 @@ class SubscriptionProvider with ChangeNotifier {
 
   Future<void> _fetchOfferings() async {
     try {
+      _errorMessage = null;
+      _isLoading = true;
+      notifyListeners();
+
       _currentOffering = await SubscriptionService.getOfferings();
+
+      _isLoading = false;
+      if (_currentOffering == null) {
+        _errorMessage = 'No offerings available. Check RevenueCat dashboard configuration.';
+      }
       notifyListeners();
     } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Error fetching offerings: $e';
       print('Error fetching offerings: $e');
+      notifyListeners();
     }
   }
 

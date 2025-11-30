@@ -131,6 +131,8 @@
   "dashboardLettingGoDetailsSubtitle": "How many items you kept, resold, recycled, donated, or discarded",
   "dashboardKeptLabel": "Kept",
   "dashboardSessionDeleted": "Session deleted",
+  "dashboardDeleteSessionTitle": "Delete Session?",
+  "dashboardDeleteSessionMessage": "Are you sure you want to delete this session?",
   "dashboardNotScheduled": "Not scheduled",
   "dashboardToday": "Today",
   "dashboardTomorrow": "Tomorrow",

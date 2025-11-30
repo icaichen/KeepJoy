@@ -13,6 +13,8 @@ import '../../services/auth_service.dart';
 import '../../services/data_repository.dart';
 import '../../services/notification_preferences_service.dart';
 import '../../services/reminder_service.dart';
+import '../../services/image_cache_service.dart';
+import '../../services/hive_service.dart';
 import '../../models/declutter_item.dart';
 import '../../providers/subscription_provider.dart';
 import '../../ui/paywall/paywall_page.dart';
@@ -32,6 +34,11 @@ class _ProfilePageState extends State<ProfilePage> {
   final _authService = AuthService();
   bool _notificationsEnabled = false;
   bool _notificationsLoading = true;
+
+  // Storage management
+  String _cacheSize = '...';
+  int _cachedFiles = 0;
+  bool _isClearing = false;
 
   String get _userEmail =>
       _authService.currentUser?.email ?? 'user@example.com';
@@ -129,6 +136,52 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _loadNotificationPreference();
+    _loadCacheStats();
+  }
+
+  Future<void> _loadCacheStats() async {
+    final stats = await ImageCacheService.instance.getCacheStats();
+    if (!mounted) return;
+    setState(() {
+      _cacheSize = stats['sizeFormatted'] as String;
+      _cachedFiles = stats['fileCount'] as int;
+    });
+  }
+
+  Future<void> _clearCache() async {
+    if (_isClearing) return;
+
+    setState(() => _isClearing = true);
+
+    try {
+      await ImageCacheService.instance.clearCache();
+      await _loadCacheStats();
+
+      if (!mounted) return;
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cache cleared successfully'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to clear cache: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isClearing = false);
+      }
+    }
   }
 
   Future<void> _loadNotificationPreference() async {
@@ -303,6 +356,122 @@ class _ProfilePageState extends State<ProfilePage> {
                           : _toggleNotifications,
                       activeColor: const Color(0xFFB794F6),
                     ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Storage Section
+            _buildSectionTitle(context, 'Storage'),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Cache info tile
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.storage,
+                            color: Color(0xFF8B5CF6),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Image Cache',
+                                style: TextStyle(
+                                  fontFamily: 'SF Pro Display',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '$_cacheSize • $_cachedFiles files',
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+                  // Clear cache button
+                  _SettingsTile(
+                    icon: Icons.delete_outline,
+                    iconColor: Colors.red,
+                    title: 'Clear Cache',
+                    subtitle: 'Remove all cached images',
+                    onTap: _isClearing ? null : () async {
+                      // Show confirmation dialog
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Clear Cache?'),
+                          content: const Text(
+                            'This will delete all cached images. They will be re-downloaded when needed.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                              ),
+                              child: const Text('Clear'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirm == true) {
+                        await _clearCache();
+                      }
+                    },
+                    trailing: _isClearing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : null,
                   ),
                 ],
               ),
@@ -1232,8 +1401,10 @@ class _ProfilePageState extends State<ProfilePage> {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Color? textColor;
+  final Color? iconColor;
+  final String? subtitle;
   final Widget? trailing;
 
   const _SettingsTile({
@@ -1241,6 +1412,8 @@ class _SettingsTile extends StatelessWidget {
     required this.title,
     required this.onTap,
     this.textColor,
+    this.iconColor,
+    this.subtitle,
     this.trailing,
   });
 
@@ -1252,18 +1425,35 @@ class _SettingsTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            Icon(icon, size: 24, color: textColor ?? const Color(0xFF6B7280)),
+            Icon(icon, size: 24, color: iconColor ?? textColor ?? const Color(0xFF6B7280)),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontFamily: 'SF Pro Text',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: textColor ?? const Color(0xFF111827),
-                  letterSpacing: 0,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: textColor ?? const Color(0xFF111827),
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle!,
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             trailing ??

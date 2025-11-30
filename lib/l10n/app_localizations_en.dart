@@ -304,6 +304,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardSessionDeleted => 'Session deleted';
 
   @override
+  String get dashboardDeleteSessionTitle => 'Delete Session?';
+
+  @override
+  String get dashboardDeleteSessionMessage =>
+      'Are you sure you want to delete this session?';
+
+  @override
   String get dashboardNotScheduled => 'Not scheduled';
 
   @override

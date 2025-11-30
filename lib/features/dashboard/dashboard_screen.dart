@@ -1181,6 +1181,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                   ),
                                   direction: DismissDirection.endToStart,
+                                  confirmDismiss: (direction) async {
+                                    return await showDialog<bool>(
+                                          context: context,
+                                          builder: (dialogContext) => AlertDialog(
+                                            title: Text(l10n.dashboardDeleteSessionTitle),
+                                            content: Text(l10n.dashboardDeleteSessionMessage),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.of(dialogContext).pop(false),
+                                                child: Text(l10n.cancel),
+                                              ),
+                                              FilledButton(
+                                                onPressed: () => Navigator.of(dialogContext).pop(true),
+                                                style: FilledButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                                child: Text(l10n.delete),
+                                              ),
+                                            ],
+                                          ),
+                                        ) ??
+                                        false;
+                                  },
                                   onDismissed: (direction) {
                                     // Remove from current list immediately to satisfy Dismissible contract
                                     setModalState(() {
@@ -2521,6 +2544,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                   ),
                                   direction: DismissDirection.endToStart,
+                                  confirmDismiss: (direction) async {
+                                    return await showDialog<bool>(
+                                          context: context,
+                                          builder: (dialogContext) => AlertDialog(
+                                            title: Text(l10n.dashboardDeleteSessionTitle),
+                                            content: Text(l10n.dashboardDeleteSessionMessage),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.of(dialogContext).pop(false),
+                                                child: Text(l10n.cancel),
+                                              ),
+                                              FilledButton(
+                                                onPressed: () => Navigator.of(dialogContext).pop(true),
+                                                style: FilledButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                                child: Text(l10n.delete),
+                                              ),
+                                            ],
+                                          ),
+                                        ) ??
+                                        false;
+                                  },
                                   onDismissed: (direction) {
                                     // Remove from the current list immediately
                                     setState(() {

@@ -460,4 +460,105 @@ class HiveService {
       });
     });
   }
+
+  /// Clean up old soft-deleted records
+  /// Permanently deletes records that have been soft-deleted for more than X days
+  Future<int> cleanupOldDeletedRecords({int daysOld = 90}) async {
+    final cutoffDate = DateTime.now().subtract(Duration(days: daysOld));
+    int totalDeleted = 0;
+
+    try {
+      debugPrint('🧹 Cleaning up soft-deleted records older than $daysOld days...');
+
+      // Clean memories
+      final memBox = memories;
+      final memToDelete = <String>[];
+      for (final mem in memBox.values) {
+        if (mem.deletedAt != null && mem.deletedAt!.isBefore(cutoffDate)) {
+          memToDelete.add(mem.id);
+        }
+      }
+      for (final id in memToDelete) {
+        await memBox.delete(id);
+        totalDeleted++;
+      }
+
+      // Clean items
+      final itemBox = items;
+      final itemsToDelete = <String>[];
+      for (final item in itemBox.values) {
+        if (item.deletedAt != null && item.deletedAt!.isBefore(cutoffDate)) {
+          itemsToDelete.add(item.id);
+        }
+      }
+      for (final id in itemsToDelete) {
+        await itemBox.delete(id);
+        totalDeleted++;
+      }
+
+      // Clean sessions
+      final sessBox = sessions;
+      final sessToDelete = <String>[];
+      for (final session in sessBox.values) {
+        if (session.deletedAt != null && session.deletedAt!.isBefore(cutoffDate)) {
+          sessToDelete.add(session.id);
+        }
+      }
+      for (final id in sessToDelete) {
+        await sessBox.delete(id);
+        totalDeleted++;
+      }
+
+      // Clean resell items
+      final resellBox = resellItems;
+      final resellToDelete = <String>[];
+      for (final item in resellBox.values) {
+        if (item.deletedAt != null && item.deletedAt!.isBefore(cutoffDate)) {
+          resellToDelete.add(item.id);
+        }
+      }
+      for (final id in resellToDelete) {
+        await resellBox.delete(id);
+        totalDeleted++;
+      }
+
+      // Clean planned sessions
+      final plannedBox = plannedSessions;
+      final plannedToDelete = <String>[];
+      for (final session in plannedBox.values) {
+        if (session.deletedAt != null && session.deletedAt!.isBefore(cutoffDate)) {
+          plannedToDelete.add(session.id);
+        }
+      }
+      for (final id in plannedToDelete) {
+        await plannedBox.delete(id);
+        totalDeleted++;
+      }
+
+      if (totalDeleted > 0) {
+        debugPrint('✅ Cleanup complete: Permanently deleted $totalDeleted old records');
+
+        // Compact all boxes to recover space
+        await memBox.compact();
+        await itemBox.compact();
+        await sessBox.compact();
+        await resellBox.compact();
+        await plannedBox.compact();
+        debugPrint('📦 Compacted all Hive boxes');
+      } else {
+        debugPrint('✅ Cleanup complete: No old records to delete');
+      }
+
+      return totalDeleted;
+    } catch (e) {
+      debugPrint('❌ Failed to cleanup old records: $e');
+      return 0;
+    }
+  }
+
+  /// Perform automatic cleanup if needed
+  /// Called periodically to keep database size manageable
+  Future<void> autoCleanupOldRecords() async {
+    await cleanupOldDeletedRecords(daysOld: 90);
+  }
 }

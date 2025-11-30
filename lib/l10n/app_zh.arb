@@ -124,6 +124,8 @@
   "dashboardLettingGoDetailsSubtitle": "看看保留与各去向的比例",
   "dashboardKeptLabel": "保留",
   "dashboardSessionDeleted": "计划已删除",
+  "dashboardDeleteSessionTitle": "删除计划？",
+  "dashboardDeleteSessionMessage": "确定要删除这个计划吗？",
   "dashboardNotScheduled": "未设定时间",
   "dashboardToday": "今天",
   "dashboardTomorrow": "明天",

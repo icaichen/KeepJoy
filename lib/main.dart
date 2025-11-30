@@ -39,6 +39,7 @@ import 'services/notification_service_stub.dart'
 import 'package:keepjoy_app/services/reminder_service.dart';
 import 'services/premium_access_service.dart';
 import 'services/subscription_service.dart';
+import 'services/image_cache_service.dart';
 import 'providers/subscription_provider.dart';
 
 void main() async {
@@ -71,6 +72,16 @@ void main() async {
     await SyncService.instance.init();
     // Trigger initial sync immediately (connectivity is already initialized)
     SyncService.instance.syncAll();
+
+    // Run automatic cache cleanup if needed (non-blocking)
+    ImageCacheService.instance.autoCleanup().catchError((e) {
+      print('Warning: Cache cleanup failed: $e');
+    });
+
+    // Run automatic database cleanup for old soft-deleted records (non-blocking)
+    HiveService.instance.autoCleanupOldRecords().catchError((e) {
+      print('Warning: Database cleanup failed: $e');
+    });
   }
 
   runApp(const KeepJoyApp());

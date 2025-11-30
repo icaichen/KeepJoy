@@ -18,6 +18,8 @@ class SubscriptionService {
   /// Initialize RevenueCat with platform-specific API keys
   static Future<void> configure() async {
     try {
+      _log('🔧 Starting RevenueCat configuration...');
+
       // Enable debug logging in development
       await Purchases.setLogLevel(_logDebug ? LogLevel.debug : LogLevel.warn);
 
@@ -25,20 +27,38 @@ class SubscriptionService {
       final String apiKey;
       if (Platform.isIOS) {
         apiKey = RevenueCatConfig.iosApiKey;
+        _log('📱 Platform: iOS');
+        _log('🔑 Using iOS API Key: ${apiKey.substring(0, 10)}...');
       } else if (Platform.isAndroid) {
         apiKey = RevenueCatConfig.androidApiKey;
+        _log('📱 Platform: Android');
+        _log('🔑 Using Android API Key: ${apiKey.substring(0, 10)}...');
       } else {
         _log('⚠️ RevenueCat: Platform not supported');
         return;
       }
 
       // Configure RevenueCat
+      _log('⚙️ Creating PurchasesConfiguration...');
       final configuration = PurchasesConfiguration(apiKey);
+
+      _log('⚙️ Calling Purchases.configure()...');
       await Purchases.configure(configuration);
 
       _log('✅ RevenueCat configured successfully');
-    } catch (e) {
+
+      // Verify configuration by getting customer info
+      try {
+        _log('🔍 Verifying configuration by fetching customer info...');
+        final customerInfo = await Purchases.getCustomerInfo();
+        _log('✅ Customer info fetched successfully');
+        _log('📊 User ID: ${customerInfo.originalAppUserId}');
+      } catch (e) {
+        _log('⚠️ Could not fetch customer info after config: $e');
+      }
+    } catch (e, stackTrace) {
       _log('❌ RevenueCat configuration error: $e');
+      _log('📍 Stack trace: $stackTrace');
     }
   }
 
@@ -118,13 +138,32 @@ class SubscriptionService {
   /// Get available offerings (products)
   static Future<Offerings?> getOfferings() async {
     try {
+      _log('📦 Fetching offerings from RevenueCat...');
       final offerings = await Purchases.getOfferings();
+
+      _log('📋 Offerings fetched - Current offering: ${offerings.current?.identifier ?? "null"}');
+      _log('📋 All offerings: ${offerings.all.keys.toList()}');
+
       if (offerings.current == null) {
-        _log('⚠️ No offerings available');
+        _log('⚠️ No current offering available');
+        _log('⚠️ Check RevenueCat dashboard: Offerings → Make sure "default" offering is created and has products');
+        return null;
       }
+
+      final packages = offerings.current!.availablePackages;
+      _log('📦 Available packages in current offering: ${packages.length}');
+      for (var package in packages) {
+        _log('   - ${package.identifier}: ${package.storeProduct.title} (${package.storeProduct.priceString})');
+      }
+
       return offerings;
     } on PlatformException catch (e) {
-      _log('Error fetching offerings: $e');
+      _log('❌ Platform error fetching offerings: ${e.code} - ${e.message}');
+      _log('📍 Details: $e');
+      return null;
+    } catch (e, stackTrace) {
+      _log('❌ Error fetching offerings: $e');
+      _log('📍 Stack trace: $stackTrace');
       return null;
     }
   }

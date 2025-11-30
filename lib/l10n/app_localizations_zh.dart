@@ -298,6 +298,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardSessionDeleted => '计划已删除';
 
   @override
+  String get dashboardDeleteSessionTitle => '删除计划？';
+
+  @override
+  String get dashboardDeleteSessionMessage => '确定要删除这个计划吗？';
+
+  @override
   String get dashboardNotScheduled => '未设定时间';
 
   @override

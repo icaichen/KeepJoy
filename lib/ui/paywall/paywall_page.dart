@@ -38,10 +38,18 @@ class _PaywallPageState extends State<PaywallPage> {
                 p.storeProduct.identifier.contains('annual'),
             orElse: () => packages.first,
           );
-          setState(() {
-            _selectedPackage = annualPackage;
-          });
+          if (mounted) {
+            setState(() {
+              _selectedPackage = annualPackage;
+            });
+          }
+        } else {
+          // No packages available - products might be pending review in App Store Connect
+          print('⚠️ No packages available. Products may be pending review.');
         }
+      } else {
+        // No current offering
+        print('⚠️ No current offering available.');
       }
     });
   }
@@ -52,10 +60,15 @@ class _PaywallPageState extends State<PaywallPage> {
     final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
     final offerings = subscriptionProvider.currentOffering;
 
+    // DEBUG: Print provider state
+    print('🔍 Paywall build - offerings: ${offerings != null ? "not null" : "null"}');
+    print('🔍 Paywall build - errorMessage: ${subscriptionProvider.errorMessage}');
+    print('🔍 Paywall build - isLoading: ${subscriptionProvider.isLoading}');
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: offerings == null
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildLoadingOrError(context, subscriptionProvider)
           : SafeArea(
               child: Column(
                 children: [
@@ -332,10 +345,41 @@ class _PaywallPageState extends State<PaywallPage> {
     final packages = offering.availablePackages;
 
     if (packages.isEmpty) {
-      return Center(
-        child: Text(
-          l10n.noOfferingsAvailable,
-          style: const TextStyle(color: Color(0xFF6B7280)),
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF3C7),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF59E0B)),
+        ),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.hourglass_empty,
+              size: 48,
+              color: Color(0xFFF59E0B),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Products Pending Approval',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF92400E),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Subscription products are waiting for App Store review. They will be available once approved by Apple.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF92400E),
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       );
     }
@@ -841,5 +885,115 @@ class _PaywallPageState extends State<PaywallPage> {
         });
       }
     }
+  }
+
+  Widget _buildLoadingOrError(
+    BuildContext context,
+    SubscriptionProvider provider,
+  ) {
+    return SafeArea(
+      child: Column(
+        children: [
+          // Close button
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              icon: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  size: 20,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (provider.errorMessage != null) ...[
+                      // Error state
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Color(0xFFEF4444),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Unable to load subscription options',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFECACA)),
+                        ),
+                        child: Text(
+                          provider.errorMessage!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF991B1B),
+                            fontFamily: 'Courier',
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          provider.refreshOfferings();
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B5CF6),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      // Loading state
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Loading subscription options...',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
