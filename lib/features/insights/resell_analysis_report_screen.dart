@@ -358,49 +358,47 @@ class _ResellAnalysisReportScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                        isChinese
-                                            ? '品类表现分析'
-                                            : 'Category Performance',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.black87,
-                                              height: 1.0,
-                                            ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            isChinese
+                                                ? '品类表现分析'
+                                                : 'Category Performance',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleLarge
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Colors.black87,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            isChinese
+                                                ? '各品类的成交金额、成交率与平均售出天数'
+                                                : 'Revenue, sold rate, and avg days to sell',
+                                            style: Theme.of(context).textTheme.bodyMedium
+                                                ?.copyWith(color: const Color(0xFF6B7280)),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
                                     IconButton(
                                       onPressed: () =>
                                           _showCategoryInfo(context, isChinese),
                                       icon: const Icon(
-                                        Icons.help_outline_rounded,
-                                        size: 18,
-                                        color: Color(0xFF6B7280),
+                                        Icons.info_outline_rounded,
+                                        size: 20,
+                                        color: Color(0xFF9CA3AF),
                                       ),
                                       tooltip: isChinese ? '数据说明' : 'Info',
                                       padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(
-                                        minWidth: 24,
-                                        minHeight: 24,
-                                      ),
-                                      iconSize: 18,
+                                      constraints: const BoxConstraints(),
                                     ),
                                   ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  isChinese
-                                      ? '各品类的成交金额、成交率与平均售出天数'
-                                      : 'Revenue, sold rate, and avg days to sell',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: Colors.black54),
                                 ),
                                 const SizedBox(height: 24),
                                 _buildCategoryPerformance(context, isChinese),
@@ -428,47 +426,45 @@ class _ResellAnalysisReportScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                        isChinese ? '趋势分析' : 'Trend Analysis',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.black87,
-                                              height: 1.0,
-                                            ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            isChinese ? '趋势分析' : 'Trend Analysis',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleLarge
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Colors.black87,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            isChinese
+                                                ? '转卖表现随时间的变化趋势'
+                                                : 'Resale performance over time',
+                                            style: Theme.of(context).textTheme.bodyMedium
+                                                ?.copyWith(color: const Color(0xFF6B7280)),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
                                     IconButton(
                                       onPressed: () =>
                                           _showTrendInfo(context, isChinese),
                                       icon: const Icon(
-                                        Icons.help_outline_rounded,
-                                        size: 18,
-                                        color: Color(0xFF6B7280),
+                                        Icons.info_outline_rounded,
+                                        size: 20,
+                                        color: Color(0xFF9CA3AF),
                                       ),
                                       tooltip: isChinese ? '数据说明' : 'Info',
                                       padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(
-                                        minWidth: 24,
-                                        minHeight: 24,
-                                      ),
-                                      iconSize: 18,
+                                      constraints: const BoxConstraints(),
                                     ),
                                   ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  isChinese
-                                      ? '转卖表现随时间的变化趋势'
-                                      : 'Resale performance over time',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: Colors.black54),
                                 ),
                                 const SizedBox(height: 16),
 
@@ -598,46 +594,45 @@ class _ResellAnalysisReportScreenState
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                        isChinese
-                                            ? '超过30天未售出统计'
-                                            : '30+ Days Unsold',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.black87,
-                                              height: 1.0,
-                                            ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            isChinese
+                                                ? '超过30天未售出统计'
+                                                : '30+ Days Unsold',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleLarge
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Colors.black87,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            isChinese
+                                                ? '各品类超过30天的件数'
+                                                : 'Count by category (30+ days unsold)',
+                                            style: Theme.of(context).textTheme.bodyMedium
+                                                ?.copyWith(color: const Color(0xFF6B7280)),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
                                     IconButton(
                                       onPressed: () =>
                                           _showUnsoldInfo(context, isChinese),
                                       icon: const Icon(
-                                        Icons.help_outline_rounded,
-                                        size: 18,
-                                        color: Color(0xFF6B7280),
+                                        Icons.info_outline_rounded,
+                                        size: 20,
+                                        color: Color(0xFF9CA3AF),
                                       ),
                                       tooltip: isChinese ? '数据说明' : 'Info',
                                       padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(
-                                        minWidth: 24,
-                                        minHeight: 24,
-                                      ),
-                                      iconSize: 18,
+                                      constraints: const BoxConstraints(),
                                     ),
                                   ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  isChinese
-                                      ? '各品类超过30天的件数'
-                                      : 'Count by category (30+ days unsold)',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: Colors.black54),
                                 ),
                                 const SizedBox(height: 24),
                                 _buildUnsoldItems(context, isChinese),

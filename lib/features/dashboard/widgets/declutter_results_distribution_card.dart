@@ -112,7 +112,7 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             subtitle,
             style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
