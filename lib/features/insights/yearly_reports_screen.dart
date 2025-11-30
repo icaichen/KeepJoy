@@ -1781,66 +1781,120 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   }
 
   void _showJoyInfo(BuildContext context, bool isChinese) {
+    final theme = Theme.of(context);
+    final labelStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: const Color(0xFF111827),
+      fontWeight: FontWeight.w600,
+    );
+    final descriptionStyle = theme.textTheme.bodySmall?.copyWith(
+      color: const Color(0xFF4B5563),
+      height: 1.3,
+    );
+
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(isChinese ? '心动数据说明' : 'About Joy Data'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.check_circle_outline,
-                    color: Color(0xFF5ECFB8),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      isChinese
-                          ? '仅统计快速整理中回答“是否心动”的物品，心动次数=选择心动的物品数量。'
-                          : 'Only items answered in Quick Declutter are counted. Joy Count = items you marked as bringing joy.',
-                      style: const TextStyle(
-                        color: Color(0xFF4B5563),
-                        height: 1.45,
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF3F4F6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.info_outline_rounded,
+                        color: Color(0xFF8B5CF6),
+                        size: 22,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.percent_rounded, color: Color(0xFF8B5CF6)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      isChinese
-                          ? '心动率 = 心动物品数 ÷ 快速整理已回答心动问题的总物品数。'
-                          : 'Joy Rate = Joy Count ÷ all Quick Declutter items with a joy answer.',
-                      style: const TextStyle(
-                        color: Color(0xFF4B5563),
-                        height: 1.45,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isChinese ? '数据说明' : 'Data Info',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isChinese
+                                ? '了解心动数据的统计口径'
+                                : 'See how joy data is calculated',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    IconButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      color: const Color(0xFF9CA3AF),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese ? '统计口径' : 'What\'s included',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6FB),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(isChinese ? '知道了' : 'Got it'),
+                  child: Text(
+                    isChinese
+                        ? '仅统计快速整理中回答"是否心动"的物品，心动次数=选择心动的物品数量。'
+                        : 'Only items answered in Quick Declutter are counted. Joy Count = items you marked as bringing joy.',
+                    style: descriptionStyle,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  isChinese ? '计算方法' : 'How it\'s calculated',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6FB),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    isChinese
+                        ? '心动率 = 心动物品数 ÷ 快速整理已回答心动问题的总物品数。'
+                        : 'Joy Rate = Joy Count ÷ all Quick Declutter items with a joy answer.',
+                    style: descriptionStyle,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

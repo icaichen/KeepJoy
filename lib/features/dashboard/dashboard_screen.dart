@@ -20,6 +20,7 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/planned_session.dart';
 import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
+import 'package:keepjoy_app/widgets/modern_dialog.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 
@@ -1182,25 +1183,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   direction: DismissDirection.endToStart,
                                   confirmDismiss: (direction) async {
-                                    return await showDialog<bool>(
+                                    return await ModernDialog.showConfirmation(
                                           context: context,
-                                          builder: (dialogContext) => AlertDialog(
-                                            title: Text(l10n.dashboardDeleteSessionTitle),
-                                            content: Text(l10n.dashboardDeleteSessionMessage),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.of(dialogContext).pop(false),
-                                                child: Text(l10n.cancel),
-                                              ),
-                                              FilledButton(
-                                                onPressed: () => Navigator.of(dialogContext).pop(true),
-                                                style: FilledButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                ),
-                                                child: Text(l10n.delete),
-                                              ),
-                                            ],
-                                          ),
+                                          title: l10n.dashboardDeleteSessionTitle,
+                                          content: l10n.dashboardDeleteSessionMessage,
+                                          cancelText: l10n.cancel,
+                                          confirmText: l10n.delete,
                                         ) ??
                                         false;
                                   },
@@ -2545,25 +2533,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   direction: DismissDirection.endToStart,
                                   confirmDismiss: (direction) async {
-                                    return await showDialog<bool>(
+                                    return await ModernDialog.showConfirmation(
                                           context: context,
-                                          builder: (dialogContext) => AlertDialog(
-                                            title: Text(l10n.dashboardDeleteSessionTitle),
-                                            content: Text(l10n.dashboardDeleteSessionMessage),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.of(dialogContext).pop(false),
-                                                child: Text(l10n.cancel),
-                                              ),
-                                              FilledButton(
-                                                onPressed: () => Navigator.of(dialogContext).pop(true),
-                                                style: FilledButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                ),
-                                                child: Text(l10n.delete),
-                                              ),
-                                            ],
-                                          ),
+                                          title: l10n.dashboardDeleteSessionTitle,
+                                          content: l10n.dashboardDeleteSessionMessage,
+                                          cancelText: l10n.cancel,
+                                          confirmText: l10n.delete,
                                         ) ??
                                         false;
                                   },

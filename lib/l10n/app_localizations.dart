@@ -2478,6 +2478,48 @@ abstract class AppLocalizations {
   /// **'Clear All Data'**
   String get clearAllData;
 
+  /// No description provided for @storage.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get storage;
+
+  /// No description provided for @imageCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Image Cache'**
+  String get imageCache;
+
+  /// No description provided for @clearCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache'**
+  String get clearCache;
+
+  /// No description provided for @clearCacheSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all cached images'**
+  String get clearCacheSubtitle;
+
+  /// No description provided for @clearCacheConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache?'**
+  String get clearCacheConfirmTitle;
+
+  /// No description provided for @clearCacheConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will delete all cached images. They will be re-downloaded when needed.'**
+  String get clearCacheConfirmMessage;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
   /// No description provided for @deleteAccount.
   ///
   /// In en, this message translates to:

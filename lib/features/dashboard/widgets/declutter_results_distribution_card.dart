@@ -112,7 +112,7 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             subtitle,
             style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
@@ -148,72 +148,96 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final itemWidth = (constraints.maxWidth - 2 * 8) / 3; // 3 columns
-        return Center(
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 10,
-            alignment: WrapAlignment.center,
-            children: breakdowns.map((b) {
-              final percentValue = total > 0 ? (b.count / total * 100) : 0.0;
-              final percent = percentValue >= 10
-                  ? percentValue.toStringAsFixed(0)
-                  : percentValue.toStringAsFixed(1);
-              const labelColor = Color(0xFF111827);
-              const percentColor = Color(0xFF6B7280);
-              return SizedBox(
-                width: itemWidth,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+        final itemWidth = (constraints.maxWidth - 16) / 3; // 3 columns with 8px spacing
+
+        // Build legend items
+        final items = breakdowns.map((b) {
+          final percentValue = total > 0 ? (b.count / total * 100) : 0.0;
+          final percent = percentValue >= 10
+              ? percentValue.toStringAsFixed(0)
+              : percentValue.toStringAsFixed(1);
+          return SizedBox(
+            width: itemWidth,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: b.color,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: b.color,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                          Text(
-                            b.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: labelColor,
-                              fontWeight: FontWeight.w600,
-                            ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          b.label,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF111827),
+                            height: 1.2,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '$percent%',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: percentColor,
-                            ),
-                          ),
-                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 2),
+                        Text(
+                          '$percent%',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF6B7280),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
+                ],
+              ),
+            ),
+          );
+        }).toList();
+
+        // Split into rows of 3, center the last row if it has fewer items
+        final rows = <Widget>[];
+        for (int i = 0; i < items.length; i += 3) {
+          final rowItems = items.skip(i).take(3).toList();
+          final isLastRow = i + 3 >= items.length;
+          final hasIncompleteRow = isLastRow && rowItems.length < 3;
+
+          rows.add(
+            Row(
+              mainAxisAlignment: hasIncompleteRow
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
+              children: rowItems.map((item) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    right: rowItems.last != item ? 8 : 0,
+                  ),
+                  child: item,
+                );
+              }).toList(),
+            ),
+          );
+
+          if (!isLastRow) {
+            rows.add(const SizedBox(height: 12));
+          }
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: rows,
         );
       },
     );

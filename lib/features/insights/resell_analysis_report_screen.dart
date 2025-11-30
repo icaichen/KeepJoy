@@ -357,17 +357,42 @@ class _ResellAnalysisReportScreenState
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  isChinese
-                                      ? '品类表现分析'
-                                      : 'Category Performance',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        isChinese
+                                            ? '品类表现分析'
+                                            : 'Category Performance',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.black87,
+                                              height: 1.0,
+                                            ),
                                       ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _showCategoryInfo(context, isChinese),
+                                      icon: const Icon(
+                                        Icons.help_outline_rounded,
+                                        size: 18,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                      tooltip: isChinese ? '数据说明' : 'Info',
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(
+                                        minWidth: 24,
+                                        minHeight: 24,
+                                      ),
+                                      iconSize: 18,
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -402,15 +427,40 @@ class _ResellAnalysisReportScreenState
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  isChinese ? '趋势分析' : 'Trend Analysis',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        isChinese ? '趋势分析' : 'Trend Analysis',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.black87,
+                                              height: 1.0,
+                                            ),
                                       ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _showTrendInfo(context, isChinese),
+                                      icon: const Icon(
+                                        Icons.help_outline_rounded,
+                                        size: 18,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                      tooltip: isChinese ? '数据说明' : 'Info',
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(
+                                        minWidth: 24,
+                                        minHeight: 24,
+                                      ),
+                                      iconSize: 18,
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -545,6 +595,7 @@ class _ResellAnalysisReportScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       child: Text(
@@ -557,20 +608,26 @@ class _ResellAnalysisReportScreenState
                                             ?.copyWith(
                                               fontWeight: FontWeight.w700,
                                               color: Colors.black87,
+                                              height: 1.0,
                                             ),
                                       ),
                                     ),
+                                    const SizedBox(width: 4),
                                     IconButton(
                                       onPressed: () =>
                                           _showUnsoldInfo(context, isChinese),
                                       icon: const Icon(
                                         Icons.help_outline_rounded,
-                                        size: 20,
+                                        size: 18,
                                         color: Color(0xFF6B7280),
                                       ),
                                       tooltip: isChinese ? '数据说明' : 'Info',
                                       padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 24,
+                                        minHeight: 24,
+                                      ),
+                                      iconSize: 18,
                                     ),
                                   ],
                                 ),
@@ -1300,6 +1357,352 @@ class _ResellAnalysisReportScreenState
                     isChinese
                         ? '尝试适度调价、更新描述或更换转售渠道，帮助这些物品更快售出。'
                         : 'Try a small price tweak, refresh the listing, or switch channels to help these items sell faster.',
+                    style: descriptionStyle?.copyWith(
+                      color: const Color(0xFF8A6D1F),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF111827),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: Text(isChinese ? '知道了' : 'Got it'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCategoryInfo(BuildContext context, bool isChinese) {
+    final theme = Theme.of(context);
+    final labelStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: const Color(0xFF111827),
+      fontWeight: FontWeight.w600,
+    );
+    final descriptionStyle = theme.textTheme.bodySmall?.copyWith(
+      color: const Color(0xFF4B5563),
+      height: 1.3,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF3F4F6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.info_outline_rounded,
+                        color: Color(0xFF8B5CF6),
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isChinese ? '数据说明' : 'Data Info',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isChinese
+                                ? '了解品类表现分析的统计口径'
+                                : 'See what category performance includes',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      color: const Color(0xFF9CA3AF),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese ? '统计口径' : 'What\'s included',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6FB),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    isChinese
+                        ? '展示各品类的关键表现指标，帮助你了解哪些品类转卖效果最好。'
+                        : 'Shows key performance metrics for each category to identify which categories perform best for resale.',
+                    style: descriptionStyle,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  isChinese ? '指标说明' : 'Metrics explained',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6FB),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '• 成交金额：该品类已售出物品的总价值' : '• Revenue: Total value of sold items in this category',
+                        style: descriptionStyle,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        isChinese ? '• 成交率：已售出物品数 ÷ 总物品数 × 100%' : '• Sold Rate: (Sold items ÷ Total items) × 100%',
+                        style: descriptionStyle,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        isChinese ? '• 平均售出天数：从整理到售出的平均时长' : '• Avg Days to Sell: Average time from declutter to sold',
+                        style: descriptionStyle,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  isChinese ? '优化建议' : 'Tips',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF7E5),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFFFD93D).withValues(alpha: 0.35),
+                    ),
+                  ),
+                  child: Text(
+                    isChinese
+                        ? '专注于表现好的品类，考虑优先整理类似物品以提升整体转卖收益。'
+                        : 'Focus on high-performing categories and consider prioritizing similar items to maximize resale returns.',
+                    style: descriptionStyle?.copyWith(
+                      color: const Color(0xFF8A6D1F),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF111827),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: Text(isChinese ? '知道了' : 'Got it'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showTrendInfo(BuildContext context, bool isChinese) {
+    final theme = Theme.of(context);
+    final labelStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: const Color(0xFF111827),
+      fontWeight: FontWeight.w600,
+    );
+    final descriptionStyle = theme.textTheme.bodySmall?.copyWith(
+      color: const Color(0xFF4B5563),
+      height: 1.3,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF3F4F6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.info_outline_rounded,
+                        color: Color(0xFF8B5CF6),
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isChinese ? '数据说明' : 'Data Info',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isChinese
+                                ? '了解趋势分析的统计口径'
+                                : 'See what trend analysis includes',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      color: const Color(0xFF9CA3AF),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isChinese ? '统计口径' : 'What\'s included',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6FB),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    isChinese
+                        ? '显示转卖表现随时间的变化趋势，可切换不同指标查看。'
+                        : 'Shows how your resale performance changes over time. Switch between different metrics to view trends.',
+                    style: descriptionStyle,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  isChinese ? '指标说明' : 'Metrics explained',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6FB),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '• 物品数量：每月新增的转卖物品总数' : '• Item Count: Total number of new resale items added each month',
+                        style: descriptionStyle,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        isChinese ? '• 收入：每月已售出物品的总收入' : '• Revenue: Total income from sold items each month',
+                        style: descriptionStyle,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        isChinese ? '• 成交率：每月售出物品数 ÷ 总物品数 × 100%' : '• Sold Rate: (Monthly sold items ÷ Total items) × 100%',
+                        style: descriptionStyle,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  isChinese ? '优化建议' : 'Tips',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF7E5),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFFFD93D).withValues(alpha: 0.35),
+                    ),
+                  ),
+                  child: Text(
+                    isChinese
+                        ? '留意趋势变化，在表现下滑时及时调整策略，保持稳定的转卖效果。'
+                        : 'Monitor trends and adjust your strategy when performance dips to maintain consistent resale results.',
                     style: descriptionStyle?.copyWith(
                       color: const Color(0xFF8A6D1F),
                     ),

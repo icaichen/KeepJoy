@@ -1262,6 +1262,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clearAllData => '清除所有数据';
 
   @override
+  String get storage => '储存空间';
+
+  @override
+  String get imageCache => '图片缓存';
+
+  @override
+  String get clearCache => '清空缓存';
+
+  @override
+  String get clearCacheSubtitle => '删除所有缓存图片';
+
+  @override
+  String get clearCacheConfirmTitle => '确定清空缓存？';
+
+  @override
+  String get clearCacheConfirmMessage => '这将删除所有缓存图片。需要时会重新下载。';
+
+  @override
+  String get clear => '清空';
+
+  @override
   String get deleteAccount => '删除账号';
 
   @override

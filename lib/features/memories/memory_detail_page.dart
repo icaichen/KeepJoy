@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/widgets/smart_image_widget.dart';
+import 'package:keepjoy_app/widgets/modern_dialog.dart';
 
 /// Memory detail page with photo viewer
 class MemoryDetailPage extends StatefulWidget {
@@ -186,36 +187,28 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
     );
   }
 
-  void _showDeleteDialog() {
+  void _showDeleteDialog() async {
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
+    final confirmed = await ModernDialog.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.memoryDeleteMemory),
-        content: Text(l10n.memoryDeleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              widget.onMemoryDeleted?.call(_currentMemory);
-              Navigator.of(context).pop();
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.memoryDeleted),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: l10n.memoryDeleteMemory,
+      content: l10n.memoryDeleteConfirm,
+      cancelText: 'Cancel',
+      confirmText: 'Delete',
     );
+
+    if (confirmed == true) {
+      if (!mounted) return;
+      widget.onMemoryDeleted?.call(_currentMemory);
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.memoryDeleted),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _shareMemory() {

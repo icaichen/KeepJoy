@@ -6,6 +6,7 @@ import '../../models/deep_cleaning_session.dart';
 import '../dashboard/widgets/cleaning_area_legend.dart';
 import '../../widgets/auto_scale_text.dart';
 import '../../widgets/smart_image_widget.dart';
+import '../../widgets/modern_dialog.dart';
 
 class DeepCleaningAnalysisCard extends StatefulWidget {
   final List<DeepCleaningSession> sessions;
@@ -550,25 +551,12 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
-        return await showDialog<bool>(
+        return await ModernDialog.showConfirmation(
               context: context,
-              builder: (dialogContext) => AlertDialog(
-                title: Text(l10n.dashboardDeleteSessionTitle),
-                content: Text(l10n.dashboardDeleteSessionMessage),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(false),
-                    child: Text(l10n.cancel),
-                  ),
-                  FilledButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: Text(l10n.delete),
-                  ),
-                ],
-              ),
+              title: l10n.dashboardDeleteSessionTitle,
+              content: l10n.dashboardDeleteSessionMessage,
+              cancelText: l10n.cancel,
+              confirmText: l10n.delete,
             ) ??
             false;
       },

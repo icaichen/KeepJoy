@@ -19,6 +19,7 @@ import '../../models/declutter_item.dart';
 import '../../providers/subscription_provider.dart';
 import '../../ui/paywall/paywall_page.dart';
 import '../../widgets/smart_image_widget.dart';
+import '../../widgets/modern_dialog.dart';
 import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -362,122 +363,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 32),
 
-            // Storage Section
-            _buildSectionTitle(context, 'Storage'),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Cache info tile
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.storage,
-                            color: Color(0xFF8B5CF6),
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Image Cache',
-                                style: TextStyle(
-                                  fontFamily: 'SF Pro Display',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF111827),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '$_cacheSize • $_cachedFiles files',
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1, indent: 20, endIndent: 20),
-                  // Clear cache button
-                  _SettingsTile(
-                    icon: Icons.delete_outline,
-                    iconColor: Colors.red,
-                    title: 'Clear Cache',
-                    subtitle: 'Remove all cached images',
-                    onTap: _isClearing ? null : () async {
-                      // Show confirmation dialog
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Clear Cache?'),
-                          content: const Text(
-                            'This will delete all cached images. They will be re-downloaded when needed.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.red,
-                              ),
-                              child: const Text('Clear'),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (confirm == true) {
-                        await _clearCache();
-                      }
-                    },
-                    trailing: _isClearing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : null,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
             // Premium Section
             _buildSectionTitle(context, l10n.premiumMembership),
             const SizedBox(height: 12),
@@ -578,6 +463,99 @@ class _ProfilePageState extends State<ProfilePage> {
                     onTap: () {
                       AppFeedbackService.shareApp();
                     },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Storage Section
+            _buildSectionTitle(context, l10n.storage),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Cache info tile
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.storage,
+                          size: 24,
+                          color: Color(0xFF6B7280),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.imageCache,
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '$_cacheSize • $_cachedFiles files',
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+                  // Clear cache button
+                  _SettingsTile(
+                    icon: Icons.delete_outline,
+                    iconColor: Colors.red,
+                    title: l10n.clearCache,
+                    subtitle: l10n.clearCacheSubtitle,
+                    onTap: _isClearing ? null : () async {
+                      // Show confirmation dialog
+                      final confirm = await ModernDialog.showConfirmation(
+                        context: context,
+                        title: l10n.clearCacheConfirmTitle,
+                        content: l10n.clearCacheConfirmMessage,
+                        cancelText: l10n.cancel,
+                        confirmText: l10n.clear,
+                      );
+
+                      if (confirm == true) {
+                        await _clearCache();
+                      }
+                    },
+                    trailing: _isClearing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : null,
                   ),
                 ],
               ),

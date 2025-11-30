@@ -1307,6 +1307,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearAllData => 'Clear All Data';
 
   @override
+  String get storage => 'Storage';
+
+  @override
+  String get imageCache => 'Image Cache';
+
+  @override
+  String get clearCache => 'Clear Cache';
+
+  @override
+  String get clearCacheSubtitle => 'Remove all cached images';
+
+  @override
+  String get clearCacheConfirmTitle => 'Clear Cache?';
+
+  @override
+  String get clearCacheConfirmMessage =>
+      'This will delete all cached images. They will be re-downloaded when needed.';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
   String get deleteAccount => 'Delete Account';
 
   @override
