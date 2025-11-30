@@ -30,6 +30,8 @@
 	<string>This app needs access to your camera to capture declutter photos. 本应用需要使用相机拍摄整理相关照片。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to select or save declutter photos. 本应用需要访问照片库以选择或保存整理照片。</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
