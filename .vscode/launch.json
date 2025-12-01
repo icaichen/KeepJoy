@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "KeepJoy (China)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_china.dart",
+      "args": [
+        "--flavor",
+        "china"
+      ]
+    },
+    {
+      "name": "KeepJoy (Global)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_global.dart",
+      "args": [
+        "--flavor",
+        "global"
+      ]
+    },
+    {
+      "name": "KeepJoy (Default)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart"
+    }
+  ]
+}

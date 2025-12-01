@@ -22,13 +22,27 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.keepjoy_app"
+        applicationId = "com.keepjoy.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 30
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    flavorDimensions += "market"
+    productFlavors {
+        create("china") {
+            dimension = "market"
+            applicationIdSuffix = ".china"
+            versionNameSuffix = "-china"
+            resValue("string", "app_name", "KeepJoy")
+        }
+        create("global") {
+            dimension = "market"
+            resValue("string", "app_name", "KeepJoy")
+        }
     }
 
     buildTypes {
