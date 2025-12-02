@@ -7,6 +7,7 @@ import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/widgets/create_memory_prompt_sheet.dart';
 import 'package:keepjoy_app/widgets/smart_image_widget.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
+import 'package:keepjoy_app/widgets/modern_dialog.dart';
 
 class ItemsScreen extends StatefulWidget {
   const ItemsScreen({
@@ -1139,43 +1140,15 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                             ),
                           ),
                           confirmDismiss: (direction) async {
-                            return await showDialog<bool>(
+                            final l10n = AppLocalizations.of(context)!;
+                            return await ModernDialog.showConfirmation(
                                   context: context,
-                                  builder: (dialogContext) => AlertDialog(
-                                    title: Text(
-                                      widget.isChinese
-                                          ? '删除物品'
-                                          : 'Delete Item',
-                                    ),
-                                    content: Text(
-                                      widget.isChinese
-                                          ? '确定要删除这个物品吗？'
-                                          : 'Are you sure you want to delete this item?',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.of(
-                                          dialogContext,
-                                        ).pop(false),
-                                        child: Text(
-                                          widget.isChinese ? '取消' : 'Cancel',
-                                        ),
-                                      ),
-                                      FilledButton(
-                                        onPressed: () => Navigator.of(
-                                          dialogContext,
-                                        ).pop(true),
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFFEF4444,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          widget.isChinese ? '删除' : 'Delete',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                  title: widget.isChinese ? '删除物品' : 'Delete Item',
+                                  content: widget.isChinese
+                                      ? '确定要删除这个物品吗？'
+                                      : 'Are you sure you want to delete this item?',
+                                  cancelText: l10n.cancel,
+                                  confirmText: l10n.delete,
                                 ) ??
                                 false;
                           },

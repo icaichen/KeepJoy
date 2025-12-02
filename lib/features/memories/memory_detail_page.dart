@@ -52,41 +52,13 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_horiz, color: Color(0xFF1C1C1E)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+          IconButton(
+            icon: const Icon(
+              Icons.delete_outline,
+              color: Color(0xFFEF4444),
+              size: 24,
             ),
-            onSelected: (value) {
-              switch (value) {
-                case 'delete':
-                  _showDeleteDialog();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.delete_outline,
-                      color: Colors.red,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      l10n.memoryDeleteMemory,
-                      style: const TextStyle(
-                        fontFamily: 'SF Pro Text',
-                        fontSize: 15,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            onPressed: _showDeleteDialog,
           ),
         ],
       ),
@@ -193,8 +165,8 @@ class _MemoryDetailPageState extends State<MemoryDetailPage> {
       context: context,
       title: l10n.memoryDeleteMemory,
       content: l10n.memoryDeleteConfirm,
-      cancelText: 'Cancel',
-      confirmText: 'Delete',
+      cancelText: l10n.cancel,
+      confirmText: l10n.delete,
     );
 
     if (confirmed == true) {
