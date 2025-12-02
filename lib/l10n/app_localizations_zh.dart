@@ -397,7 +397,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickSweep => '快速\n清扫';
 
   @override
-  String get joyDeclutter => '心动整理';
+  String get joyDeclutter => '轻盈整理';
 
   @override
   String get quickDeclutterTitle => '快速整理';
@@ -492,7 +492,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get categoryBeauty => '美妆用品';
 
   @override
-  String get joyDeclutterTitle => '喜悦整理';
+  String get joyDeclutterTitle => '轻盈整理';
 
   @override
   String get joyDeclutterSubtitle => '开始引导流程';
@@ -779,7 +779,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get letGoItem => '不，放手';
 
   @override
-  String get itemKept => '已保留物品！喜悦整理完成。';
+  String get itemKept => '已保留物品！轻盈整理完成。';
 
   @override
   String get selectLetGoRoute => '您希望如何处理这件物品？';
@@ -797,7 +797,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get routeRecycleDescription => '让材料获得新生';
 
   @override
-  String get joyDeclutterComplete => '喜悦整理完成！';
+  String get joyDeclutterComplete => '轻盈整理完成！';
 
   @override
   String get itemLetGo => '您已选择放手这件物品。';
@@ -1065,7 +1065,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reminderPendingTask1 => '还有整理计划未完成，安排一个时间继续吧。';
 
   @override
-  String get reminderPendingTask2 => '目标还在等你，抽空续上心动整理旅程。';
+  String get reminderPendingTask2 => '目标还在等你，抽空续上轻盈整理旅程。';
 
   @override
   String get reminderActiveSessionTitle => '大扫除仍在进行';
@@ -1101,7 +1101,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get paywallTitle => 'KeepJoy 高级版';
 
   @override
-  String get paywallDescription => '选择一个订阅方案，解锁完整的心动整理工具。';
+  String get paywallDescription => '选择一个订阅方案，解锁完整的轻盈整理工具。';
 
   @override
   String get paywallLoading => '正在加载订阅方案...';
