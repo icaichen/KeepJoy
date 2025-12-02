@@ -44,12 +44,12 @@ class SubscriptionProvider with ChangeNotifier {
 
       _isLoading = false;
       if (_currentOffering == null) {
-        _errorMessage = 'No offerings available. Check RevenueCat dashboard configuration.';
+        _errorMessage = 'Unable to load subscription options. Please check your internet connection and try again.';
       }
       notifyListeners();
     } catch (e) {
       _isLoading = false;
-      _errorMessage = 'Error fetching offerings: $e';
+      _errorMessage = 'Unable to load subscription options. Please try again later.';
       print('Error fetching offerings: $e');
       notifyListeners();
     }

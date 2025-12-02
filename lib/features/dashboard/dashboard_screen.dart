@@ -1897,7 +1897,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         )
         .length;
     final soldItems = widget.resellItems.where(
-      (item) => item.soldPrice != null,
+      (item) =>
+          item.soldPrice != null &&
+          item.soldDate != null &&
+          !item.soldDate!.isBefore(monthStart) &&
+          item.soldDate!.isBefore(nextMonthStart),
     );
     final totalValue = soldItems.isEmpty
         ? 0.0
@@ -2815,7 +2819,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: _buildMetricCard(
                                 icon: Icons.inventory_2_rounded,
                                 iconColor: const Color(0xFF5ECFB8),
-                                value: widget.declutteredItems.length.toString(),
+                                value: widget.declutteredItems
+                                    .where(
+                                      (item) =>
+                                          !item.createdAt.isBefore(monthStart) &&
+                                          item.createdAt.isBefore(nextMonthStart),
+                                    )
+                                    .length
+                                    .toString(),
                                 label: l10n.dashboardDeclutteredLabel,
                               ),
                             ),
@@ -2843,7 +2854,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                   child: DeclutterResultsDistributionCard(
-                    items: widget.declutteredItems,
+                    items: widget.declutteredItems.where(
+                      (item) =>
+                          !item.createdAt.isBefore(monthStart) &&
+                          item.createdAt.isBefore(nextMonthStart),
+                    ).toList(),
                     title: l10n.dashboardLettingGoDetailsTitle,
                     subtitle: l10n.dashboardLettingGoDetailsSubtitle,
                     keptLabel: l10n.dashboardKeptLabel,

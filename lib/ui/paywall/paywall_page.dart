@@ -923,10 +923,22 @@ class _PaywallPageState extends State<PaywallPage> {
                   children: [
                     if (provider.errorMessage != null) ...[
                       // Error state
-                      const Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: Color(0xFFEF4444),
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF8B5CF6), Color(0xFF6FEDD6)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.cloud_off_rounded,
+                          size: 48,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       const Text(
@@ -940,38 +952,65 @@ class _PaywallPageState extends State<PaywallPage> {
                       ),
                       const SizedBox(height: 16),
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFECACA)),
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
                         ),
                         child: Text(
                           provider.errorMessage!,
                           style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF991B1B),
-                            fontFamily: 'Courier',
+                            fontSize: 15,
+                            color: Color(0xFF6B7280),
+                            height: 1.5,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          provider.refreshOfferings();
-                        },
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Retry'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B5CF6),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            provider.refreshOfferings();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                            elevation: 0,
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF8B5CF6), Color(0xFF6FEDD6)],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                            child: Container(
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.refresh_rounded, size: 22),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Try Again',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
