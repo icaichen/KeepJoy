@@ -149,7 +149,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                   icon: Icons.location_on_rounded,
                   color: const Color(0xFF89CFF0),
                   value: '$areasCleared',
-                  label: l10n.dashboardAreasClearedLabel,
+                  label: l10n.dashboardAreasClearedLabel.replaceFirst('Cleared', 'Cleaned'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -876,31 +876,46 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     required String label,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(height: 10),
           AutoScaleText(
             value,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.black87,
-              fontSize: 22,
+              fontSize: 20,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           AutoScaleText(
             label,
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              color: const Color(0xFF6B7280),
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
           ),

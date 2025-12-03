@@ -1794,82 +1794,108 @@ class _EmotionPieChartPainter extends CustomPainter {
     final radius = math.min(size.width, size.height) / 2;
 
     if (!hasData) {
-      // Draw gray circle when no data
       final grayPaint = Paint()
         ..color = const Color(0xFFE5E7EB)
         ..style = PaintingStyle.fill;
-
       canvas.drawCircle(center, radius, grayPaint);
-    } else {
-      double startAngle = -math.pi / 2; // Start from top
+      return;
+    }
 
-      final rect = Rect.fromCircle(center: center, radius: radius);
-      final separatorPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5;
+    // Shadow for slices
+    final sliceShadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.08)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
-      for (final emotion in emotions) {
-        final sentiment = emotion['sentiment'] as MemorySentiment;
-        final count = sentimentCounts[sentiment] ?? 0;
-        final color = emotion['color'] as Color;
+    // Prepare data
+    final maxCount = sentimentCounts.values.isEmpty
+        ? 0
+        : sentimentCounts.values.reduce((a, b) => a > b ? a : b);
+    double startAngle = -math.pi / 2;
+    const baseGapAngle = 0.03; // ~1.7°
 
-        if (count == 0) continue;
+    for (final emotion in emotions) {
+      final sentiment = emotion['sentiment'] as MemorySentiment;
+      final count = sentimentCounts[sentiment] ?? 0;
+      final color = emotion['color'] as Color;
+      if (count <= 0) continue;
 
-        final sweepAngle = (count / totalCount) * 2 * math.pi;
-
-        final paint = Paint()
-          ..color = color
-          ..style = PaintingStyle.fill;
-
-        canvas.drawArc(
-          rect,
-          startAngle,
-          sweepAngle,
-          true,
-          paint,
-        );
-
-        // Separator line for better contrast
-        canvas.drawArc(
-          rect,
-          startAngle,
-          sweepAngle,
-          true,
-          separatorPaint,
-        );
-
-        // Label count inside slice
-        final midAngle = startAngle + sweepAngle / 2;
-        final labelRadius = radius * 0.6;
-        final labelOffset = Offset(
-          center.dx + labelRadius * math.cos(midAngle),
-          center.dy + labelRadius * math.sin(midAngle),
-        );
-        final labelColor = Color.lerp(color, Colors.black, 0.25) ??
-            color.withOpacity(0.9);
-        final textPainter = TextPainter(
-          text: TextSpan(
-            text: '$count',
-            style: TextStyle(
-              color: labelColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-        );
-        textPainter.layout();
-        textPainter.paint(
-          canvas,
-          Offset(
-            labelOffset.dx - textPainter.width / 2,
-            labelOffset.dy - textPainter.height / 2,
-          ),
-        );
-
+      final sweepAngle = (count / totalCount) * 2 * math.pi;
+      if (sweepAngle <= baseGapAngle) {
         startAngle += sweepAngle;
+        continue;
       }
+
+      final midAngle = startAngle + sweepAngle / 2;
+      // Explode distance proportional to slice size
+      final explodeFactor = (count / totalCount).clamp(0.0, 1.0);
+      final explodeDist = radius * (0.018 + 0.03 * explodeFactor);
+      final dx = explodeDist * math.cos(midAngle);
+      final dy = explodeDist * math.sin(midAngle);
+
+      // Slight scale for largest slice
+      final scale = maxCount > 0
+          ? (0.94 + 0.08 * (count / maxCount))
+          : 1.0;
+      final sliceRadius = radius * scale;
+      final sliceRect = Rect.fromCircle(center: center, radius: sliceRadius);
+
+      final gapAngle = baseGapAngle;
+      final effectiveStart = startAngle + gapAngle / 2;
+      final effectiveSweep = sweepAngle - gapAngle;
+
+      canvas.save();
+      canvas.translate(dx, dy);
+
+      canvas.drawArc(
+        sliceRect,
+        effectiveStart,
+        effectiveSweep,
+        true,
+        sliceShadowPaint,
+      );
+
+      final paint = Paint()
+        ..color = color
+        ..style = PaintingStyle.fill;
+      canvas.drawArc(
+        sliceRect,
+        effectiveStart,
+        effectiveSweep,
+        true,
+        paint,
+      );
+
+      // Percentage inside slice
+      final percent = ((count / totalCount) * 100)
+          .toStringAsFixed(((count / totalCount) * 100) >= 10 ? 0 : 1);
+      final innerRadius = sliceRadius * 0.58;
+      final innerOffset = Offset(
+        center.dx + innerRadius * math.cos(midAngle),
+        center.dy + innerRadius * math.sin(midAngle),
+      );
+      final innerTextPainter = TextPainter(
+        text: TextSpan(
+          text: '$percent%',
+          style: TextStyle(
+            color: Color.lerp(color, Colors.black, 0.35) ??
+                color.withOpacity(0.9),
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      innerTextPainter.layout();
+      innerTextPainter.paint(
+        canvas,
+        Offset(
+          innerOffset.dx - innerTextPainter.width / 2,
+          innerOffset.dy - innerTextPainter.height / 2,
+        ),
+      );
+
+      canvas.restore();
+      startAngle += sweepAngle;
     }
   }
 

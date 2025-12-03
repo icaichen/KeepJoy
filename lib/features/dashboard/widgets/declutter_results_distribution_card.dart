@@ -131,117 +131,11 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          _buildOutcomeLegend(
-            breakdowns: breakdowns,
-            total: total,
-            theme: theme,
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildOutcomeLegend({
-    required List<_OutcomeBreakdown> breakdowns,
-    required int total,
-    required ThemeData theme,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final itemWidth = (constraints.maxWidth - 16) / 3; // 3 columns with 8px spacing
-
-        // Build legend items
-        final items = breakdowns.map((b) {
-          final percentValue = total > 0 ? (b.count / total * 100) : 0.0;
-          final percent = percentValue >= 10
-              ? percentValue.toStringAsFixed(0)
-              : percentValue.toStringAsFixed(1);
-          return SizedBox(
-            width: itemWidth,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: b.color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          b.label,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF111827),
-                            height: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '$percent%',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF6B7280),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList();
-
-        // Split into rows of 3, center the last row if it has fewer items
-        final rows = <Widget>[];
-        for (int i = 0; i < items.length; i += 3) {
-          final rowItems = items.skip(i).take(3).toList();
-          final isLastRow = i + 3 >= items.length;
-          final hasIncompleteRow = isLastRow && rowItems.length < 3;
-
-          rows.add(
-            Row(
-              mainAxisAlignment: hasIncompleteRow
-                  ? MainAxisAlignment.center
-                  : MainAxisAlignment.start,
-              children: rowItems.map((item) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    right: rowItems.last != item ? 8 : 0,
-                  ),
-                  child: item,
-                );
-              }).toList(),
-            ),
-          );
-
-          if (!isLastRow) {
-            rows.add(const SizedBox(height: 12));
-          }
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: rows,
-        );
-      },
-    );
-  }
 }
 
 class _OutcomeBreakdown {
@@ -275,56 +169,124 @@ class _OutcomePiePainter extends CustomPainter {
       return;
     }
 
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final separatorPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
+    // Shadow for slices (drawn per-slice)
+    final sliceShadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.08)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
     double startAngle = -math.pi / 2;
+    const baseGapAngle = 0.03; // base gap (~1.7°) between slices
+    final maxCount = slices.isEmpty
+        ? 0
+        : slices.map((s) => s.count).reduce((a, b) => a > b ? a : b);
+
     for (final slice in slices) {
       if (slice.count <= 0) continue;
       final sweepAngle = (slice.count / total) * math.pi * 2;
-      if (sweepAngle <= 0) continue;
+      if (sweepAngle <= baseGapAngle) {
+        startAngle += sweepAngle;
+        continue;
+      }
 
       final paint = Paint()
         ..color = slice.color
         ..style = PaintingStyle.fill;
 
-      canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
-      canvas.drawArc(rect, startAngle, sweepAngle, true, separatorPaint);
-
-      // Count label inside slice
       final midAngle = startAngle + sweepAngle / 2;
-      final labelRadius = radius * 0.6;
-      final labelOffset = Offset(
-        center.dx + labelRadius * math.cos(midAngle),
-        center.dy + labelRadius * math.sin(midAngle),
+      // Explode slices outward; larger slices move farther (but capped)
+      final explodeFactor = (slice.count / total).clamp(0.0, 1.0);
+      final explodeDist = radius * (0.018 + 0.03 * explodeFactor);
+      final dx = explodeDist * math.cos(midAngle);
+      final dy = explodeDist * math.sin(midAngle);
+
+      // Apply consistent angular gap and scale largest slice
+      final gapAngle = baseGapAngle;
+      final effectiveStart = startAngle + gapAngle / 2;
+      final effectiveSweep = sweepAngle - gapAngle;
+      final scale = maxCount > 0
+          ? (0.94 + 0.08 * (slice.count / maxCount))
+          : 1.0;
+      final sliceRect = Rect.fromCircle(center: center, radius: radius * scale);
+
+      canvas.save();
+      canvas.translate(dx, dy);
+
+      // Shadow under each slice
+      canvas.drawArc(
+        sliceRect,
+        effectiveStart,
+        effectiveSweep,
+        true,
+        sliceShadowPaint,
       );
-      final labelColor =
-          Color.lerp(slice.color, Colors.black, 0.3) ?? Colors.black87;
-      final textPainter = TextPainter(
+
+      canvas.drawArc(
+        sliceRect,
+        effectiveStart,
+        effectiveSweep,
+        true,
+        paint,
+      );
+      // Percentage inside slice, tinted darker version of the slice color
+      final percent = ((slice.count / total) * 100)
+          .toStringAsFixed(((slice.count / total) * 100) >= 10 ? 0 : 1);
+      final innerRadius = (radius * scale) * 0.58;
+      final innerOffset = Offset(
+        center.dx + innerRadius * math.cos(midAngle),
+        center.dy + innerRadius * math.sin(midAngle),
+      );
+      final innerTextPainter = TextPainter(
         text: TextSpan(
-          text: '${slice.count}',
+          text: '$percent%',
           style: TextStyle(
-            color: labelColor,
+            color: Color.lerp(slice.color, Colors.black, 0.35) ??
+                slice.color.withValues(alpha: 0.9),
             fontSize: 14,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
           ),
         ),
         textDirection: TextDirection.ltr,
       );
-      textPainter.layout();
-      textPainter.paint(
+      innerTextPainter.layout();
+      innerTextPainter.paint(
         canvas,
         Offset(
-          labelOffset.dx - textPainter.width / 2,
-          labelOffset.dy - textPainter.height / 2,
+          innerOffset.dx - innerTextPainter.width / 2,
+          innerOffset.dy - innerTextPainter.height / 2,
         ),
       );
 
+      // Outside label using slice label
+      final labelRadius = radius * scale * 1.05;
+      final labelOffset = Offset(
+        center.dx + labelRadius * math.cos(midAngle),
+        center.dy + labelRadius * math.sin(midAngle),
+      );
+      final labelPainter = TextPainter(
+        text: TextSpan(
+          text: slice.label,
+          style: TextStyle(
+            color: Color.lerp(slice.color, Colors.black, 0.35) ??
+                slice.color.withValues(alpha: 0.85),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      labelPainter.layout(maxWidth: radius);
+      final isRight = math.cos(midAngle) >= 0;
+      final labelPos = Offset(
+        labelOffset.dx - (isRight ? 0 : labelPainter.width),
+        labelOffset.dy - labelPainter.height / 2,
+      );
+      labelPainter.paint(canvas, labelPos);
+
+      canvas.restore();
+
       startAngle += sweepAngle;
     }
+
   }
 
   @override
