@@ -41,6 +41,9 @@ class _ProfilePageState extends State<ProfilePage> {
   int _cachedFiles = 0;
   bool _isClearing = false;
 
+  // Subscription management
+  bool _isOpeningSubscription = false;
+
   String get _userEmail =>
       _authService.currentUser?.email ?? 'user@example.com';
 
@@ -1218,6 +1221,274 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void _showPremiumStatusSheet(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isInTrial,
+    DateTime? expirationDate,
+  ) {
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE5E7EB),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Premium icon with gradient
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF5ECFB8), Color(0xFFB794F6)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF5ECFB8).withValues(alpha: 0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium_rounded,
+                      size: 42,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Status title
+                  Text(
+                    isInTrial ? l10n.trialActive : l10n.premiumActive,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Plan details
+                  Text(
+                    l10n.yourPlanDetails,
+                    style: const TextStyle(
+                      fontFamily: 'SF Pro Text',
+                      fontSize: 16,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Subscription details card
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                    ),
+                    child: Column(
+                      children: [
+                        // Plan type
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isChinese ? '订阅类型' : 'Plan Type',
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Text',
+                                fontSize: 15,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                            Text(
+                              isInTrial
+                                  ? (isChinese ? '7天免费试用' : '7-Day Free Trial')
+                                  : (isChinese ? '高级会员' : 'Premium'),
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Text',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF111827),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (expirationDate != null) ...[
+                          const SizedBox(height: 16),
+                          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                          const SizedBox(height: 16),
+                          // Expiration/Renewal date
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                isInTrial
+                                    ? (isChinese ? '试用期到期' : 'Trial Expires')
+                                    : (isChinese ? '下次续订' : 'Next Renewal'),
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 15,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                              Text(
+                                dateFormat.format(expirationDate),
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                        const SizedBox(height: 16),
+                        // Status
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isChinese ? '状态' : 'Status',
+                              style: const TextStyle(
+                                fontFamily: 'SF Pro Text',
+                                fontSize: 15,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                isChinese ? '已激活' : 'Active',
+                                style: const TextStyle(
+                                  fontFamily: 'SF Pro Text',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF10B981),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Manage subscription button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: OutlinedButton(
+                      onPressed: _isOpeningSubscription
+                          ? null
+                          : () async {
+                              if (_isOpeningSubscription) return;
+
+                              setState(() {
+                                _isOpeningSubscription = true;
+                              });
+
+                              Navigator.pop(sheetContext);
+
+                              // Open App Store subscription management
+                              // This opens the native iOS subscription management page
+                              try {
+                                await launchUrl(
+                                  Uri.parse('https://apps.apple.com/account/subscriptions'),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              } finally {
+                                // Reset after a delay to prevent rapid clicking
+                                await Future.delayed(const Duration(seconds: 2));
+                                if (mounted) {
+                                  setState(() {
+                                    _isOpeningSubscription = false;
+                                  });
+                                }
+                              }
+                            },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFE5E7EB)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        l10n.manageSubscription,
+                        style: const TextStyle(
+                          fontFamily: 'SF Pro Text',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Close button
+                  TextButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    child: Text(
+                      isChinese ? '关闭' : 'Close',
+                      style: const TextStyle(
+                        fontFamily: 'SF Pro Text',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildPremiumActiveCard(
     BuildContext context,
     AppLocalizations l10n,
@@ -1226,18 +1497,20 @@ class _ProfilePageState extends State<ProfilePage> {
   ) {
     final dateFormat = DateFormat('MMM dd, yyyy');
     String statusText = isInTrial ? l10n.trialActive : l10n.premiumActive;
-    String expiryText = expirationDate != null
-        ? l10n.renewsOn(dateFormat.format(expirationDate))
-        : '';
+    // Use different text for trial vs paid subscription
+    String expiryText = '';
+    if (expirationDate != null) {
+      if (isInTrial) {
+        expiryText = l10n.trialExpiresOn(dateFormat.format(expirationDate));
+      } else {
+        expiryText = l10n.renewsOn(dateFormat.format(expirationDate));
+      }
+    }
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          CupertinoPageRoute(
-            builder: (_) => const PaywallPage(),
-            fullscreenDialog: true,
-          ),
-        );
+        // Show premium status bottom sheet instead of paywall
+        _showPremiumStatusSheet(context, l10n, isInTrial, expirationDate);
       },
       child: Container(
         decoration: BoxDecoration(

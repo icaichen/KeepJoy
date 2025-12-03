@@ -559,6 +559,17 @@
       }
     }
   },
+  "trialExpiresOn": "Trial expires on {date}",
+  "@trialExpiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "manageSubscription": "Manage Subscription",
+  "subscriptionStatus": "Subscription Status",
+  "yourPlanDetails": "Your plan details",
   "featureMemoriesPage": "Memories Page",
   "featureMemoriesPageDesc": "Create and cherish memories of items you let go",
   "featureMemoryLane": "Annual Memory",

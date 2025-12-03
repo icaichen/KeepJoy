@@ -2298,6 +2298,30 @@ abstract class AppLocalizations {
   /// **'Renews on {date}'**
   String renewsOn(String date);
 
+  /// No description provided for @trialExpiresOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial expires on {date}'**
+  String trialExpiresOn(String date);
+
+  /// No description provided for @manageSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Subscription'**
+  String get manageSubscription;
+
+  /// No description provided for @subscriptionStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription Status'**
+  String get subscriptionStatus;
+
+  /// No description provided for @yourPlanDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan details'**
+  String get yourPlanDetails;
+
   /// No description provided for @featureMemoriesPage.
   ///
   /// In en, this message translates to:

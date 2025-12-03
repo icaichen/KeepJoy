@@ -829,31 +829,143 @@ class _MainNavigatorState extends State<MainNavigator>
       message = l10n.premiumRequiredMessage;
     }
 
-    await showCupertinoDialog<void>(
+    await showDialog<void>(
       context: context,
-      builder: (dialogContext) => CupertinoAlertDialog(
-        title: Text(l10n.premiumRequiredTitle),
-        content: Text(message),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.cancel),
+      barrierColor: Colors.black.withOpacity(0.7),
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
           ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () async {
-              Navigator.of(dialogContext).pop();
-              await Navigator.of(context).push(
-                CupertinoPageRoute(
-                  builder: (_) => const PaywallPage(),
-                  fullscreenDialog: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon with gradient background
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF6FEDD6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              );
-              _refreshPremiumAccess();
-            },
-            child: Text(l10n.upgradeToPremium),
+                child: const Icon(
+                  Icons.star_rounded,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Title
+              Text(
+                l10n.premiumRequiredTitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Message
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF6B7280),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Upgrade Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(dialogContext).pop();
+                    await Navigator.of(context).push(
+                      CupertinoPageRoute(
+                        builder: (_) => const PaywallPage(),
+                        fullscreenDialog: true,
+                      ),
+                    );
+                    _refreshPremiumAccess();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF6FEDD6)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: Text(
+                        l10n.upgradeToPremium,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Cancel Button
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  l10n.cancel,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

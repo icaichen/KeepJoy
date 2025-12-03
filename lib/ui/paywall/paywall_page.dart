@@ -17,12 +17,13 @@ class PaywallPage extends StatefulWidget {
 class _PaywallPageState extends State<PaywallPage> {
   Package? _selectedPackage;
   bool _isProcessing = false;
+  Map<String, IntroEligibility>? _eligibilityMap;
 
   @override
   void initState() {
     super.initState();
     // Auto-select annual package if available
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final subscriptionProvider = Provider.of<SubscriptionProvider>(
         context,
         listen: false,
@@ -31,6 +32,9 @@ class _PaywallPageState extends State<PaywallPage> {
       if (offerings?.current != null) {
         final packages = offerings!.current!.availablePackages;
         if (packages.isNotEmpty) {
+          // Check trial eligibility
+          await _checkTrialEligibility(packages);
+
           // Select annual package by default
           final annualPackage = packages.firstWhere(
             (p) =>
@@ -54,6 +58,33 @@ class _PaywallPageState extends State<PaywallPage> {
     });
   }
 
+  Future<void> _checkTrialEligibility(List<Package> packages) async {
+    try {
+      // Get product identifiers
+      final productIds = packages
+          .map((p) => p.storeProduct.identifier)
+          .toList();
+
+      // Check eligibility for all products
+      final eligibility =
+          await Purchases.checkTrialOrIntroductoryPriceEligibility(productIds);
+
+      if (mounted) {
+        setState(() {
+          _eligibilityMap = eligibility;
+        });
+
+        // Debug logging
+        print('🔍 Trial Eligibility Check:');
+        eligibility.forEach((productId, status) {
+          print('   $productId: ${status.status}');
+        });
+      }
+    } catch (e) {
+      print('❌ Error checking trial eligibility: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -61,8 +92,12 @@ class _PaywallPageState extends State<PaywallPage> {
     final offerings = subscriptionProvider.currentOffering;
 
     // DEBUG: Print provider state
-    print('🔍 Paywall build - offerings: ${offerings != null ? "not null" : "null"}');
-    print('🔍 Paywall build - errorMessage: ${subscriptionProvider.errorMessage}');
+    print(
+      '🔍 Paywall build - offerings: ${offerings != null ? "not null" : "null"}',
+    );
+    print(
+      '🔍 Paywall build - errorMessage: ${subscriptionProvider.errorMessage}',
+    );
     print('🔍 Paywall build - isLoading: ${subscriptionProvider.isLoading}');
 
     return Scaffold(
@@ -246,12 +281,17 @@ class _PaywallPageState extends State<PaywallPage> {
     ).languageCode.toLowerCase().startsWith('zh');
 
     if (_selectedPackage == null) {
-      return isChinese ? '开始7天免费试用' : 'Start 7-Day Trial';
+      return isChinese ? '订阅' : 'Subscribe';
     }
 
     final product = _selectedPackage!.storeProduct;
-    // Check for trial period
-    if (product.introductoryPrice != null) {
+    final productId = product.identifier;
+
+    // Check trial eligibility first
+    final isEligible = _isEligibleForTrial(productId);
+
+    // Only show trial text if user is eligible AND product has trial
+    if (isEligible && product.introductoryPrice != null) {
       final intro = product.introductoryPrice!;
       if (intro.periodNumberOfUnits > 0) {
         return isChinese
@@ -260,8 +300,41 @@ class _PaywallPageState extends State<PaywallPage> {
       }
     }
 
-    // Default to 7-day trial text even if no trial data
-    return isChinese ? '开始7天免费试用' : 'Start 7-Day Trial';
+    // For ineligible users or products without trials, show subscribe button
+    return isChinese ? '订阅' : 'Subscribe';
+  }
+
+  String _getBillingText(
+    Package package,
+    bool isAnnual,
+    AppLocalizations l10n,
+  ) {
+    final productId = package.storeProduct.identifier;
+    final isEligible = _isEligibleForTrial(productId);
+    final hasTrial =
+        package.storeProduct.introductoryPrice != null &&
+        package.storeProduct.introductoryPrice!.periodNumberOfUnits > 0;
+
+    // Show trial billing text only if eligible for trial
+    if (isEligible && hasTrial) {
+      return isAnnual
+          ? l10n.billedYearlyAfterTrial
+          : l10n.billedMonthlyAfterTrial;
+    }
+
+    // For ineligible users, show immediate billing text
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
+    return isAnnual
+        ? (isChinese ? '立即按年计费' : 'Billed yearly')
+        : (isChinese ? '立即按月计费' : 'Billed monthly');
+  }
+
+  bool _isEligibleForTrial(String productId) {
+    final eligibility = _eligibilityMap?[productId];
+    return eligibility?.status ==
+        IntroEligibilityStatus.introEligibilityStatusEligible;
   }
 
   Widget _buildFeaturesList(AppLocalizations l10n) {
@@ -589,9 +662,7 @@ class _PaywallPageState extends State<PaywallPage> {
 
                         // Billing info
                         Text(
-                          isAnnual
-                              ? l10n.billedYearlyAfterTrial
-                              : l10n.billedMonthlyAfterTrial,
+                          _getBillingText(package, isAnnual, l10n),
                           style: const TextStyle(
                             fontSize: 13,
                             color: Color(0xFF6B7280),

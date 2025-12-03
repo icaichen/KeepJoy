@@ -1166,6 +1166,20 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String trialExpiresOn(String date) {
+    return '试用期到期：$date';
+  }
+
+  @override
+  String get manageSubscription => '管理订阅';
+
+  @override
+  String get subscriptionStatus => '订阅状态';
+
+  @override
+  String get yourPlanDetails => '您的订阅详情';
+
+  @override
   String get featureMemoriesPage => '心动回忆';
 
   @override

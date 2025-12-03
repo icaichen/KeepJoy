@@ -457,6 +457,17 @@
       }
     }
   },
+  "trialExpiresOn": "试用期到期：{date}",
+  "@trialExpiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "manageSubscription": "管理订阅",
+  "subscriptionStatus": "订阅状态",
+  "yourPlanDetails": "您的订阅详情",
   "featureMemoriesPage": "心动回忆",
   "featureMemoriesPageDesc": "记录并珍藏你的断舍离回忆",
   "featureMemoryLane": "年度记忆",

@@ -1206,6 +1206,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String trialExpiresOn(String date) {
+    return 'Trial expires on $date';
+  }
+
+  @override
+  String get manageSubscription => 'Manage Subscription';
+
+  @override
+  String get subscriptionStatus => 'Subscription Status';
+
+  @override
+  String get yourPlanDetails => 'Your plan details';
+
+  @override
   String get featureMemoriesPage => 'Memories Page';
 
   @override

@@ -111,6 +111,19 @@ class SubscriptionProvider with ChangeNotifier {
     _willRenew = premiumEntitlement?.willRenew ?? false;
     _isLoading = false;
 
+    // Debug logging for expiration date
+    print('🔍 Subscription Debug:');
+    print('   isPremium: $_isPremium');
+    print('   isInTrial: $_isInTrial');
+    print('   expirationDate: $_expirationDate');
+    print('   willRenew: $_willRenew');
+    print('   periodType: ${premiumEntitlement?.periodType}');
+    if (_expirationDate != null) {
+      final now = DateTime.now();
+      final daysUntilExpiry = _expirationDate!.difference(now).inDays;
+      print('   Days until expiry: $daysUntilExpiry');
+    }
+
     if (wasPremium != _isPremium) {
       print('Premium status changed: $_isPremium');
     }
