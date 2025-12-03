@@ -720,6 +720,7 @@ class _PaywallPageState extends State<PaywallPage> {
       final customerInfo = await SubscriptionService.purchasePackage(
         _selectedPackage!,
       );
+      if (!mounted) return;
 
       print('🎉 Purchase completed!');
       print('📱 Customer Info after purchase:');
@@ -736,6 +737,7 @@ class _PaywallPageState extends State<PaywallPage> {
           context,
           listen: false,
         ).refreshSubscriptionStatus();
+        if (!mounted) return;
 
         // Double-check premium status
         final isPremium = await SubscriptionService.isPremium();
@@ -748,6 +750,7 @@ class _PaywallPageState extends State<PaywallPage> {
             product.introductoryPrice!.periodNumberOfUnits > 0;
 
         if (hasTrialPeriod) {
+          if (!mounted) return;
           final trialDays = product.introductoryPrice!.periodNumberOfUnits;
           final isChinese = Localizations.localeOf(
             context,
@@ -857,8 +860,10 @@ class _PaywallPageState extends State<PaywallPage> {
               ],
             ),
           );
+          if (!mounted) return;
         } else {
           // Show regular success message for non-trial purchases
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.subscriptionSuccess),
@@ -869,6 +874,7 @@ class _PaywallPageState extends State<PaywallPage> {
 
         // Wait a moment for state to propagate
         await Future.delayed(const Duration(milliseconds: 500));
+        if (!mounted) return;
 
         // Close paywall
         Navigator.of(context).pop();
@@ -876,7 +882,8 @@ class _PaywallPageState extends State<PaywallPage> {
     } on PlatformException catch (e) {
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
 
-      if (mounted && errorCode != PurchasesErrorCode.purchaseCancelledError) {
+      if (!mounted) return;
+      if (errorCode != PurchasesErrorCode.purchaseCancelledError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.message ?? 'Purchase failed'),
@@ -885,14 +892,13 @@ class _PaywallPageState extends State<PaywallPage> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -909,6 +915,7 @@ class _PaywallPageState extends State<PaywallPage> {
 
     try {
       final customerInfo = await SubscriptionService.restorePurchases();
+      if (!mounted) return;
       print(
         '🔄 Restore result - Active entitlements: ${customerInfo.entitlements.active}',
       );
@@ -919,6 +926,7 @@ class _PaywallPageState extends State<PaywallPage> {
           context,
           listen: false,
         ).refreshSubscriptionStatus();
+        if (!mounted) return;
 
         // Check premium status after refresh
         final provider = Provider.of<SubscriptionProvider>(

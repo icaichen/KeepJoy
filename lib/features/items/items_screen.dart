@@ -993,10 +993,10 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                   const SizedBox(height: 16),
                   // Tabs
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
                       children: [
@@ -1004,18 +1004,21 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                           child: GestureDetector(
                             onTap: () => setState(() => _selectedTab = 0),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: _selectedTab == 0
                                     ? Colors.white
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                                 boxShadow: _selectedTab == 0
-                                    ? const [
+                                    ? [
                                         BoxShadow(
-                                          color: Color(0x1A000000),
-                                          blurRadius: 8,
-                                          offset: Offset(0, 2),
+                                          color: const Color(0xFF10B981)
+                                              .withValues(alpha: 0.12),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
                                         ),
                                       ]
                                     : null,
@@ -1052,18 +1055,21 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
                           child: GestureDetector(
                             onTap: () => setState(() => _selectedTab = 1),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: _selectedTab == 1
                                     ? Colors.white
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                                 boxShadow: _selectedTab == 1
-                                    ? const [
+                                    ? [
                                         BoxShadow(
-                                          color: Color(0x1A000000),
-                                          blurRadius: 8,
-                                          offset: Offset(0, 2),
+                                          color: const Color(0xFF5ECFB8)
+                                              .withValues(alpha: 0.12),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
                                         ),
                                       ]
                                     : null,
@@ -1172,11 +1178,21 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -1184,8 +1200,8 @@ class _CategoryBottomSheetState extends State<_CategoryBottomSheet> {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: SizedBox(
-                width: 48,
-                height: 48,
+                width: 52,
+                height: 52,
                 child: SmartImageWidget(
                   localPath: item.localPhotoPath,
                   remotePath: item.remotePhotoPath,

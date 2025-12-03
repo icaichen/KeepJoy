@@ -1878,6 +1878,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ).languageCode.toLowerCase().startsWith('zh');
     final screenWidth = MediaQuery.of(context).size.width;
     final topPadding = MediaQuery.of(context).padding.top;
+    const horizontalPadding = 20.0;
     final responsive = context.responsive;
 
     final quoteOfDay = _getQuoteOfDay(l10n);
@@ -1924,8 +1925,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(color: Color(0xFFF5F5F7)),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.05,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
                     vertical: 24,
                   ),
                   child: Column(
@@ -2241,8 +2242,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Active Session (if exists)
                 if (widget.activeSession != null) ...[
                   Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.05,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
                     ),
                     child: Card(
                       color: Colors.white,
@@ -2343,10 +2344,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       backgroundColor: const Color(0xFF414B5A),
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
+                                        vertical: 12,
+                                        horizontal: 12,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
                                   ),
@@ -2407,10 +2409,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       foregroundColor: Colors.red,
                                       side: const BorderSide(color: Colors.red),
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
+                                        vertical: 12,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
                                     child: Text(l10n.stop),
@@ -2428,7 +2430,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // To Do Section (always show)
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -2676,12 +2680,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                     horizontal: 16,
-                                                    vertical: 8,
+                                                    vertical: 10,
                                                   ),
-                                              minimumSize: const Size(0, 36),
+                                              minimumSize: const Size(0, 42),
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
-                                                    BorderRadius.circular(8),
+                                                    BorderRadius.circular(10),
                                               ),
                                               elevation: 0,
                                             ),
@@ -2689,7 +2693,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               l10n.dashboardStartNow,
                                               style: const TextStyle(
                                                 fontSize: 14,
-                                                fontWeight: FontWeight.w400,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                           ),
@@ -2762,7 +2766,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // Monthly Progress Section
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -2852,7 +2858,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // Declutter Results Distribution Card
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                  ),
                   child: DeclutterResultsDistributionCard(
                     items: widget.declutteredItems.where(
                       (item) =>
@@ -2875,7 +2883,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // Monthly Report Card
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                  ),
                   child: _buildMonthlyReportCard(context, isChinese),
                 ),
 
@@ -2883,7 +2893,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // Yearly Progress Section wrapping report cards
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

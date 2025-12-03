@@ -810,6 +810,7 @@ class _MainNavigatorState extends State<MainNavigator>
 
   Future<void> _showUpgradeDialog() async {
     final l10n = AppLocalizations.of(context)!;
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
 
     // Get current subscription status to show appropriate message
     String message;
@@ -837,7 +838,7 @@ class _MainNavigatorState extends State<MainNavigator>
           borderRadius: BorderRadius.circular(22),
         ),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
@@ -850,29 +851,29 @@ class _MainNavigatorState extends State<MainNavigator>
                 l10n.premiumRequiredTitle,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF111827),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Message
               Text(
                 message,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   color: Color(0xFF6B7280),
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               // Upgrade Button
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
                     Navigator.of(dialogContext).pop();
@@ -887,7 +888,7 @@ class _MainNavigatorState extends State<MainNavigator>
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.zero,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 0,
                     backgroundColor: Colors.transparent,
@@ -896,7 +897,7 @@ class _MainNavigatorState extends State<MainNavigator>
                   child: Ink(
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF7C3AED), Color(0xFF14B8A6)],
+                        colors: [Color(0xFF6B5CE7), Color(0xFF5ECFB8)],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                       ),
@@ -905,9 +906,9 @@ class _MainNavigatorState extends State<MainNavigator>
                     child: Container(
                       alignment: Alignment.center,
                       child: Text(
-                        l10n.upgradeToPremium,
+                        isChinese ? '升级至高级版' : 'Upgrade to Premium',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),

@@ -290,11 +290,11 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final screenWidth = MediaQuery.of(context).size.width;
+    const horizontalPadding = 20.0;
 
     final content = SingleChildScrollView(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -415,8 +415,18 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE5E7EA)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0D000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
               ),
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 16,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -430,7 +440,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                       color: Color(0xFF6B7280),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: _itemNameController,
                     decoration: InputDecoration(
@@ -472,8 +482,8 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                       filled: true,
                       fillColor: const Color(0xFFFAFAFA),
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
+                        horizontal: 14,
+                        vertical: 12,
                       ),
                     ),
                     style: const TextStyle(
@@ -483,7 +493,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   // Category
                   Text(
@@ -495,7 +505,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                       color: Color(0xFF6B7280),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFFFAFAFA),
@@ -506,7 +516,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                       child: DropdownButton<DeclutterCategory>(
                         value: _selectedCategory,
                         hint: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                           child: Text(
                             l10n.selectCategory,
                             style: const TextStyle(
@@ -532,7 +542,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                             value: category,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
+                                horizontal: 14,
                               ),
                               child: Text(
                                 category.label(context),
@@ -554,7 +564,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   // Description
                   Text(
@@ -566,7 +576,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                       color: Color(0xFF6B7280),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: _descriptionController,
                     decoration: InputDecoration(
@@ -593,8 +603,8 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                       filled: true,
                       fillColor: const Color(0xFFFAFAFA),
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
+                        horizontal: 14,
+                        vertical: 12,
                       ),
                     ),
                     maxLines: 3,
@@ -606,7 +616,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   // Sentiment/Emotion (2 per row)
                   Text(
@@ -618,16 +628,16 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                       color: Color(0xFF6B7280),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 2.8,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 2.9,
                         ),
                     itemCount: MemorySentiment.values.length,
                     itemBuilder: (context, index) {
@@ -681,7 +691,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
 
                   // Item Status (Have you let go of this item?) - only show when called from dashboard
                   if (widget.showStatusSelector) ...[
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     Text(
                       l10n.haveYouLetGoOfThisItem,
                       style: const TextStyle(
@@ -691,7 +701,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                         color: Color(0xFF6B7280),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFFAFAFA),
@@ -702,7 +712,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                         child: DropdownButton<DeclutterStatus>(
                           value: _selectedStatus,
                           hint: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(horizontal: 14),
                             child: Text(
                               l10n.selectStatus,
                               style: const TextStyle(
@@ -728,7 +738,7 @@ class _CreateMemoryPageState extends State<CreateMemoryPage> {
                               value: status,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
+                                  horizontal: 14,
                                 ),
                                 child: Text(
                                   status.label(context),

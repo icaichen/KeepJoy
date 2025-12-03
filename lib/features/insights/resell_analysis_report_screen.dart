@@ -117,25 +117,32 @@ class _ResellAnalysisReportScreenState
       );
     }
 
-    return Row(
-      children: [
-        pill(
-          isChinese ? '已售件数' : 'Sold Items',
-          soldThisYear.toString(),
-        ),
-        const SizedBox(width: 12),
-        pill(
-          isChinese ? '月均售出' : 'Avg / Month',
-          avgPerMonth.toStringAsFixed(1),
-        ),
-        const SizedBox(width: 12),
-        pill(
-          isChinese ? '趋势' : 'Trend',
-          trendUp
-              ? '+${changePercent.abs().toStringAsFixed(changePercent.abs() >= 10 ? 0 : 1)}%'
-              : '-${changePercent.abs().toStringAsFixed(changePercent.abs() >= 10 ? 0 : 1)}%',
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          pill(
+            isChinese ? '已售件数' : 'Sold Items',
+            soldThisYear.toString(),
+          ),
+          const SizedBox(width: 12),
+          pill(
+            isChinese ? '月均售出' : 'Avg / Month',
+            avgPerMonth.toStringAsFixed(1),
+          ),
+          const SizedBox(width: 12),
+          pill(
+            isChinese ? '趋势' : 'Trend',
+            trendUp
+                ? '+${changePercent.abs().toStringAsFixed(changePercent.abs() >= 10 ? 0 : 1)}%'
+                : '-${changePercent.abs().toStringAsFixed(changePercent.abs() >= 10 ? 0 : 1)}%',
+          ),
+        ],
+      ),
     );
   }
 
@@ -1737,7 +1744,10 @@ class _ResellAnalysisReportScreenState
     required bool isChinese,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(12),
@@ -1745,13 +1755,13 @@ class _ResellAnalysisReportScreenState
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 24),
+            child: Icon(icon, color: iconColor, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1789,17 +1799,27 @@ class _ResellAnalysisReportScreenState
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 10,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, size: 24, color: color),
-          const SizedBox(height: 8),
+          Icon(icon, size: 22, color: color),
+          const SizedBox(height: 6),
           AutoScaleText(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1809,13 +1829,13 @@ class _ResellAnalysisReportScreenState
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           AutoScaleText(
             value,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.black87,
-              fontSize: 22,
+              fontSize: 21,
             ),
             textAlign: TextAlign.center,
           ),
