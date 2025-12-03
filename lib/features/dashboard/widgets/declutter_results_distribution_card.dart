@@ -262,12 +262,13 @@ class _OutcomePiePainter extends CustomPainter {
         center.dx + labelRadius * math.cos(midAngle),
         center.dy + labelRadius * math.sin(midAngle),
       );
+      final titleColor = Color.lerp(slice.color, Colors.black, 0.35) ??
+          slice.color.withValues(alpha: 0.9);
       final labelPainter = TextPainter(
         text: TextSpan(
           text: slice.label,
           style: TextStyle(
-            color: Color.lerp(slice.color, Colors.black, 0.35) ??
-                slice.color.withValues(alpha: 0.85),
+            color: titleColor,
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
