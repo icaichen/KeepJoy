@@ -1263,10 +1263,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           children: emotions.map((emotion) {
             final count =
                 sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
-            final percent = totalCount > 0
-                ? (count / totalCount * 100).toStringAsFixed(
-                    (count / totalCount * 100) >= 10 ? 0 : 1)
-                : '0';
             return SizedBox(
               width: itemWidth,
               child: Container(
@@ -1303,7 +1299,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$percent%',
+                          '$count',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: const Color(0xFF6B7280),
                             fontWeight: FontWeight.w600,
@@ -1803,7 +1799,7 @@ class _EmotionPieChartPainter extends CustomPainter {
 
     // Shadow for slices
     final sliceShadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.08)
+      ..color = Colors.black.withValues(alpha: 0.08)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
     // Prepare data
@@ -1878,7 +1874,7 @@ class _EmotionPieChartPainter extends CustomPainter {
           text: '$percent%',
           style: TextStyle(
             color: Color.lerp(color, Colors.black, 0.35) ??
-                color.withOpacity(0.9),
+                color.withValues(alpha: 0.9),
             fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
@@ -1893,6 +1889,34 @@ class _EmotionPieChartPainter extends CustomPainter {
           innerOffset.dy - innerTextPainter.height / 2,
         ),
       );
+
+      // Outside title matching percentage tint
+      final labelRadius = sliceRadius * 1.05;
+      final labelOffset = Offset(
+        center.dx + labelRadius * math.cos(midAngle),
+        center.dy + labelRadius * math.sin(midAngle),
+      );
+      final titleColor = innerTextPainter.text!.style?.color ??
+          (Color.lerp(color, Colors.black, 0.35) ??
+              color.withValues(alpha: 0.9));
+      final labelPainter = TextPainter(
+        text: TextSpan(
+          text: emotion['label'] as String,
+          style: TextStyle(
+            color: titleColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      labelPainter.layout(maxWidth: radius);
+      final isRight = math.cos(midAngle) >= 0;
+      final labelPos = Offset(
+        labelOffset.dx - (isRight ? 0 : labelPainter.width),
+        labelOffset.dy - labelPainter.height / 2,
+      );
+      labelPainter.paint(canvas, labelPos);
 
       canvas.restore();
       startAngle += sweepAngle;

@@ -1737,111 +1737,127 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (sheetContext) {
+        final bottomInset = MediaQuery.of(sheetContext).viewInsets.bottom;
+        final maxHeight = MediaQuery.of(sheetContext).size.height * 0.9;
         return SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(999),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(20, 12, 20, bottomInset + 24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxHeight),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.recentActivities,
-                  style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF111827),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.recentActivities,
+                    style:
+                        Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF111827),
+                            ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                if (activities.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Text(
-                      isChinese
-                          ? '近期还没有活动记录，继续加油！'
-                          : 'No recent activity yet—keep going!',
-                      style: Theme.of(sheetContext).textTheme.bodyMedium
-                          ?.copyWith(
-                            color: const Color(0xFF6B7280),
-                            height: 1.4,
-                          ),
-                    ),
-                  )
-                else
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: activities.length,
-                    separatorBuilder: (_, __) =>
-                        const Divider(height: 24, color: Color(0xFFE5E7EB)),
-                    itemBuilder: (_, index) {
-                      final entry = activities[index];
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF2F4F8),
-                              borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 16),
+                  if (activities.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                        isChinese
+                            ? '近期还没有活动记录，继续加油！'
+                            : 'No recent activity yet—keep going!',
+                        style: Theme.of(sheetContext).textTheme.bodyMedium
+                            ?.copyWith(
+                              color: const Color(0xFF6B7280),
+                              height: 1.4,
                             ),
-                            child: Icon(
-                              _iconForActivity(entry.type),
-                              color: const Color(0xFF4B5563),
-                            ),
+                      ),
+                    )
+                  else
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: activities.length,
+                          separatorBuilder: (_, __) => const Divider(
+                            height: 24,
+                            color: Color(0xFFE5E7EB),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
+                          itemBuilder: (_, index) {
+                            final entry = activities[index];
+                            return Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _activityTitle(entry, l10n),
-                                  style: Theme.of(sheetContext)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF111827),
-                                      ),
-                                ),
-                                if (entry.description != null) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    entry.description!,
-                                    style: Theme.of(sheetContext)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: const Color(0xFF4B5563),
-                                        ),
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF2F4F8),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                ],
+                                  child: Icon(
+                                    _iconForActivity(entry.type),
+                                    color: const Color(0xFF4B5563),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _activityTitle(entry, l10n),
+                                        style: Theme.of(sheetContext)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFF111827),
+                                            ),
+                                      ),
+                                      if (entry.description != null) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          entry.description!,
+                                          style: Theme.of(sheetContext)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                color: const Color(0xFF4B5563),
+                                              ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
                               ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-              ],
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
+                ],
+              ),
             ),
           ),
         );
