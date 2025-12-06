@@ -146,7 +146,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardResellReportTitle => '二手洞察';
 
   @override
-  String get dashboardResellReportSubtitle => '了解二手表现';
+  String get dashboardResellReportSubtitle => '查看上架和成交表现，统计回收金额';
 
   @override
   String get dashboardMemoryLaneTitle => '年度记忆';
@@ -158,7 +158,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardYearlyReportsTitle => '年度洞察';
 
   @override
-  String get dashboardYearlyReportsSubtitle => '查看年度洞察';
+  String get dashboardYearlyReportsSubtitle => '查看全年数据，了解年度进度';
 
   @override
   String get dashboardCurrentStreakTitle => '当前连击';
@@ -1092,7 +1092,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumMembership => '高级会员';
 
   @override
-  String get premiumMembershipDescription => '解锁专属仪式、更深入的洞察和进阶自动化。';
+  String get premiumMembershipDescription => '解锁年度报告、年度记忆、二手追踪与更深入的洞察。';
 
   @override
   String get upgradeToPremium => '升级为 KeepJoy 高级版';
@@ -1189,19 +1189,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get featureMemoryLane => '年度记忆';
 
   @override
-  String get featureMemoryLaneDesc => '可视化你的整理旅程时光线';
+  String get featureMemoryLaneDesc => '生成年度回顾，串联每次整理的照片与高光时刻';
 
   @override
   String get featureResellTrends => '二手趋势';
 
   @override
-  String get featureResellTrendsDesc => '追踪物品的潜在转售价值';
+  String get featureResellTrendsDesc => '记录上架与成交表现，统计回收金额，指导出手决策';
 
   @override
   String get featureYearlyChronicle => '心动年鉴';
 
   @override
-  String get featureYearlyChronicleDesc => '大扫除的详细分析报告';
+  String get featureYearlyChronicleDesc => '全年整理数量、区域与喜悦度趋势，一屏看清年度进展';
 
   @override
   String trialDays(String days) {

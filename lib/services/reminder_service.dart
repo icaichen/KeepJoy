@@ -9,6 +9,7 @@ import '../models/planned_session.dart';
 import 'notification_preferences_service.dart';
 import 'notification_service_stub.dart'
     if (dart.library.io) 'notification_service_mobile.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ReminderService {
   static final Random _random = Random();
@@ -24,6 +25,8 @@ class ReminderService {
       if (!granted) {
         final l10n = AppLocalizations.of(context);
         final isChinese = l10n?.localeName.startsWith('zh') ?? false;
+        // 尝试引导用户前往系统设置开启通知权限
+        await _openSystemSettings();
         _showSnackBar(
           context,
           isChinese
@@ -86,7 +89,7 @@ class ReminderService {
     final body = hasPending
         ? _pendingMessages(l10n)[_random.nextInt(_pendingMessages(l10n).length)]
         : _joyMessages(l10n)[_random.nextInt(_joyMessages(l10n).length)];
-    final days = _random.nextBool() ? 3 : 4;
+    final days = _random.nextBool() ? 2 : 3;
 
     await NotificationService.instance.scheduleGeneralReminder(
       title: l10n.reminderGeneralTitle,
@@ -150,5 +153,12 @@ class ReminderService {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  static Future<void> _openSystemSettings() async {
+    final uri = Uri.parse('app-settings:');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
   }
 }
