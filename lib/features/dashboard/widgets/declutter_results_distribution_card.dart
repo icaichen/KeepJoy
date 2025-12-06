@@ -102,9 +102,9 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Text(
             title,
             style: theme.textTheme.titleLarge?.copyWith(
@@ -122,20 +122,18 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
             child: SizedBox(
               height: 220,
               width: 220,
-              child: CustomPaint(
-                painter: _OutcomePiePainter(
-                  slices: chartSlices,
-                  total: total,
-                ),
-              ),
+          child: CustomPaint(
+            painter: _OutcomePiePainter(
+              slices: chartSlices,
+              total: total,
             ),
           ),
-          const SizedBox(height: 24),
+        ),
+      ),
         ],
       ),
     );
   }
-
 }
 
 class _OutcomeBreakdown {
@@ -235,16 +233,30 @@ class _OutcomePiePainter extends CustomPainter {
         center.dx + innerRadius * math.cos(midAngle),
         center.dy + innerRadius * math.sin(midAngle),
       );
+      final textColor = Color.lerp(slice.color, Colors.black, 0.35) ??
+          slice.color.withValues(alpha: 0.9);
       final innerTextPainter = TextPainter(
         text: TextSpan(
-          text: '$percent%',
-          style: TextStyle(
-            color: Color.lerp(slice.color, Colors.black, 0.35) ??
-                slice.color.withValues(alpha: 0.9),
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
+          children: [
+            TextSpan(
+              text: '$percent%\n',
+              style: TextStyle(
+                color: textColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            TextSpan(
+              text: '${slice.count}',
+              style: TextStyle(
+                color: textColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
+        textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
       );
       innerTextPainter.layout();
