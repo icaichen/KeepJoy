@@ -604,7 +604,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // Version
             Center(
               child: Text(
-                '${l10n.version} 1.0.0',
+                '${l10n.version} 1.0.1',
                 style: const TextStyle(
                   fontFamily: 'SF Pro Text',
                   fontSize: 13,
@@ -696,7 +696,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         content: Text(
-          'KeepJoy helps you declutter your life with joy.\n\n${l10n.version} 1.0.0',
+          'KeepJoy helps you declutter your life with joy.\n\n${l10n.version} 1.0.1',
           style: const TextStyle(
             fontFamily: 'SF Pro Text',
             fontSize: 15,
@@ -1027,7 +1027,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
       // Create comprehensive export data
       final exportData = {
-        'version': '1.0.0',
+        'version': '1.0.1',
         'exportDate': DateTime.now().toIso8601String(),
         'user': {'email': _userEmail, 'name': _userName},
         'data': {
