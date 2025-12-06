@@ -40,17 +40,22 @@ class SubscriptionProvider with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      print('🔄 SubscriptionProvider: Fetching offerings...');
       _currentOffering = await SubscriptionService.getOfferings();
 
       _isLoading = false;
       if (_currentOffering == null) {
+        print('⚠️ SubscriptionProvider: No offerings returned');
         _errorMessage = 'Unable to load subscription options. Please check your internet connection and try again.';
+      } else {
+        print('✅ SubscriptionProvider: Offerings loaded successfully');
       }
       notifyListeners();
-    } catch (e) {
+    } catch (e, stackTrace) {
       _isLoading = false;
       _errorMessage = 'Unable to load subscription options. Please try again later.';
-      print('Error fetching offerings: $e');
+      print('❌ SubscriptionProvider: Error fetching offerings: $e');
+      print('📍 Stack trace: $stackTrace');
       notifyListeners();
     }
   }
