@@ -18,44 +18,11 @@ class _PaywallPageState extends State<PaywallPage> {
   Package? _selectedPackage;
   bool _isProcessing = false;
   Map<String, IntroEligibility>? _eligibilityMap;
+  String? _preparedOfferingId;
 
   @override
   void initState() {
     super.initState();
-    // Auto-select annual package if available
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final subscriptionProvider = Provider.of<SubscriptionProvider>(
-        context,
-        listen: false,
-      );
-      final offerings = subscriptionProvider.currentOffering;
-      if (offerings?.current != null) {
-        final packages = offerings!.current!.availablePackages;
-        if (packages.isNotEmpty) {
-          // Check trial eligibility
-          await _checkTrialEligibility(packages);
-
-          // Select annual package by default
-          final annualPackage = packages.firstWhere(
-            (p) =>
-                p.storeProduct.identifier.contains('yearly') ||
-                p.storeProduct.identifier.contains('annual'),
-            orElse: () => packages.first,
-          );
-          if (mounted) {
-            setState(() {
-              _selectedPackage = annualPackage;
-            });
-          }
-        } else {
-          // No packages available - products might be pending review in App Store Connect
-          print('⚠️ No packages available. Products may be pending review.');
-        }
-      } else {
-        // No current offering
-        print('⚠️ No current offering available.');
-      }
-    });
   }
 
   Future<void> _checkTrialEligibility(List<Package> packages) async {
@@ -85,11 +52,52 @@ class _PaywallPageState extends State<PaywallPage> {
     }
   }
 
+  Future<void> _preparePackagesIfNeeded(Offerings? offerings) async {
+    final current = offerings?.current;
+    if (current == null) {
+      return;
+    }
+
+    // 同一个 offering 只准备一次，避免反复 setState
+    if (_preparedOfferingId == current.identifier) {
+      return;
+    }
+
+    final packages = current.availablePackages;
+    if (packages.isEmpty) {
+      print('⚠️ No packages available. Products may be pending review.');
+      return;
+    }
+
+    _preparedOfferingId = current.identifier;
+
+    // 检查试用资格并默认选中年度包
+    await _checkTrialEligibility(packages);
+
+    final annualPackage = packages.firstWhere(
+      (p) =>
+          p.storeProduct.identifier.contains('yearly') ||
+          p.storeProduct.identifier.contains('annual'),
+      orElse: () => packages.first,
+    );
+
+    if (mounted) {
+      setState(() {
+        _selectedPackage = annualPackage;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
     final offerings = subscriptionProvider.currentOffering;
+
+    // 当新套餐加载完成时，补齐试用资格检查与默认套餐选择
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _preparePackagesIfNeeded(offerings);
+    });
 
     // DEBUG: Print provider state
     print(
@@ -294,14 +302,42 @@ class _PaywallPageState extends State<PaywallPage> {
     if (isEligible && product.introductoryPrice != null) {
       final intro = product.introductoryPrice!;
       if (intro.periodNumberOfUnits > 0) {
-        return isChinese
-            ? '开始${intro.periodNumberOfUnits}天免费试用'
-            : 'Start ${intro.periodNumberOfUnits}-Day Trial';
+        return _formatTrialCta(intro, isChinese);
       }
     }
 
     // For ineligible users or products without trials, show subscribe button
     return isChinese ? '订阅' : 'Subscribe';
+  }
+
+  String _formatTrialCta(
+    IntroductoryPrice intro,
+    bool isChinese,
+  ) {
+    int days;
+    switch (intro.periodUnit) {
+      case PeriodUnit.day:
+        days = intro.periodNumberOfUnits;
+        break;
+      case PeriodUnit.week:
+        days = intro.periodNumberOfUnits * 7;
+        break;
+      case PeriodUnit.month:
+        // 用 30 天近似，主要用于 CTA 文案
+        days = intro.periodNumberOfUnits * 30;
+        break;
+      case PeriodUnit.year:
+        days = intro.periodNumberOfUnits * 365;
+        break;
+      case PeriodUnit.unknown:
+      default:
+        days = intro.periodNumberOfUnits;
+        break;
+    }
+
+    return isChinese
+        ? '开始${days}天免费试用'
+        : 'Start ${days}-Day Trial';
   }
 
   String _getBillingText(
@@ -921,6 +957,9 @@ class _PaywallPageState extends State<PaywallPage> {
       );
 
       if (mounted) {
+        final hasActiveEntitlement =
+            customerInfo.entitlements.active.isNotEmpty;
+
         // Refresh subscription status
         await Provider.of<SubscriptionProvider>(
           context,
@@ -935,12 +974,22 @@ class _PaywallPageState extends State<PaywallPage> {
         );
         print('✅ Premium status after restore: ${provider.isPremium}');
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.purchasesRestored),
-            backgroundColor: const Color(0xFF10B981),
-          ),
-        );
+        if (hasActiveEntitlement || provider.isPremium) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.paywallRestoreSuccess),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.paywallRestoreFailure),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+          return;
+        }
 
         // Close paywall if premium now
         if (provider.isPremium) {
