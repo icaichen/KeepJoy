@@ -102,9 +102,9 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
             title,
             style: theme.textTheme.titleLarge?.copyWith(
@@ -122,14 +122,15 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
             child: SizedBox(
               height: 220,
               width: 220,
-          child: CustomPaint(
-            painter: _OutcomePiePainter(
-              slices: chartSlices,
-              total: total,
+              child: CustomPaint(
+                painter: _OutcomePiePainter(
+                  slices: chartSlices,
+                  total: total,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+          const SizedBox(height: 28),
         ],
       ),
     );
