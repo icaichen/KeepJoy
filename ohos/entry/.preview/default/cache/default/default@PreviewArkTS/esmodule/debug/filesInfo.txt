@@ -1,2 +1,0 @@
-/Users/chencai/Development/KeepJoy/ohos/entry/.preview/default/cache/default/default@PreviewArkTS/esmodule/debug/entry/src/main/ets/pages/Index.ts;com.keepjoy.keepjoy_app/entry/ets/pages/Index;esm;entry|entry|1.0.0|src/main/ets/pages/Index.ts;entry;false;ets
-/Users/chencai/Development/KeepJoy/ohos/entry/.preview/default/cache/default/default@PreviewArkTS/esmodule/debug/entry/src/main/ets/entryability/EntryAbility.ts;com.keepjoy.keepjoy_app/entry/ets/entryability/EntryAbility;esm;entry|entry|1.0.0|src/main/ets/entryability/EntryAbility.ts;entry;false;ets

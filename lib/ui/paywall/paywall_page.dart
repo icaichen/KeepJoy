@@ -40,15 +40,9 @@ class _PaywallPageState extends State<PaywallPage> {
         setState(() {
           _eligibilityMap = eligibility;
         });
-
-        // Debug logging
-        print('🔍 Trial Eligibility Check:');
-        eligibility.forEach((productId, status) {
-          print('   $productId: ${status.status}');
-        });
       }
     } catch (e) {
-      print('❌ Error checking trial eligibility: $e');
+      // Silently fail - not critical for purchase flow
     }
   }
 
@@ -65,7 +59,6 @@ class _PaywallPageState extends State<PaywallPage> {
 
     final packages = current.availablePackages;
     if (packages.isEmpty) {
-      print('⚠️ No packages available. Products may be pending review.');
       return;
     }
 
@@ -98,15 +91,6 @@ class _PaywallPageState extends State<PaywallPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _preparePackagesIfNeeded(offerings);
     });
-
-    // DEBUG: Print provider state
-    print(
-      '🔍 Paywall build - offerings: ${offerings != null ? "not null" : "null"}',
-    );
-    print(
-      '🔍 Paywall build - errorMessage: ${subscriptionProvider.errorMessage}',
-    );
-    print('🔍 Paywall build - isLoading: ${subscriptionProvider.isLoading}');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -753,19 +737,8 @@ class _PaywallPageState extends State<PaywallPage> {
     });
 
     try {
-      final customerInfo = await SubscriptionService.purchasePackage(
-        _selectedPackage!,
-      );
+      await SubscriptionService.purchasePackage(_selectedPackage!);
       if (!mounted) return;
-
-      print('🎉 Purchase completed!');
-      print('📱 Customer Info after purchase:');
-      print(
-        '   - All Entitlements: ${customerInfo.entitlements.all.keys.toList()}',
-      );
-      print(
-        '   - Active Entitlements: ${customerInfo.entitlements.active.keys.toList()}',
-      );
 
       if (mounted) {
         // Refresh subscription status
@@ -774,10 +747,6 @@ class _PaywallPageState extends State<PaywallPage> {
           listen: false,
         ).refreshSubscriptionStatus();
         if (!mounted) return;
-
-        // Double-check premium status
-        final isPremium = await SubscriptionService.isPremium();
-        print('✅ Premium status after purchase: $isPremium');
 
         // Get trial period info
         final product = _selectedPackage!.storeProduct;
@@ -952,9 +921,6 @@ class _PaywallPageState extends State<PaywallPage> {
     try {
       final customerInfo = await SubscriptionService.restorePurchases();
       if (!mounted) return;
-      print(
-        '🔄 Restore result - Active entitlements: ${customerInfo.entitlements.active}',
-      );
 
       if (mounted) {
         final hasActiveEntitlement =
@@ -972,7 +938,6 @@ class _PaywallPageState extends State<PaywallPage> {
           context,
           listen: false,
         );
-        print('✅ Premium status after restore: ${provider.isPremium}');
 
         if (hasActiveEntitlement || provider.isPremium) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -997,7 +962,6 @@ class _PaywallPageState extends State<PaywallPage> {
         }
       }
     } catch (e) {
-      print('❌ Restore error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -41,9 +41,13 @@ import 'services/premium_access_service.dart';
 import 'services/subscription_service.dart';
 import 'services/image_cache_service.dart';
 import 'providers/subscription_provider.dart';
+import 'config/flavor_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize flavor (default to global for direct run)
+  FlavorConfig.setFlavor(Flavor.global);
 
   // Initialize Hive local database
   await HiveService.instance.init();
@@ -65,7 +69,7 @@ void main() async {
     try {
       await SubscriptionService.loginUser(currentUserId);
     } catch (e) {
-      print('Warning: Failed to login to RevenueCat on startup: $e');
+      // Silently fail - not critical for app startup
     }
 
     // Initialize sync service and trigger initial sync
@@ -94,7 +98,7 @@ class KeepJoyApp extends StatefulWidget {
   State<KeepJoyApp> createState() => _KeepJoyAppState();
 }
 
-class _KeepJoyAppState extends State<KeepJoyApp> {
+class _KeepJoyAppState extends State<KeepJoyApp> with WidgetsBindingObserver {
   Locale? _locale;
   final _authService = AuthService();
   StreamSubscription? _authSubscription;
@@ -103,6 +107,9 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
   @override
   void initState() {
     super.initState();
+    // Add lifecycle observer
+    WidgetsBinding.instance.addObserver(this);
+
     // Listen to auth state changes
     _authSubscription = _authService.authStateChanges?.listen((event) {
       // Handle password reset flow - when user comes from email link
@@ -151,8 +158,22 @@ class _KeepJoyAppState extends State<KeepJoyApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _authSubscription?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    // When app resumes from background, trigger sync
+    if (state == AppLifecycleState.resumed) {
+      final authService = AuthService();
+      if (authService.isAuthenticated) {
+        SyncService.instance.onAppResumed();
+      }
+    }
   }
 
   void _setLocale(Locale locale) {
@@ -325,9 +346,6 @@ class _MainNavigatorState extends State<MainNavigator>
           setState(() {
             _hasFullAccess = subscriptionProvider.isPremium;
           });
-          print(
-            '🔄 Premium status updated from provider: ${subscriptionProvider.isPremium}',
-          );
         }
       });
     });
@@ -395,30 +413,6 @@ class _MainNavigatorState extends State<MainNavigator>
 
   Future<void> _refreshPremiumAccess() async {
     final hasAccess = await PremiumAccessService.hasPremiumAccess();
-    print('🔒 Premium Access Check: $hasAccess');
-
-    // Add detailed debugging
-    try {
-      final customerInfo = await SubscriptionService.getCustomerInfo();
-      print(
-        '📱 Customer Info - All Entitlements: ${customerInfo.entitlements.all}',
-      );
-      print(
-        '📱 Customer Info - Active Entitlements: ${customerInfo.entitlements.active}',
-      );
-      final premiumEntitlement = customerInfo.entitlements.all['premium'];
-      if (premiumEntitlement != null) {
-        print('✅ Premium Entitlement Found:');
-        print('   - isActive: ${premiumEntitlement.isActive}');
-        print('   - willRenew: ${premiumEntitlement.willRenew}');
-        print('   - periodType: ${premiumEntitlement.periodType}');
-        print('   - expirationDate: ${premiumEntitlement.expirationDate}');
-      } else {
-        print('❌ No premium entitlement found');
-      }
-    } catch (e) {
-      print('❌ Error getting customer info: $e');
-    }
 
     if (!mounted) return;
     setState(() {
@@ -826,7 +820,7 @@ class _MainNavigatorState extends State<MainNavigator>
         message = l10n.premiumRequiredMessage;
       }
     } catch (e) {
-      print('Error fetching subscription status for dialog: $e');
+      // Silently fail and show default message
       message = l10n.premiumRequiredMessage;
     }
 

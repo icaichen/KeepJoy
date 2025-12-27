@@ -12,20 +12,35 @@
 // Import local config (for development convenience)
 // This file is gitignored - create it from ai_config_local.dart.example
 import 'ai_config_local.dart' as local_config;
+import 'flavor_config.dart';
 
 class AIConfig {
-  // First try local config (for development), then fall back to --dart-define
+  // Select API key based on flavor (China vs Global)
   static String get qwenApiKey {
+    final isChina = FlavorConfig.instance.isChina;
+
     // Check if local config has values (not empty)
-    if (local_config.AIConfigLocal.apiKey.isNotEmpty) {
-      return local_config.AIConfigLocal.apiKey;
+    final localGlobalKey = local_config.AIConfigLocal.globalApiKey;
+    final localChinaKey = local_config.AIConfigLocal.chinaApiKey;
+
+    if (isChina && localChinaKey.isNotEmpty) {
+      return localChinaKey;
     }
+    if (!isChina && localGlobalKey.isNotEmpty) {
+      return localGlobalKey;
+    }
+
     // Fall back to environment variable
     return const String.fromEnvironment('QWEN_API_KEY');
   }
 
-  static const String qwenBaseUrl =
-      'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
+  // Select base URL based on flavor
+  static String get qwenBaseUrl {
+    final isChina = FlavorConfig.instance.isChina;
+    return isChina
+        ? 'https://dashscope.aliyuncs.com/compatible-mode/v1'  // China version
+        : 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';  // International version
+  }
 
   static bool get isConfigured => qwenApiKey.isNotEmpty;
 }

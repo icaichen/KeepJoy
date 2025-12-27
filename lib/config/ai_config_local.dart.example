@@ -1,12 +1,20 @@
 // AI Configuration - Local Development Template
 //
-// Copy this file to ai_config_local.dart and add your API key.
+// Copy this file to ai_config_local.dart and add your API keys.
 // The ai_config_local.dart file should be in .gitignore.
 //
 // For production builds, use --dart-define=QWEN_API_KEY=your_key
 
 class AIConfigLocal {
-  // Your Qwen/DashScope API key - get it from Alibaba Cloud console
-  static const String apiKey = '';
+  // Global version API key (International DashScope)
+  // Get from: https://dashscope.console.aliyun.com/
+  static const String globalApiKey = '';
+
+  // China version API key (China DashScope)
+  // Get from: https://dashscope.console.aliyun.com/
+  static const String chinaApiKey = '';
+
+  // Backward compatibility - defaults to global
+  static const String apiKey = globalApiKey;
 }
 

@@ -49,11 +49,12 @@ class SyncService {
   SupabaseClient? get _client => _authService.client;
   String? get _userId => _authService.currentUserId;
 
-  Timer? _cloudPullTimer; // 5-second cloud→local pull
+  Timer? _cloudPullTimer; // 5-minute cloud→local pull (fallback)
   Timer? _pendingTaskTimer; // 1-second local→cloud upload
   bool _isSyncing = false;
   bool _isPulling = false;
   StreamSubscription? _connectivitySubscription;
+  final List<RealtimeChannel> _realtimeChannels = [];
 
   final _statusController = StreamController<SyncStatus>.broadcast();
   Stream<SyncStatus> get statusStream => _statusController.stream;
@@ -75,17 +76,20 @@ class SyncService {
     });
 
     // Start sync timers
-    _startCloudPullTimer(); // 5-second cloud→local
+    _startCloudPullTimer(); // 5-minute cloud→local (fallback)
     _startPendingTaskProcessor(); // 1-second local→cloud
+
+    // Setup Realtime subscriptions
+    await _setupRealtimeSubscriptions();
 
     debugPrint('✅ Sync service initialized');
   }
 
-  /// 5-second cloud→local pull cycle
+  /// 5-minute cloud→local pull cycle (fallback)
   void _startCloudPullTimer() {
     _cloudPullTimer?.cancel();
     _cloudPullTimer = Timer.periodic(
-      const Duration(seconds: 5),
+      const Duration(minutes: 5),
       (_) => pullFromCloud(),
     );
   }
@@ -103,7 +107,7 @@ class SyncService {
     Future.delayed(delay, () => syncAll());
   }
 
-  /// Pull changes from cloud (called every 5 seconds)
+  /// Pull changes from cloud (called every 5 minutes or by Realtime trigger)
   Future<void> pullFromCloud() async {
     if (_isPulling) return;
     if (!_connectivityService.isConnected) return;
@@ -111,7 +115,7 @@ class SyncService {
 
     _isPulling = true;
     try {
-      debugPrint('🔄 [PULL] Starting 5-second cloud pull...');
+      debugPrint('🔄 [PULL] Starting cloud pull...');
       final hadChanges = await _downloadRemoteData();
       if (hadChanges) {
         debugPrint('🔄 [PULL] Data changed, notifying UI to reload');
@@ -895,6 +899,12 @@ class SyncService {
     await syncAll();
   }
 
+  /// Called when app resumes from background
+  Future<void> onAppResumed() async {
+    debugPrint('📱 App resumed, triggering sync...');
+    await pullFromCloud();
+  }
+
   /// Sync specific entity type
   Future<void> syncMemories() async {
     if (!_connectivityService.isConnected) return;
@@ -910,11 +920,138 @@ class SyncService {
     await _downloadMemories();
   }
 
+  // ==========================================================================
+  // REALTIME SUBSCRIPTIONS
+  // ==========================================================================
+
+  /// Setup Supabase Realtime subscriptions for all tables
+  Future<void> _setupRealtimeSubscriptions() async {
+    if (_client == null || _userId == null) {
+      debugPrint('⚠️ Cannot setup Realtime - client or userId is null');
+      return;
+    }
+
+    debugPrint('🔴 Setting up Realtime subscriptions...');
+
+    try {
+      // Subscribe to memories table
+      final memoriesChannel = _client!
+          .channel('memories_changes')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'memories',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: _userId,
+            ),
+            callback: (payload) {
+              debugPrint('🔴 [Realtime] Memories changed: ${payload.eventType}');
+              pullFromCloud();
+            },
+          )
+          .subscribe();
+      _realtimeChannels.add(memoriesChannel);
+
+      // Subscribe to deep_cleaning_sessions table
+      final sessionsChannel = _client!
+          .channel('sessions_changes')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'deep_cleaning_sessions',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: _userId,
+            ),
+            callback: (payload) {
+              debugPrint('🔴 [Realtime] Sessions changed: ${payload.eventType}');
+              pullFromCloud();
+            },
+          )
+          .subscribe();
+      _realtimeChannels.add(sessionsChannel);
+
+      // Subscribe to declutter_items table
+      final itemsChannel = _client!
+          .channel('items_changes')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'declutter_items',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: _userId,
+            ),
+            callback: (payload) {
+              debugPrint('🔴 [Realtime] Items changed: ${payload.eventType}');
+              pullFromCloud();
+            },
+          )
+          .subscribe();
+      _realtimeChannels.add(itemsChannel);
+
+      // Subscribe to resell_items table
+      final resellChannel = _client!
+          .channel('resell_changes')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'resell_items',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: _userId,
+            ),
+            callback: (payload) {
+              debugPrint('🔴 [Realtime] Resell items changed: ${payload.eventType}');
+              pullFromCloud();
+            },
+          )
+          .subscribe();
+      _realtimeChannels.add(resellChannel);
+
+      // Subscribe to planned_sessions table
+      final plannedChannel = _client!
+          .channel('planned_changes')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'planned_sessions',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: _userId,
+            ),
+            callback: (payload) {
+              debugPrint('🔴 [Realtime] Planned sessions changed: ${payload.eventType}');
+              pullFromCloud();
+            },
+          )
+          .subscribe();
+      _realtimeChannels.add(plannedChannel);
+
+      debugPrint('✅ Realtime subscriptions setup complete (${_realtimeChannels.length} channels)');
+    } catch (e) {
+      debugPrint('❌ Failed to setup Realtime subscriptions: $e');
+    }
+  }
+
   /// Dispose resources
   void dispose() {
     _cloudPullTimer?.cancel();
     _pendingTaskTimer?.cancel();
     _connectivitySubscription?.cancel();
+
+    // Unsubscribe from all Realtime channels
+    for (final channel in _realtimeChannels) {
+      _client?.removeChannel(channel);
+    }
+    _realtimeChannels.clear();
+
     _statusController.close();
     debugPrint('🔄 Sync service disposed');
   }

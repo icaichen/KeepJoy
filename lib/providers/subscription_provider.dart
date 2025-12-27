@@ -40,22 +40,16 @@ class SubscriptionProvider with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      print('🔄 SubscriptionProvider: Fetching offerings...');
       _currentOffering = await SubscriptionService.getOfferings();
 
       _isLoading = false;
       if (_currentOffering == null) {
-        print('⚠️ SubscriptionProvider: No offerings returned');
         _errorMessage = 'Unable to load subscription options. Please check your internet connection and try again.';
-      } else {
-        print('✅ SubscriptionProvider: Offerings loaded successfully');
       }
       notifyListeners();
     } catch (e, stackTrace) {
       _isLoading = false;
       _errorMessage = 'Unable to load subscription options. Please try again later.';
-      print('❌ SubscriptionProvider: Error fetching offerings: $e');
-      print('📍 Stack trace: $stackTrace');
       notifyListeners();
     }
   }
@@ -64,7 +58,6 @@ class SubscriptionProvider with ChangeNotifier {
     // Add RevenueCat's real-time listener for subscription updates
     // This will automatically sync subscription status across devices
     SubscriptionService.addCustomerInfoUpdateListener((customerInfo) {
-      print('📱 Subscription status updated from RevenueCat');
       _updateFromCustomerInfo(customerInfo);
     });
   }
@@ -76,7 +69,6 @@ class SubscriptionProvider with ChangeNotifier {
     _periodicRefreshTimer = Timer.periodic(const Duration(minutes: 5), (
       _,
     ) async {
-      print('🔄 Periodic subscription status refresh');
       await refreshSubscriptionStatus();
     });
   }
@@ -89,7 +81,6 @@ class SubscriptionProvider with ChangeNotifier {
       final customerInfo = await SubscriptionService.getCustomerInfo();
       _updateFromCustomerInfo(customerInfo);
     } catch (e) {
-      print('Error fetching customer info: $e');
       _isLoading = false;
       notifyListeners();
     }
@@ -115,23 +106,6 @@ class SubscriptionProvider with ChangeNotifier {
 
     _willRenew = premiumEntitlement?.willRenew ?? false;
     _isLoading = false;
-
-    // Debug logging for expiration date
-    print('🔍 Subscription Debug:');
-    print('   isPremium: $_isPremium');
-    print('   isInTrial: $_isInTrial');
-    print('   expirationDate: $_expirationDate');
-    print('   willRenew: $_willRenew');
-    print('   periodType: ${premiumEntitlement?.periodType}');
-    if (_expirationDate != null) {
-      final now = DateTime.now();
-      final daysUntilExpiry = _expirationDate!.difference(now).inDays;
-      print('   Days until expiry: $daysUntilExpiry');
-    }
-
-    if (wasPremium != _isPremium) {
-      print('Premium status changed: $_isPremium');
-    }
 
     notifyListeners();
   }

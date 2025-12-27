@@ -178,6 +178,7 @@ class SubscriptionService {
   /// Purchase a package
   static Future<CustomerInfo> purchasePackage(Package package) async {
     try {
+      // ignore: deprecated_member_use
       final purchaseResult = await Purchases.purchasePackage(package);
       return purchaseResult.customerInfo;
     } on PlatformException catch (e) {
