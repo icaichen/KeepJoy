@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -17,6 +17,23 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
+  static const MethodChannel _timeZoneChannel = MethodChannel(
+    'com.keepjoy/timezone',
+  );
+
+  Future<String?> _getLocalTimezone() async {
+    try {
+      final value = await _timeZoneChannel.invokeMethod<String>(
+        'getLocalTimezone',
+      );
+      if (value == null || value.trim().isEmpty) {
+        return null;
+      }
+      return value;
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<bool> ensureInitialized() async {
     if (kIsWeb) {
@@ -27,11 +44,10 @@ class NotificationService {
     }
 
     tz.initializeTimeZones();
-    try {
-      final String timeZoneName =
-          await FlutterNativeTimezone.getLocalTimezone();
+    final timeZoneName = await _getLocalTimezone();
+    if (timeZoneName != null) {
       tz.setLocalLocation(tz.getLocation(timeZoneName));
-    } catch (_) {
+    } else {
       tz.setLocalLocation(tz.UTC);
     }
 
@@ -103,8 +119,6 @@ class NotificationService {
       scheduledDate,
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: 'general_reminder',
     );
   }
@@ -145,8 +159,6 @@ class NotificationService {
       scheduledDate,
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: 'session_reminder',
     );
   }

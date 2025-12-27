@@ -144,14 +144,21 @@ class SubscriptionService {
       _log('📋 Offerings fetched - Current offering: ${offerings.current?.identifier ?? "null"}');
       _log('📋 All offerings: ${offerings.all.keys.toList()}');
 
-      if (offerings.current == null) {
-        _log('⚠️ No current offering available');
-        _log('⚠️ Check RevenueCat dashboard: Offerings → Make sure "default" offering is created and has products');
+      final activeOffering = offerings.current ??
+          offerings.getOffering(RevenueCatConfig.defaultOfferingId);
+
+      if (activeOffering == null) {
+        _log('⚠️ No current or default ("${RevenueCatConfig.defaultOfferingId}") offering available');
+        _log(
+          '⚠️ Check RevenueCat dashboard: mark an offering as Current or ensure the "${RevenueCatConfig.defaultOfferingId}" offering exists with products',
+        );
         return null;
       }
 
-      final packages = offerings.current!.availablePackages;
-      _log('📦 Available packages in current offering: ${packages.length}');
+      final packages = activeOffering.availablePackages;
+      _log(
+        '📦 Available packages in offering ${activeOffering.identifier}: ${packages.length}',
+      );
       for (var package in packages) {
         _log('   - ${package.identifier}: ${package.storeProduct.title} (${package.storeProduct.priceString})');
       }
