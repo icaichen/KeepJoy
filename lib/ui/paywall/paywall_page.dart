@@ -32,9 +32,20 @@ class _PaywallPageState extends State<PaywallPage> {
           .map((p) => p.storeProduct.identifier)
           .toList();
 
+      print('🔍 [DEBUG] Checking trial eligibility for products: $productIds');
+
       // Check eligibility for all products
       final eligibility =
           await Purchases.checkTrialOrIntroductoryPriceEligibility(productIds);
+
+      print('🔍 [DEBUG] Trial eligibility result: $eligibility');
+
+      // Log each product's eligibility status
+      eligibility.forEach((productId, status) {
+        print('🔍 [DEBUG] Product: $productId');
+        print('   - Status: ${status.status}');
+        print('   - Description: ${status.description}');
+      });
 
       if (mounted) {
         setState(() {
@@ -42,7 +53,7 @@ class _PaywallPageState extends State<PaywallPage> {
         });
       }
     } catch (e) {
-      // Silently fail - not critical for purchase flow
+      print('❌ [DEBUG] Error checking trial eligibility: $e');
     }
   }
 
@@ -279,18 +290,30 @@ class _PaywallPageState extends State<PaywallPage> {
     final product = _selectedPackage!.storeProduct;
     final productId = product.identifier;
 
+    print('🔍 [DEBUG] Getting button text for product: $productId');
+    print('   - Has introductoryPrice: ${product.introductoryPrice != null}');
+    if (product.introductoryPrice != null) {
+      final intro = product.introductoryPrice!;
+      print('   - Intro price: ${intro.price}');
+      print('   - Intro period: ${intro.periodNumberOfUnits} ${intro.periodUnit}');
+    }
+
     // Check trial eligibility first
     final isEligible = _isEligibleForTrial(productId);
+    print('   - Is eligible for trial: $isEligible');
+    print('   - Eligibility map: $_eligibilityMap');
 
     // Only show trial text if user is eligible AND product has trial
     if (isEligible && product.introductoryPrice != null) {
       final intro = product.introductoryPrice!;
       if (intro.periodNumberOfUnits > 0) {
+        print('   ✅ Showing trial button');
         return _formatTrialCta(intro, isChinese);
       }
     }
 
     // For ineligible users or products without trials, show subscribe button
+    print('   ⚠️ Showing regular subscribe button (no trial)');
     return isChinese ? '订阅' : 'Subscribe';
   }
 

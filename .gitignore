@@ -47,3 +47,9 @@ app.*.map.json
 # Local configuration files (contain credentials)
 lib/config/supabase_config_local.dart
 lib/config/ai_config_local.dart
+
+# Android signing keys (NEVER commit these!)
+android/key.properties
+android/app/upload-keystore.jks
+android/app/*.jks
+*.keystore
