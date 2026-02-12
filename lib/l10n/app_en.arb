@@ -1,5 +1,15 @@
 {
   "@@locale": "en",
+  
+  "onboardingTitle1": "Spark Joy",
+  "onboardingDesc1": "Declutter your space, one item at a time. Keep only what brings you joy.",
+  "onboardingTitle2": "Value Driven",
+  "onboardingDesc2": "Track the value of items you let go. Sell, donate, or recycle with purpose.",
+  "onboardingTitle3": "Preserve Memories",
+  "onboardingDesc3": "Letting go doesn't mean forgetting. Digitize your cherished memories forever.",
+  "onboardingTitle4": "Mindful Living",
+  "onboardingDesc4": "Build lasting habits. Transform your environment and your mind.",
+  "getStarted": "Get Started",
 
   "goodMorning": "Good Morning",
   "goodAfternoon": "Good Afternoon",

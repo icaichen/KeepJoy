@@ -9,6 +9,37 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get onboardingTitle1 => 'Spark Joy';
+
+  @override
+  String get onboardingDesc1 =>
+      'Declutter your space, one item at a time. Keep only what brings you joy.';
+
+  @override
+  String get onboardingTitle2 => 'Value Driven';
+
+  @override
+  String get onboardingDesc2 =>
+      'Track the value of items you let go. Sell, donate, or recycle with purpose.';
+
+  @override
+  String get onboardingTitle3 => 'Preserve Memories';
+
+  @override
+  String get onboardingDesc3 =>
+      'Letting go doesn\'t mean forgetting. Digitize your cherished memories forever.';
+
+  @override
+  String get onboardingTitle4 => 'Mindful Living';
+
+  @override
+  String get onboardingDesc4 =>
+      'Build lasting habits. Transform your environment and your mind.';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
   String get goodMorning => 'Good Morning';
 
   @override
@@ -1770,9 +1801,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get welcomeTagline =>
       'Transform your space, bring more joy to your life';
-
-  @override
-  String get getStarted => 'Get Started';
 
   @override
   String get alreadyHaveAccount => 'Already have an account? Sign In';

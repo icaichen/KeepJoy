@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'features/deep_cleaning/deep_cleaning_flow.dart';
 import 'features/joy_declutter/joy_declutter_flow.dart';
@@ -19,6 +20,7 @@ import 'features/memories/create_memory_page.dart';
 import 'features/auth/welcome_page.dart';
 import 'features/auth/login_page.dart';
 import 'features/auth/reset_password_page.dart';
+import 'features/onboarding/onboarding_screen.dart';
 import 'ui/paywall/paywall_page.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/typography.dart';
@@ -62,6 +64,10 @@ void main() async {
   // Initialize RevenueCat (handles both subscriptions and trials)
   await SubscriptionService.configure();
 
+  // Check onboarding status
+  final prefs = await SharedPreferences.getInstance();
+  final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+
   // If user is already logged in, login to RevenueCat and start sync
   final authService = AuthService();
   final currentUserId = authService.currentUserId;
@@ -88,11 +94,16 @@ void main() async {
     });
   }
 
-  runApp(const KeepJoyApp());
+  runApp(KeepJoyApp(hasSeenOnboarding: hasSeenOnboarding));
 }
 
 class KeepJoyApp extends StatefulWidget {
-  const KeepJoyApp({super.key});
+  final bool hasSeenOnboarding;
+
+  const KeepJoyApp({
+    super.key, 
+    this.hasSeenOnboarding = false,
+  });
 
   @override
   State<KeepJoyApp> createState() => _KeepJoyAppState();
@@ -211,7 +222,9 @@ class _KeepJoyAppState extends State<KeepJoyApp> with WidgetsBindingObserver {
         // Use home instead of initialRoute so it rebuilds on auth state change
         home: _authService.isAuthenticated
             ? MainNavigator(onLocaleChange: _setLocale)
-            : const WelcomePage(),
+            : (widget.hasSeenOnboarding
+                ? const WelcomePage()
+                : const OnboardingScreen()),
         routes: {
           '/welcome': (context) => const WelcomePage(),
           '/login': (context) => const LoginPage(),
