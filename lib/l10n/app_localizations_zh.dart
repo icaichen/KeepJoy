@@ -415,7 +415,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardStartNow => '开始';
 
   @override
-  String get appTitle => 'KeepJoy';
+  String get appTitle => '喜物(KeepJoy)';
 
   @override
   String get home => '首页';
@@ -1130,7 +1130,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get helpAndSupport => '帮助与支持';
 
   @override
-  String get aboutApp => '关于 KeepJoy';
+  String get aboutApp => '关于 喜物(KeepJoy)';
 
   @override
   String get privacyPolicy => '隐私政策';
@@ -1139,17 +1139,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get termsOfService => '服务条款';
 
   @override
-  String get rateApp => '评价 KeepJoy';
+  String get rateApp => '评价 喜物(KeepJoy)';
 
   @override
-  String get shareApp => '分享 KeepJoy';
+  String get shareApp => '分享 喜物(KeepJoy)';
 
   @override
   String get notificationsPermissionDenied =>
-      '目前无法启用通知，请到系统设置中为 KeepJoy 开启通知权限。';
+      '目前无法启用通知，请到系统设置中为 喜物(KeepJoy) 开启通知权限。';
 
   @override
-  String get reminderGeneralTitle => 'KeepJoy 温馨提醒';
+  String get reminderGeneralTitle => '喜物(KeepJoy) 温馨提醒';
 
   @override
   String get reminderJoyNudge1 => '花一点时间感谢一件物品，来一场 Joy Dedclutter 吧？';
@@ -1176,7 +1176,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get memoryNoDescription => '这段回忆目前还没有补充说明。';
 
   @override
-  String get premiumRequiredTitle => 'KeepJoy 高级版';
+  String get premiumRequiredTitle => '喜物(KeepJoy) 高级版';
 
   @override
   String get premiumRequiredMessage => '7 天试用已结束，升级即可继续使用大扫除流程、完整报表与提醒功能。';
@@ -1194,10 +1194,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumMembershipDescription => '解锁年度报告、年度记忆、二手追踪与更深入的洞察。';
 
   @override
-  String get upgradeToPremium => '升级为 KeepJoy 高级版';
+  String get upgradeToPremium => '升级为 喜物(KeepJoy) 高级版';
 
   @override
-  String get paywallTitle => 'KeepJoy 高级版';
+  String get paywallTitle => '喜物(KeepJoy) 高级版';
 
   @override
   String get paywallDescription => '选择一个订阅方案，解锁完整的轻盈整理工具。';
@@ -1215,7 +1215,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get paywallRestorePurchases => '恢复购买';
 
   @override
-  String get paywallPurchaseSuccess => '高级版已解锁，尽情享用 KeepJoy！';
+  String get paywallPurchaseSuccess => '高级版已解锁，尽情享用 喜物(KeepJoy)！';
 
   @override
   String get paywallPurchaseFailure => '无法完成购买，请稍后再试。';
@@ -1892,7 +1892,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get signUpSuccess => '注册成功';
 
   @override
-  String get welcomeToKeepJoy => '欢迎来到KeepJoy';
+  String get welcomeToKeepJoy => '欢迎来到 喜物(KeepJoy)';
 
   @override
   String get resetPassword => '重置密码';

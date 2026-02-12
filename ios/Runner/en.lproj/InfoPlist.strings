@@ -6,3 +6,6 @@
 
 /* Microphone Permission */
 "NSMicrophoneUsageDescription" = "This app needs access to the microphone for video recording.";
+
+"CFBundleDisplayName" = "KeepJoy";
+"CFBundleName" = "KeepJoy";
