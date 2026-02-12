@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-
+import '../../../widgets/glass_container.dart';
+import '../../../theme/typography.dart';
 import '../../../models/declutter_item.dart';
 
 class DeclutterResultsDistributionCard extends StatelessWidget {
@@ -87,37 +88,30 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
         ? breakdowns.where((b) => b.count > 0).toList()
         : breakdowns;
 
-    return Container(
+    return GlassContainer(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
+      borderRadius: BorderRadius.circular(24),
+      blur: 15,
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: theme.textTheme.titleLarge?.copyWith(
+            style: AppTypography.titleMedium.copyWith(
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             subtitle,
-            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
+            style: AppTypography.bodySmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           Center(
             child: SizedBox(
               height: 220,

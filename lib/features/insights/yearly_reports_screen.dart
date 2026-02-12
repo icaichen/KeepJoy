@@ -8,8 +8,8 @@ import 'package:keepjoy_app/features/dashboard/widgets/declutter_results_distrib
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
-import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
-import 'package:keepjoy_app/widgets/auto_scale_text.dart';
+import 'package:keepjoy_app/widgets/glass_container.dart';
+import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 
@@ -70,29 +70,26 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                 (session.localAfterPhotoPath != null || session.remoteAfterPhotoPath != null);
 
             return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
               ),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Center(
-                      child: Container(
-                        width: 36,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
+                  const SizedBox(height: 8),
                   Expanded(
                     child: ListView(
                       controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -103,119 +100,61 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 children: [
                                   Text(
                                     session.area,
-                                    style: const TextStyle(
-                                      fontSize: 24,
+                                    style: AppTypography.titleLarge.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurface,
                                       fontWeight: FontWeight.w700,
-                                      color: Color(0xFF111827),
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     dateStr,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xFF6B7280),
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            IconButton(
-                              onPressed: () => Navigator.pop(sheetContext),
-                              icon: const Icon(Icons.close_rounded),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () => Navigator.pop(sheetContext),
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  size: 20,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 32),
                         Text(
-                          isChinese ? '整理数据' : 'Session Data',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF111827),
+                          l10n.reportSessionData,
+                          style: AppTypography.titleMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
                         if (hasPhotos) ...[
                           SizedBox(
-                            height: 240,
+                            height: 260,
                             child: PageView(
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      Image.file(
-                                        File(session.localBeforePhotoPath ?? session.remoteBeforePhotoPath!),
-                                        fit: BoxFit.contain,
-                                      ),
-                                      Positioned(
-                                        top: 12,
-                                        left: 12,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.6,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            isChinese ? '整理前' : 'Before',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                _buildPhotoCard(
+                                  context: context,
+                                  photoPath: session.localBeforePhotoPath ?? session.remoteBeforePhotoPath!,
+                                  label: l10n.dashboardBefore,
                                 ),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      Image.file(
-                                        File(session.localAfterPhotoPath ?? session.remoteAfterPhotoPath!),
-                                        fit: BoxFit.contain,
-                                      ),
-                                      Positioned(
-                                        top: 12,
-                                        left: 12,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.6,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            isChinese ? '整理后' : 'After',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                _buildPhotoCard(
+                                  context: context,
+                                  photoPath: session.localAfterPhotoPath ?? session.remoteAfterPhotoPath!,
+                                  label: l10n.dashboardAfter,
                                 ),
                               ],
                             ),
@@ -224,38 +163,38 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                         ],
                         if (improvement != null)
                           _buildMetricRow(
-                            label: isChinese ? '整理改善' : 'Improvement',
+                            label: l10n.reportImprovement,
                             value: '$improvement%',
                           ),
                         if (session.elapsedSeconds != null)
                           _buildMetricRow(
-                            label: isChinese ? '整理时长' : 'Duration',
+                            label: l10n.reportDuration,
                             value: '${session.elapsedSeconds! ~/ 60} min',
                           ),
                         if (session.itemsCount != null)
                           _buildMetricRow(
-                            label: isChinese ? '清理物品' : 'Items Cleaned',
+                            label: l10n.reportItemsCleaned,
                             value: session.itemsCount.toString(),
                           ),
                         if (session.focusIndex != null)
                           _buildMetricRow(
-                            label: isChinese ? '专注度' : 'Focus',
+                            label: l10n.reportFocus,
                             value: '${session.focusIndex}/5',
                           ),
                         if (session.moodIndex != null)
                           _buildMetricRow(
-                            label: isChinese ? '轻盈感' : 'Joy',
+                            label: l10n.reportJoy,
                             value: '${session.moodIndex}/5',
                           ),
                         if (session.beforeMessinessIndex != null &&
                             session.afterMessinessIndex != null) ...[
                           _buildMetricRow(
-                            label: isChinese ? '整理前凌乱度' : 'Before Messiness',
+                            label: l10n.reportBeforeMessiness,
                             value: session.beforeMessinessIndex!
                                 .toStringAsFixed(1),
                           ),
                           _buildMetricRow(
-                            label: isChinese ? '整理后整洁度' : 'After Tidiness',
+                            label: l10n.reportAfterTidiness,
                             value: session.afterMessinessIndex!.toStringAsFixed(
                               1,
                             ),
@@ -267,30 +206,34 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             session.focusIndex == null &&
                             session.moodIndex == null)
                           Container(
-                            margin: const EdgeInsets.only(top: 12),
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF9FAFB),
-                              borderRadius: BorderRadius.circular(12),
+                              color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                              ),
                             ),
                             child: Column(
                               children: [
+                                Icon(
+                                  Icons.analytics_outlined,
+                                  size: 48,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(height: 16),
                                 Text(
-                                  isChinese ? '未记录详细数据' : 'No Detailed Metrics',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF6B7280),
+                                  l10n.dashboardNoDetailedMetrics,
+                                  style: AppTypography.titleSmall.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  isChinese
-                                      ? '这次整理只保存了照片记录\n下次整理时可以记录更多数据'
-                                      : 'This session only saved photos\nNext time you can record more details',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF9CA3AF),
+                                  l10n.dashboardNoDetailsSaved,
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     height: 1.5,
                                   ),
                                   textAlign: TextAlign.center,
@@ -298,6 +241,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               ],
                             ),
                           ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
                       ],
                     ),
                   ),
@@ -312,7 +261,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
   Widget _buildMetricRow({required String label, required String value}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -320,10 +269,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             flex: 2,
             child: Text(
               '$label:',
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTypography.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF6B7280),
               ),
             ),
           ),
@@ -332,10 +280,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             flex: 3,
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTypography.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF111827),
               ),
             ),
           ),
@@ -360,9 +307,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             Expanded(
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                style: AppTypography.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -373,22 +320,117 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+            style: AppTypography.bodySmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         child,
       ],
+    );
+  }
+
+  Widget _buildPhotoCard({
+    required BuildContext context,
+    required String photoPath,
+    required String label,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.file(File(photoPath), fit: BoxFit.cover),
+            Positioned(
+              top: 16,
+              left: 16,
+              child: GlassContainer(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                borderRadius: BorderRadius.circular(12),
+                blur: 8,
+                color: Colors.black.withValues(alpha: 0.4),
+                child: Text(
+                  label,
+                  style: AppTypography.labelMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSmallMetric(BuildContext context, IconData icon, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: AppTypography.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeatmapCell(BuildContext context, DateTime date, int activity) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 48,
+              decoration: BoxDecoration(
+                color: _getHeatmapColor(context, activity),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _getMonthAbbrev(date.month, AppLocalizations.of(context)!.localeName == 'zh'),
+              style: AppTypography.labelSmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   void _showAreaDeepCleaningReport(
     BuildContext context,
     String area,
-    bool isChinese,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final areaSessions =
         widget.deepCleaningSessions
             .where((session) => session.area == area)
@@ -397,58 +439,56 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
       builder: (sheetContext) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.9,
-          minChildSize: 0.7,
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
           maxChildSize: 0.95,
           expand: false,
           builder: (builderContext, scrollController) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              ),
               child: Column(
                 children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '$area ${isChinese ? '整理记录' : 'Cleaning History'}',
-                    style: const TextStyle(
-                      fontSize: 20,
+                    area,
+                    style: AppTypography.titleLarge.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
-                    '${areaSessions.length} ${isChinese ? '次整理' : 'sessions'}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
+                    l10n.dashboardSessionTotal(areaSessions.length),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   Expanded(
                     child: ListView.builder(
                       controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
                       itemCount: areaSessions.length,
                       itemBuilder: (context, index) {
                         final session = areaSessions[index];
-                        final dateStr = DateFormat(
-                          isChinese ? 'yyyy年M月d日' : 'MMM d, yyyy',
+                        final dateStr = DateFormat.yMMMMd(
+                          Localizations.localeOf(context).toString(),
                         ).format(session.startTime);
 
                         final improvement =
@@ -461,116 +501,76 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   .toStringAsFixed(0)
                             : null;
 
-                        return GestureDetector(
-                          onTap: () {
-                            _showSessionDetail(context, session, isChinese);
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFFE5E7EA),
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: InkWell(
+                            onTap: () => _showSessionDetail(context, session, true),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                ),
                               ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x0A000000),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      dateStr,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF111827),
-                                      ),
-                                    ),
-                                    if (improvement != null)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(
-                                            0xFF10B981,
-                                          ).withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          isChinese
-                                              ? '改善 $improvement%'
-                                              : '$improvement% better',
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF10B981),
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    if (session.focusIndex != null) ...[
-                                      Icon(
-                                        Icons.spa_rounded,
-                                        size: 16,
-                                        color: Colors.grey[600],
-                                      ),
-                                      const SizedBox(width: 4),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
                                       Text(
-                                        '${isChinese ? '专注度' : 'Focus'}: ${session.focusIndex}/5',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[600],
+                                        dateStr,
+                                        style: AppTypography.titleSmall.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                         ),
+                                      ),
+                                      if (improvement != null)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Text(
+                                            '+$improvement%',
+                                            style: AppTypography.labelMedium.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: Theme.of(context).colorScheme.primary,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      _buildSmallMetric(
+                                        context,
+                                        Icons.timer_outlined,
+                                        '${session.elapsedSeconds != null ? session.elapsedSeconds! ~/ 60 : 0}m',
                                       ),
                                       const SizedBox(width: 16),
-                                    ],
-                                    if (session.moodIndex != null) ...[
-                                      Icon(
-                                        Icons.sentiment_satisfied_rounded,
-                                        size: 16,
-                                        color: Colors.grey[600],
+                                      _buildSmallMetric(
+                                        context,
+                                        Icons.auto_awesome_outlined,
+                                        '${session.itemsCount ?? 0} items',
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${isChinese ? '轻盈感' : 'Joy'}: ${session.moodIndex}/5',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[600],
-                                        ),
+                                      const SizedBox(width: 16),
+                                      _buildSmallMetric(
+                                        context,
+                                        Icons.spa_outlined,
+                                        '${session.focusIndex ?? 0}/5',
                                       ),
                                     ],
-                                  ],
-                                ),
-                                if (session.itemsCount != null) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '${isChinese ? '清理物品' : 'Items cleaned'}: ${session.itemsCount}',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey[600],
-                                    ),
                                   ),
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         );
@@ -583,6 +583,27 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildSmallMetric(BuildContext context, IconData icon, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: AppTypography.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
@@ -606,7 +627,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     final now = DateTime.now();
     final yearStart = DateTime(now.year, 1, 1);
     final nextYearStart = DateTime(now.year + 1, 1, 1);
-    final pageName = isChinese ? '年度洞察' : 'Year in Review';
+    final pageName = l10n.yearlyReportsTitle;
 
     // Calculate past 12 months activity (for heatmap)
     final past12MonthsActivity = <String, int>{};
@@ -760,36 +781,32 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Large title on the left
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  pageName,
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black,
-                                    letterSpacing: -0.5,
-                                    height: 1.0,
-                                  ),
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      l10n.dashboardYearlyReportsTitle,
+                                      style: AppTypography.displaySmall.copyWith(
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      l10n.dashboardYearlyReportsSubtitle,
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  l10n.dashboardYearlyReportsSubtitle,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF4B5563),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                       ),
 
                       // Content
@@ -808,33 +825,35 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             Row(
                               children: [
                                 Expanded(
+                            Row(
+                              children: [
+                                Expanded(
                                   child: _buildAchievementCard(
-                                    icon: Icons.cleaning_services_rounded,
-                                    iconColor: const Color(0xFFB794F6),
+                                    context: context,
+                                    icon: Icons.auto_awesome_outlined,
+                                    iconColor: Theme.of(context).colorScheme.primary,
                                     value: yearlySessions.length.toString(),
-                                    label: isChinese ? '大扫除' : 'Clean Sweep',
+                                    label: l10n.deepCleaningFlowTitle,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildAchievementCard(
-                                    icon: Icons.inventory_2_rounded,
-                                    iconColor: const Color(0xFF5ECFB8),
+                                    context: context,
+                                    icon: Icons.inventory_2_outlined,
+                                    iconColor: Theme.of(context).colorScheme.secondary,
                                     value: yearlyItems.length.toString(),
-                                    label: isChinese
-                                        ? '已整理物品'
-                                        : 'Decluttered Items',
+                                    label: l10n.reportItemsCleaned,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildAchievementCard(
-                                    icon: isChinese
-                                        ? Icons.currency_yen
-                                        : Icons.attach_money_rounded,
-                                    iconColor: const Color(0xFFFFD93D),
+                                    context: context,
+                                    icon: Icons.payments_outlined,
+                                    iconColor: Theme.of(context).colorScheme.tertiary,
                                     value: yearlyResellValueDisplay,
-                                    label: isChinese ? '转售收入' : 'Resale Value',
+                                    label: l10n.reportTotalRevenue,
                                   ),
                                 ),
                               ],
@@ -842,224 +861,96 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             const SizedBox(height: 20),
 
                             // Declutter Heatmap (Past 12 months)
-                            Container(
+                            GlassContainer(
                               padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFFE5E7EA)),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x08000000),
-                                    blurRadius: 12,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              blur: 15,
+                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    isChinese ? '整理热力图' : 'Declutter Heatmap',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: const Color(0xFF111827),
-                                        ),
+                                    l10n.reportMemoryHeatmap,
+                                    style: AppTypography.titleMedium.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    isChinese
-                                        ? '过去12个月的活动'
-                                        : 'Activity in past 12 months',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: const Color(0xFF6B7280),
-                                        ),
+                                    l10n.reportActivityThisYear,
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 32),
 
-                                  // 2 rows of 6 months each
+                                  // Heatmap Grid
                                   Column(
                                     children: [
                                       // First row
                                       Row(
                                         children: List.generate(6, (index) {
-                                          final monthDate = DateTime(
-                                            now.year,
-                                            now.month - (11 - index),
-                                            1,
-                                          );
-                                          final monthKey =
-                                              '${monthDate.year}-${monthDate.month}';
-                                          final activity =
-                                              past12MonthsActivity[monthKey] ??
-                                              0;
-
-                                          return Expanded(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    width: double.infinity,
-                                                    height: 48,
-                                                    decoration: BoxDecoration(
-                                                      color: _getHeatmapColor(
-                                                        activity,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 6),
-                                                  Text(
-                                                    _getMonthAbbrev(
-                                                      monthDate.month,
-                                                      isChinese,
-                                                    ),
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodySmall
-                                                        ?.copyWith(
-                                                          color: const Color(
-                                                            0xFF6B7280,
-                                                          ),
-                                                          fontSize: 11,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
+                                          final monthDate = DateTime(now.year, now.month - (11 - index), 1);
+                                          final monthKey = '${monthDate.year}-${monthDate.month}';
+                                          final activity = past12MonthsActivity[monthKey] ?? 0;
+                                          return _buildHeatmapCell(context, monthDate, activity);
                                         }),
                                       ),
-                                      const SizedBox(height: 4),
+                                      const SizedBox(height: 8),
                                       // Second row
                                       Row(
                                         children: List.generate(6, (index) {
-                                          final monthDate = DateTime(
-                                            now.year,
-                                            now.month - (5 - index),
-                                            1,
-                                          );
-                                          final monthKey =
-                                              '${monthDate.year}-${monthDate.month}';
-                                          final activity =
-                                              past12MonthsActivity[monthKey] ??
-                                              0;
-
-                                          return Expanded(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    width: double.infinity,
-                                                    height: 48,
-                                                    decoration: BoxDecoration(
-                                                      color: _getHeatmapColor(
-                                                        activity,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 6),
-                                                  Text(
-                                                    _getMonthAbbrev(
-                                                      monthDate.month,
-                                                      isChinese,
-                                                    ),
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodySmall
-                                                        ?.copyWith(
-                                                          color: const Color(
-                                                            0xFF6B7280,
-                                                          ),
-                                                          fontSize: 11,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
+                                          final monthDate = DateTime(now.year, now.month - (5 - index), 1);
+                                          final monthKey = '${monthDate.year}-${monthDate.month}';
+                                          final activity = past12MonthsActivity[monthKey] ?? 0;
+                                          return _buildHeatmapCell(context, monthDate, activity);
                                         }),
                                       ),
                                     ],
                                   ),
 
-                                  const SizedBox(height: 20),
+                                  const SizedBox(height: 24),
 
                                   // Color legend
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          isChinese ? '较少' : 'Less',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: const Color(0xFF9CA3AF),
-                                                fontSize: 12,
-                                              ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        l10n.reportLess,
+                                        style: AppTypography.labelSmall.copyWith(
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                                         ),
-                                        const SizedBox(width: 8),
-                                        ...List.generate(5, (index) {
-                                          return Container(
-                                            width: 16,
-                                            height: 16,
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: _getHeatmapColor(
-                                                (index * 3) +
-                                                    1, // Demo colors: 1, 4, 7, 10, 13
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                          );
-                                        }),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          isChinese ? '较多' : 'More',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: const Color(0xFF9CA3AF),
-                                                fontSize: 12,
-                                              ),
-                                        ),
-                                        const Spacer(),
-                                        GestureDetector(
-                                          onTap: () => _showHeatmapLegendDialog(
-                                            context,
-                                            isChinese,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      ...List.generate(5, (index) {
+                                        return Container(
+                                          width: 16,
+                                          height: 16,
+                                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                                          decoration: BoxDecoration(
+                                            color: _getHeatmapColor(context, (index * 3) + 1),
+                                            borderRadius: BorderRadius.circular(4),
                                           ),
-                                          child: const Icon(
-                                            Icons.info_outline,
-                                            size: 18,
-                                            color: Color(0xFF6B7280),
-                                          ),
+                                        );
+                                      }),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        l10n.reportMore,
+                                        style: AppTypography.labelSmall.copyWith(
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      const Spacer(),
+                                      IconButton(
+                                        visualDensity: VisualDensity.compact,
+                                        onPressed: () => _showHeatmapLegendDialog(context),
+                                        icon: Icon(
+                                          Icons.info_outline,
+                                          size: 18,
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
                                   ),
 
                                   const SizedBox(height: 24),
@@ -1070,9 +961,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                       Expanded(
                                         child: _buildHeatmapStatCard(
                                           context: context,
-                                          title: isChinese
-                                              ? '最活跃'
-                                              : 'Most Active',
+                                          title: l10n.reportMostActiveMonth,
                                           value: mostActiveMonth ?? 'N/A',
                                         ),
                                       ),
@@ -1080,24 +969,16 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                       Expanded(
                                         child: _buildHeatmapStatCard(
                                           context: context,
-                                          title: isChinese
-                                              ? '最长连续'
-                                              : 'Longest Streak',
-                                          value: isChinese
-                                              ? '$longestStreak 个月'
-                                              : '$longestStreak months',
+                                          title: l10n.reportLongestStreak,
+                                          value: '$longestStreak ${l10n.timeMonths}',
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: _buildHeatmapStatCard(
                                           context: context,
-                                          title: isChinese
-                                              ? '峰值活动'
-                                              : 'Peak Activity',
-                                          value: isChinese
-                                              ? '$peakActivity 项'
-                                              : '$peakActivity items',
+                                          title: l10n.reportTotalItems,
+                                          value: '$peakActivity ${l10n.inventoryItems}',
                                         ),
                                       ),
                                     ],
@@ -1109,10 +990,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
                             DeclutterResultsDistributionCard(
                               items: yearlyItems,
-                              title: l10n.dashboardLettingGoDetailsTitle,
-                              subtitle: isChinese
-                                  ? '年初至今的整理结果'
-                                  : 'Year-to-date outcomes',
+                              title: l10n.reportYearToDateOutcomes,
+                              subtitle: l10n.reportYearToDateOutcomes, // Using title as subtitle for now if specific one isn't distinct enough
                               keptLabel: DeclutterStatus.keep.label(context),
                               resellLabel: DeclutterStatus.resell.label(
                                 context,
@@ -1134,12 +1013,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             // Clean Sweep Analysis (Yearly)
                             DeepCleaningAnalysisCard(
                               sessions: yearlySessions,
-                              title: isChinese
-                                  ? '大扫除分析'
-                                  : 'Clean Sweep Analysis',
-                              emptyStateMessage: isChinese
-                                  ? '今年还没有大扫除记录，开始一次专注的整理吧。'
-                                  : 'No deep cleaning records yet this year. Start your first focused session.',
+                              title: l10n.reportCleanSweepTitle,
+                              emptyStateMessage: l10n.reportNoDeepCleaningRecords,
                               onDeleteSession: widget.onDeleteSession,
                             ),
                             const SizedBox(height: 20),
@@ -1209,10 +1084,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                         padding: EdgeInsets.only(top: topPadding),
                         child: Text(
                           pageName,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                          style: AppTypography.titleMedium.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -1228,45 +1102,52 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   }
 
   Widget _buildAchievementCard({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required String value,
     required String label,
   }) {
-    return SizedBox(
-      height: 150,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EA)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(icon, color: iconColor, size: 24),
-            const SizedBox(height: 10),
-            AutoScaleText(
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      borderRadius: BorderRadius.circular(24),
+      blur: 15,
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          const SizedBox(height: 12),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
+              style: AppTypography.titleLarge.copyWith(
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              textAlign: TextAlign.left,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              softWrap: true,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.labelSmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1277,49 +1158,36 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     required String value,
   }) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 116),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            height: 32,
-            child: Center(
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: const Color(0xFF6B7280),
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                  fontSize: 12,
-                  height: 1.2,
-                ),
-              ),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.labelSmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 40,
-            child: Center(
-              child: Text(
-                value,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.clip,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
-                  fontSize: 18,
-                  height: 1.2,
-                ),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              style: AppTypography.titleSmall.copyWith(
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -1328,116 +1196,84 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
-  Color _getHeatmapColor(int count) {
-    // Use actual count instead of relative intensity for consistent colors
+  Color _getHeatmapColor(BuildContext context, int count) {
     if (count == 0) {
-      return const Color(0xFFE5E7EB); // Gray for no activity
-    } else if (count <= 3) {
-      return const Color(0xFFD4E9F7); // Very light blue
-    } else if (count <= 6) {
-      return const Color(0xFFA8D8F0); // Light blue
-    } else if (count <= 9) {
-      return const Color(0xFF7BC8E8); // Medium blue
-    } else if (count <= 12) {
-      return const Color(0xFF4FB8E0); // Dark blue
-    } else {
-      return const Color(0xFF23A7D8); // Darkest blue
+      return Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3);
     }
+    final primary = Theme.of(context).colorScheme.primary;
+    if (count <= 3) return primary.withValues(alpha: 0.2);
+    if (count <= 6) return primary.withValues(alpha: 0.4);
+    if (count <= 9) return primary.withValues(alpha: 0.6);
+    if (count <= 12) return primary.withValues(alpha: 0.8);
+    return primary;
   }
 
-  Color _getHeatmapColorByCount(int count) {
-    // Same logic as _getHeatmapColor for legend consistency
-    if (count == 0) {
-      return const Color(0xFFE5E7EB); // Gray
-    } else if (count <= 3) {
-      return const Color(0xFFD4E9F7); // Very light blue
-    } else if (count <= 6) {
-      return const Color(0xFFA8D8F0); // Light blue
-    } else if (count <= 9) {
-      return const Color(0xFF7BC8E8); // Medium blue
-    } else {
-      return const Color(0xFF4FB8E0); // Dark blue (for 10+)
-    }
-  }
-
-  void _showHeatmapLegendDialog(BuildContext context, bool isChinese) {
+  void _showHeatmapLegendDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      barrierDismissible: true,
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Colors.white,
-          elevation: 12,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      isChinese ? '活动等级说明' : 'Activity Levels',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF111827),
-                        fontWeight: FontWeight.w600,
+                      l10n.reportActivity,
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    const Spacer(),
                     IconButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      icon: const Icon(Icons.close_rounded, size: 20),
-                      color: const Color(0xFF9CA3AF),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      onPressed: () => Navigator.pop(dialogContext),
+                      icon: const Icon(Icons.close_rounded),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                ...[
-                  {'range': isChinese ? '无活动 (0)' : 'None (0)', 'count': 0},
-                  {'range': isChinese ? '轻度活跃 (1-3)' : 'Light (1-3)', 'count': 2},
-                  {'range': isChinese ? '中度活跃 (4-6)' : 'Moderate (4-6)', 'count': 5},
-                  {'range': isChinese ? '高度活跃 (7-9)' : 'High (7-9)', 'count': 8},
-                  {'range': isChinese ? '非常活跃 (10+)' : 'Very High (10+)', 'count': 10},
-                ].map((item) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: _getHeatmapColorByCount(
-                              item['count'] as int,
-                            ),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFE5E7EA)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            item['range'] as String,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF4B5563),
-                              height: 1.2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+                const SizedBox(height: 16),
+                _buildLegendItem(context, l10n.reportNone, 0),
+                _buildLegendItem(context, '1-3', 2),
+                _buildLegendItem(context, '4-6', 5),
+                _buildLegendItem(context, '7-9', 8),
+                _buildLegendItem(context, '10+', 12),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLegendItem(BuildContext context, String label, int count) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _getHeatmapColor(context, count),
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Text(
+            label,
+            style: AppTypography.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1718,7 +1554,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     : monthlyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
                 maxMonths: 12,
                 isPercent: _showJoyPercent,
-                isChinese: isChinese,
+                colorScheme: Theme.of(context).colorScheme,
+                l10n: l10n,
               ),
             ),
           ),
@@ -1731,19 +1568,19 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             children: [
               _buildStatItem(
                 context,
-                label: isChinese ? '平均心动率' : 'Avg Joy Rate',
+                label: l10n.reportAverageJoyRate,
                 value: '${avgJoyPercent.toStringAsFixed(0)}%',
-                color: const Color(0xFFFF9AA2),
+                color: Theme.of(context).colorScheme.primary,
               ),
               _buildStatItem(
                 context,
-                label: isChinese ? '总心动次数' : 'Total Joy',
+                label: l10n.reportTotalJoyCount,
                 value: totalJoyCount.toString(),
-                color: const Color(0xFF5ECFB8),
+                color: Theme.of(context).colorScheme.secondary,
               ),
               _buildStatItem(
                 context,
-                label: isChinese ? '趋势分析' : 'Trend',
+                label: l10n.reportTrendAnalysis,
                 value: '$trendIcon $trendText',
                 color: trendColor,
               ),
@@ -1764,15 +1601,15 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       children: [
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
+          style: AppTypography.labelSmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
+          style: AppTypography.titleMedium.copyWith(
+            fontWeight: FontWeight.w800,
             color: color,
           ),
         ),
@@ -1780,123 +1617,83 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
-  void _showJoyInfo(BuildContext context, bool isChinese) {
-    final theme = Theme.of(context);
-    final labelStyle = theme.textTheme.bodyMedium?.copyWith(
-      color: const Color(0xFF111827),
-      fontWeight: FontWeight.w600,
-    );
-    final descriptionStyle = theme.textTheme.bodySmall?.copyWith(
-      color: const Color(0xFF4B5563),
-      height: 1.3,
-    );
+  void _showJoyInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isChinese = l10n.localeName == 'zh';
 
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF3F4F6),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.info_outline_rounded,
-                        color: Color(0xFF8B5CF6),
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isChinese ? '数据说明' : 'Data Info',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF111827),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            isChinese
-                                ? '了解心动数据的统计口径'
-                                : 'See how joy data is calculated',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
-                            ),
-                          ),
-                        ],
+                    Text(
+                      l10n.reportJoy,
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     IconButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      icon: const Icon(Icons.close_rounded, size: 20),
-                      color: const Color(0xFF9CA3AF),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      onPressed: () => Navigator.pop(dialogContext),
+                      icon: const Icon(Icons.close_rounded),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 Text(
-                  isChinese ? '统计口径' : 'What\'s included',
-                  style: labelStyle,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF4F6FB),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Text(
-                    isChinese
-                        ? '仅统计快速整理中回答"是否心动"的物品，心动次数=选择心动的物品数量。'
-                        : 'Only items answered in Quick Declutter are counted. Joy Count = items you marked as bringing joy.',
-                    style: descriptionStyle,
+                  isChinese ? '数据统计说明' : 'How it\'s measured',
+                  style: AppTypography.titleSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  isChinese ? '计算方法' : 'How it\'s calculated',
-                  style: labelStyle,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF4F6FB),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Text(
-                    isChinese
-                        ? '心动率 = 心动物品数 ÷ 快速整理已回答心动问题的总物品数。'
-                        : 'Joy Rate = Joy Count ÷ all Quick Declutter items with a joy answer.',
-                    style: descriptionStyle,
-                  ),
+                const SizedBox(height: 12),
+                _buildInfoBox(
+                  context,
+                  isChinese
+                      ? '心动量化了您在整理每一件物品时的情感联结。心动率越高，代表您的整理过程越具有正向情感和成就感。'
+                      : 'Joy quantifies the emotional connection as you declutter each item. A higher joy rate indicates more positive energy and accomplishment in your journey.',
                 ),
                 const SizedBox(height: 16),
+                _buildInfoBox(
+                  context,
+                  isChinese
+                      ? '心动率 = 产生心动感的物品数 ÷ 所有记录心动状态的物品数。'
+                      : 'Joy Rate = Count of Joyful items ÷ Total items with joy assessment.',
+                ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildInfoBox(BuildContext context, String text) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        text,
+        style: AppTypography.bodySmall.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+          height: 1.5,
+        ),
+      ),
     );
   }
 
@@ -2107,209 +1904,172 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       ),
     );
   }
+
+  String _getMonthAbbrev(int month, bool isChinese) {
+    if (isChinese) {
+      return '$month月';
+    } else {
+      switch (month) {
+        case 1: return 'Jan';
+        case 2: return 'Feb';
+        case 3: return 'Mar';
+        case 4: return 'Apr';
+        case 5: return 'May';
+        case 6: return 'Jun';
+        case 7: return 'Jul';
+        case 8: return 'Aug';
+        case 9: return 'Sep';
+        case 10: return 'Oct';
+        case 11: return 'Nov';
+        case 12: return 'Dec';
+        default: return '';
+      }
+    }
+  }
 }
 
 class _JoyTrendChartPainter extends CustomPainter {
-  final Map<int, double> monthlyData; // month index -> value (percent or count)
+  final Map<int, double> monthlyData;
   final int maxMonths;
   final bool isPercent;
-  final bool isChinese;
+  final ColorScheme colorScheme;
+  final AppLocalizations l10n;
 
   _JoyTrendChartPainter({
     required this.monthlyData,
     required this.maxMonths,
     required this.isPercent,
-    required this.isChinese,
+    required this.colorScheme,
+    required this.l10n,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (monthlyData.isEmpty) return;
 
-    final paint = Paint()
-      ..color = const Color(0xFFFF9AA2)
+    final primaryColor = colorScheme.primary;
+    final onSurfaceColor = colorScheme.onSurface;
+    final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
+    final outlineColor = colorScheme.outlineVariant;
+
+    final linePaint = Paint()
+      ..color = primaryColor
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
     final fillPaint = Paint()
-      ..color = const Color(0xFFFF9AA2).withValues(alpha: 0.1)
+      ..color = primaryColor.withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFFFF9AA2)
+      ..color = primaryColor
       ..style = PaintingStyle.fill;
 
     final gridPaint = Paint()
-      ..color = const Color(0xFFE0E0E0)
+      ..color = outlineColor.withValues(alpha: 0.5)
       ..strokeWidth = 1;
 
     final axisPaint = Paint()
-      ..color = const Color(0xFF9E9E9E)
-      ..strokeWidth = 2;
+      ..color = outlineColor
+      ..strokeWidth = 1.5;
 
     final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
 
-    // Calculate dimensions with space for Y-axis labels
-    const leftPadding = 20.0;
+    const leftPadding = 40.0;
     const rightPadding = 20.0;
     const topPadding = 20.0;
     const bottomPadding = 40.0;
     final chartWidth = size.width - leftPadding - rightPadding;
     final chartHeight = size.height - topPadding - bottomPadding;
 
-    // Find max value for scaling
     double maxValue;
     if (isPercent) {
-      maxValue = 100.0; // percent always 0-100
+      maxValue = 100.0;
     } else {
-      final maxRaw = monthlyData.values.isEmpty
-          ? 0
-          : monthlyData.values.reduce((a, b) => a > b ? a : b);
+      final maxRaw = monthlyData.values.isEmpty ? 0 : monthlyData.values.reduce((a, b) => a > b ? a : b);
       maxValue = maxRaw == 0 ? 5 : maxRaw.toDouble();
-      maxValue = (maxValue * 1.25).clamp(5.0, double.infinity); // add headroom
+      maxValue = (maxValue * 1.25).clamp(5.0, double.infinity);
     }
 
-    // Draw Y-axis
-    canvas.drawLine(
-      Offset(leftPadding, topPadding),
-      Offset(leftPadding, size.height - bottomPadding),
-      axisPaint,
-    );
-
-    // Draw X-axis
-    canvas.drawLine(
-      Offset(leftPadding, size.height - bottomPadding),
-      Offset(size.width - rightPadding, size.height - bottomPadding),
-      axisPaint,
-    );
-
-    // Draw horizontal grid lines and Y-axis labels
+    // Draw grid lines and labels
     for (int i = 0; i <= 5; i++) {
       final y = topPadding + (chartHeight * i / 5);
-      canvas.drawLine(
-        Offset(leftPadding, y),
-        Offset(size.width - rightPadding, y),
-        gridPaint,
-      );
+      canvas.drawLine(Offset(leftPadding, y), Offset(size.width - rightPadding, y), gridPaint);
 
-      // Y-axis labels - corrected to show values from max at top to 0 at bottom
       final value = maxValue * (5 - i) / 5;
       textPainter.text = TextSpan(
         text: value.toStringAsFixed(0),
-        style: const TextStyle(
-          color: Color(0xFF9E9E9E),
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
+        style: AppTypography.labelSmall.copyWith(
+          color: onSurfaceVariantColor,
+          fontSize: 10,
         ),
       );
       textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(leftPadding - textPainter.width - 8, y - textPainter.height / 2),
-      );
+      textPainter.paint(canvas, Offset(leftPadding - textPainter.width - 12, y - textPainter.height / 2));
     }
 
-    // Prepare data points for all 12 months (1-12, January to December)
     final points = <Offset>[];
-    final labels = <String>[];
-
     for (int month = 1; month <= 12; month++) {
       final value = monthlyData[month] ?? 0.0;
-
       final x = leftPadding + (chartWidth * (month - 1) / 11);
       final normalizedValue = value / maxValue;
       final y = topPadding + (chartHeight * (1 - normalizedValue));
-
       points.add(Offset(x, y));
-      labels.add('$month');
     }
 
     if (points.isEmpty) return;
 
-    // Draw filled area under the line
+    // Draw fill
     final fillPath = Path();
     fillPath.moveTo(points.first.dx, size.height - bottomPadding);
     fillPath.lineTo(points.first.dx, points.first.dy);
-
     for (int i = 0; i < points.length - 1; i++) {
       final current = points[i];
       final next = points[i + 1];
-      final controlPoint1 = Offset(
-        current.dx + (next.dx - current.dx) / 3,
-        current.dy,
-      );
-      final controlPoint2 = Offset(
-        current.dx + 2 * (next.dx - current.dx) / 3,
-        next.dy,
-      );
       fillPath.cubicTo(
-        controlPoint1.dx,
-        controlPoint1.dy,
-        controlPoint2.dx,
-        controlPoint2.dy,
-        next.dx,
-        next.dy,
-      );
+          current.dx + (next.dx - current.dx) / 3, current.dy,
+          current.dx + 2 * (next.dx - current.dx) / 3, next.dy,
+          next.dx, next.dy);
     }
-
     fillPath.lineTo(points.last.dx, size.height - bottomPadding);
     fillPath.close();
     canvas.drawPath(fillPath, fillPaint);
 
-    // Draw the line
+    // Draw line
     final linePath = Path();
     linePath.moveTo(points.first.dx, points.first.dy);
-
     for (int i = 0; i < points.length - 1; i++) {
       final current = points[i];
       final next = points[i + 1];
-      final controlPoint1 = Offset(
-        current.dx + (next.dx - current.dx) / 3,
-        current.dy,
-      );
-      final controlPoint2 = Offset(
-        current.dx + 2 * (next.dx - current.dx) / 3,
-        next.dy,
-      );
       linePath.cubicTo(
-        controlPoint1.dx,
-        controlPoint1.dy,
-        controlPoint2.dx,
-        controlPoint2.dy,
-        next.dx,
-        next.dy,
-      );
+          current.dx + (next.dx - current.dx) / 3, current.dy,
+          current.dx + 2 * (next.dx - current.dx) / 3, next.dy,
+          next.dx, next.dy);
     }
+    canvas.drawPath(linePath, linePaint);
 
-    canvas.drawPath(linePath, paint);
-
-    // Draw dots and labels at each data point
+    // Draw dots and labels
     for (int i = 0; i < points.length; i++) {
       final point = points[i];
+      
+      // Only draw dots for every 3 months or if it has non-zero value to keep it clean
+      if (i % 2 == 0 || monthlyData[i + 1] != 0) {
+        canvas.drawCircle(point, 5, dotPaint);
+        canvas.drawCircle(point, 3, Paint()..color = colorScheme.surface);
+      }
 
-      // Draw dot
-      canvas.drawCircle(point, 5, dotPaint);
-      canvas.drawCircle(point, 3, Paint()..color = Colors.white);
-
-      // Draw month label below
+      final monthName = _getMonthAbbrev(i + 1, l10n.localeName == 'zh');
       textPainter.text = TextSpan(
-        text: labels[i],
-        style: const TextStyle(
-          color: Color(0xFF9E9E9E),
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
+        text: monthName,
+        style: AppTypography.labelSmall.copyWith(
+          color: onSurfaceVariantColor,
+          fontSize: 9,
         ),
       );
       textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          point.dx - textPainter.width / 2,
-          size.height - bottomPadding + 10,
-        ),
-      );
+      textPainter.paint(canvas, Offset(point.dx - textPainter.width / 2, size.height - bottomPadding + 10));
     }
   }
 

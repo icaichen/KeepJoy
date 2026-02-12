@@ -1,9 +1,10 @@
-import 'dart:math' as math;
-import 'package:flutter/material.dart';
+import 'package:keepjoy_app/l10n/app_localizations.dart';
+import 'package:keepjoy_app/theme/typography.dart';
+import 'package:keepjoy_app/widgets/glass_container.dart';
+import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
-import 'package:keepjoy_app/utils/responsive_utils.dart';
-import 'package:keepjoy_app/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
 
 class MemoryLaneReportScreen extends StatefulWidget {
   const MemoryLaneReportScreen({super.key, required this.memories});
@@ -26,18 +27,16 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(
-      context,
-    ).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
     final headerHeight = responsive.totalTwoLineHeaderHeight + 12;
     final topPadding = responsive.safeAreaPadding.top;
-
-    final pageName = isChinese ? '年度记忆' : 'Annual Memory';
+    final colorScheme = Theme.of(context).colorScheme;
+    final pageName = l10n.dashboardMemoryLaneTitle;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: colorScheme.surface,
       body: Stack(
         children: [
           // Scrollable content
@@ -54,11 +53,10 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xFFB794F6), // Purple
-                        Color(0xFFF3EBFF), // Light purple
-                        Color(0xFFF5F5F7),
+                        colorScheme.primary.withValues(alpha: 0.15),
+                        colorScheme.surface,
                       ],
-                      stops: [0.0, 0.25, 0.45],
+                      stops: const [0.0, 0.45],
                     ),
                   ),
                 ),
@@ -84,23 +82,17 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
+                                AppTypography.headlineMedium(
                                   pageName,
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black,
-                                    letterSpacing: -0.5,
-                                    height: 1.0,
-                                  ),
+                                  context: context,
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
+                                const SizedBox(height: 4),
+                                AppTypography.bodySmall(
                                   l10n.dashboardMemoryLaneSubtitle,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF4B5563),
-                                  ),
+                                  context: context,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ],
                             ),
@@ -218,32 +210,32 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final emotions = [
       {
         'sentiment': MemorySentiment.love,
-        'label': isChinese ? '爱' : 'Love',
+        'label': MemorySentiment.love.label(context),
         'color': const Color(0xFFFF9AA2),
       },
       {
         'sentiment': MemorySentiment.nostalgia,
-        'label': isChinese ? '怀念' : 'Nostalgia',
+        'label': MemorySentiment.nostalgia.label(context),
         'color': const Color(0xFFFFD93D),
       },
       {
         'sentiment': MemorySentiment.adventure,
-        'label': isChinese ? '冒险' : 'Adventure',
+        'label': MemorySentiment.adventure.label(context),
         'color': const Color(0xFF89CFF0),
       },
       {
         'sentiment': MemorySentiment.happy,
-        'label': isChinese ? '快乐' : 'Happy',
+        'label': MemorySentiment.happy.label(context),
         'color': const Color(0xFFFFA07A),
       },
       {
         'sentiment': MemorySentiment.grateful,
-        'label': isChinese ? '感激' : 'Grateful',
+        'label': MemorySentiment.grateful.label(context),
         'color': const Color(0xFF5ECFB8),
       },
       {
         'sentiment': MemorySentiment.peaceful,
-        'label': isChinese ? '平静' : 'Peaceful',
+        'label': MemorySentiment.peaceful.label(context),
         'color': const Color(0xFFB794F6),
       },
     ];
@@ -254,37 +246,22 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     );
     final hasData = totalCount > 0;
 
-    return Container(
+    return GlassContainer(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          AppTypography.titleMedium(
             isChinese ? '情绪分布' : 'Emotion Distribution',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
+            context: context,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 8),
-          Text(
-            isChinese ? '每个回忆都是珍贵的' : 'Every memory is precious',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+          const SizedBox(height: 4),
+          AppTypography.bodySmall(
+            l10n.reportPreciousMoments,
+            context: context,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 24),
           Center(
@@ -366,36 +343,21 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       return isChinese ? '$month月' : _getMonthAbbrev(month);
     }
 
-    return Container(
+    return GlassContainer(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          AppTypography.titleMedium(
             isChinese ? '回忆热力图' : 'Memory Heatmap',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF111827),
-            ),
+            context: context,
+            fontWeight: FontWeight.bold,
           ),
           const SizedBox(height: 4),
-          Text(
+          AppTypography.bodySmall(
             isChinese ? '本年度活动' : 'Activity this year',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF6B7280)),
+            context: context,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 24),
           // 2 rows of 6 months each
@@ -419,20 +381,17 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                             width: double.infinity,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: _getHeatmapColor(count),
-                              borderRadius: BorderRadius.circular(12),
+                              color: _getHeatmapColor(count).withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
+                          AppTypography.labelSmall(
                             isChinese
                                 ? '${monthDate.month}月'
                                 : _getMonthAbbrev(monthDate.month),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: const Color(0xFF6B7280),
-                                  fontSize: 11,
-                                ),
+                            context: context,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ],
                       ),
@@ -459,20 +418,17 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                             width: double.infinity,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: _getHeatmapColor(count),
-                              borderRadius: BorderRadius.circular(12),
+                              color: _getHeatmapColor(count).withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
+                          AppTypography.labelSmall(
                             isChinese
                                 ? '${monthDate.month}月'
                                 : _getMonthAbbrev(monthDate.month),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: const Color(0xFF6B7280),
-                                  fontSize: 11,
-                                ),
+                            context: context,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ],
                       ),
@@ -488,12 +444,10 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               children: [
-                Text(
+                AppTypography.labelSmall(
                   isChinese ? '较少' : 'Less',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 12,
-                  ),
+                  context: context,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 8),
                 ...List.generate(5, (index) {
@@ -510,20 +464,18 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   );
                 }),
                 const SizedBox(width: 8),
-                Text(
+                AppTypography.labelSmall(
                   isChinese ? '较多' : 'More',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 12,
-                  ),
+                  context: context,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => _showHeatmapLegendDialog(context, isChinese),
                   child: Icon(
                     Icons.info_outline,
-                    size: 18,
-                    color: const Color(0xFF6B7280),
+                    size: 16,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -535,7 +487,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             children: [
               Expanded(
                 child: _buildStatCard(
-                  title: isChinese ? '最活跃' : 'Most Active',
+                  title: l10n.reportMostActiveLabel,
                   value: formatMostActiveLabel(),
                   context: context,
                 ),
@@ -543,7 +495,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
-                  title: isChinese ? '最长连续' : 'Longest Streak',
+                  title: l10n.reportLongestStreak,
                   value: isChinese
                       ? '$longestStreak 个月'
                       : '$longestStreak months',
@@ -553,7 +505,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
-                  title: isChinese ? '峰值活动' : 'Peak Activity',
+                  title: l10n.reportPeakActivity,
                   value: isChinese
                       ? '$maxMonthCount 次'
                       : '$maxMonthCount entries',
@@ -572,53 +524,32 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     required String title,
     required String value,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      constraints: const BoxConstraints(minHeight: 116),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+      constraints: const BoxConstraints(minHeight: 100),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            height: 32,
-            child: Center(
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: const Color(0xFF6B7280),
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                  fontSize: 12,
-                  height: 1.2,
-                ),
-              ),
-            ),
+          AppTypography.labelSmall(
+            title,
+            context: context,
+            color: colorScheme.onSurfaceVariant,
+            textAlign: TextAlign.center,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 40,
-            child: Center(
-              child: Text(
-                value,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.clip,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
-                  fontSize: 18,
-                  height: 1.2,
-                ),
-              ),
-            ),
+          const SizedBox(height: 8),
+          AppTypography.titleMedium(
+            value,
+            context: context,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -654,38 +585,23 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final sortedCategories = categoryCounts.keys.toList()
       ..sort((a, b) => categoryCounts[b]!.compareTo(categoryCounts[a]!));
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
+    return GlassContainer(
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          AppTypography.titleMedium(
             isChinese ? '分类统计' : 'Category Statistics',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
+            context: context,
+            fontWeight: FontWeight.bold,
           ),
           const SizedBox(height: 4),
-          Text(
+          AppTypography.bodySmall(
             isChinese ? '各类别的回忆数量' : 'Memory count per category',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+            context: context,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           if (sortedCategories.isEmpty)
             Text(
               isChinese ? '暂无分类数据' : 'No category data yet',
@@ -704,35 +620,29 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 final barValue =
                     maxCount == 0 ? 0.0 : (count / maxCount).clamp(0.0, 1.0);
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8F5FF),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE4D9FF)),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(
+                          AppTypography.titleSmall(
                             category.label(context),
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF111827),
-                            ),
+                            context: context,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           const Spacer(),
-                          Text(
+                          AppTypography.titleMedium(
                             '$count',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF6D28D9),
-                            ),
+                            context: context,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ],
                       ),
@@ -740,24 +650,27 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                       Stack(
                         children: [
                           Container(
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEDE9FE),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                          ),
-                          FractionallySizedBox(
-                            widthFactor: barValue,
-                            child: Container(
-                              height: 10,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFFB794F6), Color(0xFF7C3AED)],
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
-                                borderRadius: BorderRadius.circular(999),
                               ),
-                            ),
-                          ),
+                              FractionallySizedBox(
+                                widthFactor: barValue,
+                                child: Container(
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                                        Theme.of(context).colorScheme.primary,
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ),
+                              ),
                         ],
                       ),
                     ],
@@ -802,37 +715,24 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         ? latestMemory.createdAt.difference(firstMemory.createdAt).inDays
         : 0;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
+    final colorScheme = Theme.of(context).colorScheme;
+    return GlassContainer(
+      padding: const EdgeInsets.all(24),
       child: widget.memories.isEmpty
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                AppTypography.titleMedium(
                   isChinese ? '时光印记' : 'Time Markers',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
+                  context: context,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 Center(
-                  child: Text(
+                  child: AppTypography.bodyMedium(
                     isChinese ? '暂无回忆' : 'No memories yet',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+                    context: context,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -840,26 +740,23 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                AppTypography.titleMedium(
                   isChinese ? '时光印记' : 'Time Markers',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
+                  context: context,
+                  fontWeight: FontWeight.bold,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  isChinese ? '珍贵的时刻' : 'Precious moments',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                AppTypography.bodySmall(
+                  l10n.reportPreciousMoments,
+                  context: context,
+                  color: colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 _buildTimeMarker(
                   context,
                   Icons.spa_rounded,
-                  const Color(0xFF66BB6A),
-                  isChinese ? '第一个回忆' : 'First Memory',
+                  colorScheme.primary,
+                  l10n.reportFirstMemoryLabel,
                   firstMemory!.title,
                   _formatDate(firstMemory.createdAt, isChinese),
                   isChinese,
@@ -869,8 +766,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   _buildTimeMarker(
                     context,
                     Icons.menu_book_rounded,
-                    const Color(0xFF8E24AA),
-                    isChinese ? '最长故事' : 'Longest Story',
+                    colorScheme.secondary,
+                    l10n.reportLongestStoryLabel,
                     longestStory.title,
                     _formatDate(longestStory.createdAt, isChinese),
                     isChinese,
@@ -879,50 +776,44 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 _buildTimeMarker(
                   context,
                   Icons.auto_awesome_rounded,
-                  const Color(0xFFFFB300),
-                  isChinese ? '最新回忆' : 'Latest Memory',
+                  colorScheme.tertiary,
+                  l10n.reportLatestMemoryLabel,
                   latestMemory!.title,
                   _formatDate(latestMemory.createdAt, isChinese),
                   isChinese,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFFF3EBFF), Color(0xFFE6D5FF)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
+                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.track_changes_rounded,
                         size: 32,
-                        color: Color(0xFF7B61FF),
+                        color: colorScheme.primary,
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              isChinese ? '回忆之旅' : 'Memory Journey',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
-                                  ),
+                            AppTypography.titleSmall(
+                              l10n.reportMemoryJourney,
+                              context: context,
+                              fontWeight: FontWeight.bold,
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              isChinese
-                                  ? '$totalDays 天 · ${widget.memories.length} 个回忆'
-                                  : '$totalDays days · ${widget.memories.length} memories',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Colors.black54),
+                            AppTypography.bodySmall(
+                              l10n.reportMemoryJourneyDetail(
+                                totalDays.toString(),
+                                widget.memories.length.toString(),
+                              ),
+                              context: context,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ],
                         ),
@@ -944,6 +835,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     String date,
     bool isChinese,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -951,40 +843,33 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(12),
+            color: iconColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Center(child: Icon(icon, color: iconColor, size: 24)),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              AppTypography.labelSmall(
                 label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black54,
-                  fontSize: 10,
-                ),
+                context: context,
+                color: colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(height: 2),
-              Text(
+              const SizedBox(height: 4),
+              AppTypography.titleSmall(
                 title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                context: context,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
               ),
               const SizedBox(height: 2),
-              Text(
+              AppTypography.labelSmall(
                 date,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black54,
-                  fontSize: 10,
-                ),
+                context: context,
+                color: colorScheme.onSurfaceVariant,
               ),
             ],
           ),
@@ -1047,41 +932,38 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   }
 
   void _showHeatmapLegendDialog(BuildContext context, bool isChinese) {
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Colors.white,
-          elevation: 12,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: GlassContainer(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(
+                    AppTypography.titleSmall(
                       isChinese ? '活动等级说明' : 'Activity Levels',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF111827),
-                        fontWeight: FontWeight.w600,
-                      ),
+                      context: context,
+                      fontWeight: FontWeight.bold,
                     ),
                     const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.of(dialogContext).pop(),
                       icon: const Icon(Icons.close_rounded, size: 20),
-                      color: const Color(0xFF9CA3AF),
+                      color: colorScheme.onSurfaceVariant,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
                 ...[
                   {'range': isChinese ? '无活动 (0)' : 'None (0)', 'count': 0},
                   {'range': isChinese ? '轻度活跃 (1-3)' : 'Light (1-3)', 'count': 2},
@@ -1090,29 +972,24 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   {'range': isChinese ? '非常活跃 (10+)' : 'Very High (10+)', 'count': 10},
                 ].map((item) {
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          width: 20,
-                          height: 20,
+                          width: 24,
+                          height: 24,
                           decoration: BoxDecoration(
-                            color: _getHeatmapColorByCount(
-                              item['count'] as int,
-                            ),
+                            color: _getHeatmapColorByCount(item['count'] as int).withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFE5E7EA)),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 16),
                         Expanded(
-                          child: Text(
+                          child: AppTypography.bodySmall(
                             item['range'] as String,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF4B5563),
-                              height: 1.2,
-                            ),
+                            context: context,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -1252,64 +1129,61 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     required BuildContext context,
   }) {
     final theme = Theme.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 3 列布局，显示色块+标签+比例
-        final itemWidth = (constraints.maxWidth - 2 * 8) / 3;
+        final itemWidth = (constraints.maxWidth - 2 * 12) / 3;
         return Wrap(
-          spacing: 8,
+          spacing: 12,
           runSpacing: 12,
-          alignment: WrapAlignment.center,
+          alignment: WrapAlignment.start,
           children: emotions.map((emotion) {
-            final count =
-                sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
+            final count = sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
+            final label = emotion['label'] as String;
+            final color = emotion['color'] as Color;
+
             return SizedBox(
               width: itemWidth,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF9FAFB),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Row(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: emotion['color'] as Color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                        Text(
-                          emotion['label'] as String,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF111827),
-                            height: 1.2,
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '$count',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF6B7280),
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: AppTypography.labelSmall(
+                            label,
+                            context: context,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 4),
+                    AppTypography.titleMedium(
+                      '$count',
+                      context: context,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ],
+                ),
               ),
             );
           }).toList(),

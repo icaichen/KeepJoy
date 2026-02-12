@@ -7,6 +7,8 @@ import '../dashboard/widgets/cleaning_area_legend.dart';
 import '../../widgets/auto_scale_text.dart';
 import '../../widgets/smart_image_widget.dart';
 import '../../widgets/modern_dialog.dart';
+import '../../widgets/glass_container.dart';
+import '../../theme/typography.dart';
 
 class DeepCleaningAnalysisCard extends StatefulWidget {
   final List<DeepCleaningSession> sessions;
@@ -86,30 +88,20 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     // Calculate areas cleared (unique areas with sessions)
     final areasCleared = areaCounts.values.where((count) => count > 0).length;
 
-    return Container(
+    return GlassContainer(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
+      borderRadius: BorderRadius.circular(24),
+      blur: 15,
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
           Text(
             widget.title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            style: AppTypography.titleMedium.copyWith(
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 20),
@@ -326,49 +318,53 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EA)),
+            color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   _getIconForArea(area),
-                  color: const Color(0xFF6B7280),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: 22,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       CleaningArea.getDisplayName(area, context),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
+                      style: AppTypography.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       l10n.dashboardSessionTotal(sessionCount),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF6B7280),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
             ],
           ),
         ),
@@ -389,90 +385,84 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (sheetContext) {
-        return SafeArea(
-          child: DraggableScrollableSheet(
-            initialChildSize: 0.7,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            expand: false,
-            builder: (context, scrollController) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE5E7EA),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF3F4F6),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            _getIconForArea(area),
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                CleaningArea.getDisplayName(area, context),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF111827),
-                                ),
-                              ),
-                              Text(
-                                l10n.dashboardSessionTotal(sortedSessions.length),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: ListView.builder(
-                        controller: scrollController,
-                        itemCount: sortedSessions.length,
-                        itemBuilder: (context, index) {
-                          final session = sortedSessions[index];
-                          return _buildComparisonRow(context, l10n, session);
-                        },
-                      ),
-                    ),
-                  ],
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
-              );
-            },
-          ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          _getIconForArea(area),
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              CleaningArea.getDisplayName(area, context),
+                              style: AppTypography.titleLarge.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                            Text(
+                              l10n.dashboardSessionTotal(sortedSessions.length),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+                    itemCount: sortedSessions.length,
+                    itemBuilder: (context, index) {
+                      final session = sortedSessions[index];
+                      return _buildComparisonRow(context, l10n, session);
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -490,7 +480,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         '${Duration(seconds: session.elapsedSeconds!).inMinutes} min',
     ];
 
-    final row = Padding(
+    return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -498,40 +488,46 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EA)),
+            color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   _getIconForArea(session.area),
-                  color: const Color(0xFF6B7280),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: 22,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   subtitleParts.join(' · '),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF6B7280),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xFF9CA3AF)),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
 
     if (widget.onDeleteSession == null) {
       return row;
@@ -580,96 +576,103 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 12,
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(999),
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  CleaningArea.getDisplayName(session.area, context),
+                                  style: AppTypography.titleLarge.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _formatSessionDate(session.startTime, l10n),
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              visualDensity: VisualDensity.compact,
+                              onPressed: () => Navigator.pop(sheetContext),
+                              icon: Icon(
+                                Icons.close_rounded,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 32),
+                      _buildPhotoCarousel(context, l10n, session),
+                      const SizedBox(height: 32),
+                      Text(
+                        l10n.reportSessionData,
+                        style: AppTypography.titleMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSessionDetailList(
+                        l10n: l10n,
+                        colon: l10n.localeName.toLowerCase().startsWith('zh') ? '：' : ':',
+                        itemsValue: session.itemsCount?.toString() ?? '--',
+                        durationValue: session.elapsedSeconds != null ? _formatDuration(session.elapsedSeconds!, l10n) : '--',
+                        beforeValue: session.beforeMessinessIndex != null ? session.beforeMessinessIndex!.toStringAsFixed(1) : '--',
+                        afterValue: session.afterMessinessIndex != null ? session.afterMessinessIndex!.toStringAsFixed(1) : '--',
+                        improvementValue: improvement != null ? '${improvement.toStringAsFixed(0)}%' : '--',
+                        focusValue: session.focusIndex?.toString() ?? '--',
+                        joyValue: session.moodIndex?.toString() ?? '--',
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '${CleaningArea.getDisplayName(session.area, context)} · ${_formatSessionDate(session.startTime, l10n)}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatSessionTime(session.startTime, l10n),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-          const SizedBox(height: 16),
-          _buildPhotoCarousel(context, l10n, session),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: _buildSessionDetailList(
-                      l10n: l10n,
-                      colon: l10n.localeName.toLowerCase().startsWith('zh')
-                          ? '：'
-                          : ':',
-                      itemsValue: session.itemsCount?.toString() ?? '--',
-                      durationValue: session.elapsedSeconds != null
-                          ? _formatDuration(session.elapsedSeconds!, l10n)
-                          : '--',
-                      beforeValue: session.beforeMessinessIndex != null
-                          ? session.beforeMessinessIndex!.toStringAsFixed(1)
-                          : '--',
-                      afterValue: session.afterMessinessIndex != null
-                          ? session.afterMessinessIndex!.toStringAsFixed(1)
-                          : '--',
-                      improvementValue: improvement != null
-                          ? '${improvement.toStringAsFixed(0)}%'
-                          : '--',
-                      focusValue: session.focusIndex?.toString() ?? '--',
-                      joyValue: session.moodIndex?.toString() ?? '--',
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(sheetContext),
-                      child: Text(l10n.close),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -757,33 +760,47 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     );
 
     Widget buildRow(String label, String value) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: Text('$label$colon', style: labelStyle)),
-          Text(value, style: valueStyle),
-        ],
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                '$label$colon',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            Text(
+              value,
+              style: AppTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     return Column(
       children: [
         buildRow(l10n.dashboardItemsLabel, itemsValue),
-        const SizedBox(height: 8),
         buildRow(l10n.dashboardDurationLabel, durationValue),
-        const SizedBox(height: 12),
-        const Divider(height: 1, color: Color(0xFFE5E7EB)),
-        const SizedBox(height: 12),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Divider(height: 1),
+        ),
         buildRow(l10n.messinessBefore, beforeValue),
-        const SizedBox(height: 8),
         buildRow(l10n.messinessAfter, afterValue),
-        const SizedBox(height: 8),
         buildRow(l10n.dashboardMessinessReducedLabel, improvementValue),
-        const SizedBox(height: 12),
-        const Divider(height: 1, color: Color(0xFFE5E7EB)),
-        const SizedBox(height: 12),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Divider(height: 1),
+        ),
         buildRow(l10n.dashboardFocusLabel, focusValue),
-        const SizedBox(height: 8),
         buildRow(l10n.dashboardJoyLabel, joyValue),
       ],
     );
@@ -876,45 +893,38 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     required String label,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
+        color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           AutoScaleText(
             value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-              fontSize: 20,
+            style: AppTypography.titleLarge.copyWith(
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
-          AutoScaleText(
+          Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              color: const Color(0xFF6B7280),
+            style: AppTypography.labelSmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
@@ -933,31 +943,20 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (trailing != null)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: AppTypography.titleSmall.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              trailing,
-            ],
-          )
-        else
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
             ),
-          ),
-        const SizedBox(height: 8),
+            if (trailing != null) trailing,
+          ],
+        ),
+        const SizedBox(height: 16),
         child,
       ],
     );
@@ -1007,15 +1006,21 @@ class _PhotoPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF4B5563),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              label,
+              style: AppTypography.labelSmall.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           AspectRatio(
             aspectRatio: 4 / 3, // 常见横向拍摄比例
             child: ClipRRect(
