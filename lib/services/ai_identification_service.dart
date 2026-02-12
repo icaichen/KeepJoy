@@ -93,38 +93,63 @@ class AIIdentificationService {
       );
       final language = locale.languageCode == 'zh' ? 'Chinese' : 'English';
 
-      final response = await http.post(
-        Uri.parse('$_qwenBaseUrl/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_qwenApiKey',
-        },
-        body: jsonEncode({
-          'model': 'qwen-vl-plus',
-          'messages': [
-            {
-              'role': 'user',
-              'content': [
+      final response = await http
+          .post(
+            Uri.parse('$_qwenBaseUrl/chat/completions'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $_qwenApiKey',
+            },
+            body: jsonEncode({
+              'model': 'qwen-vl-plus',
+              'messages': [
                 {
-                  'type': 'image_url',
-                  'image_url': {'url': 'data:image/jpeg;base64,$base64Image'},
-                },
-                {
-                  'type': 'text',
-                  'text':
-                      '''Identify this item in $language. Include brand name if visible.
+                  'role': 'user',
+                  'content': [
+                    {
+                      'type': 'image_url',
+                      'image_url': {
+                        'url': 'data:image/jpeg;base64,$base64Image'
+                      },
+                    },
+                    {
+                      'type': 'text',
+                      'text':
+                          '''Identify this item in $language. Include brand name if visible.
 Respond in JSON format:
 {
   "name": "specific item name with brand if visible",
   "category": "one of: clothes, booksDocuments, electronics, beauty, sentimental, miscellaneous",
   "confidence": 0-100
 }''',
+                    },
+                  ],
                 },
               ],
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('AI识别超时，请检查网络连接后重试');
             },
-          ],
-        }),
-      );
+          );
+
+      // Handle different HTTP status codes
+      if (response.statusCode == 429) {
+        debugPrint('❌ AI API rate limit exceeded');
+        throw Exception('AI识别请求过于频繁，请稍后再试');
+      }
+
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        debugPrint('❌ AI API authentication failed: ${response.statusCode}');
+        throw Exception('AI服务配置错误，请联系客服');
+      }
+
+      if (response.statusCode >= 500) {
+        debugPrint('❌ AI API server error: ${response.statusCode}');
+        throw Exception('AI服务暂时不可用，请稍后重试');
+      }
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -153,12 +178,19 @@ Respond in JSON format:
           method: 'cloud',
         );
       } else {
-        print('Qwen API error: ${response.statusCode} - ${response.body}');
-        return null;
+        // Unexpected status code
+        debugPrint(
+            '❌ AI API unexpected error: ${response.statusCode} - ${response.body}');
+        throw Exception('AI识别失败 (错误码: ${response.statusCode})');
       }
+    } on Exception catch (e) {
+      // Re-throw our custom exceptions with user-friendly messages
+      debugPrint('❌ AI identification failed: $e');
+      rethrow;
     } catch (e) {
-      print('Detailed identification failed: $e');
-      return null;
+      // Catch unexpected errors
+      debugPrint('❌ Unexpected error in AI identification: $e');
+      throw Exception('AI识别遇到未知错误，请稍后重试');
     }
   }
 

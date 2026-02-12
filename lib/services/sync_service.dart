@@ -840,6 +840,7 @@ class SyncService {
 
   /// Last-write-wins with delete priority
   /// Rules:
+  /// 0. CRITICAL: If local is dirty, NEVER replace (prevent data loss)
   /// 1. If remote has deletedAt, always take remote (delete wins)
   /// 2. If local has deletedAt but remote doesn't, keep local delete
   /// 3. Otherwise, use last-write-wins based on updatedAt
@@ -850,13 +851,11 @@ class SyncService {
     DateTime? remoteDeletedAt,
     bool localIsDirty = false,
   }) {
-    // NOTE: We removed the isDirty check here because it was blocking legitimate
-    // remote updates. The isDirty flag should only prevent uploading stale local
-    // data to cloud, not prevent downloading newer remote data.
-    // If remote is genuinely newer, we should accept it regardless of local state.
-
+    // CRITICAL: If local data is dirty (not yet uploaded), NEVER replace it
+    // This prevents user's unsaved edits from being overwritten by stale cloud data
     if (localIsDirty) {
-      debugPrint('   ⚠️ Local is dirty - will still compare timestamps');
+      debugPrint('   🔒 Local is dirty - protecting user edits, NOT replacing');
+      return false;
     }
 
     if (remoteDeletedAt != null && localDeletedAt != null) {
