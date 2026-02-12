@@ -9,32 +9,100 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get onboardingTitle1 => 'Spark Joy';
+  String get onboardingIntroQ1 => '被杂物淹没，不知道从哪里开始？';
 
   @override
-  String get onboardingDesc1 =>
-      'Declutter your space, one item at a time. Keep only what brings you joy.';
+  String get onboardingIntroQ2 => '陷入决策瘫痪，不知道该留还是该扔？';
 
   @override
-  String get onboardingTitle2 => 'Value Driven';
+  String get onboardingIntroQ3 => '明知沉重，却依然无法对过去放手？';
 
   @override
-  String get onboardingDesc2 =>
-      'Track the value of items you let go. Sell, donate, or recycle with purpose.';
+  String get onboardingPainProcrastination => '算了，明天再说吧...';
 
   @override
-  String get onboardingTitle3 => 'Preserve Memories';
+  String get onboardingPainSunkCost => '买的时候好贵的...';
 
   @override
-  String get onboardingDesc3 =>
-      'Letting go doesn\'t mean forgetting. Digitize your cherished memories forever.';
+  String get onboardingPainNoTime => '根本没时间折腾这些。';
 
   @override
-  String get onboardingTitle4 => 'Mindful Living';
+  String get onboardingPainTooManyMemories => '回忆太满，舍不得扔。';
 
   @override
-  String get onboardingDesc4 =>
-      'Build lasting habits. Transform your environment and your mind.';
+  String get onboardingPainSunkShort => '沉没成本';
+
+  @override
+  String get onboardingPainParalysis => '决策瘫痪';
+
+  @override
+  String get onboardingPainStartWhere => '从哪开始？';
+
+  @override
+  String get onboardingPainSentimental => '过于感性';
+
+  @override
+  String get onboardingPainMaybeTomorrow => '明天再说吧...';
+
+  @override
+  String get onboardingPainTooMuchMess => '家里太乱了';
+
+  @override
+  String get onboardingIntroSolution => '我们帮您打破僵局，做出决定，找回内心的宁静。';
+
+  @override
+  String get onboardingPage1Title => '打破决策瘫痪';
+
+  @override
+  String get onboardingPage1Desc => '不再犹豫不决。我们提供引导式逻辑，帮您从最轻松的地方开始，重新掌控空间。';
+
+  @override
+  String get onboardingPage1Feat1 => '极速整理';
+
+  @override
+  String get onboardingPage1Feat1Desc => '“随处开始”的利器。通过 AI 批量识别快速清除表面杂物，打破混乱循环。';
+
+  @override
+  String get onboardingPage1Feat2 => '轻盈整理';
+
+  @override
+  String get onboardingPage1Feat2Desc => '决策导航。5 个诚实的灵魂拷问，帮您理清真正属于您未来的物品。';
+
+  @override
+  String get onboardingPage1Feat3 => '深度大扫除';
+
+  @override
+  String get onboardingPage1Feat3Desc => '您的逐房整理蓝图。提供清晰引导，让您不再为“接下来该干什么”而迷茫。';
+
+  @override
+  String get onboardingPage2Title => '夺回掌控权';
+
+  @override
+  String get onboardingPage2Desc => '当您拥有一套管理价值与去向的系统，物品就不再能支配您的生活。';
+
+  @override
+  String get onboardingPage2Feat1 => '我的物品';
+
+  @override
+  String get onboardingPage2Feat1Desc => '数据就是力量。将整理进程转化为直观统计，消除被物品打败的挫败感。';
+
+  @override
+  String get onboardingPage2Feat2 => '转售变现';
+
+  @override
+  String get onboardingPage2Feat2Desc => '体面地告别。为离去之物寻找下家，在尊重物品的同时找回其剩余价值。';
+
+  @override
+  String get onboardingPage3Title => '您的情感安全网';
+
+  @override
+  String get onboardingPage3Desc => '放弃实物并不代表放弃爱。我们为您守护过去的灵魂。';
+
+  @override
+  String get onboardingPage3Feat1 => '珍藏回忆';
+
+  @override
+  String get onboardingPage3Feat1Desc => '在数字圣殿中保存本质。在确保回忆安全的前提下，心怀感激地告别实物。';
 
   @override
   String get getStarted => '开始使用';
@@ -46,58 +114,60 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goodAfternoon => '下午好';
 
   @override
-  String get readyToSparkJoy => '准备好开启轻盈整理之旅了吗？';
+  String get readyToSparkJoy => 'Ready to bring some joy today?';
 
   @override
-  String get startYourDeclutterJourney => '开始你的断舍离旅程';
+  String get startYourDeclutterJourney => 'Start your declutter journey';
 
   @override
-  String get chooseFlowTitle => '选择整理方式';
+  String get chooseFlowTitle => 'Choose a flow';
 
   @override
-  String get chooseFlowSubtitle => '根据当前状态选择最合适的整理体验。';
+  String get chooseFlowSubtitle =>
+      'Pick the experience that fits your current energy.';
 
   @override
-  String get joyDeclutterFlowDescription => '帮助你做出艰难的决定';
+  String get joyDeclutterFlowDescription => 'Help you make difficult decision';
 
   @override
-  String get quickDeclutterFlowDescription => '只保留带来快乐的物品';
+  String get quickDeclutterFlowDescription => 'Only keep items that bring joys';
 
   @override
-  String get deepCleaningFlowDescription => '规划、聚焦、完成大扫除';
+  String get deepCleaningFlowDescription => 'Plan, focus, finish a deep clean';
 
   @override
-  String get deepCleaningComparisonsTitle => '前后对比报告';
+  String get deepCleaningComparisonsTitle => 'Before & After Comparisons';
 
   @override
-  String get deepCleaningComparisonsEmpty => '添加照片和凌乱度数据即可查看前后对比。';
+  String get deepCleaningComparisonsEmpty =>
+      'Add photos and messiness scores to see comparisons.';
 
   @override
-  String get startAction => '开始';
+  String get startAction => 'Start';
 
   @override
-  String get dailyInspiration => '每日灵感';
+  String get dailyInspiration => 'Daily Inspiration';
 
   @override
-  String get welcomeBack => '欢迎回到你的轻盈整理之旅';
+  String get welcomeBack => 'Welcome back to your joy journey';
 
   @override
-  String get continueYourJoyJourney => '继续你的旅程';
+  String get continueYourJoyJourney => 'Continue your journey';
 
   @override
-  String get tagline1 => '用正念继续整理你的空间';
+  String get tagline1 => 'Continue organizing your space with mindfulness';
 
   @override
-  String get tagline2 => '一次一件物品，改变空间';
+  String get tagline2 => 'Transforming spaces, one item at a time';
 
   @override
-  String get tagline3 => '以有意识的生活创造清晰';
+  String get tagline3 => 'Creating clarity with intentional living';
 
   @override
-  String get tagline4 => '每件物品都有故事，用心对待';
+  String get tagline4 => 'Every item has a story, honor it with purpose';
 
   @override
-  String get tagline5 => '通过用心整理建立快乐';
+  String get tagline5 => 'Building joy through mindful decluttering';
 
   @override
   String get thisMonthProgress => '最近活动';

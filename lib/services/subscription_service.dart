@@ -25,7 +25,12 @@ class SubscriptionService {
 
       // Get API key based on platform
       final String apiKey;
-      if (Platform.isIOS) {
+      if (kIsWeb) {
+        _log('🌐 Platform: Web (Not fully supported by RevenueCat SDK yet, using placeholder)');
+        // RevenueCat doesn't officially support Web yet in the same way, 
+        // but this prevents the crash. You might want to handle this differently.
+        return; 
+      } else if (Platform.isIOS) {
         apiKey = RevenueCatConfig.iosApiKey;
         _log('📱 Platform: iOS');
         _log('🔑 Using iOS API Key: ${apiKey.substring(0, 10)}...');

@@ -19,8 +19,8 @@ import 'features/resell/resell_screen.dart';
 import 'features/memories/create_memory_page.dart';
 import 'features/auth/welcome_page.dart';
 import 'features/auth/login_page.dart';
+import 'package:keepjoy_app/features/onboarding/new_onboarding_screen.dart';
 import 'features/auth/reset_password_page.dart';
-import 'features/onboarding/onboarding_screen.dart';
 import 'ui/paywall/paywall_page.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/typography.dart';
@@ -222,9 +222,7 @@ class _KeepJoyAppState extends State<KeepJoyApp> with WidgetsBindingObserver {
         // Use home instead of initialRoute so it rebuilds on auth state change
         home: _authService.isAuthenticated
             ? MainNavigator(onLocaleChange: _setLocale)
-            : (widget.hasSeenOnboarding
-                ? const WelcomePage()
-                : const OnboardingScreen()),
+            : const NewOnboardingScreen(),
         routes: {
           '/welcome': (context) => const WelcomePage(),
           '/login': (context) => const LoginPage(),

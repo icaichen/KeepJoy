@@ -98,53 +98,197 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
-  /// No description provided for @onboardingTitle1.
+  /// No description provided for @onboardingIntroQ1.
   ///
   /// In en, this message translates to:
-  /// **'Spark Joy'**
-  String get onboardingTitle1;
+  /// **'Overwhelmed and don\'t know where to start?'**
+  String get onboardingIntroQ1;
 
-  /// No description provided for @onboardingDesc1.
+  /// No description provided for @onboardingIntroQ2.
   ///
   /// In en, this message translates to:
-  /// **'Declutter your space, one item at a time. Keep only what brings you joy.'**
-  String get onboardingDesc1;
+  /// **'Paralyzed by too many choices?'**
+  String get onboardingIntroQ2;
 
-  /// No description provided for @onboardingTitle2.
+  /// No description provided for @onboardingIntroQ3.
   ///
   /// In en, this message translates to:
-  /// **'Value Driven'**
-  String get onboardingTitle2;
+  /// **'Can\'t let go of the past?'**
+  String get onboardingIntroQ3;
 
-  /// No description provided for @onboardingDesc2.
+  /// No description provided for @onboardingPainProcrastination.
   ///
   /// In en, this message translates to:
-  /// **'Track the value of items you let go. Sell, donate, or recycle with purpose.'**
-  String get onboardingDesc2;
+  /// **'I\'ll do it tomorrow...'**
+  String get onboardingPainProcrastination;
 
-  /// No description provided for @onboardingTitle3.
+  /// No description provided for @onboardingPainSunkCost.
   ///
   /// In en, this message translates to:
-  /// **'Preserve Memories'**
-  String get onboardingTitle3;
+  /// **'It cost so much money...'**
+  String get onboardingPainSunkCost;
 
-  /// No description provided for @onboardingDesc3.
+  /// No description provided for @onboardingPainNoTime.
   ///
   /// In en, this message translates to:
-  /// **'Letting go doesn\'t mean forgetting. Digitize your cherished memories forever.'**
-  String get onboardingDesc3;
+  /// **'I have zero time for this.'**
+  String get onboardingPainNoTime;
 
-  /// No description provided for @onboardingTitle4.
+  /// No description provided for @onboardingPainTooManyMemories.
   ///
   /// In en, this message translates to:
-  /// **'Mindful Living'**
-  String get onboardingTitle4;
+  /// **'Too much sentimental weight.'**
+  String get onboardingPainTooManyMemories;
 
-  /// No description provided for @onboardingDesc4.
+  /// No description provided for @onboardingPainSunkShort.
   ///
   /// In en, this message translates to:
-  /// **'Build lasting habits. Transform your environment and your mind.'**
-  String get onboardingDesc4;
+  /// **'Sunk Cost'**
+  String get onboardingPainSunkShort;
+
+  /// No description provided for @onboardingPainParalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Paralysis'**
+  String get onboardingPainParalysis;
+
+  /// No description provided for @onboardingPainStartWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Start where?'**
+  String get onboardingPainStartWhere;
+
+  /// No description provided for @onboardingPainSentimental.
+  ///
+  /// In en, this message translates to:
+  /// **'Sentimental'**
+  String get onboardingPainSentimental;
+
+  /// No description provided for @onboardingPainMaybeTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe tomorrow...'**
+  String get onboardingPainMaybeTomorrow;
+
+  /// No description provided for @onboardingPainTooMuchMess.
+  ///
+  /// In en, this message translates to:
+  /// **'Too much mess'**
+  String get onboardingPainTooMuchMess;
+
+  /// No description provided for @onboardingIntroSolution.
+  ///
+  /// In en, this message translates to:
+  /// **'We help you start, decide, and finally find peace.'**
+  String get onboardingIntroSolution;
+
+  /// No description provided for @onboardingPage1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Decision Support'**
+  String get onboardingPage1Title;
+
+  /// No description provided for @onboardingPage1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop the paralysis. We provide the guided logic to start where it hurts least and build momentum.'**
+  String get onboardingPage1Desc;
+
+  /// No description provided for @onboardingPage1Feat1.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Declutter'**
+  String get onboardingPage1Feat1;
+
+  /// No description provided for @onboardingPage1Feat1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'The \'Start Anywhere\' tool. Rapidly clear surface clutter to break the cycle of overwhelm.'**
+  String get onboardingPage1Feat1Desc;
+
+  /// No description provided for @onboardingPage1Feat2.
+  ///
+  /// In en, this message translates to:
+  /// **'Joy Declutter'**
+  String get onboardingPage1Feat2;
+
+  /// No description provided for @onboardingPage1Feat2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided decision-making. 5 honest questions to help you determine what truly belongs in your future.'**
+  String get onboardingPage1Feat2Desc;
+
+  /// No description provided for @onboardingPage1Feat3.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean Sweep'**
+  String get onboardingPage1Feat3;
+
+  /// No description provided for @onboardingPage1Feat3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your room-by-room blueprint. Clear guidance so you never have to ask \'what\'s next?\' again.'**
+  String get onboardingPage1Feat3Desc;
+
+  /// No description provided for @onboardingPage2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Control'**
+  String get onboardingPage2Title;
+
+  /// No description provided for @onboardingPage2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Items lose their power over you when you have a system to manage their value and exit.'**
+  String get onboardingPage2Desc;
+
+  /// No description provided for @onboardingPage2Feat1.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get onboardingPage2Feat1;
+
+  /// No description provided for @onboardingPage2Feat1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Knowledge is power. See your progress in data to break the feeling of being defeated by things.'**
+  String get onboardingPage2Feat1Desc;
+
+  /// No description provided for @onboardingPage2Feat2.
+  ///
+  /// In en, this message translates to:
+  /// **'Resell'**
+  String get onboardingPage2Feat2;
+
+  /// No description provided for @onboardingPage2Feat2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'A respectful exit. Honoring items by finding their next home while reclaiming your value.'**
+  String get onboardingPage2Feat2Desc;
+
+  /// No description provided for @onboardingPage3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Safety Net'**
+  String get onboardingPage3Title;
+
+  /// No description provided for @onboardingPage3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Letting go of the object is NOT letting go of the love. We protect the soul of the past.'**
+  String get onboardingPage3Desc;
+
+  /// No description provided for @onboardingPage3Feat1.
+  ///
+  /// In en, this message translates to:
+  /// **'Memories'**
+  String get onboardingPage3Feat1;
+
+  /// No description provided for @onboardingPage3Feat1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Preserve the essence in a digital sanctuary. Release the physical weight with peace, knowing the memory is safe.'**
+  String get onboardingPage3Feat1Desc;
 
   /// No description provided for @getStarted.
   ///

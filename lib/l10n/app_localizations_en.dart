@@ -9,32 +9,110 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get onboardingTitle1 => 'Spark Joy';
+  String get onboardingIntroQ1 => 'Overwhelmed and don\'t know where to start?';
 
   @override
-  String get onboardingDesc1 =>
-      'Declutter your space, one item at a time. Keep only what brings you joy.';
+  String get onboardingIntroQ2 => 'Paralyzed by too many choices?';
 
   @override
-  String get onboardingTitle2 => 'Value Driven';
+  String get onboardingIntroQ3 => 'Can\'t let go of the past?';
 
   @override
-  String get onboardingDesc2 =>
-      'Track the value of items you let go. Sell, donate, or recycle with purpose.';
+  String get onboardingPainProcrastination => 'I\'ll do it tomorrow...';
 
   @override
-  String get onboardingTitle3 => 'Preserve Memories';
+  String get onboardingPainSunkCost => 'It cost so much money...';
 
   @override
-  String get onboardingDesc3 =>
-      'Letting go doesn\'t mean forgetting. Digitize your cherished memories forever.';
+  String get onboardingPainNoTime => 'I have zero time for this.';
 
   @override
-  String get onboardingTitle4 => 'Mindful Living';
+  String get onboardingPainTooManyMemories => 'Too much sentimental weight.';
 
   @override
-  String get onboardingDesc4 =>
-      'Build lasting habits. Transform your environment and your mind.';
+  String get onboardingPainSunkShort => 'Sunk Cost';
+
+  @override
+  String get onboardingPainParalysis => 'Paralysis';
+
+  @override
+  String get onboardingPainStartWhere => 'Start where?';
+
+  @override
+  String get onboardingPainSentimental => 'Sentimental';
+
+  @override
+  String get onboardingPainMaybeTomorrow => 'Maybe tomorrow...';
+
+  @override
+  String get onboardingPainTooMuchMess => 'Too much mess';
+
+  @override
+  String get onboardingIntroSolution =>
+      'We help you start, decide, and finally find peace.';
+
+  @override
+  String get onboardingPage1Title => 'Decision Support';
+
+  @override
+  String get onboardingPage1Desc =>
+      'Stop the paralysis. We provide the guided logic to start where it hurts least and build momentum.';
+
+  @override
+  String get onboardingPage1Feat1 => 'Quick Declutter';
+
+  @override
+  String get onboardingPage1Feat1Desc =>
+      'The \'Start Anywhere\' tool. Rapidly clear surface clutter to break the cycle of overwhelm.';
+
+  @override
+  String get onboardingPage1Feat2 => 'Joy Declutter';
+
+  @override
+  String get onboardingPage1Feat2Desc =>
+      'Guided decision-making. 5 honest questions to help you determine what truly belongs in your future.';
+
+  @override
+  String get onboardingPage1Feat3 => 'Clean Sweep';
+
+  @override
+  String get onboardingPage1Feat3Desc =>
+      'Your room-by-room blueprint. Clear guidance so you never have to ask \'what\'s next?\' again.';
+
+  @override
+  String get onboardingPage2Title => 'Total Control';
+
+  @override
+  String get onboardingPage2Desc =>
+      'Items lose their power over you when you have a system to manage their value and exit.';
+
+  @override
+  String get onboardingPage2Feat1 => 'Items';
+
+  @override
+  String get onboardingPage2Feat1Desc =>
+      'Knowledge is power. See your progress in data to break the feeling of being defeated by things.';
+
+  @override
+  String get onboardingPage2Feat2 => 'Resell';
+
+  @override
+  String get onboardingPage2Feat2Desc =>
+      'A respectful exit. Honoring items by finding their next home while reclaiming your value.';
+
+  @override
+  String get onboardingPage3Title => 'Your Safety Net';
+
+  @override
+  String get onboardingPage3Desc =>
+      'Letting go of the object is NOT letting go of the love. We protect the soul of the past.';
+
+  @override
+  String get onboardingPage3Feat1 => 'Memories';
+
+  @override
+  String get onboardingPage3Feat1Desc =>
+      'Preserve the essence in a digital sanctuary. Release the physical weight with peace, knowing the memory is safe.';
 
   @override
   String get getStarted => 'Get Started';
