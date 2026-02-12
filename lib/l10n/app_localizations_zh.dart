@@ -114,60 +114,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goodAfternoon => '下午好';
 
   @override
-  String get readyToSparkJoy => 'Ready to bring some joy today?';
+  String get readyToSparkJoy => '准备好点燃今天的快乐了吗？';
 
   @override
-  String get startYourDeclutterJourney => 'Start your declutter journey';
+  String get startYourDeclutterJourney => '开启您的整理之旅';
 
   @override
-  String get chooseFlowTitle => 'Choose a flow';
+  String get chooseFlowTitle => '选择整理模式';
 
   @override
-  String get chooseFlowSubtitle =>
-      'Pick the experience that fits your current energy.';
+  String get chooseFlowSubtitle => '根据您当下的能量状态选择合适的体验。';
 
   @override
-  String get joyDeclutterFlowDescription => 'Help you make difficult decision';
+  String get joyDeclutterFlowDescription => '引导式提问，帮您做出困难的决定';
 
   @override
-  String get quickDeclutterFlowDescription => 'Only keep items that bring joys';
+  String get quickDeclutterFlowDescription => '批量识别并仅保留带给您喜悦的物品';
 
   @override
-  String get deepCleaningFlowDescription => 'Plan, focus, finish a deep clean';
+  String get deepCleaningFlowDescription => '规划、专注并完成一次深度大扫除';
 
   @override
-  String get deepCleaningComparisonsTitle => 'Before & After Comparisons';
+  String get deepCleaningComparisonsTitle => '前后对比成果';
 
   @override
-  String get deepCleaningComparisonsEmpty =>
-      'Add photos and messiness scores to see comparisons.';
+  String get deepCleaningComparisonsEmpty => '添加照片和凌乱度评分，即可看到对比成果。';
 
   @override
-  String get startAction => 'Start';
+  String get startAction => '开始';
 
   @override
-  String get dailyInspiration => 'Daily Inspiration';
+  String get dailyInspiration => '每日灵感';
 
   @override
-  String get welcomeBack => 'Welcome back to your joy journey';
+  String get welcomeBack => '欢迎回到您的喜悦旅程';
 
   @override
-  String get continueYourJoyJourney => 'Continue your journey';
+  String get continueYourJoyJourney => '继续您的喜悦之旅';
 
   @override
-  String get tagline1 => 'Continue organizing your space with mindfulness';
+  String get tagline1 => '心怀正能量，继续规划您的空间';
 
   @override
-  String get tagline2 => 'Transforming spaces, one item at a time';
+  String get tagline2 => '一次一件，让空间焕然一新';
 
   @override
-  String get tagline3 => 'Creating clarity with intentional living';
+  String get tagline3 => '身随意动，创造属于您的清爽生活';
 
   @override
-  String get tagline4 => 'Every item has a story, honor it with purpose';
+  String get tagline4 => '倾听每件物品的故事，赋予其新的使命';
 
   @override
-  String get tagline5 => 'Building joy through mindful decluttering';
+  String get tagline5 => '用心整理，构筑生活之美';
 
   @override
   String get thisMonthProgress => '最近活动';

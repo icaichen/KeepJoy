@@ -38,6 +38,38 @@ class GlassContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget content = Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: color,
+        shape: shape,
+        borderRadius: shape == BoxShape.circle ? null : (borderRadius ?? BorderRadius.circular(20)),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2), // Fallback or base border
+          width: borderWidth,
+        ),
+      ),
+      foregroundDecoration: borderGradient != null
+          ? BoxDecoration(
+              borderRadius: borderRadius ?? BorderRadius.circular(20),
+              border: Border.all(color: Colors.transparent, width: borderWidth),
+              gradient: borderGradient,
+            )
+          : null,
+      child: child,
+    );
+
+    // Optimization: Skip BackdropFilter if blur is 0
+    if (blur > 0) {
+      content = ClipRRect(
+        borderRadius: borderRadius ?? BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          child: content,
+        ),
+      );
+    }
+
     return Container(
       width: width,
       height: height,
@@ -53,32 +85,7 @@ class GlassContainer extends StatelessWidget {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: borderRadius ?? BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: color,
-              shape: shape,
-              borderRadius: shape == BoxShape.circle ? null : (borderRadius ?? BorderRadius.circular(20)),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2), // Fallback or base border
-                width: borderWidth,
-              ),
-            ),
-            foregroundDecoration: borderGradient != null
-                ? BoxDecoration(
-                    borderRadius: borderRadius ?? BorderRadius.circular(20),
-                    border: Border.all(color: Colors.transparent, width: borderWidth),
-                    gradient: borderGradient,
-                  )
-                : null,
-            child: child,
-          ),
-        ),
-      ),
+      child: content,
     );
   }
 }

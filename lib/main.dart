@@ -1334,58 +1334,62 @@ class _MainNavigatorState extends State<MainNavigator>
           shape: const CircularNotchedRectangle(),
           notchMargin: 8,
           color: Colors.white,
-          child: SizedBox(
-            height: 60,
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildNavBarItem(
-                    icon: Icons.home_outlined,
-                    activeIcon: Icons.home,
-                    label: l10n.home,
-                    index: 0,
-                    isActive: _selectedIndex == 0,
-                    onTap: () => setState(() => _selectedIndex = 0),
+          child: SafeArea(
+            top: false,
+            bottom: true,
+            child: SizedBox(
+              height: 60,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildNavBarItem(
+                      icon: Icons.home_outlined,
+                      activeIcon: Icons.home,
+                      label: l10n.home,
+                      index: 0,
+                      isActive: _selectedIndex == 0,
+                      onTap: () => setState(() => _selectedIndex = 0),
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: _buildNavBarItem(
-                    icon: Icons.grid_view_outlined,
-                    activeIcon: Icons.grid_view,
-                    label: l10n.items,
-                    index: 1,
-                    isActive: _selectedIndex == 1,
-                    onTap: () => setState(() => _selectedIndex = 1),
+                  Expanded(
+                    child: _buildNavBarItem(
+                      icon: Icons.grid_view_outlined,
+                      activeIcon: Icons.grid_view,
+                      label: l10n.items,
+                      index: 1,
+                      isActive: _selectedIndex == 1,
+                      onTap: () => setState(() => _selectedIndex = 1),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 80), // Space for FAB
-                Expanded(
-                  child: _buildNavBarItem(
-                    icon: Icons.sell_outlined,
-                    activeIcon: Icons.sell,
-                    label: l10n.routeResell,
-                    index: 3,
-                    isActive: _selectedIndex == 3,
-                    onTap: () => setState(() => _selectedIndex = 3),
+                  const SizedBox(width: 80), // Space for FAB
+                  Expanded(
+                    child: _buildNavBarItem(
+                      icon: Icons.sell_outlined,
+                      activeIcon: Icons.sell,
+                      label: l10n.routeResell,
+                      index: 3,
+                      isActive: _selectedIndex == 3,
+                      onTap: () => setState(() => _selectedIndex = 3),
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: _buildNavBarItem(
-                    icon: Icons.bookmark_border,
-                    activeIcon: Icons.bookmark,
-                    label: l10n.memories,
-                    index: 4,
-                    isActive: _selectedIndex == 4,
-                    onTap: () {
-                      if (!_hasFullAccess) {
-                        _showUpgradeDialog();
-                        return;
-                      }
-                      setState(() => _selectedIndex = 4);
-                    },
+                  Expanded(
+                    child: _buildNavBarItem(
+                      icon: Icons.bookmark_border,
+                      activeIcon: Icons.bookmark,
+                      label: l10n.memories,
+                      index: 4,
+                      isActive: _selectedIndex == 4,
+                      onTap: () {
+                        if (!_hasFullAccess) {
+                          _showUpgradeDialog();
+                          return;
+                        }
+                        setState(() => _selectedIndex = 4);
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

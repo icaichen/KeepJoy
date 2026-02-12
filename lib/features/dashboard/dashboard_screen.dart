@@ -23,6 +23,7 @@ import 'package:keepjoy_app/widgets/gradient_button.dart';
 import 'package:keepjoy_app/widgets/modern_dialog.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
+import 'package:keepjoy_app/features/dashboard/widgets/active_session_card.dart';
 
 class _ModeMeta {
   final IconData icon;
@@ -104,7 +105,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  Timer? _timer;
   final ScrollController _scrollController = ScrollController();
 
   AppLocalizations get l10n => AppLocalizations.of(context)!;
@@ -112,33 +112,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.activeSession != null) {
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-    }
   }
 
   @override
   void didUpdateWidget(DashboardScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.activeSession != null && _timer == null) {
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-    } else if (widget.activeSession == null && _timer != null) {
-      _timer?.cancel();
-      _timer = null;
-    }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -193,13 +175,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  String _getElapsedTime(DateTime startTime) {
-    final duration = DateTime.now().difference(startTime);
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-    return '${hours.toString()}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-  }
 
   void _showAddGoalDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController goalController = TextEditingController();
@@ -2261,184 +2236,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: horizontalPadding,
                     ),
-                    child: Card(
-                      color: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: Color(0xFFE1E7EF)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  l10n.dashboardActiveSessionTitle,
-                                  style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF111827),
-                                      ),
-                                ),
-                                Text(
-                                  l10n.deepCleaningTitle,
-                                  style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w400,
-                                        color: const Color(0xFF6B7280),
-                                      ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _getElapsedTime(
-                                          widget.activeSession!.startTime,
-                                        ),
-                                        style: const TextStyle(
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF111827),
-                                          height: 1.05,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        '${widget.activeSession!.area} - ${l10n.inProgress}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF6B7280),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => DeepCleaningTimerPage(
-                                            area: widget.activeSession!.area,
-                                            beforePhotoPath: widget
-                                                .activeSession!
-                                                .localBeforePhotoPath ??
-                                                widget.activeSession!.remoteBeforePhotoPath,
-                                            onStopSession: widget.onStopSession,
-                                            sessionStartTime: widget
-                                                .activeSession!
-                                                .startTime, // Pass start time
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    icon: const Icon(
-                                      Icons.play_arrow,
-                                      size: 18,
-                                    ),
-                                    label: Text(l10n.resume),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF414B5A),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                        horizontal: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      // Show confirmation dialog for stopping
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: Text(l10n.finishCleaning),
-                                          content: Text(
-                                            l10n.finishCleaningConfirm,
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                              child: Text(l10n.cancel),
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                                // Navigate to finish page
-                                                Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                    builder: (_) => AfterPhotoPage(
-                                                      area: widget
-                                                          .activeSession!
-                                                          .area,
-                                                      beforePhotoPath: widget
-                                                          .activeSession!
-                                                          .localBeforePhotoPath ??
-                                                          widget.activeSession!.remoteBeforePhotoPath,
-                                                      elapsedSeconds:
-                                                          DateTime.now()
-                                                              .difference(
-                                                                widget
-                                                                    .activeSession!
-                                                                    .startTime,
-                                                              )
-                                                              .inSeconds,
-                                                      onStopSession:
-                                                          widget.onStopSession,
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                              child: Text(l10n.stop),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.red,
-                                      side: const BorderSide(color: Colors.red),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: Text(l10n.stop),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    child: ActiveSessionCard(
+                      session: widget.activeSession!,
+                      onStopSession: widget.onStopSession,
                     ),
                   ),
                   const SizedBox(height: 24),
