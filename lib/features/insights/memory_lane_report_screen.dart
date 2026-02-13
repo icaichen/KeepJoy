@@ -342,6 +342,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       return isChinese ? '$month月' : _getMonthAbbrev(month);
     }
 
+    // Premium Grid Heatmap
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(ReportUI.contentPadding),
@@ -349,16 +350,38 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            isChinese ? '回忆热力图' : 'Memory Heatmap',
-            style: ReportTextStyles.sectionHeader,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            isChinese ? '本年度活动' : 'Activity this year',
-            style: ReportTextStyles.sectionSubtitle,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.grid_view_rounded,
+                  size: 20,
+                  color: Color(0xFF8B5CF6),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isChinese ? '回忆热力图' : 'Memory Heatmap',
+                    style: ReportTextStyles.sectionHeader,
+                  ),
+                  Text(
+                    isChinese ? '本年度活动' : 'Activity this year',
+                    style: ReportTextStyles.sectionSubtitle,
+                  ),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 24),
+
           // 2 rows of 6 months each
           Column(
             children: [
@@ -370,31 +393,42 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   final monthKey =
                       '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
                   final count = monthlyData[monthKey] ?? 0;
+                  final intensity = _getHeatmapIntensity(count); // 0-4 scale
 
                   return Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Column(
                         children: [
                           Container(
                             width: double.infinity,
-                            height: 48,
+                            height: 44, // Slightly shorter for squarish look
                             decoration: BoxDecoration(
-                              color: _getHeatmapColor(
-                                count,
-                              ).withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(10),
+                              color: _getPremiumHeatmapColor(intensity),
+                              borderRadius: BorderRadius.circular(12), // Rounder
+                              boxShadow: intensity > 0
+                                  ? [
+                                      BoxShadow(
+                                        color: _getPremiumHeatmapColor(intensity)
+                                            .withValues(alpha: 0.3),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ]
+                                  : null,
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          AppTypography.labelSmall(
+                          const SizedBox(height: 8),
+                          Text(
                             isChinese
                                 ? '${monthDate.month}月'
                                 : _getMonthAbbrev(monthDate.month),
-                            context: context,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
+                            style: ReportTextStyles.label.copyWith(
+                              fontSize: 10,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
                           ),
                         ],
                       ),
@@ -402,7 +436,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   );
                 }),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 16),
               // Second row (months 7-12: July to December)
               Row(
                 children: List.generate(6, (index) {
@@ -411,31 +445,42 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                   final monthKey =
                       '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
                   final count = monthlyData[monthKey] ?? 0;
+                  final intensity = _getHeatmapIntensity(count);
 
                   return Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Column(
                         children: [
                           Container(
                             width: double.infinity,
-                            height: 48,
+                            height: 44,
                             decoration: BoxDecoration(
-                              color: _getHeatmapColor(
-                                count,
-                              ).withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(10),
+                              color: _getPremiumHeatmapColor(intensity),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: intensity > 0
+                                  ? [
+                                      BoxShadow(
+                                        color: _getPremiumHeatmapColor(intensity)
+                                            .withValues(alpha: 0.3),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ]
+                                  : null,
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          AppTypography.labelSmall(
+                          const SizedBox(height: 8),
+                          Text(
                             isChinese
                                 ? '${monthDate.month}月'
                                 : _getMonthAbbrev(monthDate.month),
-                            context: context,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
+                            style: ReportTextStyles.label.copyWith(
+                              fontSize: 10,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
                           ),
                         ],
                       ),
@@ -445,51 +490,60 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          // Color legend
+          const SizedBox(height: 24),
+
+          // Legend & Info
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                AppTypography.labelSmall(
-                  isChinese ? '较少' : 'Less',
-                  context: context,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 8),
-                ...List.generate(5, (index) {
-                  return Container(
-                    width: 16,
-                    height: 16,
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    decoration: BoxDecoration(
-                      color: _getHeatmapColor(
-                        (index * 3) + 1,
-                      ), // Demo colors: 1, 4, 7, 10, 13
-                      borderRadius: BorderRadius.circular(4),
+                // Legend
+                Row(
+                  children: [
+                    Text(
+                      isChinese ? '少' : 'Less',
+                      style: ReportTextStyles.label.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  );
-                }),
-                const SizedBox(width: 8),
-                AppTypography.labelSmall(
-                  isChinese ? '较多' : 'More',
-                  context: context,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    const SizedBox(width: 8),
+                    ...List.generate(5, (index) {
+                      return Container(
+                        width: 14, // Slightly larger than dot
+                        height: 14,
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        decoration: BoxDecoration(
+                          color: _getPremiumHeatmapColor(index),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
+                    const SizedBox(width: 8),
+                    Text(
+                      isChinese ? '多' : 'More',
+                      style: ReportTextStyles.label.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () => _showHeatmapLegendDialog(context, isChinese),
-                  child: Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                
+                // Info Button (Restored)
+                IconButton(
+                  onPressed: () => _showHeatmapLegendDialog(context, isChinese),
+                  icon: const Icon(Icons.info_outline_rounded, size: 20),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: isChinese ? '颜色说明' : 'Color Scale Info',
                 ),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          // Statistics
+
+          // Statistics (Preserved but styled)
           Row(
             children: [
               Expanded(
@@ -524,6 +578,31 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         ],
       ),
     );
+  }
+
+  int _getHeatmapIntensity(int count) {
+    if (count == 0) return 0;
+    if (count <= 3) return 1;
+    if (count <= 7) return 2;
+    if (count <= 15) return 3;
+    return 4;
+  }
+
+  Color _getPremiumHeatmapColor(int intensity) {
+    switch (intensity) {
+      case 0:
+        return const Color(0xFFF3F4F6); // Grey-100
+      case 1:
+        return const Color(0xFFE9D5FF); // Purple-200
+      case 2:
+        return const Color(0xFFC084FC); // Purple-400
+      case 3:
+        return const Color(0xFF9333EA); // Purple-600
+      case 4:
+        return const Color(0xFF7E22CE); // Purple-700
+      default:
+        return const Color(0xFFF3F4F6);
+    }
   }
 
   Widget _buildStatCard({
@@ -595,95 +674,149 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            isChinese ? '分类统计' : 'Category Statistics',
-            style: ReportTextStyles.sectionHeader,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.pie_chart_rounded,
+                  size: 20,
+                  color: Color(0xFF8B5CF6),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isChinese ? '分类统计' : 'Category Stats',
+                    style: ReportTextStyles.sectionHeader,
+                  ),
+                  Text(
+                    isChinese ? '各类别的回忆数量' : 'Memories by category',
+                    style: ReportTextStyles.sectionSubtitle,
+                  ),
+                ],
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            isChinese ? '各类别的回忆数量' : 'Memory count per category',
-            style: ReportTextStyles.sectionSubtitle,
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           if (sortedCategories.isEmpty)
-            Text(
-              isChinese ? '暂无分类数据' : 'No category data yet',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Text(
+                  isChinese ? '暂无分类数据' : 'No category data yet',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: Colors.black54),
+                ),
+              ),
             )
           else ...[
-            Column(
-              children: sortedCategories.map((category) {
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: sortedCategories.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final category = sortedCategories[index];
                 final count = categoryCounts[category] ?? 0;
                 final maxCount = categoryCounts.values.isEmpty
                     ? 1
                     : categoryCounts.values.reduce((a, b) => a > b ? a : b);
-                final barValue = maxCount == 0
-                    ? 0.0
-                    : (count / maxCount).clamp(0.0, 1.0);
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                final barValue =
+                    maxCount == 0 ? 0.0 : (count / maxCount).clamp(0.0, 1.0);
+                
+                // Rank Styling
+                Color rankColor;
+                Widget rankWidget;
+                if (index == 0) {
+                  rankColor = const Color(0xFFFFD700); // Gold
+                  rankWidget = const Icon(Icons.emoji_events_rounded, size: 20, color: Color(0xFFFFD700));
+                } else if (index == 1) {
+                  rankColor = const Color(0xFFC0C0C0); // Silver
+                  rankWidget = const Icon(Icons.emoji_events_rounded, size: 20, color: Color(0xFFC0C0C0));
+                } else if (index == 2) {
+                  rankColor = const Color(0xFFCD7F32); // Bronze
+                  rankWidget = const Icon(Icons.emoji_events_rounded, size: 20, color: Color(0xFFCD7F32));
+                } else {
+                  rankColor = Colors.grey.withValues(alpha: 0.5);
+                  rankWidget = Text(
+                    '${index + 1}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[500],
+                    ),
+                  );
+                }
+
+                return Row(
+                  children: [
+                    SizedBox(
+                      width: 32,
+                      child: Center(child: rankWidget),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          AppTypography.titleSmall(
-                            category.label(context),
-                            context: context,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                          const Spacer(),
-                          AppTypography.titleMedium(
-                            '$count',
-                            context: context,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Stack(
-                        children: [
-                          Container(
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                          ),
-                          FractionallySizedBox(
-                            widthFactor: barValue,
-                            child: Container(
-                              height: 8,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Theme.of(context).colorScheme.primary
-                                        .withValues(alpha: 0.8),
-                                    Theme.of(context).colorScheme.primary,
-                                  ],
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                category.label(context),
+                                style: ReportTextStyles.body.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF111827),
                                 ),
-                                borderRadius: BorderRadius.circular(999),
                               ),
-                            ),
+                              Text(
+                                '$count',
+                                style: ReportTextStyles.statValueSmall.copyWith(fontSize: 14),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Stack(
+                            children: [
+                              Container(
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3F4F6),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                              FractionallySizedBox(
+                                widthFactor: barValue,
+                                child: Container(
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF8B5CF6).withValues(alpha: 0.6),
+                                        const Color(0xFF8B5CF6),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
-              }).toList(),
+              },
             ),
           ],
         ],
@@ -691,7 +824,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     );
   }
 
-  // 4. TIME MARKERS
+  // 4. TIME MARKERS (Timeline Design)
   Widget _buildTimeMarkers(BuildContext context, bool isChinese) {
     final sortedMemories = widget.memories.isEmpty
         ? <Memory>[]
@@ -723,150 +856,219 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         : 0;
 
     final colorScheme = Theme.of(context).colorScheme;
+    
+    // Check if we have enough data to show a timeline
+    if (widget.memories.isEmpty) {
+       return Container(
+        padding: const EdgeInsets.all(ReportUI.contentPadding),
+        decoration: ReportUI.cardDecoration,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isChinese ? '时光印记' : 'Time Markers',
+              style: ReportTextStyles.sectionHeader,
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: Text(
+                isChinese ? '暂无回忆' : 'No memories yet',
+                style: ReportTextStyles.body,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(ReportUI.contentPadding),
       decoration: ReportUI.cardDecoration,
-      child: widget.memories.isEmpty
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isChinese ? '时光印记' : 'Time Markers',
-                  style: ReportTextStyles.sectionHeader,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 24),
-                Center(
+                child: Icon(
+                  Icons.timeline_rounded,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isChinese ? '时光印记' : 'Time Markers',
+                    style: ReportTextStyles.sectionHeader,
+                  ),
+                  Text(
+                     l10n.reportPreciousMoments,
+                     style: ReportTextStyles.sectionSubtitle,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          
+          // Timeline Items
+          _buildTimelineItem(
+            context,
+            icon: Icons.flag_rounded,
+            color: const Color(0xFF10B981), // Green
+            label: l10n.reportFirstMemoryLabel,
+            title: firstMemory!.title,
+            date: _formatDate(firstMemory.createdAt, isChinese),
+            isLast: longestStory == null && latestMemory == firstMemory, 
+          ),
+          
+          if (longestStory != null && longestStory != firstMemory && longestStory != latestMemory)
+             _buildTimelineItem(
+              context,
+              icon: Icons.history_edu_rounded,
+              color: const Color(0xFFF59E0B), // Amber
+              label: l10n.reportLongestStoryLabel,
+              title: longestStory.title,
+              date: _formatDate(longestStory.createdAt, isChinese),
+              isLast: false,
+            ),
+
+          if (latestMemory != firstMemory)
+            _buildTimelineItem(
+              context,
+              icon: Icons.auto_awesome_rounded,
+              color: const Color(0xFF8B5CF6), // Purple
+              label: l10n.reportLatestMemoryLabel,
+              title: latestMemory!.title,
+              date: _formatDate(latestMemory.createdAt, isChinese),
+              isLast: true,
+            ),
+
+          const SizedBox(height: 16),
+          
+          // Journey Summary Footer
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.timelapse_rounded, 
+                  size: 20, 
+                  color: Theme.of(context).colorScheme.primary
+                ),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Text(
-                    isChinese ? '暂无回忆' : 'No memories yet',
-                    style: ReportTextStyles.body,
-                  ),
-                ),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isChinese ? '时光印记' : 'Time Markers',
-                  style: ReportTextStyles.sectionHeader,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.reportPreciousMoments,
-                  style: ReportTextStyles.sectionSubtitle,
-                ),
-                const SizedBox(height: 24),
-                _buildTimeMarker(
-                  context,
-                  Icons.spa_rounded,
-                  colorScheme.primary,
-                  l10n.reportFirstMemoryLabel,
-                  firstMemory!.title,
-                  _formatDate(firstMemory.createdAt, isChinese),
-                  isChinese,
-                ),
-                const SizedBox(height: 16),
-                if (longestStory != null)
-                  _buildTimeMarker(
-                    context,
-                    Icons.menu_book_rounded,
-                    colorScheme.secondary,
-                    l10n.reportLongestStoryLabel,
-                    longestStory.title,
-                    _formatDate(longestStory.createdAt, isChinese),
-                    isChinese,
-                  ),
-                const SizedBox(height: 16),
-                _buildTimeMarker(
-                  context,
-                  Icons.auto_awesome_rounded,
-                  colorScheme.tertiary,
-                  l10n.reportLatestMemoryLabel,
-                  latestMemory!.title,
-                  _formatDate(latestMemory.createdAt, isChinese),
-                  isChinese,
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.3,
+                     l10n.reportMemoryJourneyDetail(
+                      totalDays.toString(),
+                      widget.memories.length.toString(),
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.track_changes_rounded,
-                        size: 32,
-                        color: colorScheme.primary,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppTypography.titleSmall(
-                              l10n.reportMemoryJourney,
-                              context: context,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            const SizedBox(height: 4),
-                            AppTypography.bodySmall(
-                              l10n.reportMemoryJourneyDetail(
-                                totalDays.toString(),
-                                widget.memories.length.toString(),
-                              ),
-                              context: context,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    style: ReportTextStyles.body.copyWith(
+                      fontSize: 13,
+                      color: const Color(0xFF4B5563),
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildTimeMarker(
-    BuildContext context,
-    IconData icon,
-    Color iconColor,
-    String label,
-    String title,
-    String date,
-    bool isChinese,
-  ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Center(child: Icon(icon, color: iconColor, size: 24)),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTimelineItem(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String title,
+    required String date,
+    required bool isLast,
+  }) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
             children: [
-              Text(label, style: ReportTextStyles.label),
-              const SizedBox(height: 4),
-              Text(title, style: ReportTextStyles.statValueSmall),
-              const SizedBox(height: 2),
-              Text(date, style: ReportTextStyles.label),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.2),
+                    width: 2,
+                  ),
+                ),
+                child: Icon(icon, size: 18, color: color),
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE5E7EB),
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
+                ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24.0), // Spacing between items
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label, 
+                    style: ReportTextStyles.label.copyWith(
+                      color: color, 
+                      fontWeight: FontWeight.w700
+                    )
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    title, 
+                    style: ReportTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1F2937),
+                    )
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    date, 
+                    style: ReportTextStyles.label.copyWith(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 11
+                    )
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
