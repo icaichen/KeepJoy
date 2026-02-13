@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/deep_cleaning_session.dart';
 import '../dashboard/widgets/cleaning_area_legend.dart';
-import '../../widgets/auto_scale_text.dart';
+
 import '../../widgets/smart_image_widget.dart';
 import '../../widgets/modern_dialog.dart';
 import '../../theme/typography.dart';
@@ -46,6 +46,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
 
     // Calculate metrics
     final deepCleaningCount = widget.sessions.length;
@@ -98,58 +99,87 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
           Text(widget.title, style: ReportTextStyles.sectionHeader),
           const SizedBox(height: 20),
 
-          // Metrics Row 1
-          Row(
-            children: [
-              Expanded(
-                child: _buildDeepCleaningMetricItem(
-                  context,
-                  icon: Icons.cleaning_services_rounded,
-                  color: const Color(0xFFB794F6),
-                  value: '$deepCleaningCount',
-                  label: l10n.dashboardSessionsLabel,
+          // Narrative Impact Summary
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              children: [
+                // Hero Metric: Items (The Output)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      '$cleanedItemsCount',
+                      style: AppTypography.displayMedium.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF1F2937),
+                        height: 1,
+                        letterSpacing: -1.0,
+                        fontSize: 48,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isChinese ? '件物品' : 'items',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: const Color(0xFF6B7280),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildDeepCleaningMetricItem(
-                  context,
-                  icon: Icons.inventory_2_rounded,
-                  color: const Color(0xFF5ECFB8),
-                  value: '$cleanedItemsCount',
-                  label: l10n.dashboardItemsLabel,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Metrics Row 2
-          Row(
-            children: [
-              Expanded(
-                child: _buildDeepCleaningMetricItem(
-                  context,
-                  icon: Icons.location_on_rounded,
-                  color: const Color(0xFF89CFF0),
-                  value: '$areasCleared',
-                  label: l10n.dashboardAreasClearedLabel.replaceFirst(
-                    'Cleared',
-                    'Cleaned',
+                const SizedBox(height: 8),
+                Text(
+                  l10n.dashboardItemsLabel.toUpperCase(), // "Items Cleaned" or similar
+                  style: AppTypography.bodySmall.copyWith(
+                    color: const Color(0xFF9CA3AF),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildDeepCleaningMetricItem(
-                  context,
-                  icon: Icons.schedule_rounded,
-                  color: const Color(0xFFFFD93D),
-                  value: '${totalTimeHours.toStringAsFixed(1)}h',
-                  label: l10n.dashboardTotalTimeLabel,
+                
+                const SizedBox(height: 24),
+                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                const SizedBox(height: 24),
+
+                // Secondary Metrics: Time & Sessions (The Input)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Time
+                    _buildCompactMetric(
+                      context,
+                      icon: Icons.schedule_rounded,
+                      value: totalTimeHours >= 1 
+                          ? '${totalTimeHours.toStringAsFixed(1)}h'
+                          : '${(totalTimeSeconds / 60).toStringAsFixed(0)}m',
+                      label: l10n.dashboardTotalTimeLabel,
+                    ),
+                    // Vertical Divider
+                    Container(
+                      width: 1,
+                      height: 32,
+                      color: const Color(0xFFE5E7EB),
+                    ),
+                    // Sessions
+                    _buildCompactMetric(
+                      context,
+                      icon: Icons.cleaning_services_rounded,
+                      value: '$deepCleaningCount',
+                      label: l10n.dashboardSessionsLabel,
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
 
           const Divider(height: 40, thickness: 1, color: Color(0xFFE5E5EA)),
@@ -907,56 +937,44 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     return DateFormat.jm(locale).format(date);
   }
 
-  Widget _buildDeepCleaningMetricItem(
+  Widget _buildCompactMetric(
     BuildContext context, {
     required IconData icon,
-    required Color color,
     required String value,
     required String label,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Theme.of(
-            context,
-          ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE5E7EB),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 16, color: const Color(0xFF4B5563)),
         ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: AppTypography.titleMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1F2937),
+                fontSize: 16,
+              ),
             ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(height: 12),
-          AutoScaleText(
-            value,
-            style: AppTypography.titleLarge.copyWith(
-              fontWeight: FontWeight.w800,
-              color: Theme.of(context).colorScheme.onSurface,
+            Text(
+              label,
+              style: AppTypography.bodySmall.copyWith(
+                color: const Color(0xFF6B7280),
+                fontSize: 12,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTypography.labelSmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 

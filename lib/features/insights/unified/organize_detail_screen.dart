@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/features/insights/unified/models/enhanced_report_models.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
+import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 
-class OrganizeDetailScreen extends StatelessWidget {
+class OrganizeDetailScreen extends StatefulWidget {
   final EnhancedUnifiedReportData data;
 
   const OrganizeDetailScreen({super.key, required this.data});
 
   @override
+  State<OrganizeDetailScreen> createState() => _OrganizeDetailScreenState();
+}
+
+class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
+  @override
   Widget build(BuildContext context) {
     final isChinese = Localizations.localeOf(context).languageCode.startsWith('zh');
-    final stats = data.declutterStats;
+    final stats = widget.data.declutterStats;
 
     return Scaffold(
       backgroundColor: ReportUI.backgroundColor,
@@ -60,7 +66,7 @@ class OrganizeDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${data.year} ${isChinese ? "年数据" : "Year Data"}',
+                          '${widget.data.year} ${isChinese ? "年数据" : "Year Data"}',
                           style: ReportTextStyles.screenSubtitle,
                         ),
                       ],
@@ -96,6 +102,12 @@ class OrganizeDetailScreen extends StatelessWidget {
                   isChinese ? '处理效率' : 'Processing Efficiency',
                   _buildEfficiencyAnalysis(isChinese, stats),
                 ),
+                const SizedBox(height: 16),
+                if (widget.data.yearlyDeepCleaningSessions.isNotEmpty)
+                  DeepCleaningAnalysisCard(
+                    sessions: widget.data.yearlyDeepCleaningSessions,
+                    title: isChinese ? '深度清洁分析' : 'Deep Cleaning Analysis',
+                  ),
                 const SizedBox(height: 32),
               ]),
             ),
@@ -426,32 +438,37 @@ class OrganizeDetailScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        if (stats.topCategories.isNotEmpty) ...[
-          Text(
-            isChinese ? '主要分类' : 'Top Categories',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        if (stats.topCategories.isNotEmpty)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isChinese ? '主要分类' : 'Top Categories',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: stats.topCategories.take(5).map((cat) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5ECFB8).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF5ECFB8).withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      isChinese ? cat.category.chinese : cat.category.english,
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF374151)),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: stats.topCategories.take(5).map((cat) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5ECFB8).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF5ECFB8).withValues(alpha: 0.3)),
-                ),
-                child: Text(
-                  isChinese ? cat.category.chinese : cat.category.english,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF374151)),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
       ],
     );
   }
+
 }
