@@ -85,12 +85,12 @@ void main() async {
 
     // Run automatic cache cleanup if needed (non-blocking)
     ImageCacheService.instance.autoCleanup().catchError((e) {
-      print('Warning: Cache cleanup failed: $e');
+      debugPrint('Warning: Cache cleanup failed: $e');
     });
 
     // Run automatic database cleanup for old soft-deleted records (non-blocking)
     HiveService.instance.autoCleanupOldRecords().catchError((e) {
-      print('Warning: Database cleanup failed: $e');
+      debugPrint('Warning: Database cleanup failed: $e');
     });
   }
 
@@ -156,14 +156,8 @@ class _KeepJoyAppState extends State<KeepJoyApp> with WidgetsBindingObserver {
   }
 
   void _checkInitialDeepLink() {
-    // Supabase SDK handles deep links automatically, but we can check
-    // if we're starting from a password reset link
-    final authService = AuthService();
-    if (authService.client != null) {
-      // Get the initial session to see if it's a recovery session
-      final session = authService.client!.auth.currentSession;
-      // Note: We'll handle password recovery in the auth state listener
-    }
+    // Supabase SDK handles initial deep links internally.
+    // Password recovery is handled in the auth state listener.
   }
 
   @override
@@ -850,7 +844,7 @@ class _MainNavigatorState extends State<MainNavigator>
 
     await showDialog<void>(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       builder: (dialogContext) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         child: Container(

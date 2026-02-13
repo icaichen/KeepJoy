@@ -85,15 +85,15 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                  Text(
-                                    pageName,
-                                    style: ReportTextStyles.screenTitle,
-                                  ),
+                                Text(
+                                  pageName,
+                                  style: ReportTextStyles.screenTitle,
+                                ),
                                 const SizedBox(height: 4),
-                                  Text(
-                                    l10n.dashboardMemoryLaneSubtitle,
-                                    style: ReportTextStyles.screenSubtitle,
-                                  ),
+                                Text(
+                                  l10n.dashboardMemoryLaneSubtitle,
+                                  style: ReportTextStyles.screenSubtitle,
+                                ),
                               ],
                             ),
                           ],
@@ -181,9 +181,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                         padding: EdgeInsets.only(top: topPadding),
                         child: Text(
                           pageName,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
+                          style: ReportTextStyles.sectionHeader.copyWith(
                             color: Colors.black87,
                           ),
                         ),
@@ -843,7 +841,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     String date,
     bool isChinese,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -861,20 +858,11 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: ReportTextStyles.label,
-              ),
+              Text(label, style: ReportTextStyles.label),
               const SizedBox(height: 4),
-              Text(
-                title,
-                style: ReportTextStyles.statValueSmall,
-              ),
+              Text(title, style: ReportTextStyles.statValueSmall),
               const SizedBox(height: 2),
-              Text(
-                date,
-                style: ReportTextStyles.label,
-              ),
+              Text(date, style: ReportTextStyles.label),
             ],
           ),
         ),
@@ -1196,10 +1184,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                      Text(
-                        '$count',
-                        style: ReportTextStyles.statValueSmall,
-                      ),
+                    Text('$count', style: ReportTextStyles.statValueSmall),
                   ],
                 ),
               ),

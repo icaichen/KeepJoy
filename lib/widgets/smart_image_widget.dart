@@ -30,17 +30,14 @@ class SmartImageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // Priority 1: Check local file first (offline-first)
     if (localPath != null && localPath!.isNotEmpty) {
-      final file = File(localPath!);
-      if (file.existsSync()) {
-        return Image.file(
-          file,
-          fit: fit ?? BoxFit.cover,
-          width: width,
-          height: height,
-          errorBuilder: (context, error, stackTrace) => _tryRemoteOrError(),
-          gaplessPlayback: true,
-        );
-      }
+      return Image.file(
+        File(localPath!),
+        fit: fit ?? BoxFit.cover,
+        width: width,
+        height: height,
+        errorBuilder: (context, error, stackTrace) => _tryRemoteOrError(),
+        gaplessPlayback: true,
+      );
     }
 
     // Priority 2: Try remote URL if local not available
@@ -53,17 +50,17 @@ class SmartImageWidget extends StatelessWidget {
         placeholder: placeholder != null
             ? (context, url) => placeholder!
             : (context, url) => Container(
-                  width: width,
-                  height: height,
-                  color: Colors.grey[200],
-                  child: const Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                width: width,
+                height: height,
+                color: Colors.grey[200],
+                child: const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
+              ),
         errorWidget: errorWidget != null
             ? (context, url, error) => errorWidget!
             : (context, url, error) => _buildErrorWidget(),

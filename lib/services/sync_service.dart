@@ -979,7 +979,7 @@ class SyncService {
     if (remoteDeletedAt != null && localDeletedAt != null) {
       final result = remoteDeletedAt.isAfter(localDeletedAt);
       debugPrint(
-        '   📊 Both deleted: remote=${remoteDeletedAt}, local=${localDeletedAt}, replace=$result',
+        '   📊 Both deleted: remote=$remoteDeletedAt, local=$localDeletedAt, replace=$result',
       );
       return result;
     }

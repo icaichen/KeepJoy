@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keepjoy_app/theme/typography.dart';
 
 class ReportUI {
   // Colors
@@ -78,62 +79,51 @@ class ReportUI {
 
 class ReportTextStyles {
   // Screen Title (e.g., "Yearly Reports", "Memory Lane")
-  static const TextStyle screenTitle = TextStyle(
-    fontSize: 32,
+  static TextStyle get screenTitle => AppTypography.headlineLarge.copyWith(
     fontWeight: FontWeight.w700,
     color: ReportUI.primaryTextColor,
     letterSpacing: -0.5,
   );
 
   // Screen Subtitle (e.g., "Your year in review")
-  static const TextStyle screenSubtitle = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: ReportUI.secondaryTextColor,
-  );
+  static TextStyle get screenSubtitle =>
+      AppTypography.bodyMedium.copyWith(color: ReportUI.secondaryTextColor);
 
   // Section Headers (e.g., "Memory Heatmap", "Joy Trend")
-  static const TextStyle sectionHeader = TextStyle(
-    fontSize: 18, // TitleMedium is usually 16/18, reinforcing 18 for headers
+  static TextStyle get sectionHeader => AppTypography.titleMedium.copyWith(
     fontWeight: FontWeight.w700,
     color: ReportUI.primaryTextColor,
     letterSpacing: -0.5,
   );
 
   // Section Subtitles (e.g., "Activity this year")
-  static const TextStyle sectionSubtitle = TextStyle(
-    fontSize: 13, // BodySmall
-    fontWeight: FontWeight.w400,
+  static TextStyle get sectionSubtitle => AppTypography.bodySmall.copyWith(
+    fontSize: 13,
     color: ReportUI.secondaryTextColor,
   );
 
   // Large Stat Values (e.g., in Summary Cards like "1,240")
-  static const TextStyle statValueLarge = TextStyle(
-    fontSize: 24, // TitleLarge
+  static TextStyle get statValueLarge => AppTypography.headlineMedium.copyWith(
     fontWeight: FontWeight.w800,
     color: ReportUI.primaryTextColor,
     letterSpacing: -1.0,
   );
 
   // Small Stat Cards Values (e.g., in grid stats)
-  static const TextStyle statValueSmall = TextStyle(
-    fontSize: 16, // TitleSmall
+  static TextStyle get statValueSmall => AppTypography.titleSmall.copyWith(
     fontWeight: FontWeight.w800,
     color: ReportUI.primaryTextColor,
   );
 
   // Labels (e.g., "Total Items", "Improvement")
-  static const TextStyle label = TextStyle(
-    fontSize: 11, // LabelSmall
+  static TextStyle get label => AppTypography.labelSmall.copyWith(
+    fontSize: 11,
     fontWeight: FontWeight.w600,
     color: ReportUI.labelTextColor,
     letterSpacing: 0.1,
   );
-  
+
   // Body text for descriptions/insights
-  static const TextStyle body = TextStyle(
-    fontSize: 14, // BodyMedium
-    fontWeight: FontWeight.w400,
-    color: ReportUI.secondaryTextColor,
-  );
+  static TextStyle get body =>
+      AppTypography.bodyMedium.copyWith(color: ReportUI.secondaryTextColor);
 }

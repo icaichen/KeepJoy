@@ -970,7 +970,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     children: [
                                       Text(
                                         l10n.reportLess,
-                                          style: ReportTextStyles.label,
+                                        style: ReportTextStyles.label,
                                       ),
                                       const SizedBox(width: 8),
                                       ...List.generate(5, (index) {
@@ -994,7 +994,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                       const SizedBox(width: 8),
                                       Text(
                                         l10n.reportMore,
-                                          style: ReportTextStyles.label,
+                                        style: ReportTextStyles.label,
                                       ),
                                       const Spacer(),
                                       IconButton(
@@ -1189,10 +1189,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             const SizedBox(height: 10),
             FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                style: ReportTextStyles.statValueLarge,
-              ),
+              child: Text(value, style: ReportTextStyles.statValueLarge),
             ),
             const SizedBox(height: 4),
             Text(
@@ -1470,18 +1467,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                   children: [
                     Text(
                       isChinese ? '心动指数趋势' : 'Joy Index Trend',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF111827),
-                          ),
+                      style: ReportTextStyles.sectionHeader,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF6B7280),
-                      ),
+                      style: ReportTextStyles.sectionSubtitle,
                     ),
                   ],
                 ),
@@ -1508,7 +1499,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                 width: 60,
                 child: Text(
                   isChinese ? '指标' : 'Metric',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  style: ReportTextStyles.body.copyWith(
                     color: const Color(0xFF6B7280),
                     fontWeight: FontWeight.w500,
                   ),
@@ -1546,24 +1537,20 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           value: true,
                           child: Text(
                             isChinese ? '心动率' : 'Joy Rate',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF111827),
-                                ),
+                            style: ReportTextStyles.body.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF111827),
+                            ),
                           ),
                         ),
                         DropdownMenuItem<bool>(
                           value: false,
                           child: Text(
                             isChinese ? '心动次数' : 'Joy Count',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF111827),
-                                ),
+                            style: ReportTextStyles.body.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF111827),
+                            ),
                           ),
                         ),
                       ],
@@ -1874,21 +1861,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
         children: [
           Text(
             isChinese ? '你的美好改变' : 'Your Joyful Journey',
-            style: const TextStyle(
-              fontFamily: 'SF Pro Display',
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
+            style: ReportTextStyles.sectionHeader,
           ),
           const SizedBox(height: 8),
           Text(
             isChinese ? '今年的精彩足迹' : 'Your highlights this year',
-            style: const TextStyle(
-              fontFamily: 'SF Pro Text',
-              fontSize: 14,
-              color: Colors.black54,
-            ),
+            style: ReportTextStyles.sectionSubtitle,
           ),
           const SizedBox(height: 20),
           ...insights.map(
@@ -1928,11 +1906,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                fontFamily: 'SF Pro Text',
-                fontSize: 14,
+              style: ReportTextStyles.body.copyWith(
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF374151),
+                color: const Color(0xFF374151),
                 height: 1.4,
               ),
             ),

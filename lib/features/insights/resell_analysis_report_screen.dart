@@ -98,10 +98,7 @@ class _ResellAnalysisReportScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: ReportTextStyles.label,
-              ),
+              Text(label, style: ReportTextStyles.label),
               const SizedBox(height: 6),
               Text(
                 value,
@@ -251,12 +248,12 @@ class _ResellAnalysisReportScreenState
                               children: [
                                 Text(
                                   pageName,
-                                    style: ReportTextStyles.screenTitle,
+                                  style: ReportTextStyles.screenTitle,
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   l10n.dashboardResellReportSubtitle,
-                                    style: ReportTextStyles.screenSubtitle,
+                                  style: ReportTextStyles.screenSubtitle,
                                 ),
                               ],
                             ),
@@ -357,43 +354,32 @@ class _ResellAnalysisReportScreenState
                                             isChinese
                                                 ? '品类表现分析'
                                                 : 'Category Performance',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleLarge
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Colors.black87,
-                                                ),
+                                            style:
+                                                ReportTextStyles.sectionHeader,
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             isChinese
                                                 ? '各品类的成交金额、成交率与平均售出天数'
                                                 : 'Revenue, sold rate, and avg days to sell',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  color: const Color(
-                                                    0xFF6B7280,
-                                                  ),
-                                                ),
+                                            style: ReportTextStyles
+                                                .sectionSubtitle,
                                           ),
                                         ],
                                       ),
                                     ),
-                                      IconButton(
-                                        onPressed: () =>
-                                            _showCategoryInfo(context, isChinese),
-                                        icon: const Icon(
-                                          Icons.info_outline_rounded,
-                                          size: 20,
-                                          color: Color(0xFF9CA3AF),
-                                        ),
-                                        tooltip: isChinese ? '数据说明' : 'Info',
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
+                                    IconButton(
+                                      onPressed: () =>
+                                          _showCategoryInfo(context, isChinese),
+                                      icon: const Icon(
+                                        Icons.info_outline_rounded,
+                                        size: 20,
+                                        color: Color(0xFF9CA3AF),
                                       ),
+                                      tooltip: isChinese ? '数据说明' : 'Info',
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 24),
@@ -432,27 +418,16 @@ class _ResellAnalysisReportScreenState
                                             isChinese
                                                 ? '趋势分析'
                                                 : 'Trend Analysis',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleLarge
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Colors.black87,
-                                                ),
+                                            style:
+                                                ReportTextStyles.sectionHeader,
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             isChinese
                                                 ? '转卖表现随时间的变化趋势'
                                                 : 'Resale performance over time',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  color: const Color(
-                                                    0xFF6B7280,
-                                                  ),
-                                                ),
+                                            style: ReportTextStyles
+                                                .sectionSubtitle,
                                           ),
                                         ],
                                       ),
@@ -617,27 +592,16 @@ class _ResellAnalysisReportScreenState
                                             isChinese
                                                 ? '超过30天未售出统计'
                                                 : '30+ Days Unsold',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleLarge
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Colors.black87,
-                                                ),
+                                            style:
+                                                ReportTextStyles.sectionHeader,
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             isChinese
                                                 ? '各品类超过30天的件数'
                                                 : 'Count by category (30+ days unsold)',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  color: const Color(
-                                                    0xFF6B7280,
-                                                  ),
-                                                ),
+                                            style: ReportTextStyles
+                                                .sectionSubtitle,
                                           ),
                                         ],
                                       ),
@@ -683,11 +647,7 @@ class _ResellAnalysisReportScreenState
                               children: [
                                 Text(
                                   isChinese ? '交易洞察' : 'Transaction Insights',
-                                  style: Theme.of(context).textTheme.titleLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
-                                      ),
+                                  style: ReportTextStyles.sectionHeader,
                                 ),
                                 const SizedBox(height: 20),
                                 _buildTransactionInsights(context, isChinese),
@@ -752,9 +712,7 @@ class _ResellAnalysisReportScreenState
                         padding: EdgeInsets.only(top: topPadding),
                         child: Text(
                           pageName,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
+                          style: ReportTextStyles.sectionHeader.copyWith(
                             color: Colors.black87,
                           ),
                         ),
@@ -845,33 +803,35 @@ class _ResellAnalysisReportScreenState
 
     // Sort accordingly
     if (_selectedCategoryMetric == CategoryMetric.revenue) {
-       activeCategories.sort((a, b) => (categoryData[b]!['totalRevenue'] as double)
-          .compareTo(categoryData[a]!['totalRevenue'] as double));
+      activeCategories.sort(
+        (a, b) => (categoryData[b]!['totalRevenue'] as double).compareTo(
+          categoryData[a]!['totalRevenue'] as double,
+        ),
+      );
     } else if (_selectedCategoryMetric == CategoryMetric.successRate) {
-       activeCategories.sort((a, b) {
-          final countA = categoryData[a]!['totalCount'] as int;
-          final soldA = categoryData[a]!['soldCount'] as int;
-          final rateA = countA > 0 ? soldA / countA : 0.0;
+      activeCategories.sort((a, b) {
+        final countA = categoryData[a]!['totalCount'] as int;
+        final soldA = categoryData[a]!['soldCount'] as int;
+        final rateA = countA > 0 ? soldA / countA : 0.0;
 
-          final countB = categoryData[b]!['totalCount'] as int;
-          final soldB = categoryData[b]!['soldCount'] as int;
-          final rateB = countB > 0 ? soldB / countB : 0.0;
-          return rateB.compareTo(rateA);
-       });
+        final countB = categoryData[b]!['totalCount'] as int;
+        final soldB = categoryData[b]!['soldCount'] as int;
+        final rateB = countB > 0 ? soldB / countB : 0.0;
+        return rateB.compareTo(rateA);
+      });
     } else {
-       // Average days
-       activeCategories.sort((a, b) {
-          final countA = categoryData[a]!['totalCount'] as int;
-          final daysA = categoryData[a]!['totalListedDays'] as double;
-          final avgA = countA > 0 ? daysA / countA : 0.0;
+      // Average days
+      activeCategories.sort((a, b) {
+        final countA = categoryData[a]!['totalCount'] as int;
+        final daysA = categoryData[a]!['totalListedDays'] as double;
+        final avgA = countA > 0 ? daysA / countA : 0.0;
 
-          final countB = categoryData[b]!['totalCount'] as int;
-          final daysB = categoryData[b]!['totalListedDays'] as double;
-          final avgB = countB > 0 ? daysB / countB : 0.0;
-          return avgA.compareTo(avgB); // Fast to slow
-       });
+        final countB = categoryData[b]!['totalCount'] as int;
+        final daysB = categoryData[b]!['totalListedDays'] as double;
+        final avgB = countB > 0 ? daysB / countB : 0.0;
+        return avgA.compareTo(avgB); // Fast to slow
+      });
     }
-
 
     return Column(
       children: [
@@ -941,13 +901,13 @@ class _ResellAnalysisReportScreenState
           ],
         ),
         const SizedBox(height: 8),
-        
+
         ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: activeCategories.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: activeCategories.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
             final category = activeCategories[index];
             final data = categoryData[category]!;
             final revenue = data['totalRevenue'] as double;
@@ -982,66 +942,66 @@ class _ResellAnalysisReportScreenState
             }
 
             return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                             width: 3, // Thinner accent
-                             height: 14,
-                             decoration: BoxDecoration(
-                               color: barColors[0],
-                               borderRadius: BorderRadius.circular(1.5),
-                             ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 3, // Thinner accent
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: barColors[0],
+                            borderRadius: BorderRadius.circular(1.5),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            category.label(context),
-                            style: ReportTextStyles.body.copyWith(
-                               fontWeight: FontWeight.w600,
-                               fontSize: 13, // Slightly smaller text
-                               color: const Color(0xFF374151),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        valueText,
-                        style: ReportTextStyles.statValueSmall.copyWith(
-                           fontSize: 13, // Matches label size
                         ),
+                        const SizedBox(width: 8),
+                        Text(
+                          category.label(context),
+                          style: ReportTextStyles.body.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13, // Slightly smaller text
+                            color: const Color(0xFF374151),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      valueText,
+                      style: ReportTextStyles.statValueSmall.copyWith(
+                        fontSize: 13, // Matches label size
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 6), // Tighter spacing
-                  Stack(
-                    children: [
-                      Container(
-                        height: 5, // Thinner bar
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6), // Tighter spacing
+                Stack(
+                  children: [
+                    Container(
+                      height: 5, // Thinner bar
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    FractionallySizedBox(
+                      widthFactor: barValue.clamp(0.05, 1.0),
+                      child: Container(
+                        height: 5,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
+                          gradient: LinearGradient(colors: barColors),
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
-                      FractionallySizedBox(
-                        widthFactor: barValue.clamp(0.05, 1.0),
-                        child: Container(
-                          height: 5,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: barColors),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-      },
-    ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ],
     );
   }
@@ -1229,82 +1189,207 @@ class _ResellAnalysisReportScreenState
       }
     }
 
+    // Bento Box Grid Layout
     return Column(
       children: [
-        // 成交表现
-        _buildInsightRow(
-          context,
-          icon: Icons.trending_up_rounded,
-          iconColor: const Color(0xFF10B981),
-          label: isChinese ? '成交表现' : 'Sold Rate',
-          value: '${successRate.toStringAsFixed(0)}%',
-          isChinese: isChinese,
+        Row(
+          children: [
+            Expanded(
+              child: _buildBentoCard(
+                context,
+                title: isChinese ? '成交表现' : 'Sold Rate',
+                value: '${successRate.toStringAsFixed(0)}%',
+                icon: Icons.trending_up_rounded,
+                iconColor: const Color(0xFF10B981),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE0F2F1), Color(0xFFFFFFFF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildBentoCard(
+                context,
+                title: isChinese ? '优势品类' : 'Best Category',
+                value: bestCategory?.label(context) ?? '-',
+                icon: Icons.star_rounded,
+                iconColor: const Color(0xFFFFB703),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFF8E1), Color(0xFFFFFFFF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
-
-        // 优势品类
-        if (bestCategory != null)
-          _buildInsightRow(
-            context,
-            icon: Icons.star_rounded,
-            iconColor: const Color(0xFFFFD93D),
-            label: isChinese ? '优势品类' : 'Best Category',
-            value: bestCategory!.label(context),
-            isChinese: isChinese,
-          ),
-        if (bestCategory != null) const SizedBox(height: 12),
-
-        // 最快成交
-        if (fastestDays != null)
-          _buildInsightRow(
-            context,
-            icon: Icons.flash_on_rounded,
-            iconColor: const Color(0xFFFF9AA2),
-            label: isChinese ? '最快成交' : 'Fastest Sale',
-            value: '$fastestDays ${isChinese ? '天' : 'days'}',
-            isChinese: isChinese,
-          ),
-        if (fastestDays != null) const SizedBox(height: 12),
-
-        // 最高价格
-        if (highestPrice > 0)
-          _buildInsightRow(
-            context,
-            icon: Icons.attach_money_rounded,
-            iconColor: const Color(0xFF5ECFB8),
-            label: isChinese ? '最高价格' : 'Highest Price',
-            value: '$_currencySymbol${highestPrice.toStringAsFixed(0)}',
-            isChinese: isChinese,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildBentoCard(
+                context,
+                title: isChinese ? '最快成交' : 'Fastest Sale',
+                value: fastestDays != null
+                    ? '$fastestDays ${isChinese ? '天' : 'days'}'
+                    : '-',
+                icon: Icons.flash_on_rounded,
+                iconColor: const Color(0xFFFF9AA2), // Soft Red
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFEBEE), Color(0xFFFFFFFF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildBentoCard(
+                context,
+                title: isChinese ? '最高价格' : 'Top Price',
+                value: highestPrice > 0
+                    ? '$_currencySymbol${highestPrice.toStringAsFixed(0)}'
+                    : '-',
+                icon: Icons.attach_money_rounded,
+                iconColor: const Color(0xFF5ECFB8), // Mint
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE0F7FA), Color(0xFFFFFFFF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+          ],
+        ),
 
         if (unsoldOver30 > 0) ...[
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF7E5),
-              borderRadius: BorderRadius.circular(12),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFF7E5), Color(0xFFFFFDF5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFFFD93D).withValues(alpha: 0.4),
+                color: const Color(0xFFFFD93D).withValues(alpha: 0.3),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD93D).withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: Text(
-              unsoldOver30 >= 5
-                  ? (isChinese
-                        ? '有 $unsoldOver30 件物品已超过30天未售出，建议集中优化：适当调价、更新描述，或尝试其他转售渠道。'
-                        : 'You have $unsoldOver30 items unsold for 30+ days. Consider revisiting them together: adjust pricing, refresh the listing, or try another channel.')
-                  : (isChinese
-                        ? '$unsoldOver30 件物品超过30天未售出，试试小幅调价或更换平台提升成交。'
-                        : '$unsoldOver30 item(s) unsold for 30+ days. Try a small price drop or a different channel to improve sales.'),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF8A6D1F),
-                fontWeight: FontWeight.w600,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD93D).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Color(0xFFD97706),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? '滞销提醒' : 'Unsold Alert',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF92400E),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        unsoldOver30 >= 5
+                            ? (isChinese
+                                  ? '有 $unsoldOver30 件物品已超过30天未售出，建议集中优化。'
+                                  : 'You have $unsoldOver30 items unsold for 30+ days. Consider optimizing.')
+                            : (isChinese
+                                  ? '$unsoldOver30 件物品超过30天未售出，试试小幅调价。'
+                                  : '$unsoldOver30 item(s) unsold for 30+ days. Try a small price drop.'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: const Color(0xFF92400E).withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildBentoCard(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+    required Gradient gradient,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 20, color: iconColor),
+              ),
+              const Spacer(),
+              // Optional: Add trend arrow or indicator? Kept simple for now.
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: ReportTextStyles.statValueLarge.copyWith(fontSize: 20),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(title, style: ReportTextStyles.sectionSubtitle),
+        ],
+      ),
     );
   }
 
@@ -1813,52 +1898,6 @@ class _ResellAnalysisReportScreenState
   }
 
   // Helper method to build insight row
-  Widget _buildInsightRow(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required String value,
-    required bool isChinese,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: ReportUI.statCardDecoration,
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: ReportTextStyles.sectionHeader,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildMetricCard(
     BuildContext context, {
