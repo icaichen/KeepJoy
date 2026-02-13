@@ -24,6 +24,7 @@ import 'package:keepjoy_app/widgets/modern_dialog.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
+import 'package:keepjoy_app/features/dashboard/widgets/yearly_progress_card.dart';
 import 'package:keepjoy_app/features/dashboard/widgets/active_session_card.dart';
 
 class _ModeMeta {
@@ -2755,13 +2756,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           _wrapPremiumCard(
                             context,
-                            _buildReportCard(
-                              context,
+                            YearlyProgressCard(
                               icon: Icons.trending_up_rounded,
                               iconColor: const Color(0xFFFFD93D),
-                              bgColors: const [
-                                Color(0xFFFFF9E6),
+                              gradientColors: const [
                                 Color(0xFFFFD93D),
+                                Color(0xFFFFF9E6),
                               ],
                               title: l10n.dashboardResellReportTitle,
                               subtitle: l10n.dashboardResellReportSubtitle,
@@ -2780,21 +2780,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           _wrapPremiumCard(
                             context,
-                            _buildReportCard(
-                              context,
+                            YearlyProgressCard(
                               icon: Icons.photo_library_rounded,
                               iconColor: const Color(0xFFB794F6),
-                              bgColors: [
-                                ReportUI.memoryHeaderGradient[0],
-                                ReportUI.memoryHeaderGradient[1],
-                                ReportUI.memoryHeaderGradient[2],
+                              gradientColors: const [
+                                Color(0xFFB794F6),
+                                Color(0xFFF3EBFF),
                               ],
-                              gradientBegin: Alignment.topCenter,
-                              gradientEnd: Alignment.bottomCenter,
-                              gradientStops: const [0.0, 0.25, 0.45],
                               title: l10n.dashboardMemoryLaneTitle,
                               subtitle: l10n.dashboardMemoryLaneSubtitle,
                               onTap: () {
@@ -2810,16 +2805,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           _wrapPremiumCard(
                             context,
-                            _buildReportCard(
-                              context,
+                            YearlyProgressCard(
                               icon: Icons.calendar_today_rounded,
                               iconColor: const Color(0xFF89CFF0),
-                              bgColors: const [
-                                Color(0xFFF5F5F7),
+                              gradientColors: const [
                                 Color(0xFF89CFF0),
+                                Color(0xFFE6F4F9),
                               ],
                               title: l10n.dashboardYearlyReportsTitle,
                               subtitle: l10n.dashboardYearlyReportsSubtitle,
@@ -3037,90 +3031,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildReportCard(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required List<Color> bgColors,
-    AlignmentGeometry gradientBegin = Alignment.topLeft,
-    AlignmentGeometry gradientEnd = Alignment.bottomRight,
-    List<double>? gradientStops,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: gradientBegin,
-            end: gradientEnd,
-            colors: bgColors,
-            stops: gradientStops,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: iconColor, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: Color(0xFF9CA3AF),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildMonthlyInfoRow({
     required IconData icon,
