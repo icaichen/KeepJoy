@@ -1052,8 +1052,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             DeclutterResultsDistributionCard(
                               items: yearlyItems,
                               title: l10n.reportYearToDateOutcomes,
-                              subtitle: l10n
-                                  .reportYearToDateOutcomes, // Using title as subtitle for now if specific one isn't distinct enough
+                              subtitle: l10n.reportActivityThisYear,
                               keptLabel: DeclutterStatus.keep.label(context),
                               resellLabel: DeclutterStatus.resell.label(
                                 context,
@@ -1070,7 +1069,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               totalItemsLabel: l10n.totalItemsDecluttered,
                               isChinese: isChinese,
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: ReportUI.sectionGap),
 
                             // Clean Sweep Analysis (Yearly)
                             DeepCleaningAnalysisCard(
@@ -1080,17 +1079,17 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   l10n.reportNoDeepCleaningRecords,
                               onDeleteSession: widget.onDeleteSession,
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: ReportUI.sectionGap),
 
                             // Joy Index Trend
                             _buildJoyIndexCard(context, isChinese),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: ReportUI.sectionGap),
 
                             // Your Joyful Journey (Yearly Insights)
                             if (_hasYearlyActivity())
                               _buildYearlyInsightsCard(isChinese),
                             if (_hasYearlyActivity())
-                              const SizedBox(height: 20),
+                              const SizedBox(height: ReportUI.sectionGap),
                             const SizedBox(height: 32),
                           ],
                         ),
@@ -1177,11 +1176,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       height: 150,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: ReportUI.borderSideColor),
-        ),
+        decoration: ReportUI.statCardDecoration,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

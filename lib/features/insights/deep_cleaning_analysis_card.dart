@@ -8,6 +8,7 @@ import '../../widgets/auto_scale_text.dart';
 import '../../widgets/smart_image_widget.dart';
 import '../../widgets/modern_dialog.dart';
 import '../../theme/typography.dart';
+import '../insights/widgets/report_ui_constants.dart';
 
 class DeepCleaningAnalysisCard extends StatefulWidget {
   final List<DeepCleaningSession> sessions;
@@ -89,29 +90,12 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
 
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: ReportUI.cardDecoration,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.title,
-            style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
+          Text(widget.title, style: ReportTextStyles.sectionHeader),
           const SizedBox(height: 20),
 
           // Metrics Row 1
@@ -271,18 +255,13 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
       children: [
         Text(
           l10n.deepCleaningComparisonsTitle,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
-          ),
+          style: ReportTextStyles.sectionHeader,
         ),
         const SizedBox(height: 12),
         if (sessions.isEmpty)
           Text(
             l10n.deepCleaningComparisonsEmpty,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+            style: ReportTextStyles.sectionSubtitle,
           )
         else
           ...visibleAreas.map(

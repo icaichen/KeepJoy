@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import '../../../theme/typography.dart';
 import '../../../models/declutter_item.dart';
+import '../../insights/widgets/report_ui_constants.dart';
 
 class DeclutterResultsDistributionCard extends StatelessWidget {
   const DeclutterResultsDistributionCard({
@@ -87,36 +87,14 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: ReportUI.cardDecoration,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
+          Text(title, style: ReportTextStyles.sectionHeader),
           const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: AppTypography.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
+          Text(subtitle, style: ReportTextStyles.sectionSubtitle),
           const SizedBox(height: 32),
           Center(
             child: SizedBox(
