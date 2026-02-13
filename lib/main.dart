@@ -100,10 +100,7 @@ void main() async {
 class KeepJoyApp extends StatefulWidget {
   final bool hasSeenOnboarding;
 
-  const KeepJoyApp({
-    super.key, 
-    this.hasSeenOnboarding = false,
-  });
+  const KeepJoyApp({super.key, this.hasSeenOnboarding = false});
 
   @override
   State<KeepJoyApp> createState() => _KeepJoyAppState();
@@ -137,9 +134,11 @@ class _KeepJoyAppState extends State<KeepJoyApp> with WidgetsBindingObserver {
         }
         return;
       }
-      
+
       // When user logs out (session becomes null), navigate to welcome
-      if (session == null && mounted && event.event == AuthChangeEvent.signedOut) {
+      if (session == null &&
+          mounted &&
+          event.event == AuthChangeEvent.signedOut) {
         // User logged out - navigate to welcome and clear stack
         _navigatorKey.currentState?.pushNamedAndRemoveUntil(
           '/welcome',
@@ -151,11 +150,11 @@ class _KeepJoyAppState extends State<KeepJoyApp> with WidgetsBindingObserver {
         setState(() {});
       }
     });
-    
+
     // Check initial deep link for password reset
     _checkInitialDeepLink();
   }
-  
+
   void _checkInitialDeepLink() {
     // Supabase SDK handles deep links automatically, but we can check
     // if we're starting from a password reset link
@@ -300,6 +299,7 @@ class _MainNavigatorState extends State<MainNavigator>
       ..clear()
       ..addAll(entries.take(20));
   }
+
   void _rebuildActivityDatesFromData() {
     _activityDates.clear();
 
@@ -317,6 +317,7 @@ class _MainNavigatorState extends State<MainNavigator>
       addDate(session.startTime);
     }
   }
+
   bool _hasFullAccess = false; // Default to false until verified
   StreamSubscription<SyncStatus>? _syncSubscription;
   DateTime? _lastLocalUpdate; // Track when user made a local change
@@ -334,11 +335,14 @@ class _MainNavigatorState extends State<MainNavigator>
       if (status == SyncStatus.success && mounted) {
         // Check if user made a local update in the last 3 seconds
         final now = DateTime.now();
-        final recentLocalUpdate = _lastLocalUpdate != null &&
+        final recentLocalUpdate =
+            _lastLocalUpdate != null &&
             now.difference(_lastLocalUpdate!).inSeconds < 3;
 
         if (recentLocalUpdate) {
-          debugPrint('✅ Sync completed, but skipping reload (recent local update)');
+          debugPrint(
+            '✅ Sync completed, but skipping reload (recent local update)',
+          );
         } else {
           debugPrint('✅ Sync completed, reloading data from other devices');
           _loadUserData();
@@ -385,14 +389,18 @@ class _MainNavigatorState extends State<MainNavigator>
           _memories.clear();
           _memories.addAll(results[1] as List<Memory>);
 
-          debugPrint('📥 [LOAD] Replacing _resellItems with ${(results[2] as List<ResellItem>).length} items from Hive');
+          debugPrint(
+            '📥 [LOAD] Replacing _resellItems with ${(results[2] as List<ResellItem>).length} items from Hive',
+          );
           _resellItems.clear();
           _resellItems.addAll(results[2] as List<ResellItem>);
 
           // Log first few resell items to see their status
           for (var i = 0; i < _resellItems.length && i < 3; i++) {
             final item = _resellItems[i];
-            debugPrint('📥 [LOAD] ResellItem[$i]: id=${item.id}, status=${item.status.name}');
+            debugPrint(
+              '📥 [LOAD] ResellItem[$i]: id=${item.id}, status=${item.status.name}',
+            );
           }
 
           _completedSessions.clear();
@@ -667,32 +675,37 @@ class _MainNavigatorState extends State<MainNavigator>
     // Save to database in background (non-blocking)
     final repository = DataRepository();
     unawaited(
-      repository.createDeclutterItem(item).then((savedItem) {
-        // Update with saved item if different
-        setState(() {
-          final index = _declutteredItems.indexWhere((i) => i.id == item.id);
-          if (index != -1) {
-            _declutteredItems[index] = savedItem;
-          }
+      repository
+          .createDeclutterItem(item)
+          .then((savedItem) {
+            // Update with saved item if different
+            setState(() {
+              final index = _declutteredItems.indexWhere(
+                (i) => i.id == item.id,
+              );
+              if (index != -1) {
+                _declutteredItems[index] = savedItem;
+              }
 
-          // If item is marked for resell, create a ResellItem
-          if (savedItem.status == DeclutterStatus.resell) {
-            final resellItem = ResellItem(
-              id: const Uuid().v4(),
-              userId: _currentUserId,
-              declutterItemId: savedItem.id,
-              status: ResellStatus.toSell,
-              createdAt: DateTime.now(),
-            );
-            _resellItems.insert(0, resellItem);
-            // 同时保存 resell item 到数据库
-            unawaited(repository.createResellItem(resellItem));
-          }
-        });
-        debugPrint('✅ 物品已保存到数据库: ${savedItem.id}');
-      }).catchError((e) {
-        debugPrint('❌ 保存物品失败: $e');
-      }),
+              // If item is marked for resell, create a ResellItem
+              if (savedItem.status == DeclutterStatus.resell) {
+                final resellItem = ResellItem(
+                  id: const Uuid().v4(),
+                  userId: _currentUserId,
+                  declutterItemId: savedItem.id,
+                  status: ResellStatus.toSell,
+                  createdAt: DateTime.now(),
+                );
+                _resellItems.insert(0, resellItem);
+                // 同时保存 resell item 到数据库
+                unawaited(repository.createResellItem(resellItem));
+              }
+            });
+            debugPrint('✅ 物品已保存到数据库: ${savedItem.id}');
+          })
+          .catchError((e) {
+            debugPrint('❌ 保存物品失败: $e');
+          }),
     );
 
     unawaited(ReminderService.evaluateAndScheduleGeneralReminder(context));
@@ -839,9 +852,7 @@ class _MainNavigatorState extends State<MainNavigator>
       context: context,
       barrierColor: Colors.black.withOpacity(0.7),
       builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
           decoration: BoxDecoration(
@@ -1011,18 +1022,21 @@ class _MainNavigatorState extends State<MainNavigator>
     // Save to database in background (non-blocking)
     final repository = DataRepository();
     unawaited(
-      repository.createMemory(memory).then((savedMemory) {
-        // Update with saved memory if different
-        setState(() {
-          final index = _memories.indexWhere((m) => m.id == memory.id);
-          if (index != -1) {
-            _memories[index] = savedMemory;
-          }
-        });
-        debugPrint('✅ 回忆已保存: ${savedMemory.id}');
-      }).catchError((e) {
-        debugPrint('❌ 保存回忆失败: $e');
-      }),
+      repository
+          .createMemory(memory)
+          .then((savedMemory) {
+            // Update with saved memory if different
+            setState(() {
+              final index = _memories.indexWhere((m) => m.id == memory.id);
+              if (index != -1) {
+                _memories[index] = savedMemory;
+              }
+            });
+            debugPrint('✅ 回忆已保存: ${savedMemory.id}');
+          })
+          .catchError((e) {
+            debugPrint('❌ 保存回忆失败: $e');
+          }),
     );
   }
 
@@ -1559,41 +1573,10 @@ class _HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<_HomeScreen> {
-  Timer? _timer;
   final ScrollController _scrollController = ScrollController();
 
   @override
-  void initState() {
-    super.initState();
-    // Start a timer to update the UI every second if there's an active session
-    if (widget.activeSession != null) {
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-    }
-  }
-
-  @override
-  void didUpdateWidget(_HomeScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Handle timer based on active session state
-    if (widget.activeSession != null && _timer == null) {
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-    } else if (widget.activeSession == null && _timer != null) {
-      _timer?.cancel();
-      _timer = null;
-    }
-  }
-
-  @override
   void dispose() {
-    _timer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -2732,18 +2715,20 @@ class _HomeScreenState extends State<_HomeScreen> {
                                               // Navigate back to timer
                                               Navigator.of(context).push(
                                                 MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      DeepCleaningTimerPage(
-                                                        area: widget
-                                                            .activeSession!
-                                                            .area,
-                                                        beforePhotoPath: widget
+                                                  builder: (_) => DeepCleaningTimerPage(
+                                                    area: widget
+                                                        .activeSession!
+                                                        .area,
+                                                    beforePhotoPath:
+                                                        widget
                                                             .activeSession!
                                                             .localBeforePhotoPath ??
-                                                            widget.activeSession!.remoteBeforePhotoPath,
-                                                        onStopSession: widget
-                                                            .onStopSession,
-                                                      ),
+                                                        widget
+                                                            .activeSession!
+                                                            .remoteBeforePhotoPath,
+                                                    onStopSession:
+                                                        widget.onStopSession,
+                                                  ),
                                                 ),
                                               );
                                             },
@@ -2795,18 +2780,20 @@ class _HomeScreenState extends State<_HomeScreen> {
                                             // Navigate to timer page (finish cleaning flow)
                                             Navigator.of(context).push(
                                               MaterialPageRoute(
-                                                builder: (_) =>
-                                                    DeepCleaningTimerPage(
-                                                      area: widget
-                                                          .activeSession!
-                                                          .area,
-                                                      beforePhotoPath: widget
+                                                builder: (_) => DeepCleaningTimerPage(
+                                                  area: widget
+                                                      .activeSession!
+                                                      .area,
+                                                  beforePhotoPath:
+                                                      widget
                                                           .activeSession!
                                                           .localBeforePhotoPath ??
-                                                          widget.activeSession!.remoteBeforePhotoPath,
-                                                      onStopSession:
-                                                          widget.onStopSession,
-                                                    ),
+                                                      widget
+                                                          .activeSession!
+                                                          .remoteBeforePhotoPath,
+                                                  onStopSession:
+                                                      widget.onStopSession,
+                                                ),
                                               ),
                                             );
                                           },
@@ -2851,15 +2838,19 @@ class _HomeScreenState extends State<_HomeScreen> {
             child: ListenableBuilder(
               listenable: _scrollController,
               builder: (context, child) {
-                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
-                final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(
+                  0.0,
+                  1.0,
+                );
+                final collapsedHeaderOpacity = scrollProgress >= 1.0
+                    ? 1.0
+                    : 0.0;
                 return IgnorePointer(
                   ignoring: collapsedHeaderOpacity < 0.5,
-                  child: Opacity(
-                    opacity: collapsedHeaderOpacity,
-                    child: child,
-                  ),
+                  child: Opacity(opacity: collapsedHeaderOpacity, child: child),
                 );
               },
               child: Container(
@@ -2892,13 +2883,15 @@ class _HomeScreenState extends State<_HomeScreen> {
             child: ListenableBuilder(
               listenable: _scrollController,
               builder: (context, child) {
-                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
-                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
-                return Opacity(
-                  opacity: headerOpacity,
-                  child: child,
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(
+                  0.0,
+                  1.0,
                 );
+                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+                return Opacity(opacity: headerOpacity, child: child);
               },
               child: SizedBox(
                 height: 120,

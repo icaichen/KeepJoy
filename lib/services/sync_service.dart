@@ -53,6 +53,8 @@ class SyncService {
   Timer? _pendingTaskTimer; // periodic pending-task upload worker
   Timer? _scheduledSyncTimer; // debounce for syncAll triggers
   Timer? _scheduledPullTimer; // debounce for pullFromCloud triggers
+  bool _isInitialized = false;
+  String? _initializedUserId;
   bool _isSyncing = false;
   bool _isPulling = false;
   StreamSubscription? _connectivitySubscription;
@@ -65,6 +67,17 @@ class SyncService {
 
   /// Initialize sync service
   Future<void> init() async {
+    final currentUserId = _userId;
+    if (_isInitialized && _initializedUserId == currentUserId) {
+      debugPrint('🔄 Sync service already initialized, skipping...');
+      return;
+    }
+
+    if (_isInitialized) {
+      debugPrint('🔄 Reinitializing sync service for user switch...');
+      _teardownRuntimeResources();
+    }
+
     debugPrint('🔄 Initializing sync service...');
 
     // Listen to connectivity changes
@@ -84,7 +97,27 @@ class SyncService {
     // Setup Realtime subscriptions
     await _setupRealtimeSubscriptions();
 
+    _isInitialized = true;
+    _initializedUserId = currentUserId;
     debugPrint('✅ Sync service initialized');
+  }
+
+  void _teardownRuntimeResources() {
+    _cloudPullTimer?.cancel();
+    _pendingTaskTimer?.cancel();
+    _scheduledSyncTimer?.cancel();
+    _scheduledPullTimer?.cancel();
+    _connectivitySubscription?.cancel();
+    _cloudPullTimer = null;
+    _pendingTaskTimer = null;
+    _scheduledSyncTimer = null;
+    _scheduledPullTimer = null;
+    _connectivitySubscription = null;
+
+    for (final channel in _realtimeChannels) {
+      _client?.removeChannel(channel);
+    }
+    _realtimeChannels.clear();
   }
 
   /// 5-minute cloud→local pull cycle (fallback)
@@ -100,7 +133,7 @@ class SyncService {
   void _startPendingTaskProcessor() {
     _pendingTaskTimer?.cancel();
     _pendingTaskTimer = Timer.periodic(
-      const Duration(seconds: 5),
+      const Duration(seconds: 15),
       (_) => _processPendingTasks(),
     );
   }
@@ -267,7 +300,9 @@ class SyncService {
     }
 
     final dirtyPlannedSessions = _hiveService.getDirtyPlannedSessions();
-    debugPrint('   Found ${dirtyPlannedSessions.length} dirty planned sessions');
+    debugPrint(
+      '   Found ${dirtyPlannedSessions.length} dirty planned sessions',
+    );
     for (final session in dirtyPlannedSessions) {
       await _processUploadTask(
         type: PendingTaskType.plannedSessionUpload,
@@ -487,11 +522,14 @@ class SyncService {
     final item = itemHive.toItem();
 
     debugPrint('⬆️ Uploading item: ${item.name} (${item.id.substring(0, 8)})');
-    debugPrint('   updated=${item.updatedAt}, deleted=${item.deletedAt}, device=${item.deviceId}');
+    debugPrint(
+      '   updated=${item.updatedAt}, deleted=${item.deletedAt}, device=${item.deviceId}',
+    );
 
     // Handle photo upload - only upload local files
     String? cloudPhotoUrl = item.remotePhotoPath;
-    if (item.localPhotoPath != null && !item.localPhotoPath!.startsWith('http')) {
+    if (item.localPhotoPath != null &&
+        !item.localPhotoPath!.startsWith('http')) {
       final file = File(item.localPhotoPath!);
       if (file.existsSync()) {
         final compressed = await ImageCompressionService.compressItemImage(
@@ -541,7 +579,9 @@ class SyncService {
     final session = sessionHive.toSession();
     final data = session.toJson();
 
-    debugPrint('⬆️ [UPLOAD] PlannedSession ${session.id}: isCompleted=${session.isCompleted}, updatedAt=${session.updatedAt}');
+    debugPrint(
+      '⬆️ [UPLOAD] PlannedSession ${session.id}: isCompleted=${session.isCompleted}, updatedAt=${session.updatedAt}',
+    );
 
     await _client!.from('planned_sessions').upsert(data);
     sessionHive.markSynced();
@@ -575,20 +615,25 @@ class SyncService {
   Future<bool> _downloadMemories() async {
     bool hadChanges = false;
     try {
-      final response = await _client!
-          .from('memories')
-          .select()
-          .eq('user_id', _userId!)
-          .order('created_at', ascending: false);
+      final lastSync = _hiveService.getLastRemoteSync(_memoriesSyncKey);
+      var query = _client!.from('memories').select().eq('user_id', _userId!);
+      if (lastSync != null) {
+        query = query.gt('updated_at', lastSync.toUtc().toIso8601String());
+      }
+      final response = await query.order('updated_at', ascending: true);
 
-      debugPrint('📥 Downloaded ${response.length} memories from cloud');
+      debugPrint(
+        '📥 Downloaded ${response.length} memories from cloud${lastSync == null ? " (full)" : " (incremental)"}',
+      );
       DateTime? latestRemote;
 
       for (final json in response) {
         final memory = Memory.fromJson(json);
         final localHive = _hiveService.getMemory(memory.id);
-        latestRemote =
-            _maxTimestamp(latestRemote, memory.updatedAt ?? memory.createdAt);
+        latestRemote = _maxTimestamp(
+          latestRemote,
+          memory.updatedAt ?? memory.createdAt,
+        );
 
         if (localHive == null) {
           final hive = MemoryHive.fromMemory(memory, isDirty: false);
@@ -598,7 +643,9 @@ class SyncService {
         } else {
           // CRITICAL: Never overwrite dirty local data
           if (localHive.isDirty) {
-            debugPrint('   ⏭️ Skipping memory - local is dirty (pending upload)');
+            debugPrint(
+              '   ⏭️ Skipping memory - local is dirty (pending upload)',
+            );
             continue;
           }
 
@@ -627,20 +674,28 @@ class SyncService {
   Future<bool> _downloadSessions() async {
     bool hadChanges = false;
     try {
-      final response = await _client!
+      final lastSync = _hiveService.getLastRemoteSync(_sessionsSyncKey);
+      var query = _client!
           .from('deep_cleaning_sessions')
           .select()
-          .eq('user_id', _userId!)
-          .order('created_at', ascending: false);
+          .eq('user_id', _userId!);
+      if (lastSync != null) {
+        query = query.gt('updated_at', lastSync.toUtc().toIso8601String());
+      }
+      final response = await query.order('updated_at', ascending: true);
 
-      debugPrint('📥 Downloaded ${response.length} sessions from cloud');
+      debugPrint(
+        '📥 Downloaded ${response.length} sessions from cloud${lastSync == null ? " (full)" : " (incremental)"}',
+      );
       DateTime? latestRemote;
 
       for (final json in response) {
         final session = DeepCleaningSession.fromJson(json);
         final localHive = _hiveService.getSession(session.id);
-        latestRemote =
-            _maxTimestamp(latestRemote, session.updatedAt ?? session.createdAt);
+        latestRemote = _maxTimestamp(
+          latestRemote,
+          session.updatedAt ?? session.createdAt,
+        );
 
         if (localHive == null) {
           final hive = DeepCleaningSessionHive.fromSession(
@@ -653,7 +708,9 @@ class SyncService {
         } else {
           // CRITICAL: Never overwrite dirty local data
           if (localHive.isDirty) {
-            debugPrint('   ⏭️ Skipping session - local is dirty (pending upload)');
+            debugPrint(
+              '   ⏭️ Skipping session - local is dirty (pending upload)',
+            );
             continue;
           }
 
@@ -685,23 +742,33 @@ class SyncService {
   Future<bool> _downloadItems() async {
     bool hadChanges = false;
     try {
-      final response = await _client!
+      final lastSync = _hiveService.getLastRemoteSync(_itemsSyncKey);
+      var query = _client!
           .from('declutter_items')
           .select()
-          .eq('user_id', _userId!)
-          .order('created_at', ascending: false);
+          .eq('user_id', _userId!);
+      if (lastSync != null) {
+        query = query.gt('updated_at', lastSync.toUtc().toIso8601String());
+      }
+      final response = await query.order('updated_at', ascending: true);
 
-      debugPrint('📥 Downloaded ${response.length} items from cloud');
+      debugPrint(
+        '📥 Downloaded ${response.length} items from cloud${lastSync == null ? " (full)" : " (incremental)"}',
+      );
       DateTime? latestRemote;
 
       for (final json in response) {
         final item = DeclutterItem.fromJson(json);
         final localHive = _hiveService.getItem(item.id);
-        latestRemote =
-            _maxTimestamp(latestRemote, item.updatedAt ?? item.createdAt);
+        latestRemote = _maxTimestamp(
+          latestRemote,
+          item.updatedAt ?? item.createdAt,
+        );
 
         debugPrint('   🔍 Item: ${item.name} (${item.id.substring(0, 8)})');
-        debugPrint('      Remote: updated=${item.updatedAt}, deleted=${item.deletedAt}, device=${item.deviceId}');
+        debugPrint(
+          '      Remote: updated=${item.updatedAt}, deleted=${item.deletedAt}, device=${item.deviceId}',
+        );
 
         if (localHive == null) {
           final hive = DeclutterItemHive.fromItem(item, isDirty: false);
@@ -709,7 +776,9 @@ class SyncService {
           debugPrint('   ✅ Created item: ${item.name}');
           hadChanges = true;
         } else {
-          debugPrint('      Local: updated=${localHive.updatedAt}, deleted=${localHive.deletedAt}, device=${localHive.deviceId}, dirty=${localHive.isDirty}');
+          debugPrint(
+            '      Local: updated=${localHive.updatedAt}, deleted=${localHive.deletedAt}, device=${localHive.deviceId}, dirty=${localHive.isDirty}',
+          );
 
           // CRITICAL: Never overwrite dirty local data (not yet uploaded)
           if (localHive.isDirty) {
@@ -744,23 +813,33 @@ class SyncService {
   Future<bool> _downloadResellItems() async {
     bool hadChanges = false;
     try {
-      final response = await _client!
+      final lastSync = _hiveService.getLastRemoteSync(_resellSyncKey);
+      var query = _client!
           .from('resell_items')
           .select()
-          .eq('user_id', _userId!)
-          .order('created_at', ascending: false);
+          .eq('user_id', _userId!);
+      if (lastSync != null) {
+        query = query.gt('updated_at', lastSync.toUtc().toIso8601String());
+      }
+      final response = await query.order('updated_at', ascending: true);
 
-      debugPrint('📥 Downloaded ${response.length} resell items from cloud');
+      debugPrint(
+        '📥 Downloaded ${response.length} resell items from cloud${lastSync == null ? " (full)" : " (incremental)"}',
+      );
       DateTime? latestRemote;
 
       for (final json in response) {
         final item = ResellItem.fromJson(json);
         final localHive = _hiveService.getResellItem(item.id);
-        latestRemote =
-            _maxTimestamp(latestRemote, item.updatedAt ?? item.createdAt);
+        latestRemote = _maxTimestamp(
+          latestRemote,
+          item.updatedAt ?? item.createdAt,
+        );
 
         debugPrint('   🔍 ResellItem: ${item.id.substring(0, 8)}');
-        debugPrint('      Remote: status=${item.status.name}, updated=${item.updatedAt}, deleted=${item.deletedAt}');
+        debugPrint(
+          '      Remote: status=${item.status.name}, updated=${item.updatedAt}, deleted=${item.deletedAt}',
+        );
 
         if (localHive == null) {
           final hive = ResellItemHive.fromItem(item, isDirty: false);
@@ -768,7 +847,9 @@ class SyncService {
           debugPrint('   ✅ Created resell item: ${item.id}');
           hadChanges = true;
         } else {
-          debugPrint('      Local: status=${localHive.status}, updated=${localHive.updatedAt}, deleted=${localHive.deletedAt}, dirty=${localHive.isDirty}');
+          debugPrint(
+            '      Local: status=${localHive.status}, updated=${localHive.updatedAt}, deleted=${localHive.deletedAt}, dirty=${localHive.isDirty}',
+          );
 
           // CRITICAL: Never overwrite dirty local data (not yet uploaded)
           if (localHive.isDirty) {
@@ -803,17 +884,28 @@ class SyncService {
   Future<bool> _downloadPlannedSessions() async {
     bool hadChanges = false;
     try {
-      final response = await _client!
+      final lastSync = _hiveService.getLastRemoteSync(_plannedSyncKey);
+      var query = _client!
           .from('planned_sessions')
           .select()
-          .eq('user_id', _userId!)
-          .order('created_at', ascending: false);
+          .eq('user_id', _userId!);
+      if (lastSync != null) {
+        query = query.gt('updated_at', lastSync.toUtc().toIso8601String());
+      }
+      final response = await query.order('updated_at', ascending: true);
 
-      debugPrint('📥 Downloaded ${response.length} planned sessions from cloud');
+      debugPrint(
+        '📥 Downloaded ${response.length} planned sessions from cloud${lastSync == null ? " (full)" : " (incremental)"}',
+      );
+      DateTime? latestRemote;
 
       for (final json in response) {
         final session = PlannedSession.fromJson(json);
         final localHive = _hiveService.getPlannedSession(session.id);
+        latestRemote = _maxTimestamp(
+          latestRemote,
+          session.updatedAt ?? session.createdAt,
+        );
 
         debugPrint('   Checking session: ${session.title} (${session.id})');
 
@@ -825,7 +917,9 @@ class SyncService {
         } else {
           // CRITICAL: Never overwrite dirty local data
           if (localHive.isDirty) {
-            debugPrint('   ⏭️ Skipping planned session - local is dirty (pending upload)');
+            debugPrint(
+              '   ⏭️ Skipping planned session - local is dirty (pending upload)',
+            );
             continue;
           }
 
@@ -833,18 +927,25 @@ class SyncService {
             localHive.updatedAt,
             session.updatedAt,
             localDeletedAt: localHive.deletedAt,
-          remoteDeletedAt: session.deletedAt,
-          localIsDirty: localHive.isDirty,
-        )) {
-          final hive = PlannedSessionHive.fromSession(session, isDirty: false);
+            remoteDeletedAt: session.deletedAt,
+            localIsDirty: localHive.isDirty,
+          )) {
+            final hive = PlannedSessionHive.fromSession(
+              session,
+              isDirty: false,
+            );
             await _hiveService.plannedSessions.put(hive.id, hive);
-            debugPrint('   ✅ Updated planned session: ${session.title} (remote newer)');
+            debugPrint(
+              '   ✅ Updated planned session: ${session.title} (remote newer)',
+            );
             hadChanges = true;
           } else {
             debugPrint('   ⏭️ Kept local planned session: ${session.title}');
           }
         }
       }
+
+      await _updateLastRemoteSync(_plannedSyncKey, latestRemote);
     } catch (e) {
       debugPrint('❌ Failed to download planned sessions: $e');
     }
@@ -877,7 +978,9 @@ class SyncService {
 
     if (remoteDeletedAt != null && localDeletedAt != null) {
       final result = remoteDeletedAt.isAfter(localDeletedAt);
-      debugPrint('   📊 Both deleted: remote=${remoteDeletedAt}, local=${localDeletedAt}, replace=$result');
+      debugPrint(
+        '   📊 Both deleted: remote=${remoteDeletedAt}, local=${localDeletedAt}, replace=$result',
+      );
       return result;
     }
 
@@ -901,7 +1004,9 @@ class SyncService {
     }
 
     final result = remoteUpdatedAt.isAfter(localUpdatedAt);
-    debugPrint('   📊 Comparing: remote=${remoteUpdatedAt.toIso8601String()}, local=${localUpdatedAt.toIso8601String()}, replace=$result');
+    debugPrint(
+      '   📊 Comparing: remote=${remoteUpdatedAt.toIso8601String()}, local=${localUpdatedAt.toIso8601String()}, replace=$result',
+    );
     return result;
   }
 
@@ -963,7 +1068,9 @@ class SyncService {
               value: _userId,
             ),
             callback: (payload) {
-              debugPrint('🔴 [Realtime] Memories changed: ${payload.eventType}');
+              debugPrint(
+                '🔴 [Realtime] Memories changed: ${payload.eventType}',
+              );
               _schedulePullFromCloud();
             },
           )
@@ -983,7 +1090,9 @@ class SyncService {
               value: _userId,
             ),
             callback: (payload) {
-              debugPrint('🔴 [Realtime] Sessions changed: ${payload.eventType}');
+              debugPrint(
+                '🔴 [Realtime] Sessions changed: ${payload.eventType}',
+              );
               _schedulePullFromCloud();
             },
           )
@@ -1023,7 +1132,9 @@ class SyncService {
               value: _userId,
             ),
             callback: (payload) {
-              debugPrint('🔴 [Realtime] Resell items changed: ${payload.eventType}');
+              debugPrint(
+                '🔴 [Realtime] Resell items changed: ${payload.eventType}',
+              );
               _schedulePullFromCloud();
             },
           )
@@ -1043,14 +1154,18 @@ class SyncService {
               value: _userId,
             ),
             callback: (payload) {
-              debugPrint('🔴 [Realtime] Planned sessions changed: ${payload.eventType}');
+              debugPrint(
+                '🔴 [Realtime] Planned sessions changed: ${payload.eventType}',
+              );
               _schedulePullFromCloud();
             },
           )
           .subscribe();
       _realtimeChannels.add(plannedChannel);
 
-      debugPrint('✅ Realtime subscriptions setup complete (${_realtimeChannels.length} channels)');
+      debugPrint(
+        '✅ Realtime subscriptions setup complete (${_realtimeChannels.length} channels)',
+      );
     } catch (e) {
       debugPrint('❌ Failed to setup Realtime subscriptions: $e');
     }
@@ -1058,18 +1173,9 @@ class SyncService {
 
   /// Dispose resources
   void dispose() {
-    _cloudPullTimer?.cancel();
-    _pendingTaskTimer?.cancel();
-    _scheduledSyncTimer?.cancel();
-    _scheduledPullTimer?.cancel();
-    _connectivitySubscription?.cancel();
-
-    // Unsubscribe from all Realtime channels
-    for (final channel in _realtimeChannels) {
-      _client?.removeChannel(channel);
-    }
-    _realtimeChannels.clear();
-
+    _teardownRuntimeResources();
+    _isInitialized = false;
+    _initializedUserId = null;
     _statusController.close();
     debugPrint('🔄 Sync service disposed');
   }
