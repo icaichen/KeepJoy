@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../widgets/glass_container.dart';
 import '../../../theme/typography.dart';
 import '../../../models/declutter_item.dart';
+import '../../insights/widgets/report_ui_constants.dart';
 
 class DeclutterResultsDistributionCard extends StatelessWidget {
   const DeclutterResultsDistributionCard({
@@ -33,8 +34,6 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     final keepCount = items
         .where((item) => item.status == DeclutterStatus.keep)
         .length;
@@ -90,10 +89,11 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
 
     return GlassContainer(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      borderRadius: BorderRadius.circular(24),
-      blur: 15,
+      padding: const EdgeInsets.all(ReportUI.contentPadding),
+      borderRadius: BorderRadius.circular(ReportUI.cardRadius),
+      blur: ReportUI.cardBlur,
       color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+      shadows: ReportUI.cardShadow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

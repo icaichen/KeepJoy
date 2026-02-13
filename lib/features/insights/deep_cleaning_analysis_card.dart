@@ -318,7 +318,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
@@ -416,7 +416,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
@@ -480,7 +480,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         '${Duration(seconds: session.elapsedSeconds!).inMinutes} min',
     ];
 
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -488,7 +488,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
@@ -527,7 +527,6 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         ),
       ),
     );
-  }
 
     if (widget.onDeleteSession == null) {
       return row;
@@ -630,7 +629,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                           ),
                           Container(
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
@@ -752,13 +751,6 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     required String focusValue,
     required String joyValue,
   }) {
-    final labelStyle = const TextStyle(fontSize: 14, color: Color(0xFF6B7280));
-    final valueStyle = const TextStyle(
-      fontSize: 15,
-      fontWeight: FontWeight.w600,
-      color: Color(0xFF111827),
-    );
-
     Widget buildRow(String label, String value) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 12),
@@ -895,7 +887,7 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.2),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),

@@ -171,6 +171,30 @@ class AppTypography {
   );
 
   // ============================================================================
+  // COMPATIBILITY ALIASES
+  // ============================================================================
+  // Keep old call sites working:
+  // - AppTypography.titleMedium.copyWith(...)
+  // - AppTypography.titleMedium('text', context: ...)
+  static final displayLarge = _TypographyToken(() => textTheme.displayLarge!);
+  static final displayMedium = _TypographyToken(() => textTheme.displayMedium!);
+  static final displaySmall = _TypographyToken(() => textTheme.displaySmall!);
+  static final headlineLarge = _TypographyToken(() => textTheme.headlineLarge!);
+  static final headlineMedium = _TypographyToken(
+    () => textTheme.headlineMedium!,
+  );
+  static final headlineSmall = _TypographyToken(() => textTheme.headlineSmall!);
+  static final titleLarge = _TypographyToken(() => textTheme.titleLarge!);
+  static final titleMedium = _TypographyToken(() => textTheme.titleMedium!);
+  static final titleSmall = _TypographyToken(() => textTheme.titleSmall!);
+  static final bodyLarge = _TypographyToken(() => textTheme.bodyLarge!);
+  static final bodyMedium = _TypographyToken(() => textTheme.bodyMedium!);
+  static final bodySmall = _TypographyToken(() => textTheme.bodySmall!);
+  static final labelLarge = _TypographyToken(() => textTheme.labelLarge!);
+  static final labelMedium = _TypographyToken(() => textTheme.labelMedium!);
+  static final labelSmall = _TypographyToken(() => textTheme.labelSmall!);
+
+  // ============================================================================
   // CUSTOM TEXT STYLES - For special use cases
   // ============================================================================
 
@@ -305,6 +329,92 @@ class AppTypography {
     return TextStyle(
       fontFamily: textFont,
       color: Theme.of(context).colorScheme.onPrimary,
+    );
+  }
+
+}
+
+class _TypographyToken {
+  final TextStyle Function() _styleBuilder;
+
+  _TypographyToken(this._styleBuilder);
+
+  TextStyle get style => _styleBuilder();
+
+  TextStyle copyWith({
+    bool? inherit,
+    Color? color,
+    Color? backgroundColor,
+    double? fontSize,
+    FontWeight? fontWeight,
+    FontStyle? fontStyle,
+    double? letterSpacing,
+    double? wordSpacing,
+    TextBaseline? textBaseline,
+    double? height,
+    Locale? locale,
+    Paint? foreground,
+    Paint? background,
+    List<Shadow>? shadows,
+    List<FontFeature>? fontFeatures,
+    List<FontVariation>? fontVariations,
+    TextDecoration? decoration,
+    Color? decorationColor,
+    TextDecorationStyle? decorationStyle,
+    double? decorationThickness,
+    String? debugLabel,
+    String? fontFamily,
+    List<String>? fontFamilyFallback,
+    String? package,
+    TextOverflow? overflow,
+  }) {
+    return style.copyWith(
+      inherit: inherit,
+      color: color,
+      backgroundColor: backgroundColor,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      letterSpacing: letterSpacing,
+      wordSpacing: wordSpacing,
+      textBaseline: textBaseline,
+      height: height,
+      locale: locale,
+      foreground: foreground,
+      background: background,
+      shadows: shadows,
+      fontFeatures: fontFeatures,
+      fontVariations: fontVariations,
+      decoration: decoration,
+      decorationColor: decorationColor,
+      decorationStyle: decorationStyle,
+      decorationThickness: decorationThickness,
+      debugLabel: debugLabel,
+      fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
+      package: package,
+      overflow: overflow,
+    );
+  }
+
+  Widget call(
+    String text, {
+    required BuildContext context,
+    Color? color,
+    FontWeight? fontWeight,
+    TextAlign? textAlign,
+    int? maxLines,
+    TextOverflow? overflow,
+  }) {
+    return Text(
+      text,
+      style: style.copyWith(
+        color: color ?? Theme.of(context).colorScheme.onSurface,
+        fontWeight: fontWeight,
+      ),
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 }

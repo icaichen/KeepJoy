@@ -28,9 +28,7 @@ class DataRepository {
   /// Schedule background sync after data change
   /// 5-second delay to batch multiple rapid changes and reduce Supabase requests
   void _scheduleSyncAfterDelay() {
-    Future.delayed(const Duration(seconds: 5), () {
-      SyncService.instance.syncAll();
-    });
+    SyncService.instance.scheduleSync(delay: const Duration(seconds: 5));
   }
 
   /// Delete a local image file if it exists

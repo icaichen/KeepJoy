@@ -3,8 +3,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:keepjoy_app/features/dashboard/widgets/cleaning_area_legend.dart';
 import 'package:keepjoy_app/features/dashboard/widgets/declutter_results_distribution_card.dart';
+import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
@@ -12,6 +12,7 @@ import 'package:keepjoy_app/widgets/glass_container.dart';
 import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
+import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
 
 class YearlyReportsScreen extends StatefulWidget {
   const YearlyReportsScreen({
@@ -40,6 +41,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     DeepCleaningSession session,
     bool isChinese,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -117,7 +119,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             ),
                             Container(
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(
@@ -208,7 +210,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
                                 color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
@@ -241,12 +243,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               ],
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
                       ],
                     ),
                   ),
@@ -291,6 +287,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildReportSection(
     BuildContext context, {
     required String title,
@@ -426,6 +423,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
+  // ignore: unused_element
   void _showAreaDeepCleaningReport(
     BuildContext context,
     String area,
@@ -586,27 +584,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
-  Widget _buildSmallMetric(BuildContext context, IconData icon, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 14,
-          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: AppTypography.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   void dispose() {
     _scrollController.dispose();
@@ -692,10 +669,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
         currentStreak = 0;
       }
     }
-
-    final maxActivityPast12 = past12MonthsActivity.values.isEmpty
-        ? 1
-        : past12MonthsActivity.values.reduce((a, b) => a > b ? a : b);
 
     // Calculate yearly stats
     final yearlyItems = widget.declutteredItems
@@ -825,15 +798,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             Row(
                               children: [
                                 Expanded(
-                            Row(
-                              children: [
-                                Expanded(
                                   child: _buildAchievementCard(
                                     context: context,
                                     icon: Icons.auto_awesome_outlined,
                                     iconColor: Theme.of(context).colorScheme.primary,
                                     value: yearlySessions.length.toString(),
-                                    label: l10n.deepCleaningFlowTitle,
+                                    label: l10n.dashboardSessionsLabel,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -970,7 +940,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                         child: _buildHeatmapStatCard(
                                           context: context,
                                           title: l10n.reportLongestStreak,
-                                          value: '$longestStreak ${l10n.timeMonths}',
+                                          value: isChinese
+                                              ? '$longestStreak 个月'
+                                              : '$longestStreak months',
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -978,7 +950,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                         child: _buildHeatmapStatCard(
                                           context: context,
                                           title: l10n.reportTotalItems,
-                                          value: '$peakActivity ${l10n.inventoryItems}',
+                                          value: '$peakActivity ${l10n.items}',
                                         ),
                                       ),
                                     ],
@@ -1159,13 +1131,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
+      decoration: ReportUI.statCardDecoration,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1197,19 +1163,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   }
 
   Color _getHeatmapColor(BuildContext context, int count) {
-    if (count == 0) {
-      return Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3);
-    }
-    final primary = Theme.of(context).colorScheme.primary;
-    if (count <= 3) return primary.withValues(alpha: 0.2);
-    if (count <= 6) return primary.withValues(alpha: 0.4);
-    if (count <= 9) return primary.withValues(alpha: 0.6);
-    if (count <= 12) return primary.withValues(alpha: 0.8);
-    return primary;
+    return ReportUI.getHeatmapColor(count);
   }
 
   void _showHeatmapLegendDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -1226,7 +1185,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      l10n.reportActivity,
+                      l10n.reportActivityLevels,
                       style: AppTypography.titleMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Theme.of(context).colorScheme.onSurface,
@@ -1239,7 +1198,11 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildLegendItem(context, l10n.reportNone, 0),
+                _buildLegendItem(
+                  context,
+                  isChinese ? '无活动 (0)' : 'None (0)',
+                  0,
+                ),
                 _buildLegendItem(context, '1-3', 2),
                 _buildLegendItem(context, '4-6', 5),
                 _buildLegendItem(context, '7-9', 8),
@@ -1320,6 +1283,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   }
 
   Widget _buildJoyIndexCard(BuildContext context, bool isChinese) {
+    final l10n = AppLocalizations.of(context)!;
     // Calculate joy index trend year-to-date (January to current month)
     final now = DateTime.now();
 
@@ -1410,21 +1374,13 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       trendColor = const Color(0xFF9E9E9E);
     }
 
-    return Container(
+    return GlassContainer(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
       padding: const EdgeInsets.all(24),
+      borderRadius: BorderRadius.circular(ReportUI.cardRadius),
+      blur: ReportUI.cardBlur,
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+      shadows: ReportUI.cardShadow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1462,7 +1418,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                   color: Color(0xFF9CA3AF),
                 ),
                 tooltip: isChinese ? '数据说明' : 'Data info',
-                onPressed: () => _showJoyInfo(context, isChinese),
+                onPressed: () => _showJoyInfo(context),
               ),
             ],
           ),
@@ -1684,7 +1640,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
@@ -1905,27 +1861,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
-  String _getMonthAbbrev(int month, bool isChinese) {
-    if (isChinese) {
-      return '$month月';
-    } else {
-      switch (month) {
-        case 1: return 'Jan';
-        case 2: return 'Feb';
-        case 3: return 'Mar';
-        case 4: return 'Apr';
-        case 5: return 'May';
-        case 6: return 'Jun';
-        case 7: return 'Jul';
-        case 8: return 'Aug';
-        case 9: return 'Sep';
-        case 10: return 'Oct';
-        case 11: return 'Nov';
-        case 12: return 'Dec';
-        default: return '';
-      }
-    }
-  }
 }
 
 class _JoyTrendChartPainter extends CustomPainter {
@@ -1948,7 +1883,6 @@ class _JoyTrendChartPainter extends CustomPainter {
     if (monthlyData.isEmpty) return;
 
     final primaryColor = colorScheme.primary;
-    final onSurfaceColor = colorScheme.onSurface;
     final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
     final outlineColor = colorScheme.outlineVariant;
 
@@ -1970,10 +1904,6 @@ class _JoyTrendChartPainter extends CustomPainter {
     final gridPaint = Paint()
       ..color = outlineColor.withValues(alpha: 0.5)
       ..strokeWidth = 1;
-
-    final axisPaint = Paint()
-      ..color = outlineColor
-      ..strokeWidth = 1.5;
 
     final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
 
@@ -2071,6 +2001,27 @@ class _JoyTrendChartPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(canvas, Offset(point.dx - textPainter.width / 2, size.height - bottomPadding + 10));
     }
+  }
+
+  String _getMonthAbbrev(int month, bool isChinese) {
+    if (isChinese) {
+      return '$month月';
+    }
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return months[month - 1];
   }
 
   @override

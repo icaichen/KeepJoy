@@ -858,6 +858,234 @@ abstract class AppLocalizations {
   /// **'Start Now'**
   String get dashboardStartNow;
 
+  /// No description provided for @reportImprovement.
+  ///
+  /// In en, this message translates to:
+  /// **'Improvement'**
+  String get reportImprovement;
+
+  /// No description provided for @reportDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get reportDuration;
+
+  /// No description provided for @reportItemsCleaned.
+  ///
+  /// In en, this message translates to:
+  /// **'Items Cleaned'**
+  String get reportItemsCleaned;
+
+  /// No description provided for @reportFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get reportFocus;
+
+  /// No description provided for @reportJoy.
+  ///
+  /// In en, this message translates to:
+  /// **'Joy'**
+  String get reportJoy;
+
+  /// No description provided for @reportBeforeMessiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Before Messiness'**
+  String get reportBeforeMessiness;
+
+  /// No description provided for @reportAfterTidiness.
+  ///
+  /// In en, this message translates to:
+  /// **'After Tidiness'**
+  String get reportAfterTidiness;
+
+  /// No description provided for @reportItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} {count, plural, =1{item} other{items}}'**
+  String reportItemsCount(int count);
+
+  /// No description provided for @reportMostActiveMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Active Month'**
+  String get reportMostActiveMonth;
+
+  /// No description provided for @reportLongestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest Streak'**
+  String get reportLongestStreak;
+
+  /// No description provided for @reportTotalItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Items'**
+  String get reportTotalItems;
+
+  /// No description provided for @reportTotalEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Earnings'**
+  String get reportTotalEarnings;
+
+  /// No description provided for @reportYearlyActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Your yearly declutter actions'**
+  String get reportYearlyActions;
+
+  /// No description provided for @reportEmotionDistribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Emotion Distribution'**
+  String get reportEmotionDistribution;
+
+  /// No description provided for @reportEveryMemoryPrecious.
+  ///
+  /// In en, this message translates to:
+  /// **'Every memory is precious'**
+  String get reportEveryMemoryPrecious;
+
+  /// No description provided for @reportMemoryHeatmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Heatmap'**
+  String get reportMemoryHeatmap;
+
+  /// No description provided for @reportActivityThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity this year'**
+  String get reportActivityThisYear;
+
+  /// No description provided for @reportLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get reportLess;
+
+  /// No description provided for @reportMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get reportMore;
+
+  /// No description provided for @reportCategoryStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Statistics'**
+  String get reportCategoryStatistics;
+
+  /// No description provided for @reportMemoryCountPerCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory count per category'**
+  String get reportMemoryCountPerCategory;
+
+  /// No description provided for @reportNoCategoryData.
+  ///
+  /// In en, this message translates to:
+  /// **'No category data yet'**
+  String get reportNoCategoryData;
+
+  /// No description provided for @reportTimeMarkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Markers'**
+  String get reportTimeMarkers;
+
+  /// No description provided for @reportTotalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Days'**
+  String get reportTotalDays;
+
+  /// No description provided for @reportFirstMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'First Memory'**
+  String get reportFirstMemory;
+
+  /// No description provided for @reportLatestMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Memory'**
+  String get reportLatestMemory;
+
+  /// No description provided for @reportMostMeaningfulStory.
+  ///
+  /// In en, this message translates to:
+  /// **'Most meaningful story'**
+  String get reportMostMeaningfulStory;
+
+  /// No description provided for @reportSoldItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold Items'**
+  String get reportSoldItems;
+
+  /// No description provided for @reportAvgPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg / Month'**
+  String get reportAvgPerMonth;
+
+  /// No description provided for @reportTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get reportTrend;
+
+  /// No description provided for @reportAvgPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Price'**
+  String get reportAvgPrice;
+
+  /// No description provided for @reportTotalRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Revenue'**
+  String get reportTotalRevenue;
+
+  /// No description provided for @reportCategoryPerformance.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Performance'**
+  String get reportCategoryPerformance;
+
+  /// No description provided for @reportTrendAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend Analysis'**
+  String get reportTrendAnalysis;
+
+  /// No description provided for @reportMetric.
+  ///
+  /// In en, this message translates to:
+  /// **'Metric'**
+  String get reportMetric;
+
+  /// No description provided for @reportUnsold30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'30+ Days Unsold'**
+  String get reportUnsold30Days;
+
+  /// No description provided for @reportTransactionInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Insights'**
+  String get reportTransactionInsights;
+
+  /// No description provided for @reportSessionData.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Data'**
+  String get reportSessionData;
+
   /// The application title
   ///
   /// In en, this message translates to:
@@ -3881,6 +4109,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Task completed'**
   String get taskCompleted;
+
+  /// No description provided for @yearlyReportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Year in Review'**
+  String get yearlyReportsTitle;
+
+  /// No description provided for @reportPeakActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak Activity'**
+  String get reportPeakActivity;
+
+  /// No description provided for @reportAverageJoyRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Joy Rate'**
+  String get reportAverageJoyRate;
+
+  /// No description provided for @reportTotalJoyCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Joy'**
+  String get reportTotalJoyCount;
+
+  /// No description provided for @reportNoDeepCleaningRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'No deep cleaning records yet this year. Start your first focused session.'**
+  String get reportNoDeepCleaningRecords;
+
+  /// No description provided for @reportYearToDateOutcomes.
+  ///
+  /// In en, this message translates to:
+  /// **'Year-to-date outcomes'**
+  String get reportYearToDateOutcomes;
+
+  /// No description provided for @reportCleanSweepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean Sweep Analysis'**
+  String get reportCleanSweepTitle;
+
+  /// No description provided for @reportPreciousMoments.
+  ///
+  /// In en, this message translates to:
+  /// **'Precious moments'**
+  String get reportPreciousMoments;
+
+  /// No description provided for @reportMemoryJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Journey'**
+  String get reportMemoryJourney;
+
+  /// No description provided for @reportMemoryJourneyDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days • {count} memories'**
+  String reportMemoryJourneyDetail(Object count, Object days);
+
+  /// No description provided for @reportFirstMemoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'First Memory'**
+  String get reportFirstMemoryLabel;
+
+  /// No description provided for @reportLongestStoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest Story'**
+  String get reportLongestStoryLabel;
+
+  /// No description provided for @reportLatestMemoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Memory'**
+  String get reportLatestMemoryLabel;
+
+  /// No description provided for @reportMostActiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Active'**
+  String get reportMostActiveLabel;
+
+  /// No description provided for @reportActivityLevels.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Levels'**
+  String get reportActivityLevels;
+
+  /// No description provided for @reportNoActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get reportNoActivity;
+
+  /// No description provided for @reportLightActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get reportLightActivity;
+
+  /// No description provided for @reportModerateActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get reportModerateActivity;
+
+  /// No description provided for @reportHighActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get reportHighActivity;
+
+  /// No description provided for @reportVeryHighActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Very High'**
+  String get reportVeryHighActivity;
 }
 
 class _AppLocalizationsDelegate

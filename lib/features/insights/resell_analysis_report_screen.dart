@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/widgets/auto_scale_text.dart';
+import 'package:keepjoy_app/widgets/glass_container.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
+import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
 
 enum TrendMetric {
   soldItems('已售物品', 'Sold Items'),
@@ -88,10 +90,7 @@ class _ResellAnalysisReportScreenState
       return Expanded(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(12),
-          ),
+          decoration: ReportUI.statCardDecoration,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -119,10 +118,7 @@ class _ResellAnalysisReportScreenState
 
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: ReportUI.statCardDecoration,
       child: Row(
         children: [
           pill(
@@ -1106,12 +1102,11 @@ class _ResellAnalysisReportScreenState
     }).length;
 
     if (soldItems.isEmpty) {
-      return Container(
+      return GlassContainer(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(12),
-        ),
+        borderRadius: BorderRadius.circular(ReportUI.statCardRadius),
+        blur: 10,
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
         child: Center(
           child: Text(
             isChinese ? '暂无成交数据' : 'No sold items yet',
@@ -1748,10 +1743,7 @@ class _ResellAnalysisReportScreenState
         horizontal: 16,
         vertical: 14,
       ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: ReportUI.statCardDecoration,
       child: Row(
         children: [
           Container(
@@ -1798,23 +1790,15 @@ class _ResellAnalysisReportScreenState
     required IconData icon,
     required Color color,
   }) {
-    return Container(
+    return GlassContainer(
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
         vertical: 10,
       ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
+      borderRadius: BorderRadius.circular(ReportUI.statCardRadius),
+      blur: 5, // Stats 小卡片模糊度小一些
+      color: Colors.white.withValues(alpha: 0.6),
+      shadows: ReportUI.lightShadow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

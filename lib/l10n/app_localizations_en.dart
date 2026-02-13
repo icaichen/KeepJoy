@@ -432,6 +432,128 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardStartNow => 'Start Now';
 
   @override
+  String get reportImprovement => 'Improvement';
+
+  @override
+  String get reportDuration => 'Duration';
+
+  @override
+  String get reportItemsCleaned => 'Items Cleaned';
+
+  @override
+  String get reportFocus => 'Focus';
+
+  @override
+  String get reportJoy => 'Joy';
+
+  @override
+  String get reportBeforeMessiness => 'Before Messiness';
+
+  @override
+  String get reportAfterTidiness => 'After Tidiness';
+
+  @override
+  String reportItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'items',
+      one: 'item',
+    );
+    return '$count $_temp0';
+  }
+
+  @override
+  String get reportMostActiveMonth => 'Most Active Month';
+
+  @override
+  String get reportLongestStreak => 'Longest Streak';
+
+  @override
+  String get reportTotalItems => 'Total Items';
+
+  @override
+  String get reportTotalEarnings => 'Total Earnings';
+
+  @override
+  String get reportYearlyActions => 'Your yearly declutter actions';
+
+  @override
+  String get reportEmotionDistribution => 'Emotion Distribution';
+
+  @override
+  String get reportEveryMemoryPrecious => 'Every memory is precious';
+
+  @override
+  String get reportMemoryHeatmap => 'Memory Heatmap';
+
+  @override
+  String get reportActivityThisYear => 'Activity this year';
+
+  @override
+  String get reportLess => 'Less';
+
+  @override
+  String get reportMore => 'More';
+
+  @override
+  String get reportCategoryStatistics => 'Category Statistics';
+
+  @override
+  String get reportMemoryCountPerCategory => 'Memory count per category';
+
+  @override
+  String get reportNoCategoryData => 'No category data yet';
+
+  @override
+  String get reportTimeMarkers => 'Time Markers';
+
+  @override
+  String get reportTotalDays => 'Total Days';
+
+  @override
+  String get reportFirstMemory => 'First Memory';
+
+  @override
+  String get reportLatestMemory => 'Latest Memory';
+
+  @override
+  String get reportMostMeaningfulStory => 'Most meaningful story';
+
+  @override
+  String get reportSoldItems => 'Sold Items';
+
+  @override
+  String get reportAvgPerMonth => 'Avg / Month';
+
+  @override
+  String get reportTrend => 'Trend';
+
+  @override
+  String get reportAvgPrice => 'Avg Price';
+
+  @override
+  String get reportTotalRevenue => 'Total Revenue';
+
+  @override
+  String get reportCategoryPerformance => 'Category Performance';
+
+  @override
+  String get reportTrendAnalysis => 'Trend Analysis';
+
+  @override
+  String get reportMetric => 'Metric';
+
+  @override
+  String get reportUnsold30Days => '30+ Days Unsold';
+
+  @override
+  String get reportTransactionInsights => 'Transaction Insights';
+
+  @override
+  String get reportSessionData => 'Session Data';
+
+  @override
   String get appTitle => 'KeepJoy';
 
   @override
@@ -2061,4 +2183,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskCompleted => 'Task completed';
+
+  @override
+  String get yearlyReportsTitle => 'Year in Review';
+
+  @override
+  String get reportPeakActivity => 'Peak Activity';
+
+  @override
+  String get reportAverageJoyRate => 'Avg Joy Rate';
+
+  @override
+  String get reportTotalJoyCount => 'Total Joy';
+
+  @override
+  String get reportNoDeepCleaningRecords =>
+      'No deep cleaning records yet this year. Start your first focused session.';
+
+  @override
+  String get reportYearToDateOutcomes => 'Year-to-date outcomes';
+
+  @override
+  String get reportCleanSweepTitle => 'Clean Sweep Analysis';
+
+  @override
+  String get reportPreciousMoments => 'Precious moments';
+
+  @override
+  String get reportMemoryJourney => 'Memory Journey';
+
+  @override
+  String reportMemoryJourneyDetail(Object count, Object days) {
+    return '$days days • $count memories';
+  }
+
+  @override
+  String get reportFirstMemoryLabel => 'First Memory';
+
+  @override
+  String get reportLongestStoryLabel => 'Longest Story';
+
+  @override
+  String get reportLatestMemoryLabel => 'Latest Memory';
+
+  @override
+  String get reportMostActiveLabel => 'Most Active';
+
+  @override
+  String get reportActivityLevels => 'Activity Levels';
+
+  @override
+  String get reportNoActivity => 'None';
+
+  @override
+  String get reportLightActivity => 'Light';
+
+  @override
+  String get reportModerateActivity => 'Moderate';
+
+  @override
+  String get reportHighActivity => 'High';
+
+  @override
+  String get reportVeryHighActivity => 'Very High';
 }

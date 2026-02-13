@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/widgets/glass_container.dart';
@@ -5,6 +7,7 @@ import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:flutter/material.dart';
+import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
 
 class MemoryLaneReportScreen extends StatefulWidget {
   const MemoryLaneReportScreen({super.key, required this.memories});
@@ -17,6 +20,7 @@ class MemoryLaneReportScreen extends StatefulWidget {
 
 class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   final ScrollController _scrollController = ScrollController();
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void dispose() {
@@ -48,7 +52,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 // Gradient background that scrolls
                 Container(
                   height: 800,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -248,7 +252,11 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
 
     return GlassContainer(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(ReportUI.contentPadding),
+      borderRadius: BorderRadius.circular(ReportUI.cardRadius),
+      blur: ReportUI.cardBlur,
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+      shadows: ReportUI.cardShadow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -717,7 +725,11 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
 
     final colorScheme = Theme.of(context).colorScheme;
     return GlassContainer(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(ReportUI.contentPadding),
+      borderRadius: BorderRadius.circular(ReportUI.cardRadius),
+      blur: ReportUI.cardBlur,
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+      shadows: ReportUI.cardShadow,
       child: widget.memories.isEmpty
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1022,6 +1034,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     return months[month - 1];
   }
 
+  // ignore: unused_element
   Widget _buildEmotionDonut({
     required BuildContext context,
     required double chartSize,
@@ -1128,7 +1141,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     required bool isChinese,
     required BuildContext context,
   }) {
-    final theme = Theme.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1194,6 +1206,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
 }
 
 // PROPER VERTICAL BAR CHART PAINTER
+// ignore: unused_element
 class _VerticalBarChartPainter extends CustomPainter {
   final List<Map<String, dynamic>> emotions;
   final Map<MemorySentiment, int> sentimentCounts;
@@ -1302,6 +1315,7 @@ class _VerticalBarChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
+  // ignore: unused_element
   Widget _buildCategoryStatRow(
     BuildContext context, {
     required DeclutterCategory category,
@@ -1372,6 +1386,7 @@ class _VerticalBarChartPainter extends CustomPainter {
   }
 
 // MONTHLY HEATMAP PAINTER (12 squares, 2 rows x 6 cols)
+// ignore: unused_element
 class _MonthlyHeatmapPainter extends CustomPainter {
   final Map<String, int> monthlyData;
   final int maxCount;
@@ -1469,6 +1484,7 @@ class _MonthlyHeatmapPainter extends CustomPainter {
 }
 
 // CATEGORY VERTICAL BAR CHART PAINTER
+// ignore: unused_element
 class _CategoryVerticalBarChartPainter extends CustomPainter {
   final List<DeclutterCategory> categories;
   final Map<DeclutterCategory, int> counts;

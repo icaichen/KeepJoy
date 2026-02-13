@@ -50,7 +50,9 @@ class SyncService {
   String? get _userId => _authService.currentUserId;
 
   Timer? _cloudPullTimer; // 5-minute cloud→local pull (fallback)
-  Timer? _pendingTaskTimer; // 1-second local→cloud upload
+  Timer? _pendingTaskTimer; // periodic pending-task upload worker
+  Timer? _scheduledSyncTimer; // debounce for syncAll triggers
+  Timer? _scheduledPullTimer; // debounce for pullFromCloud triggers
   bool _isSyncing = false;
   bool _isPulling = false;
   StreamSubscription? _connectivitySubscription;
@@ -71,13 +73,13 @@ class SyncService {
     ) {
       if (isConnected) {
         debugPrint('🌐 Connection restored, scheduling sync...');
-        _scheduleSync();
+        scheduleSync(delay: const Duration(milliseconds: 500));
       }
     });
 
     // Start sync timers
     _startCloudPullTimer(); // 5-minute cloud→local (fallback)
-    _startPendingTaskProcessor(); // 1-second local→cloud
+    _startPendingTaskProcessor(); // periodic local→cloud
 
     // Setup Realtime subscriptions
     await _setupRealtimeSubscriptions();
@@ -94,17 +96,32 @@ class SyncService {
     );
   }
 
-  /// 1-second local→cloud upload cycle
+  /// 5-second local→cloud upload cycle
   void _startPendingTaskProcessor() {
     _pendingTaskTimer?.cancel();
     _pendingTaskTimer = Timer.periodic(
-      const Duration(seconds: 1),
+      const Duration(seconds: 5),
       (_) => _processPendingTasks(),
     );
   }
 
-  void _scheduleSync({Duration delay = const Duration(milliseconds: 100)}) {
-    Future.delayed(delay, () => syncAll());
+  /// Debounced sync trigger. Multiple calls during [delay] collapse into one.
+  void scheduleSync({Duration delay = const Duration(seconds: 3)}) {
+    _scheduledSyncTimer?.cancel();
+    _scheduledSyncTimer = Timer(delay, () {
+      _scheduledSyncTimer = null;
+      syncAll();
+    });
+  }
+
+  void _schedulePullFromCloud({
+    Duration delay = const Duration(milliseconds: 800),
+  }) {
+    _scheduledPullTimer?.cancel();
+    _scheduledPullTimer = Timer(delay, () {
+      _scheduledPullTimer = null;
+      pullFromCloud();
+    });
   }
 
   /// Pull changes from cloud (called every 5 minutes or by Realtime trigger)
@@ -947,7 +964,7 @@ class SyncService {
             ),
             callback: (payload) {
               debugPrint('🔴 [Realtime] Memories changed: ${payload.eventType}');
-              pullFromCloud();
+              _schedulePullFromCloud();
             },
           )
           .subscribe();
@@ -967,7 +984,7 @@ class SyncService {
             ),
             callback: (payload) {
               debugPrint('🔴 [Realtime] Sessions changed: ${payload.eventType}');
-              pullFromCloud();
+              _schedulePullFromCloud();
             },
           )
           .subscribe();
@@ -987,7 +1004,7 @@ class SyncService {
             ),
             callback: (payload) {
               debugPrint('🔴 [Realtime] Items changed: ${payload.eventType}');
-              pullFromCloud();
+              _schedulePullFromCloud();
             },
           )
           .subscribe();
@@ -1007,7 +1024,7 @@ class SyncService {
             ),
             callback: (payload) {
               debugPrint('🔴 [Realtime] Resell items changed: ${payload.eventType}');
-              pullFromCloud();
+              _schedulePullFromCloud();
             },
           )
           .subscribe();
@@ -1027,7 +1044,7 @@ class SyncService {
             ),
             callback: (payload) {
               debugPrint('🔴 [Realtime] Planned sessions changed: ${payload.eventType}');
-              pullFromCloud();
+              _schedulePullFromCloud();
             },
           )
           .subscribe();
@@ -1043,6 +1060,8 @@ class SyncService {
   void dispose() {
     _cloudPullTimer?.cancel();
     _pendingTaskTimer?.cancel();
+    _scheduledSyncTimer?.cancel();
+    _scheduledPullTimer?.cancel();
     _connectivitySubscription?.cancel();
 
     // Unsubscribe from all Realtime channels

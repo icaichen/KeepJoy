@@ -415,6 +415,122 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardStartNow => '开始';
 
   @override
+  String get reportImprovement => '整理改善';
+
+  @override
+  String get reportDuration => '整理时长';
+
+  @override
+  String get reportItemsCleaned => '清理物品';
+
+  @override
+  String get reportFocus => '专注度';
+
+  @override
+  String get reportJoy => '轻盈感';
+
+  @override
+  String get reportBeforeMessiness => '整理前凌乱度';
+
+  @override
+  String get reportAfterTidiness => '整理后整洁度';
+
+  @override
+  String reportItemsCount(int count) {
+    return '$count 个项目';
+  }
+
+  @override
+  String get reportMostActiveMonth => '最活跃月份';
+
+  @override
+  String get reportLongestStreak => '最长连续活跃';
+
+  @override
+  String get reportTotalItems => '整理总件数';
+
+  @override
+  String get reportTotalEarnings => '变现总金额';
+
+  @override
+  String get reportYearlyActions => '本年度清理动作一览';
+
+  @override
+  String get reportEmotionDistribution => '情绪分布';
+
+  @override
+  String get reportEveryMemoryPrecious => '每个回忆都是珍贵的';
+
+  @override
+  String get reportMemoryHeatmap => '回忆热力图';
+
+  @override
+  String get reportActivityThisYear => '本年度活动';
+
+  @override
+  String get reportLess => '较少';
+
+  @override
+  String get reportMore => '较多';
+
+  @override
+  String get reportCategoryStatistics => '分类统计';
+
+  @override
+  String get reportMemoryCountPerCategory => '各类别的回忆数量';
+
+  @override
+  String get reportNoCategoryData => '暂无分类数据';
+
+  @override
+  String get reportTimeMarkers => '时间印记';
+
+  @override
+  String get reportTotalDays => '总计天数';
+
+  @override
+  String get reportFirstMemory => '最早的回忆';
+
+  @override
+  String get reportLatestMemory => '最近的回忆';
+
+  @override
+  String get reportMostMeaningfulStory => '最有意义的叙述';
+
+  @override
+  String get reportSoldItems => '已售件数';
+
+  @override
+  String get reportAvgPerMonth => '月均售出';
+
+  @override
+  String get reportTrend => '趋势';
+
+  @override
+  String get reportAvgPrice => '平均交易价';
+
+  @override
+  String get reportTotalRevenue => '总金额';
+
+  @override
+  String get reportCategoryPerformance => '品类表现分析';
+
+  @override
+  String get reportTrendAnalysis => '趋势分析';
+
+  @override
+  String get reportMetric => '指标';
+
+  @override
+  String get reportUnsold30Days => '超过30天未售出统计';
+
+  @override
+  String get reportTransactionInsights => '交易洞察';
+
+  @override
+  String get reportSessionData => '整理数据';
+
+  @override
   String get appTitle => '喜物(KeepJoy)';
 
   @override
@@ -1988,4 +2104,66 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get taskCompleted => '任务已完成';
+
+  @override
+  String get yearlyReportsTitle => '年度洞察';
+
+  @override
+  String get reportPeakActivity => '峰值活动';
+
+  @override
+  String get reportAverageJoyRate => '平均心动率';
+
+  @override
+  String get reportTotalJoyCount => '总心动次数';
+
+  @override
+  String get reportNoDeepCleaningRecords => '今年还没有深度扫除记录，开始你的第一次专注整治吧。';
+
+  @override
+  String get reportYearToDateOutcomes => '年度整理成果分布';
+
+  @override
+  String get reportCleanSweepTitle => '深度大扫除分析';
+
+  @override
+  String get reportPreciousMoments => '珍贵时光';
+
+  @override
+  String get reportMemoryJourney => '时光之旅';
+
+  @override
+  String reportMemoryJourneyDetail(Object count, Object days) {
+    return '$days 天 • $count 个回忆';
+  }
+
+  @override
+  String get reportFirstMemoryLabel => '初次记录';
+
+  @override
+  String get reportLongestStoryLabel => '最长故事';
+
+  @override
+  String get reportLatestMemoryLabel => '最近回忆';
+
+  @override
+  String get reportMostActiveLabel => '最活跃';
+
+  @override
+  String get reportActivityLevels => '活动等级';
+
+  @override
+  String get reportNoActivity => '无活动';
+
+  @override
+  String get reportLightActivity => '轻度';
+
+  @override
+  String get reportModerateActivity => '中度';
+
+  @override
+  String get reportHighActivity => '高度';
+
+  @override
+  String get reportVeryHighActivity => '非常活跃';
 }
