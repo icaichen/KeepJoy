@@ -827,21 +827,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   children: [
                                     Text(
                                       l10n.dashboardYearlyReportsTitle,
-                                      style: AppTypography.displaySmall
-                                          .copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                          ),
+                                      style: ReportTextStyles.screenTitle,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       l10n.dashboardYearlyReportsSubtitle,
-                                      style: AppTypography.bodySmall.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                      ),
+                                      style: ReportTextStyles.screenSubtitle,
                                     ),
                                   ],
                                 ),
@@ -916,21 +907,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 children: [
                                   Text(
                                     l10n.reportMemoryHeatmap,
-                                    style: AppTypography.titleMedium.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
-                                    ),
+                                    style: ReportTextStyles.sectionHeader,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     l10n.reportActivityThisYear,
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                    ),
+                                    style: ReportTextStyles.sectionSubtitle,
                                   ),
                                   const SizedBox(height: 32),
 
@@ -988,12 +970,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     children: [
                                       Text(
                                         l10n.reportLess,
-                                        style: AppTypography.labelSmall
-                                            .copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.onSurfaceVariant,
-                                            ),
+                                          style: ReportTextStyles.label,
                                       ),
                                       const SizedBox(width: 8),
                                       ...List.generate(5, (index) {
@@ -1017,12 +994,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                       const SizedBox(width: 8),
                                       Text(
                                         l10n.reportMore,
-                                        style: AppTypography.labelSmall
-                                            .copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.onSurfaceVariant,
-                                            ),
+                                          style: ReportTextStyles.label,
                                       ),
                                       const Spacer(),
                                       IconButton(
@@ -1219,10 +1191,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               fit: BoxFit.scaleDown,
               child: Text(
                 value,
-                style: AppTypography.titleLarge.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+                style: ReportTextStyles.statValueLarge,
               ),
             ),
             const SizedBox(height: 4),
@@ -1231,10 +1200,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppTypography.labelSmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
-              ),
+              style: ReportTextStyles.label,
             ),
           ],
         ),
@@ -1258,10 +1224,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.labelSmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
+            style: ReportTextStyles.label,
           ),
           const SizedBox(height: 8),
           FittedBox(
@@ -1269,10 +1232,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             child: Text(
               value,
               textAlign: TextAlign.center,
-              style: AppTypography.titleSmall.copyWith(
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+              style: ReportTextStyles.statValueSmall,
             ),
           ),
         ],

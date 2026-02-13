@@ -22,6 +22,7 @@ import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/widgets/gradient_button.dart';
 import 'package:keepjoy_app/widgets/modern_dialog.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
+import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/features/dashboard/widgets/active_session_card.dart';
 
@@ -174,7 +175,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return l10n.goodEvening;
     }
   }
-
 
   void _showAddGoalDialog(BuildContext context, AppLocalizations l10n) {
     final TextEditingController goalController = TextEditingController();
@@ -1034,11 +1034,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         child: TableCalendar(
                           // Allow browsing wider range to make day selection usable across devices
-                          firstDay: DateTime.utc(
-                            DateTime.now().year - 1,
-                            1,
-                            1,
-                          ),
+                          firstDay: DateTime.utc(DateTime.now().year - 1, 1, 1),
                           lastDay: DateTime.utc(
                             DateTime.now().year + 2,
                             12,
@@ -1140,7 +1136,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 final session = sessionsForDay[index];
                                 final isCompleted =
                                     completionOverrides[session.id] ??
-                                        session.isCompleted;
+                                    session.isCompleted;
                                 return Dismissible(
                                   key: Key('${session.id}_cal'),
                                   background: Container(
@@ -1160,8 +1156,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   confirmDismiss: (direction) async {
                                     return await ModernDialog.showConfirmation(
                                           context: context,
-                                          title: l10n.dashboardDeleteSessionTitle,
-                                          content: l10n.dashboardDeleteSessionMessage,
+                                          title:
+                                              l10n.dashboardDeleteSessionTitle,
+                                          content: l10n
+                                              .dashboardDeleteSessionMessage,
                                           cancelText: l10n.cancel,
                                           confirmText: l10n.delete,
                                         ) ??
@@ -1412,10 +1410,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  String _localizedSessionTitle(
-    PlannedSession session,
-    AppLocalizations l10n,
-  ) {
+  String _localizedSessionTitle(PlannedSession session, AppLocalizations l10n) {
     String localizedArea(String area) {
       final lower = area.toLowerCase().trim();
       const areaPairs = [
@@ -1537,8 +1532,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1C1C1E),
-                    decoration:
-                        isCompleted ? TextDecoration.lineThrough : null,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1743,11 +1737,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 16),
                   Text(
                     l10n.recentActivities,
-                    style:
-                        Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
+                    style: Theme.of(sheetContext).textTheme.titleMedium
+                        ?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF111827),
+                        ),
                   ),
                   const SizedBox(height: 16),
                   if (activities.isEmpty)
@@ -2359,8 +2353,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   confirmDismiss: (direction) async {
                                     return await ModernDialog.showConfirmation(
                                           context: context,
-                                          title: l10n.dashboardDeleteSessionTitle,
-                                          content: l10n.dashboardDeleteSessionMessage,
+                                          title:
+                                              l10n.dashboardDeleteSessionTitle,
+                                          content: l10n
+                                              .dashboardDeleteSessionMessage,
                                           cancelText: l10n.cancel,
                                           confirmText: l10n.delete,
                                         ) ??
@@ -2644,8 +2640,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 value: widget.declutteredItems
                                     .where(
                                       (item) =>
-                                          !item.createdAt.isBefore(monthStart) &&
-                                          item.createdAt.isBefore(nextMonthStart),
+                                          !item.createdAt.isBefore(
+                                            monthStart,
+                                          ) &&
+                                          item.createdAt.isBefore(
+                                            nextMonthStart,
+                                          ),
                                     )
                                     .length
                                     .toString(),
@@ -2678,11 +2678,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     horizontal: horizontalPadding,
                   ),
                   child: DeclutterResultsDistributionCard(
-                    items: widget.declutteredItems.where(
-                      (item) =>
-                          !item.createdAt.isBefore(monthStart) &&
-                          item.createdAt.isBefore(nextMonthStart),
-                    ).toList(),
+                    items: widget.declutteredItems
+                        .where(
+                          (item) =>
+                              !item.createdAt.isBefore(monthStart) &&
+                              item.createdAt.isBefore(nextMonthStart),
+                        )
+                        .toList(),
                     title: l10n.dashboardLettingGoDetailsTitle,
                     subtitle: l10n.dashboardLettingGoDetailsSubtitle,
                     keptLabel: l10n.dashboardKeptLabel,
@@ -2785,10 +2787,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               context,
                               icon: Icons.photo_library_rounded,
                               iconColor: const Color(0xFFB794F6),
-                              bgColors: const [
-                                Color(0xFFF3EBFF),
-                                Color(0xFFB794F6),
+                              bgColors: [
+                                ReportUI.memoryHeaderGradient[0],
+                                ReportUI.memoryHeaderGradient[1],
+                                ReportUI.memoryHeaderGradient[2],
                               ],
+                              gradientBegin: Alignment.topCenter,
+                              gradientEnd: Alignment.bottomCenter,
+                              gradientStops: const [0.0, 0.25, 0.45],
                               title: l10n.dashboardMemoryLaneTitle,
                               subtitle: l10n.dashboardMemoryLaneSubtitle,
                               onTap: () {
@@ -2853,15 +2859,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: ListenableBuilder(
               listenable: _scrollController,
               builder: (context, child) {
-                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / responsive.twoLineHeaderContentHeight).clamp(0.0, 1.0);
-                final collapsedHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress =
+                    (scrollOffset / responsive.twoLineHeaderContentHeight)
+                        .clamp(0.0, 1.0);
+                final collapsedHeaderOpacity = scrollProgress >= 1.0
+                    ? 1.0
+                    : 0.0;
                 return IgnorePointer(
                   ignoring: collapsedHeaderOpacity < 0.5,
-                  child: Opacity(
-                    opacity: collapsedHeaderOpacity,
-                    child: child,
-                  ),
+                  child: Opacity(opacity: collapsedHeaderOpacity, child: child),
                 );
               },
               child: Container(
@@ -2894,13 +2903,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: ListenableBuilder(
               listenable: _scrollController,
               builder: (context, child) {
-                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / responsive.twoLineHeaderContentHeight).clamp(0.0, 1.0);
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress =
+                    (scrollOffset / responsive.twoLineHeaderContentHeight)
+                        .clamp(0.0, 1.0);
                 final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
-                return Opacity(
-                  opacity: headerOpacity,
-                  child: child,
-                );
+                return Opacity(opacity: headerOpacity, child: child);
               },
               child: Container(
                 constraints: BoxConstraints(
@@ -3032,6 +3042,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required IconData icon,
     required Color iconColor,
     required List<Color> bgColors,
+    AlignmentGeometry gradientBegin = Alignment.topLeft,
+    AlignmentGeometry gradientEnd = Alignment.bottomRight,
+    List<double>? gradientStops,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
@@ -3042,9 +3055,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: gradientBegin,
+            end: gradientEnd,
             colors: bgColors,
+            stops: gradientStops,
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [

@@ -100,18 +100,12 @@ class _ResellAnalysisReportScreenState
             children: [
               Text(
                 label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: const Color(0xFF6B7280),
-                  fontWeight: FontWeight.w500,
-                ),
+                style: ReportTextStyles.label,
               ),
               const SizedBox(height: 6),
               Text(
                 value,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
+                style: ReportTextStyles.statValueSmall,
                 textAlign: TextAlign.center,
               ),
             ],
@@ -257,21 +251,12 @@ class _ResellAnalysisReportScreenState
                               children: [
                                 Text(
                                   pageName,
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black,
-                                    letterSpacing: -0.5,
-                                    height: 1.0,
-                                  ),
+                                    style: ReportTextStyles.screenTitle,
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   l10n.dashboardResellReportSubtitle,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF4B5563),
-                                  ),
+                                    style: ReportTextStyles.screenSubtitle,
                                 ),
                               ],
                             ),
@@ -973,10 +958,7 @@ class _ResellAnalysisReportScreenState
                     children: [
                       Text(
                         category.label(context),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
+                        style: ReportTextStyles.label,
                       ),
                       Text(
                         valueText,
@@ -1114,8 +1096,7 @@ class _ResellAnalysisReportScreenState
                 ),
                 child: Text(
                   isChinese ? '$count 件' : '$count',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                  style: ReportTextStyles.statValueSmall.copyWith(
                     color: const Color(0xFFE6A100),
                   ),
                 ),
@@ -1823,10 +1804,7 @@ class _ResellAnalysisReportScreenState
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
+                  style: ReportTextStyles.sectionHeader,
                 ),
               ],
             ),

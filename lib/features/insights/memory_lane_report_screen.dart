@@ -58,11 +58,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        colorScheme.primary.withValues(alpha: 0.15),
-                        colorScheme.surface,
-                      ],
-                      stops: const [0.0, 0.45],
+                      colors: ReportUI.memoryHeaderGradient,
+                      stops: const [0.0, 0.25, 0.45],
                     ),
                   ),
                 ),
@@ -88,18 +85,15 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                AppTypography.headlineMedium(
-                                  pageName,
-                                  context: context,
-                                  color: colorScheme.onSurface,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                  Text(
+                                    pageName,
+                                    style: ReportTextStyles.screenTitle,
+                                  ),
                                 const SizedBox(height: 4),
-                                AppTypography.bodySmall(
-                                  l10n.dashboardMemoryLaneSubtitle,
-                                  context: context,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                                  Text(
+                                    l10n.dashboardMemoryLaneSubtitle,
+                                    style: ReportTextStyles.screenSubtitle,
+                                  ),
                               ],
                             ),
                           ],
@@ -261,16 +255,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppTypography.titleMedium(
+          Text(
             isChinese ? '情绪分布' : 'Emotion Distribution',
-            context: context,
-            fontWeight: FontWeight.bold,
+            style: ReportTextStyles.sectionHeader,
           ),
           const SizedBox(height: 4),
-          AppTypography.bodySmall(
+          Text(
             l10n.reportPreciousMoments,
-            context: context,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            style: ReportTextStyles.sectionSubtitle,
           ),
           const SizedBox(height: 24),
           Center(
@@ -359,16 +351,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppTypography.titleMedium(
+          Text(
             isChinese ? '回忆热力图' : 'Memory Heatmap',
-            context: context,
-            fontWeight: FontWeight.bold,
+            style: ReportTextStyles.sectionHeader,
           ),
           const SizedBox(height: 4),
-          AppTypography.bodySmall(
+          Text(
             isChinese ? '本年度活动' : 'Activity this year',
-            context: context,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            style: ReportTextStyles.sectionSubtitle,
           ),
           const SizedBox(height: 24),
           // 2 rows of 6 months each
@@ -555,19 +545,15 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          AppTypography.labelSmall(
+          Text(
             title,
-            context: context,
-            color: colorScheme.onSurfaceVariant,
+            style: ReportTextStyles.label,
             textAlign: TextAlign.center,
-            fontWeight: FontWeight.w600,
           ),
           const SizedBox(height: 8),
-          AppTypography.titleMedium(
+          Text(
             value,
-            context: context,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
+            style: ReportTextStyles.statValueSmall,
             textAlign: TextAlign.center,
           ),
         ],
@@ -611,16 +597,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppTypography.titleMedium(
+          Text(
             isChinese ? '分类统计' : 'Category Statistics',
-            context: context,
-            fontWeight: FontWeight.bold,
+            style: ReportTextStyles.sectionHeader,
           ),
           const SizedBox(height: 4),
-          AppTypography.bodySmall(
+          Text(
             isChinese ? '各类别的回忆数量' : 'Memory count per category',
-            context: context,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            style: ReportTextStyles.sectionSubtitle,
           ),
           const SizedBox(height: 24),
           if (sortedCategories.isEmpty)
@@ -748,17 +732,15 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppTypography.titleMedium(
+                Text(
                   isChinese ? '时光印记' : 'Time Markers',
-                  context: context,
-                  fontWeight: FontWeight.bold,
+                  style: ReportTextStyles.sectionHeader,
                 ),
                 const SizedBox(height: 24),
                 Center(
-                  child: AppTypography.bodyMedium(
+                  child: Text(
                     isChinese ? '暂无回忆' : 'No memories yet',
-                    context: context,
-                    color: colorScheme.onSurfaceVariant,
+                    style: ReportTextStyles.body,
                   ),
                 ),
               ],
@@ -766,16 +748,14 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppTypography.titleMedium(
+                Text(
                   isChinese ? '时光印记' : 'Time Markers',
-                  context: context,
-                  fontWeight: FontWeight.bold,
+                  style: ReportTextStyles.sectionHeader,
                 ),
                 const SizedBox(height: 4),
-                AppTypography.bodySmall(
+                Text(
                   l10n.reportPreciousMoments,
-                  context: context,
-                  color: colorScheme.onSurfaceVariant,
+                  style: ReportTextStyles.sectionSubtitle,
                 ),
                 const SizedBox(height: 24),
                 _buildTimeMarker(
@@ -881,23 +861,19 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppTypography.labelSmall(
+              Text(
                 label,
-                context: context,
-                color: colorScheme.onSurfaceVariant,
+                style: ReportTextStyles.label,
               ),
               const SizedBox(height: 4),
-              AppTypography.titleSmall(
+              Text(
                 title,
-                context: context,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+                style: ReportTextStyles.statValueSmall,
               ),
               const SizedBox(height: 2),
-              AppTypography.labelSmall(
+              Text(
                 date,
-                context: context,
-                color: colorScheme.onSurfaceVariant,
+                style: ReportTextStyles.label,
               ),
             ],
           ),
@@ -1210,23 +1186,20 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: AppTypography.labelSmall(
+                          child: Text(
                             label,
-                            context: context,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            color: colorScheme.onSurfaceVariant,
+                            style: ReportTextStyles.label,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    AppTypography.titleMedium(
-                      '$count',
-                      context: context,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
+                      Text(
+                        '$count',
+                        style: ReportTextStyles.statValueSmall,
+                      ),
                   ],
                 ),
               ),
