@@ -838,79 +838,115 @@ class _ResellAnalysisReportScreenState
     if (maxRevenue == 0) maxRevenue = 1;
     if (maxAvgDays == 0) maxAvgDays = 1;
 
-    // Build toggle for metric selection
+    // Filter out categories with 0 items for cleaner view
+    final activeCategories = DeclutterCategory.values.where((c) {
+      return (categoryData[c]!['totalCount'] as int) > 0;
+    }).toList();
+
+    // Sort accordingly
+    if (_selectedCategoryMetric == CategoryMetric.revenue) {
+       activeCategories.sort((a, b) => (categoryData[b]!['totalRevenue'] as double)
+          .compareTo(categoryData[a]!['totalRevenue'] as double));
+    } else if (_selectedCategoryMetric == CategoryMetric.successRate) {
+       activeCategories.sort((a, b) {
+          final countA = categoryData[a]!['totalCount'] as int;
+          final soldA = categoryData[a]!['soldCount'] as int;
+          final rateA = countA > 0 ? soldA / countA : 0.0;
+
+          final countB = categoryData[b]!['totalCount'] as int;
+          final soldB = categoryData[b]!['soldCount'] as int;
+          final rateB = countB > 0 ? soldB / countB : 0.0;
+          return rateB.compareTo(rateA);
+       });
+    } else {
+       // Average days (lower is better, but maybe user wants to see longest?)
+       // Let's sort by days ascending (fastest first) as it's "Performance"
+       activeCategories.sort((a, b) {
+          final countA = categoryData[a]!['totalCount'] as int;
+          final daysA = categoryData[a]!['totalListedDays'] as double;
+          final avgA = countA > 0 ? daysA / countA : 0.0;
+
+          final countB = categoryData[b]!['totalCount'] as int;
+          final daysB = categoryData[b]!['totalListedDays'] as double;
+          final avgB = countB > 0 ? daysB / countB : 0.0;
+          return avgA.compareTo(avgB); // Fast to slow
+       });
+    }
+
+
     return Column(
       children: [
-        // Metric selector
-        Row(
-          children: [
-            SizedBox(
-              width: 60,
-              child: Text(
-                isChinese ? '指标' : 'Metric',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B7280),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<CategoryMetric>(
-                    value: _selectedCategoryMetric,
-                    isExpanded: true,
-                    isDense: true,
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: Color(0xFF6B7280),
+        // Custom Metric Selector (Pills)
+        Container(
+          height: 36,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF3F4F6),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          padding: const EdgeInsets.all(4),
+          child: Row(
+            children: CategoryMetric.values.map((metric) {
+              final isSelected = _selectedCategoryMetric == metric;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCategoryMetric = metric;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              )
+                            ]
+                          : [],
                     ),
-                    dropdownColor: Colors.white,
-                    focusColor: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedCategoryMetric = value;
-                        });
-                      }
-                    },
-                    items: CategoryMetric.values
-                        .map(
-                          (metric) => DropdownMenuItem<CategoryMetric>(
-                            value: metric,
-                            child: Text(
-                              metric.label(isChinese),
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF111827),
-                                  ),
-                            ),
-                          ),
-                        )
-                        .toList(),
+                    child: Text(
+                      metric.label(isChinese),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        color: isSelected
+                            ? const Color(0xFF111827)
+                            : const Color(0xFF6B7280),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+              );
+            }).toList(),
+          ),
         ),
         const SizedBox(height: 24),
 
-        // Bar chart for selected metric
-        Column(
-          children: DeclutterCategory.values.map((category) {
+        // List View (Clean)
+        if (activeCategories.isEmpty)
+           Padding(
+             padding: const EdgeInsets.all(32.0),
+             child: Center(
+               child: Text(
+                 isChinese ? '暂无数据' : 'No data available',
+                 style: ReportTextStyles.body.copyWith(color: ReportUI.labelTextColor),
+               ),
+             ),
+           )
+        else
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: activeCategories.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 16),
+          itemBuilder: (context, index) {
+            final category = activeCategories[index];
             final data = categoryData[category]!;
             final revenue = data['totalRevenue'] as double;
             final totalCount = data['totalCount'] as int;
@@ -943,46 +979,54 @@ class _ResellAnalysisReportScreenState
               barColors = const [Color(0xFF89CFF0), Color(0xFF60A5FA)];
             }
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF7F8FA),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Column(
+            return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        category.label(context),
-                        style: ReportTextStyles.label,
+                      Row(
+                        children: [
+                          Container(
+                             width: 4, 
+                             height: 16,
+                             decoration: BoxDecoration(
+                               color: barColors[0],
+                               borderRadius: BorderRadius.circular(2),
+                             ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            category.label(context),
+                            style: ReportTextStyles.body.copyWith(
+                               fontWeight: FontWeight.w600,
+                               color: const Color(0xFF374151),
+                            ),
+                          ),
+                        ],
                       ),
                       Text(
                         valueText,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF374151),
-                          fontWeight: FontWeight.w700,
+                        style: ReportTextStyles.statValueSmall.copyWith(
+                           fontSize: 14,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Stack(
                     children: [
                       Container(
-                        height: 12,
+                        height: 6, // Thinner
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE5E7EB),
+                          color: const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
                       FractionallySizedBox(
-                        widthFactor: barValue.clamp(0.0, 1.0),
+                        widthFactor: barValue.clamp(0.05, 1.0), // Min width for visibility
                         child: Container(
-                          height: 12,
+                          height: 6,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(colors: barColors),
                             borderRadius: BorderRadius.circular(999),
@@ -992,9 +1036,8 @@ class _ResellAnalysisReportScreenState
                     ],
                   ),
                 ],
-              ),
-            );
-          }).toList(),
+              );
+          },
         ),
       ],
     );
