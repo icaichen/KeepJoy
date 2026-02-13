@@ -68,13 +68,17 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             ).format(session.startTime);
 
             final hasPhotos =
-                (session.localBeforePhotoPath != null || session.remoteBeforePhotoPath != null) &&
-                (session.localAfterPhotoPath != null || session.remoteAfterPhotoPath != null);
+                (session.localBeforePhotoPath != null ||
+                    session.remoteBeforePhotoPath != null) &&
+                (session.localAfterPhotoPath != null ||
+                    session.remoteAfterPhotoPath != null);
 
             return Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
               ),
               child: Column(
                 children: [
@@ -83,7 +87,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -103,7 +109,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   Text(
                                     session.area,
                                     style: AppTypography.titleLarge.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -111,7 +119,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   Text(
                                     dateStr,
                                     style: AppTypography.bodySmall.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -119,7 +129,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             ),
                             Container(
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.5),
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(
@@ -128,7 +141,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 icon: Icon(
                                   Icons.close_rounded,
                                   size: 20,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ),
@@ -150,12 +165,16 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               children: [
                                 _buildPhotoCard(
                                   context: context,
-                                  photoPath: session.localBeforePhotoPath ?? session.remoteBeforePhotoPath!,
+                                  photoPath:
+                                      session.localBeforePhotoPath ??
+                                      session.remoteBeforePhotoPath!,
                                   label: l10n.dashboardBefore,
                                 ),
                                 _buildPhotoCard(
                                   context: context,
-                                  photoPath: session.localAfterPhotoPath ?? session.remoteAfterPhotoPath!,
+                                  photoPath:
+                                      session.localAfterPhotoPath ??
+                                      session.remoteAfterPhotoPath!,
                                   label: l10n.dashboardAfter,
                                 ),
                               ],
@@ -208,12 +227,21 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             session.focusIndex == null &&
                             session.moodIndex == null)
                           Container(
-                            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 40,
+                              horizontal: 24,
+                            ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant
+                                    .withValues(alpha: 0.5),
                               ),
                             ),
                             child: Column(
@@ -221,21 +249,28 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 Icon(
                                   Icons.analytics_outlined,
                                   size: 48,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withValues(alpha: 0.5),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
                                   l10n.dashboardNoDetailedMetrics,
                                   style: AppTypography.titleSmall.copyWith(
                                     fontWeight: FontWeight.w700,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   l10n.dashboardNoDetailsSaved,
                                   style: AppTypography.bodySmall.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                     height: 1.5,
                                   ),
                                   textAlign: TextAlign.center,
@@ -355,7 +390,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               top: 16,
               left: 16,
               child: GlassContainer(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 borderRadius: BorderRadius.circular(12),
                 blur: 8,
                 color: Colors.black.withValues(alpha: 0.4),
@@ -381,13 +419,17 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
         Icon(
           icon,
           size: 14,
-          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
         ),
         const SizedBox(width: 4),
         Text(
           label,
           style: AppTypography.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -411,9 +453,14 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              _getMonthAbbrev(date.month, AppLocalizations.of(context)!.localeName == 'zh'),
+              _getMonthAbbrev(
+                date.month,
+                AppLocalizations.of(context)!.localeName == 'zh',
+              ),
               style: AppTypography.labelSmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 fontSize: 10,
               ),
             ),
@@ -424,10 +471,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
   }
 
   // ignore: unused_element
-  void _showAreaDeepCleaningReport(
-    BuildContext context,
-    String area,
-  ) {
+  void _showAreaDeepCleaningReport(BuildContext context, String area) {
     final l10n = AppLocalizations.of(context)!;
     final areaSessions =
         widget.deepCleaningSessions
@@ -449,7 +493,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             return Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
               ),
               child: Column(
                 children: [
@@ -458,7 +504,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -502,28 +550,36 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           child: InkWell(
-                            onTap: () => _showSessionDetail(context, session, true),
+                            onTap: () =>
+                                _showSessionDetail(context, session, true),
                             borderRadius: BorderRadius.circular(20),
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.5),
                                 ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         dateStr,
-                                        style: AppTypography.titleSmall.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: Theme.of(context).colorScheme.onSurface,
-                                        ),
+                                        style: AppTypography.titleSmall
+                                            .copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
+                                            ),
                                       ),
                                       if (improvement != null)
                                         Container(
@@ -532,15 +588,23 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                             vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(10),
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                           ),
                                           child: Text(
                                             '+$improvement%',
-                                            style: AppTypography.labelMedium.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: Theme.of(context).colorScheme.primary,
-                                            ),
+                                            style: AppTypography.labelMedium
+                                                .copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                ),
                                           ),
                                         ),
                                     ],
@@ -763,15 +827,20 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   children: [
                                     Text(
                                       l10n.dashboardYearlyReportsTitle,
-                                      style: AppTypography.displaySmall.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurface,
-                                      ),
+                                      style: AppTypography.displaySmall
+                                          .copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                          ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       l10n.dashboardYearlyReportsSubtitle,
                                       style: AppTypography.bodySmall.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ],
@@ -801,7 +870,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   child: _buildAchievementCard(
                                     context: context,
                                     icon: Icons.auto_awesome_outlined,
-                                    iconColor: Theme.of(context).colorScheme.primary,
+                                    iconColor: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     value: yearlySessions.length.toString(),
                                     label: l10n.dashboardSessionsLabel,
                                   ),
@@ -811,7 +882,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   child: _buildAchievementCard(
                                     context: context,
                                     icon: Icons.inventory_2_outlined,
-                                    iconColor: Theme.of(context).colorScheme.secondary,
+                                    iconColor: Theme.of(
+                                      context,
+                                    ).colorScheme.secondary,
                                     value: yearlyItems.length.toString(),
                                     label: l10n.reportItemsCleaned,
                                   ),
@@ -821,7 +894,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   child: _buildAchievementCard(
                                     context: context,
                                     icon: Icons.payments_outlined,
-                                    iconColor: Theme.of(context).colorScheme.tertiary,
+                                    iconColor: Theme.of(
+                                      context,
+                                    ).colorScheme.tertiary,
                                     value: yearlyResellValueDisplay,
                                     label: l10n.reportTotalRevenue,
                                   ),
@@ -831,11 +906,11 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             const SizedBox(height: 20),
 
                             // Declutter Heatmap (Past 12 months)
-                            GlassContainer(
-                              padding: const EdgeInsets.all(24),
-                              borderRadius: BorderRadius.circular(24),
-                              blur: 15,
-                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+                            Container(
+                              padding: const EdgeInsets.all(
+                                ReportUI.contentPadding,
+                              ),
+                              decoration: ReportUI.cardDecoration,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -843,14 +918,18 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     l10n.reportMemoryHeatmap,
                                     style: AppTypography.titleMedium.copyWith(
                                       fontWeight: FontWeight.w700,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     l10n.reportActivityThisYear,
                                     style: AppTypography.bodySmall.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                   const SizedBox(height: 32),
@@ -861,20 +940,42 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                       // First row
                                       Row(
                                         children: List.generate(6, (index) {
-                                          final monthDate = DateTime(now.year, now.month - (11 - index), 1);
-                                          final monthKey = '${monthDate.year}-${monthDate.month}';
-                                          final activity = past12MonthsActivity[monthKey] ?? 0;
-                                          return _buildHeatmapCell(context, monthDate, activity);
+                                          final monthDate = DateTime(
+                                            now.year,
+                                            now.month - (11 - index),
+                                            1,
+                                          );
+                                          final monthKey =
+                                              '${monthDate.year}-${monthDate.month}';
+                                          final activity =
+                                              past12MonthsActivity[monthKey] ??
+                                              0;
+                                          return _buildHeatmapCell(
+                                            context,
+                                            monthDate,
+                                            activity,
+                                          );
                                         }),
                                       ),
                                       const SizedBox(height: 8),
                                       // Second row
                                       Row(
                                         children: List.generate(6, (index) {
-                                          final monthDate = DateTime(now.year, now.month - (5 - index), 1);
-                                          final monthKey = '${monthDate.year}-${monthDate.month}';
-                                          final activity = past12MonthsActivity[monthKey] ?? 0;
-                                          return _buildHeatmapCell(context, monthDate, activity);
+                                          final monthDate = DateTime(
+                                            now.year,
+                                            now.month - (5 - index),
+                                            1,
+                                          );
+                                          final monthKey =
+                                              '${monthDate.year}-${monthDate.month}';
+                                          final activity =
+                                              past12MonthsActivity[monthKey] ??
+                                              0;
+                                          return _buildHeatmapCell(
+                                            context,
+                                            monthDate,
+                                            activity,
+                                          );
                                         }),
                                       ),
                                     ],
@@ -887,37 +988,53 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                     children: [
                                       Text(
                                         l10n.reportLess,
-                                        style: AppTypography.labelSmall.copyWith(
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        ),
+                                        style: AppTypography.labelSmall
+                                            .copyWith(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
+                                            ),
                                       ),
                                       const SizedBox(width: 8),
                                       ...List.generate(5, (index) {
                                         return Container(
                                           width: 16,
                                           height: 16,
-                                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 2,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: _getHeatmapColor(context, (index * 3) + 1),
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: _getHeatmapColor(
+                                              context,
+                                              (index * 3) + 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                         );
                                       }),
                                       const SizedBox(width: 8),
                                       Text(
                                         l10n.reportMore,
-                                        style: AppTypography.labelSmall.copyWith(
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        ),
+                                        style: AppTypography.labelSmall
+                                            .copyWith(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
+                                            ),
                                       ),
                                       const Spacer(),
                                       IconButton(
                                         visualDensity: VisualDensity.compact,
-                                        onPressed: () => _showHeatmapLegendDialog(context),
+                                        onPressed: () =>
+                                            _showHeatmapLegendDialog(context),
                                         icon: Icon(
                                           Icons.info_outline,
                                           size: 18,
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                         ),
                                       ),
                                     ],
@@ -963,7 +1080,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             DeclutterResultsDistributionCard(
                               items: yearlyItems,
                               title: l10n.reportYearToDateOutcomes,
-                              subtitle: l10n.reportYearToDateOutcomes, // Using title as subtitle for now if specific one isn't distinct enough
+                              subtitle: l10n
+                                  .reportYearToDateOutcomes, // Using title as subtitle for now if specific one isn't distinct enough
                               keptLabel: DeclutterStatus.keep.label(context),
                               resellLabel: DeclutterStatus.resell.label(
                                 context,
@@ -986,7 +1104,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             DeepCleaningAnalysisCard(
                               sessions: yearlySessions,
                               title: l10n.reportCleanSweepTitle,
-                              emptyStateMessage: l10n.reportNoDeepCleaningRecords,
+                              emptyStateMessage:
+                                  l10n.reportNoDeepCleaningRecords,
                               onDeleteSession: widget.onDeleteSession,
                             ),
                             const SizedBox(height: 20),
@@ -1020,15 +1139,17 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             child: ListenableBuilder(
               listenable: _scrollController,
               builder: (context, child) {
-                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(
+                  0.0,
+                  1.0,
+                );
                 final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
                 return IgnorePointer(
                   ignoring: realHeaderOpacity < 0.5,
-                  child: Opacity(
-                    opacity: realHeaderOpacity,
-                    child: child,
-                  ),
+                  child: Opacity(opacity: realHeaderOpacity, child: child),
                 );
               },
               child: Container(
@@ -1080,46 +1201,43 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     required String value,
     required String label,
   }) {
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      borderRadius: BorderRadius.circular(24),
-      blur: 15,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: iconColor, size: 24),
-          ),
-          const SizedBox(height: 12),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: AppTypography.titleLarge.copyWith(
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.onSurface,
+    return SizedBox(
+      height: 150,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: ReportUI.borderSideColor),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, color: iconColor, size: 24),
+            const SizedBox(height: 10),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: AppTypography.titleLarge.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTypography.labelSmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.labelSmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1174,7 +1292,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Theme.of(context).colorScheme.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -1374,13 +1494,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       trendColor = const Color(0xFF9E9E9E);
     }
 
-    return GlassContainer(
+    return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      borderRadius: BorderRadius.circular(ReportUI.cardRadius),
-      blur: ReportUI.cardBlur,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
-      shadows: ReportUI.cardShadow,
+      padding: const EdgeInsets.all(ReportUI.contentPadding),
+      decoration: ReportUI.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1582,7 +1699,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Theme.of(context).colorScheme.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -1640,7 +1759,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
@@ -1860,7 +1981,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       ),
     );
   }
-
 }
 
 class _JoyTrendChartPainter extends CustomPainter {
@@ -1918,7 +2038,9 @@ class _JoyTrendChartPainter extends CustomPainter {
     if (isPercent) {
       maxValue = 100.0;
     } else {
-      final maxRaw = monthlyData.values.isEmpty ? 0 : monthlyData.values.reduce((a, b) => a > b ? a : b);
+      final maxRaw = monthlyData.values.isEmpty
+          ? 0
+          : monthlyData.values.reduce((a, b) => a > b ? a : b);
       maxValue = maxRaw == 0 ? 5 : maxRaw.toDouble();
       maxValue = (maxValue * 1.25).clamp(5.0, double.infinity);
     }
@@ -1926,7 +2048,11 @@ class _JoyTrendChartPainter extends CustomPainter {
     // Draw grid lines and labels
     for (int i = 0; i <= 5; i++) {
       final y = topPadding + (chartHeight * i / 5);
-      canvas.drawLine(Offset(leftPadding, y), Offset(size.width - rightPadding, y), gridPaint);
+      canvas.drawLine(
+        Offset(leftPadding, y),
+        Offset(size.width - rightPadding, y),
+        gridPaint,
+      );
 
       final value = maxValue * (5 - i) / 5;
       textPainter.text = TextSpan(
@@ -1937,7 +2063,13 @@ class _JoyTrendChartPainter extends CustomPainter {
         ),
       );
       textPainter.layout();
-      textPainter.paint(canvas, Offset(leftPadding - textPainter.width - 12, y - textPainter.height / 2));
+      textPainter.paint(
+        canvas,
+        Offset(
+          leftPadding - textPainter.width - 12,
+          y - textPainter.height / 2,
+        ),
+      );
     }
 
     final points = <Offset>[];
@@ -1959,9 +2091,13 @@ class _JoyTrendChartPainter extends CustomPainter {
       final current = points[i];
       final next = points[i + 1];
       fillPath.cubicTo(
-          current.dx + (next.dx - current.dx) / 3, current.dy,
-          current.dx + 2 * (next.dx - current.dx) / 3, next.dy,
-          next.dx, next.dy);
+        current.dx + (next.dx - current.dx) / 3,
+        current.dy,
+        current.dx + 2 * (next.dx - current.dx) / 3,
+        next.dy,
+        next.dx,
+        next.dy,
+      );
     }
     fillPath.lineTo(points.last.dx, size.height - bottomPadding);
     fillPath.close();
@@ -1974,16 +2110,20 @@ class _JoyTrendChartPainter extends CustomPainter {
       final current = points[i];
       final next = points[i + 1];
       linePath.cubicTo(
-          current.dx + (next.dx - current.dx) / 3, current.dy,
-          current.dx + 2 * (next.dx - current.dx) / 3, next.dy,
-          next.dx, next.dy);
+        current.dx + (next.dx - current.dx) / 3,
+        current.dy,
+        current.dx + 2 * (next.dx - current.dx) / 3,
+        next.dy,
+        next.dx,
+        next.dy,
+      );
     }
     canvas.drawPath(linePath, linePaint);
 
     // Draw dots and labels
     for (int i = 0; i < points.length; i++) {
       final point = points[i];
-      
+
       // Only draw dots for every 3 months or if it has non-zero value to keep it clean
       if (i % 2 == 0 || monthlyData[i + 1] != 0) {
         canvas.drawCircle(point, 5, dotPaint);
@@ -1999,7 +2139,13 @@ class _JoyTrendChartPainter extends CustomPainter {
         ),
       );
       textPainter.layout();
-      textPainter.paint(canvas, Offset(point.dx - textPainter.width / 2, size.height - bottomPadding + 10));
+      textPainter.paint(
+        canvas,
+        Offset(
+          point.dx - textPainter.width / 2,
+          size.height - bottomPadding + 10,
+        ),
+      );
     }
   }
 

@@ -17,10 +17,10 @@ class ReportUI {
 
   // Shadows
   static List<BoxShadow> cardShadow = [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
-      blurRadius: 16,
-      offset: const Offset(0, 4),
+    const BoxShadow(
+      color: Color(0x08000000),
+      blurRadius: 12,
+      offset: Offset(0, 4),
     ),
   ];
 

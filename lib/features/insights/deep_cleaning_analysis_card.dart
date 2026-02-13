@@ -7,7 +7,6 @@ import '../dashboard/widgets/cleaning_area_legend.dart';
 import '../../widgets/auto_scale_text.dart';
 import '../../widgets/smart_image_widget.dart';
 import '../../widgets/modern_dialog.dart';
-import '../../widgets/glass_container.dart';
 import '../../theme/typography.dart';
 
 class DeepCleaningAnalysisCard extends StatefulWidget {
@@ -88,12 +87,21 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     // Calculate areas cleared (unique areas with sessions)
     final areasCleared = areaCounts.values.where((count) => count > 0).length;
 
-    return GlassContainer(
+    return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      borderRadius: BorderRadius.circular(24),
-      blur: 15,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -141,7 +149,10 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                   icon: Icons.location_on_rounded,
                   color: const Color(0xFF89CFF0),
                   value: '$areasCleared',
-                  label: l10n.dashboardAreasClearedLabel.replaceFirst('Cleared', 'Cleaned'),
+                  label: l10n.dashboardAreasClearedLabel.replaceFirst(
+                    'Cleared',
+                    'Cleaned',
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -246,13 +257,14 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         return countB.compareTo(countA);
       });
 
-    final visibleAreas =
-        _showAllAreas ? sortedAreas : sortedAreas.take(3).toList();
+    final visibleAreas = _showAllAreas
+        ? sortedAreas
+        : sortedAreas.take(3).toList();
     final hiddenCount = _showAllAreas
         ? 0
         : sortedAreas.length > 3
-            ? sortedAreas.length - visibleAreas.length
-            : 0;
+        ? sortedAreas.length - visibleAreas.length
+        : 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,12 +286,8 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
           )
         else
           ...visibleAreas.map(
-            (area) => _buildAreaGroupRow(
-              context,
-              l10n,
-              area,
-              sessionsByArea[area]!,
-            ),
+            (area) =>
+                _buildAreaGroupRow(context, l10n, area, sessionsByArea[area]!),
           ),
         if (hiddenCount > 0)
           Align(
@@ -318,10 +326,14 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -363,7 +375,9 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -403,7 +417,9 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -416,7 +432,10 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
@@ -439,7 +458,9 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                             Text(
                               l10n.dashboardSessionTotal(sortedSessions.length),
                               style: AppTypography.bodySmall.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -488,10 +509,14 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -520,7 +545,9 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -557,9 +584,9 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
       },
       onDismissed: (_) {
         widget.onDeleteSession?.call(session);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.dashboardSessionDeleted)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.dashboardSessionDeleted)));
       },
       child: row,
     );
@@ -593,7 +620,9 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -611,9 +640,14 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  CleaningArea.getDisplayName(session.area, context),
+                                  CleaningArea.getDisplayName(
+                                    session.area,
+                                    context,
+                                  ),
                                   style: AppTypography.titleLarge.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -621,7 +655,9 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                                 Text(
                                   _formatSessionDate(session.startTime, l10n),
                                   style: AppTypography.bodySmall.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -629,7 +665,10 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                           ),
                           Container(
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
@@ -638,7 +677,9 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                               icon: Icon(
                                 Icons.close_rounded,
                                 size: 20,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -657,12 +698,22 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
                       const SizedBox(height: 20),
                       _buildSessionDetailList(
                         l10n: l10n,
-                        colon: l10n.localeName.toLowerCase().startsWith('zh') ? '：' : ':',
+                        colon: l10n.localeName.toLowerCase().startsWith('zh')
+                            ? '：'
+                            : ':',
                         itemsValue: session.itemsCount?.toString() ?? '--',
-                        durationValue: session.elapsedSeconds != null ? _formatDuration(session.elapsedSeconds!, l10n) : '--',
-                        beforeValue: session.beforeMessinessIndex != null ? session.beforeMessinessIndex!.toStringAsFixed(1) : '--',
-                        afterValue: session.afterMessinessIndex != null ? session.afterMessinessIndex!.toStringAsFixed(1) : '--',
-                        improvementValue: improvement != null ? '${improvement.toStringAsFixed(0)}%' : '--',
+                        durationValue: session.elapsedSeconds != null
+                            ? _formatDuration(session.elapsedSeconds!, l10n)
+                            : '--',
+                        beforeValue: session.beforeMessinessIndex != null
+                            ? session.beforeMessinessIndex!.toStringAsFixed(1)
+                            : '--',
+                        afterValue: session.afterMessinessIndex != null
+                            ? session.afterMessinessIndex!.toStringAsFixed(1)
+                            : '--',
+                        improvementValue: improvement != null
+                            ? '${improvement.toStringAsFixed(0)}%'
+                            : '--',
                         focusValue: session.focusIndex?.toString() ?? '--',
                         joyValue: session.moodIndex?.toString() ?? '--',
                       ),
@@ -887,10 +938,14 @@ class _DeepCleaningAnalysisCardState extends State<DeepCleaningAnalysisCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: Theme.of(
+            context,
+          ).colorScheme.outlineVariant.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -1001,7 +1056,9 @@ class _PhotoPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -1020,7 +1077,8 @@ class _PhotoPage extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 color: const Color(0xFFF3F4F6),
-                child: (localPath == null || localPath!.isEmpty) &&
+                child:
+                    (localPath == null || localPath!.isEmpty) &&
                         (remotePath == null || remotePath!.isEmpty)
                     ? const Center(
                         child: Icon(

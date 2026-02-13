@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/widgets/auto_scale_text.dart';
-import 'package:keepjoy_app/widgets/glass_container.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
@@ -69,18 +68,23 @@ class _ResellAnalysisReportScreenState
   ) {
     final now = DateTime.now();
     final soldThisYear = widget.resellItems
-        .where((item) =>
-            item.status == ResellStatus.sold &&
-            item.createdAt.year == now.year)
+        .where(
+          (item) =>
+              item.status == ResellStatus.sold &&
+              item.createdAt.year == now.year,
+        )
         .length;
     final monthsElapsed = now.month;
-    final avgPerMonth =
-        monthsElapsed > 0 ? (soldThisYear / monthsElapsed) : 0.0;
+    final avgPerMonth = monthsElapsed > 0
+        ? (soldThisYear / monthsElapsed)
+        : 0.0;
 
     // Compute trend: compare recent 3 months vs previous 3 months
     // Trend: this month vs last month (by sold date)
     final currentMonthValue = trendData[now.month] ?? 0.0;
-    final prevMonthValue = now.month > 1 ? (trendData[now.month - 1] ?? 0.0) : 0.0;
+    final prevMonthValue = now.month > 1
+        ? (trendData[now.month - 1] ?? 0.0)
+        : 0.0;
     final changePercent = prevMonthValue > 0
         ? ((currentMonthValue - prevMonthValue) / prevMonthValue) * 100
         : (currentMonthValue > 0 ? 100.0 : 0.0);
@@ -97,17 +101,17 @@ class _ResellAnalysisReportScreenState
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF6B7280),
-                      fontWeight: FontWeight.w500,
-                    ),
+                  color: const Color(0xFF6B7280),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
                 value,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -121,10 +125,7 @@ class _ResellAnalysisReportScreenState
       decoration: ReportUI.statCardDecoration,
       child: Row(
         children: [
-          pill(
-            isChinese ? '已售件数' : 'Sold Items',
-            soldThisYear.toString(),
-          ),
+          pill(isChinese ? '已售件数' : 'Sold Items', soldThisYear.toString()),
           const SizedBox(width: 12),
           pill(
             isChinese ? '月均售出' : 'Avg / Month',
@@ -179,15 +180,16 @@ class _ResellAnalysisReportScreenState
     final avgDays = widget.resellItems.isEmpty
         ? 0.0
         : widget.resellItems
-                .map((item) {
-                  final end = (item.status == ResellStatus.sold &&
-                          item.soldDate != null)
-                      ? item.soldDate!
-                      : nowTime;
-                  return end.difference(item.createdAt).inDays;
-                })
-                .fold<int>(0, (a, b) => a + b) /
-            widget.resellItems.length;
+                  .map((item) {
+                    final end =
+                        (item.status == ResellStatus.sold &&
+                            item.soldDate != null)
+                        ? item.soldDate!
+                        : nowTime;
+                    return end.difference(item.createdAt).inDays;
+                  })
+                  .fold<int>(0, (a, b) => a + b) /
+              widget.resellItems.length;
 
     // Success rate
     final successRate = widget.resellItems.isEmpty
@@ -234,16 +236,16 @@ class _ResellAnalysisReportScreenState
                 // Content on top
                 Column(
                   children: [
-                      // Top spacing + title
-                      SizedBox(
-                        height: headerHeight,
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: horizontalPadding,
-                            right: horizontalPadding,
-                            top: topPadding + 28,
-                            bottom: 8,
-                          ),
+                    // Top spacing + title
+                    SizedBox(
+                      height: headerHeight,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: horizontalPadding,
+                          right: horizontalPadding,
+                          top: topPadding + 28,
+                          bottom: 8,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -333,8 +335,7 @@ class _ResellAnalysisReportScreenState
                                   label: isChinese ? '总收入' : 'Total Revenue',
                                   value:
                                       '$currencySymbol${totalRevenue.toStringAsFixed(0)}',
-                                  icon:
-                                      Icons.account_balance_wallet_rounded,
+                                  icon: Icons.account_balance_wallet_rounded,
                                   color: const Color(0xFFFF9AA2),
                                 ),
                               ),
@@ -364,7 +365,8 @@ class _ResellAnalysisReportScreenState
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             isChinese
@@ -383,8 +385,14 @@ class _ResellAnalysisReportScreenState
                                             isChinese
                                                 ? '各品类的成交金额、成交率与平均售出天数'
                                                 : 'Revenue, sold rate, and avg days to sell',
-                                            style: Theme.of(context).textTheme.bodyMedium
-                                                ?.copyWith(color: const Color(0xFF6B7280)),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: const Color(
+                                                    0xFF6B7280,
+                                                  ),
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -432,10 +440,13 @@ class _ResellAnalysisReportScreenState
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            isChinese ? '趋势分析' : 'Trend Analysis',
+                                            isChinese
+                                                ? '趋势分析'
+                                                : 'Trend Analysis',
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .titleLarge
@@ -449,8 +460,14 @@ class _ResellAnalysisReportScreenState
                                             isChinese
                                                 ? '转卖表现随时间的变化趋势'
                                                 : 'Resale performance over time',
-                                            style: Theme.of(context).textTheme.bodyMedium
-                                                ?.copyWith(color: const Color(0xFF6B7280)),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: const Color(
+                                                    0xFF6B7280,
+                                                  ),
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -524,23 +541,29 @@ class _ResellAnalysisReportScreenState
                                             items: TrendMetric.values
                                                 .map(
                                                   (metric) =>
-                                                      DropdownMenuItem<TrendMetric>(
-                                                    value: metric,
-                                                    child: Text(
-                                                      metric.label(isChinese),
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyMedium
-                                                          ?.copyWith(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: const Color(
-                                                              0xFF111827,
-                                                            ),
+                                                      DropdownMenuItem<
+                                                        TrendMetric
+                                                      >(
+                                                        value: metric,
+                                                        child: Text(
+                                                          metric.label(
+                                                            isChinese,
                                                           ),
-                                                    ),
-                                                  ),
+                                                          style: Theme.of(context)
+                                                              .textTheme
+                                                              .bodyMedium
+                                                              ?.copyWith(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color:
+                                                                    const Color(
+                                                                      0xFF111827,
+                                                                    ),
+                                                              ),
+                                                        ),
+                                                      ),
                                                 )
                                                 .toList(),
                                           ),
@@ -553,11 +576,11 @@ class _ResellAnalysisReportScreenState
                                 const SizedBox(height: 24),
 
                                 // Chart (always show, even with no data)
-                        ClipRect(
-                          child: SizedBox(
-                            height: 250,
-                            width: double.infinity,
-                            child: CustomPaint(
+                                ClipRect(
+                                  child: SizedBox(
+                                    height: 250,
+                                    width: double.infinity,
+                                    child: CustomPaint(
                                       size: const Size(double.infinity, 250),
                                       painter: _TrendChartPainter(
                                         trendData: trendData,
@@ -566,15 +589,19 @@ class _ResellAnalysisReportScreenState
                                         currencySymbol: _currencySymbol,
                                       ),
                                     ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                _buildTrendSummary(
+                                  context,
+                                  isChinese,
+                                  trendData,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildTrendSummary(context, isChinese, trendData),
-                      ],
-                    ),
-                  ),
 
-                  const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
                           // 30+ Days Unsold Items
                           Container(
@@ -598,7 +625,8 @@ class _ResellAnalysisReportScreenState
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             isChinese
@@ -617,8 +645,14 @@ class _ResellAnalysisReportScreenState
                                             isChinese
                                                 ? '各品类超过30天的件数'
                                                 : 'Count by category (30+ days unsold)',
-                                            style: Theme.of(context).textTheme.bodyMedium
-                                                ?.copyWith(color: const Color(0xFF6B7280)),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: const Color(
+                                                    0xFF6B7280,
+                                                  ),
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -663,12 +697,8 @@ class _ResellAnalysisReportScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  isChinese
-                                      ? '交易洞察'
-                                      : 'Transaction Insights',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
+                                  isChinese ? '交易洞察' : 'Transaction Insights',
+                                  style: Theme.of(context).textTheme.titleLarge
                                       ?.copyWith(
                                         fontWeight: FontWeight.w700,
                                         color: Colors.black87,
@@ -699,15 +729,17 @@ class _ResellAnalysisReportScreenState
             child: ListenableBuilder(
               listenable: _scrollController,
               builder: (context, child) {
-                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(
+                  0.0,
+                  1.0,
+                );
                 final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
                 return IgnorePointer(
                   ignoring: realHeaderOpacity < 0.5,
-                  child: Opacity(
-                    opacity: realHeaderOpacity,
-                    child: child,
-                  ),
+                  child: Opacity(opacity: realHeaderOpacity, child: child),
                 );
               },
               child: Container(
@@ -788,7 +820,8 @@ class _ResellAnalysisReportScreenState
       categoryData[category]!['totalCount'] += 1;
 
       // Days listed: sold uses售出日期，未售用当前日期
-      final listedDays = (resellItem.status == ResellStatus.sold &&
+      final listedDays =
+          (resellItem.status == ResellStatus.sold &&
               resellItem.soldDate != null)
           ? resellItem.soldDate!.difference(resellItem.createdAt).inDays
           : DateTime.now().difference(resellItem.createdAt).inDays;
@@ -839,7 +872,10 @@ class _ResellAnalysisReportScreenState
             const SizedBox(width: 12),
             Expanded(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F5F5),
                   borderRadius: BorderRadius.circular(12),
@@ -867,17 +903,17 @@ class _ResellAnalysisReportScreenState
                         .map(
                           (metric) => DropdownMenuItem<CategoryMetric>(
                             value: metric,
-                          child: Text(
-                            metric.label(isChinese),
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF111827),
-                                ),
+                            child: Text(
+                              metric.label(isChinese),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF111827),
+                                  ),
+                            ),
                           ),
-                        ),
-                      )
+                        )
                         .toList(),
                   ),
                 ),
@@ -910,8 +946,7 @@ class _ResellAnalysisReportScreenState
               barValue = maxRevenue > 0 ? revenue / maxRevenue : 0;
               valueText = '$_currencySymbol${revenue.toStringAsFixed(0)}';
               barColors = const [Color(0xFFFFD93D), Color(0xFFFFB703)];
-            } else if (_selectedCategoryMetric ==
-                CategoryMetric.successRate) {
+            } else if (_selectedCategoryMetric == CategoryMetric.successRate) {
               barValue = successRate / 100;
               valueText = '${successRate.toStringAsFixed(0)}%';
               barColors = const [Color(0xFF5ECFB8), Color(0xFF34D399)];
@@ -1069,8 +1104,10 @@ class _ResellAnalysisReportScreenState
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFD93D).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
@@ -1078,9 +1115,9 @@ class _ResellAnalysisReportScreenState
                 child: Text(
                   isChinese ? '$count 件' : '$count',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFFE6A100),
-                      ),
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFFE6A100),
+                  ),
                 ),
               ),
             ],
@@ -1102,11 +1139,12 @@ class _ResellAnalysisReportScreenState
     }).length;
 
     if (soldItems.isEmpty) {
-      return GlassContainer(
+      return Container(
         padding: const EdgeInsets.all(20),
-        borderRadius: BorderRadius.circular(ReportUI.statCardRadius),
-        blur: 10,
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Center(
           child: Text(
             isChinese ? '暂无成交数据' : 'No sold items yet',
@@ -1227,15 +1265,15 @@ class _ResellAnalysisReportScreenState
             child: Text(
               unsoldOver30 >= 5
                   ? (isChinese
-                      ? '有 $unsoldOver30 件物品已超过30天未售出，建议集中优化：适当调价、更新描述，或尝试其他转售渠道。'
-                      : 'You have $unsoldOver30 items unsold for 30+ days. Consider revisiting them together: adjust pricing, refresh the listing, or try another channel.')
+                        ? '有 $unsoldOver30 件物品已超过30天未售出，建议集中优化：适当调价、更新描述，或尝试其他转售渠道。'
+                        : 'You have $unsoldOver30 items unsold for 30+ days. Consider revisiting them together: adjust pricing, refresh the listing, or try another channel.')
                   : (isChinese
-                      ? '$unsoldOver30 件物品超过30天未售出，试试小幅调价或更换平台提升成交。'
-                      : '$unsoldOver30 item(s) unsold for 30+ days. Try a small price drop or a different channel to improve sales.'),
+                        ? '$unsoldOver30 件物品超过30天未售出，试试小幅调价或更换平台提升成交。'
+                        : '$unsoldOver30 item(s) unsold for 30+ days. Try a small price drop or a different channel to improve sales.'),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF8A6D1F),
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: const Color(0xFF8A6D1F),
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -1259,8 +1297,13 @@ class _ResellAnalysisReportScreenState
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
             child: Column(
@@ -1335,10 +1378,7 @@ class _ResellAnalysisReportScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
-                Text(
-                  isChinese ? '优化建议' : 'Tips',
-                  style: labelStyle,
-                ),
+                Text(isChinese ? '优化建议' : 'Tips', style: labelStyle),
                 const SizedBox(height: 8),
                 Container(
                   width: double.infinity,
@@ -1399,8 +1439,13 @@ class _ResellAnalysisReportScreenState
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
             child: Column(
@@ -1491,27 +1536,30 @@ class _ResellAnalysisReportScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isChinese ? '• 成交金额：该品类已售出物品的总价值' : '• Revenue: Total value of sold items in this category',
+                        isChinese
+                            ? '• 成交金额：该品类已售出物品的总价值'
+                            : '• Revenue: Total value of sold items in this category',
                         style: descriptionStyle,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        isChinese ? '• 成交率：已售出物品数 ÷ 总物品数 × 100%' : '• Sold Rate: (Sold items ÷ Total items) × 100%',
+                        isChinese
+                            ? '• 成交率：已售出物品数 ÷ 总物品数 × 100%'
+                            : '• Sold Rate: (Sold items ÷ Total items) × 100%',
                         style: descriptionStyle,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        isChinese ? '• 平均售出天数：从整理到售出的平均时长' : '• Avg Days to Sell: Average time from declutter to sold',
+                        isChinese
+                            ? '• 平均售出天数：从整理到售出的平均时长'
+                            : '• Avg Days to Sell: Average time from declutter to sold',
                         style: descriptionStyle,
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 14),
-                Text(
-                  isChinese ? '优化建议' : 'Tips',
-                  style: labelStyle,
-                ),
+                Text(isChinese ? '优化建议' : 'Tips', style: labelStyle),
                 const SizedBox(height: 8),
                 Container(
                   width: double.infinity,
@@ -1572,8 +1620,13 @@ class _ResellAnalysisReportScreenState
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
             child: Column(
@@ -1664,27 +1717,30 @@ class _ResellAnalysisReportScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isChinese ? '• 物品数量：每月新增的转卖物品总数' : '• Item Count: Total number of new resale items added each month',
+                        isChinese
+                            ? '• 物品数量：每月新增的转卖物品总数'
+                            : '• Item Count: Total number of new resale items added each month',
                         style: descriptionStyle,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        isChinese ? '• 收入：每月已售出物品的总收入' : '• Revenue: Total income from sold items each month',
+                        isChinese
+                            ? '• 收入：每月已售出物品的总收入'
+                            : '• Revenue: Total income from sold items each month',
                         style: descriptionStyle,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        isChinese ? '• 成交率：每月售出物品数 ÷ 总物品数 × 100%' : '• Sold Rate: (Monthly sold items ÷ Total items) × 100%',
+                        isChinese
+                            ? '• 成交率：每月售出物品数 ÷ 总物品数 × 100%'
+                            : '• Sold Rate: (Monthly sold items ÷ Total items) × 100%',
                         style: descriptionStyle,
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 14),
-                Text(
-                  isChinese ? '优化建议' : 'Tips',
-                  style: labelStyle,
-                ),
+                Text(isChinese ? '优化建议' : 'Tips', style: labelStyle),
                 const SizedBox(height: 8),
                 Container(
                   width: double.infinity,
@@ -1739,10 +1795,7 @@ class _ResellAnalysisReportScreenState
     required bool isChinese,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 14,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: ReportUI.statCardDecoration,
       child: Row(
         children: [
@@ -1790,15 +1843,20 @@ class _ResellAnalysisReportScreenState
     required IconData icon,
     required Color color,
   }) {
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 10,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-      borderRadius: BorderRadius.circular(ReportUI.statCardRadius),
-      blur: 5, // Stats 小卡片模糊度小一些
-      color: Colors.white.withValues(alpha: 0.6),
-      shadows: ReportUI.lightShadow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

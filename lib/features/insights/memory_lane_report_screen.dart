@@ -31,7 +31,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isChinese = Localizations.localeOf(context).languageCode.toLowerCase().startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
     final headerHeight = responsive.totalTwoLineHeaderHeight + 12;
@@ -68,15 +70,15 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 Column(
                   children: [
                     // Top spacing + title
-                SizedBox(
-                  height: headerHeight,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: horizontalPadding,
-                      right: horizontalPadding,
-                      top: topPadding + 28,
-                      bottom: 8,
-                    ),
+                    SizedBox(
+                      height: headerHeight,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: horizontalPadding,
+                          right: horizontalPadding,
+                          top: topPadding + 28,
+                          bottom: 8,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -147,15 +149,17 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             child: ListenableBuilder(
               listenable: _scrollController,
               builder: (context, child) {
-                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
-                final scrollProgress = (scrollOffset / headerHeight).clamp(0.0, 1.0);
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress = (scrollOffset / headerHeight).clamp(
+                  0.0,
+                  1.0,
+                );
                 final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
                 return IgnorePointer(
                   ignoring: realHeaderOpacity < 0.5,
-                  child: Opacity(
-                    opacity: realHeaderOpacity,
-                    child: child,
-                  ),
+                  child: Opacity(opacity: realHeaderOpacity, child: child),
                 );
               },
               child: Container(
@@ -250,13 +254,10 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     );
     final hasData = totalCount > 0;
 
-    return GlassContainer(
+    return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(ReportUI.contentPadding),
-      borderRadius: BorderRadius.circular(ReportUI.cardRadius),
-      blur: ReportUI.cardBlur,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
-      shadows: ReportUI.cardShadow,
+      decoration: ReportUI.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -351,8 +352,10 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       return isChinese ? '$month月' : _getMonthAbbrev(month);
     }
 
-    return GlassContainer(
-      padding: const EdgeInsets.all(24),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(ReportUI.contentPadding),
+      decoration: ReportUI.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -389,7 +392,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                             width: double.infinity,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: _getHeatmapColor(count).withValues(alpha: 0.8),
+                              color: _getHeatmapColor(
+                                count,
+                              ).withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
@@ -399,7 +404,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                                 ? '${monthDate.month}月'
                                 : _getMonthAbbrev(monthDate.month),
                             context: context,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ],
                       ),
@@ -426,7 +433,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                             width: double.infinity,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: _getHeatmapColor(count).withValues(alpha: 0.8),
+                              color: _getHeatmapColor(
+                                count,
+                              ).withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
@@ -436,7 +445,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                                 ? '${monthDate.month}月'
                                 : _getMonthAbbrev(monthDate.month),
                             context: context,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ],
                       ),
@@ -593,8 +604,10 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final sortedCategories = categoryCounts.keys.toList()
       ..sort((a, b) => categoryCounts[b]!.compareTo(categoryCounts[a]!));
 
-    return GlassContainer(
-      padding: const EdgeInsets.all(24),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(ReportUI.contentPadding),
+      decoration: ReportUI.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -613,10 +626,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           if (sortedCategories.isEmpty)
             Text(
               isChinese ? '暂无分类数据' : 'No category data yet',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: Colors.black54),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
             )
           else ...[
             Column(
@@ -625,13 +637,15 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 final maxCount = categoryCounts.values.isEmpty
                     ? 1
                     : categoryCounts.values.reduce((a, b) => a > b ? a : b);
-                final barValue =
-                    maxCount == 0 ? 0.0 : (count / maxCount).clamp(0.0, 1.0);
+                final barValue = maxCount == 0
+                    ? 0.0
+                    : (count / maxCount).clamp(0.0, 1.0);
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -658,27 +672,30 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                       Stack(
                         children: [
                           Container(
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(999),
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          FractionallySizedBox(
+                            widthFactor: barValue,
+                            child: Container(
+                              height: 8,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.8),
+                                    Theme.of(context).colorScheme.primary,
+                                  ],
                                 ),
+                                borderRadius: BorderRadius.circular(999),
                               ),
-                              FractionallySizedBox(
-                                widthFactor: barValue,
-                                child: Container(
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-                                        Theme.of(context).colorScheme.primary,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                ),
-                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -724,12 +741,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         : 0;
 
     final colorScheme = Theme.of(context).colorScheme;
-    return GlassContainer(
+    return Container(
       padding: const EdgeInsets.all(ReportUI.contentPadding),
-      borderRadius: BorderRadius.circular(ReportUI.cardRadius),
-      blur: ReportUI.cardBlur,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
-      shadows: ReportUI.cardShadow,
+      decoration: ReportUI.cardDecoration,
       child: widget.memories.isEmpty
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -798,7 +812,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    color: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.3,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -978,10 +994,22 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 const SizedBox(height: 20),
                 ...[
                   {'range': isChinese ? '无活动 (0)' : 'None (0)', 'count': 0},
-                  {'range': isChinese ? '轻度活跃 (1-3)' : 'Light (1-3)', 'count': 2},
-                  {'range': isChinese ? '中度活跃 (4-6)' : 'Moderate (4-6)', 'count': 5},
-                  {'range': isChinese ? '高度活跃 (7-9)' : 'High (7-9)', 'count': 8},
-                  {'range': isChinese ? '非常活跃 (10+)' : 'Very High (10+)', 'count': 10},
+                  {
+                    'range': isChinese ? '轻度活跃 (1-3)' : 'Light (1-3)',
+                    'count': 2,
+                  },
+                  {
+                    'range': isChinese ? '中度活跃 (4-6)' : 'Moderate (4-6)',
+                    'count': 5,
+                  },
+                  {
+                    'range': isChinese ? '高度活跃 (7-9)' : 'High (7-9)',
+                    'count': 8,
+                  },
+                  {
+                    'range': isChinese ? '非常活跃 (10+)' : 'Very High (10+)',
+                    'count': 10,
+                  },
                 ].map((item) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -992,7 +1020,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: _getHeatmapColorByCount(item['count'] as int).withValues(alpha: 0.8),
+                            color: _getHeatmapColorByCount(
+                              item['count'] as int,
+                            ).withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
@@ -1150,7 +1180,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
           runSpacing: 12,
           alignment: WrapAlignment.start,
           children: emotions.map((emotion) {
-            final count = sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
+            final count =
+                sentimentCounts[emotion['sentiment'] as MemorySentiment] ?? 0;
             final label = emotion['label'] as String;
             final color = emotion['color'] as Color;
 
@@ -1159,7 +1190,9 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -1315,75 +1348,75 @@ class _VerticalBarChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-  // ignore: unused_element
-  Widget _buildCategoryStatRow(
-    BuildContext context, {
-    required DeclutterCategory category,
-    required int count,
-    required int maxCount,
-  }) {
-    final ratio = maxCount == 0 ? 0.0 : (count / maxCount).clamp(0.0, 1.0);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FA),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                category.label(context),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111827),
-                ),
+// ignore: unused_element
+Widget _buildCategoryStatRow(
+  BuildContext context, {
+  required DeclutterCategory category,
+  required int count,
+  required int maxCount,
+}) {
+  final ratio = maxCount == 0 ? 0.0 : (count / maxCount).clamp(0.0, 1.0);
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF7F8FA),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              category.label(context),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
               ),
-              Text(
-                '$count',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF4B5563),
-                ),
+            ),
+            Text(
+              '$count',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF4B5563),
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Stack(
-            children: [
-              Container(
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Stack(
+          children: [
+            Container(
+              height: 10,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            FractionallySizedBox(
+              widthFactor: ratio,
+              child: Container(
                 height: 10,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFFB794F6),
+                      const Color(0xFF7C3AED).withValues(alpha: 0.9),
+                    ],
+                  ),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
-              FractionallySizedBox(
-                widthFactor: ratio,
-                child: Container(
-                  height: 10,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFFB794F6),
-                        const Color(0xFF7C3AED).withValues(alpha: 0.9),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 
 // MONTHLY HEATMAP PAINTER (12 squares, 2 rows x 6 cols)
 // ignore: unused_element
@@ -1719,9 +1752,7 @@ class _EmotionPieChartPainter extends CustomPainter {
       final dy = explodeDist * math.sin(midAngle);
 
       // Slight scale for largest slice
-      final scale = maxCount > 0
-          ? (0.94 + 0.08 * (count / maxCount))
-          : 1.0;
+      final scale = maxCount > 0 ? (0.94 + 0.08 * (count / maxCount)) : 1.0;
       final sliceRadius = radius * scale;
       final sliceRect = Rect.fromCircle(center: center, radius: sliceRadius);
 
@@ -1743,17 +1774,12 @@ class _EmotionPieChartPainter extends CustomPainter {
       final paint = Paint()
         ..color = color
         ..style = PaintingStyle.fill;
-      canvas.drawArc(
-        sliceRect,
-        effectiveStart,
-        effectiveSweep,
-        true,
-        paint,
-      );
+      canvas.drawArc(sliceRect, effectiveStart, effectiveSweep, true, paint);
 
       // Percentage inside slice
-      final percent = ((count / totalCount) * 100)
-          .toStringAsFixed(((count / totalCount) * 100) >= 10 ? 0 : 1);
+      final percent = ((count / totalCount) * 100).toStringAsFixed(
+        ((count / totalCount) * 100) >= 10 ? 0 : 1,
+      );
       final innerRadius = sliceRadius * 0.58;
       final innerOffset = Offset(
         center.dx + innerRadius * math.cos(midAngle),
@@ -1763,7 +1789,8 @@ class _EmotionPieChartPainter extends CustomPainter {
         text: TextSpan(
           text: '$percent%',
           style: TextStyle(
-            color: Color.lerp(color, Colors.black, 0.35) ??
+            color:
+                Color.lerp(color, Colors.black, 0.35) ??
                 color.withValues(alpha: 0.9),
             fontSize: 14,
             fontWeight: FontWeight.w800,
@@ -1786,7 +1813,8 @@ class _EmotionPieChartPainter extends CustomPainter {
         center.dx + labelRadius * math.cos(midAngle),
         center.dy + labelRadius * math.sin(midAngle),
       );
-      final titleColor = innerTextPainter.text!.style?.color ??
+      final titleColor =
+          innerTextPainter.text!.style?.color ??
           (Color.lerp(color, Colors.black, 0.35) ??
               color.withValues(alpha: 0.9));
       final labelPainter = TextPainter(

@@ -1,10 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import '../../../widgets/glass_container.dart';
 import '../../../theme/typography.dart';
 import '../../../models/declutter_item.dart';
-import '../../insights/widgets/report_ui_constants.dart';
 
 class DeclutterResultsDistributionCard extends StatelessWidget {
   const DeclutterResultsDistributionCard({
@@ -87,13 +85,21 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
         ? breakdowns.where((b) => b.count > 0).toList()
         : breakdowns;
 
-    return GlassContainer(
+    return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(ReportUI.contentPadding),
-      borderRadius: BorderRadius.circular(ReportUI.cardRadius),
-      blur: ReportUI.cardBlur,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
-      shadows: ReportUI.cardShadow,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE5E7EA)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -117,10 +123,7 @@ class DeclutterResultsDistributionCard extends StatelessWidget {
               height: 220,
               width: 220,
               child: CustomPaint(
-                painter: _OutcomePiePainter(
-                  slices: chartSlices,
-                  total: total,
-                ),
+                painter: _OutcomePiePainter(slices: chartSlices, total: total),
               ),
             ),
           ),
@@ -213,22 +216,18 @@ class _OutcomePiePainter extends CustomPainter {
         sliceShadowPaint,
       );
 
-      canvas.drawArc(
-        sliceRect,
-        effectiveStart,
-        effectiveSweep,
-        true,
-        paint,
-      );
+      canvas.drawArc(sliceRect, effectiveStart, effectiveSweep, true, paint);
       // Percentage inside slice, tinted darker version of the slice color
-      final percent = ((slice.count / total) * 100)
-          .toStringAsFixed(((slice.count / total) * 100) >= 10 ? 0 : 1);
+      final percent = ((slice.count / total) * 100).toStringAsFixed(
+        ((slice.count / total) * 100) >= 10 ? 0 : 1,
+      );
       final innerRadius = (radius * scale) * 0.58;
       final innerOffset = Offset(
         center.dx + innerRadius * math.cos(midAngle),
         center.dy + innerRadius * math.sin(midAngle),
       );
-      final textColor = Color.lerp(slice.color, Colors.black, 0.35) ??
+      final textColor =
+          Color.lerp(slice.color, Colors.black, 0.35) ??
           slice.color.withValues(alpha: 0.9);
       final innerTextPainter = TextPainter(
         text: TextSpan(
@@ -269,7 +268,8 @@ class _OutcomePiePainter extends CustomPainter {
         center.dx + labelRadius * math.cos(midAngle),
         center.dy + labelRadius * math.sin(midAngle),
       );
-      final titleColor = Color.lerp(slice.color, Colors.black, 0.35) ??
+      final titleColor =
+          Color.lerp(slice.color, Colors.black, 0.35) ??
           slice.color.withValues(alpha: 0.9);
       final labelPainter = TextPainter(
         text: TextSpan(
@@ -294,7 +294,6 @@ class _OutcomePiePainter extends CustomPainter {
 
       startAngle += sweepAngle;
     }
-
   }
 
   @override
