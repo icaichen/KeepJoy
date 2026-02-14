@@ -1095,9 +1095,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             if (_hasYearlyActivity())
                               const SizedBox(height: ReportUI.sectionGap),
 
-                            _buildUnifiedReportEntry(context, isChinese),
-                            const SizedBox(height: ReportUI.sectionGap),
-
                             const SizedBox(height: 32),
                           ],
                         ),
@@ -1917,61 +1914,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildUnifiedReportEntry(BuildContext context, bool isChinese) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => UnifiedReportScreen(
-              declutteredItems: widget.declutteredItems,
-              resellItems: widget.resellItems,
-              memories: widget.memories,
-              deepCleaningSessions: widget.deepCleaningSessions,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(ReportUI.contentPadding),
-        decoration: ReportUI.cardDecoration.copyWith(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.auto_graph, color: Colors.white, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isChinese ? '年度总结' : 'Yearly Summary',
-                    style: ReportTextStyles.sectionHeader,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    isChinese ? '一站式查看整理、回忆、二手数据' : 'Declutter, memories & resale in one view',
-                    style: ReportTextStyles.sectionSubtitle,
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
-          ],
-        ),
       ),
     );
   }

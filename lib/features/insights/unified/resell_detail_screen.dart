@@ -4,22 +4,6 @@ import 'package:keepjoy_app/models/resell_item.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
 
-enum CategoryMetric {
-  revenue,
-  successRate,
-  avgDays;
-
-  String label(bool isChinese) {
-    switch (this) {
-      case CategoryMetric.revenue:
-        return isChinese ? '交易金额' : 'Revenue';
-      case CategoryMetric.successRate:
-        return isChinese ? '成交率' : 'Success Rate';
-      case CategoryMetric.avgDays:
-        return isChinese ? '平均售出天数' : 'Avg Days';
-    }
-  }
-}
 
 class ResellDetailScreen extends StatefulWidget {
   final EnhancedUnifiedReportData data;
@@ -32,7 +16,6 @@ class ResellDetailScreen extends StatefulWidget {
 
 class _ResellDetailScreenState extends State<ResellDetailScreen> {
   bool _showRevenue = true; // Toggle between revenue and count
-  CategoryMetric _categoryMetric = CategoryMetric.revenue;
 
   @override
   Widget build(BuildContext context) {
@@ -277,42 +260,9 @@ class _ResellDetailScreenState extends State<ResellDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                isChinese ? '品类表现' : 'Category Performance',
-                style: ReportTextStyles.sectionHeader,
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<CategoryMetric>(
-                    value: _categoryMetric,
-                    isDense: true,
-                    icon: const Icon(Icons.keyboard_arrow_down, size: 16),
-                    style: const TextStyle(fontSize: 12, color: Colors.black87),
-                    onChanged: (CategoryMetric? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          _categoryMetric = newValue;
-                        });
-                      }
-                    },
-                    items: CategoryMetric.values.map((CategoryMetric metric) {
-                      return DropdownMenuItem<CategoryMetric>(
-                        value: metric,
-                        child: Text(metric.label(isChinese)),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            isChinese ? '品类表现' : 'Category Performance',
+            style: ReportTextStyles.sectionHeader,
           ),
           const SizedBox(height: 16),
           _buildCategoryPerformance(isChinese, stats),
@@ -331,87 +281,152 @@ class _ResellDetailScreenState extends State<ResellDetailScreen> {
       );
     }
 
-    final sortedCategories = stats.categoryPerformance.values.toList();
-    
-    // Sort based on selected metric
-    switch (_categoryMetric) {
-      case CategoryMetric.revenue:
-        sortedCategories.sort((a, b) => b.revenue.compareTo(a.revenue));
-        break;
-      case CategoryMetric.successRate:
-        sortedCategories.sort((a, b) => b.successRate.compareTo(a.successRate));
-        break;
-      case CategoryMetric.avgDays:
-        // For days, lower is usually "better" (sold faster), but for sorting "top performance" 
-        // usually we want to see the ones taking longest or shortest? 
-        // Let's sort by shortest days (fastest selling) first as "better".
-        // But if 0 days (not sold), it might be tricky.
-        // Let's just do ascending for days.
-        sortedCategories.sort((a, b) {
-           if (a.averageDays == 0) return 1; // push 0 to end
-           if (b.averageDays == 0) return -1;
-           return a.averageDays.compareTo(b.averageDays);
-        });
-        break;
+    final sortedCategories = stats.categoryPerformance.values.toList()
+      ..sort((a, b) => b.successRate.compareTo(a.successRate));
+
+    // Calculate max volume for scaling
+    int maxVolume = 0;
+    for (final perf in sortedCategories) {
+      if (perf.totalListed > maxVolume) maxVolume = perf.totalListed;
     }
+    if (maxVolume == 0) maxVolume = 1;
 
     return Column(
-      children: sortedCategories.take(5).map((perf) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Table Header
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      isChinese ? perf.category.chinese : perf.category.english,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
+              Expanded(
+                flex: 4,
+                child: Text(
+                  isChinese ? '品类 & 量级' : 'CATEGORY & VOLUME',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF9CA3AF),
+                    letterSpacing: 0.5,
                   ),
-                  Text(
-                    '¥${perf.revenue.toStringAsFixed(0)}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFFFD93D)),
-                  ),
-                ],
+                ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _buildCategoryMetric(
-                    isChinese ? '售出' : 'Sold',
-                    '${perf.soldCount}',
-                    const Color(0xFF5ECFB8),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  isChinese ? '成交率' : 'STR %',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF9CA3AF),
+                    letterSpacing: 0.5,
                   ),
-                  const SizedBox(width: 12),
-                  _buildCategoryMetric(
-                    isChinese ? '成交率' : 'Rate',
-                    '${perf.successRate.toStringAsFixed(0)}%',
-                    const Color(0xFF89CFF0),
-                  ),
-                  const SizedBox(width: 12),
-                  _buildCategoryMetric(
-                    isChinese ? '平均天数' : 'Days',
-                    perf.averageDays.toStringAsFixed(0),
-                    const Color(0xFFFFA07A),
-                  ),
-                ],
+                ),
               ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: perf.successRate / 100,
-                  backgroundColor: const Color(0xFFE5E7EB),
-                  valueColor: const AlwaysStoppedAnimation(Color(0xFFFFD93D)),
-                  minHeight: 4,
+              Expanded(
+                flex: 2,
+                child: Text(
+                  isChinese ? '平均天数' : 'AVG DAYS',
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF9CA3AF),
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ],
           ),
-        );
-      }).toList(),
+        ),
+        const Divider(height: 1, color: Color(0xFFF3F4F6)),
+        const SizedBox(height: 16),
+        
+        // List Items
+        ...sortedCategories.map((perf) {
+          final volumeRatio = perf.totalListed / maxVolume;
+          
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start, // Align to top
+              children: [
+                // Category & Volume
+                Expanded(
+                  flex: 4,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese ? perf.category.chinese : perf.category.english,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Volume Bar
+                      Container(
+                        height: 6,
+                        width: 100, // Fixed width base for the bar container
+                        alignment: Alignment.centerLeft,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: FractionallySizedBox(
+                          widthFactor: volumeRatio.clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF89CFF0), // Light Blue to match app theme
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // STR %
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 40, // Match height of left column roughly
+                    child: Text(
+                      '${perf.successRate.toStringAsFixed(0)}%',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                  ),
+                ),
+                
+                // Avg Days
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    height: 40,
+                    child: Text(
+                      '${perf.averageDays.toStringAsFixed(0)}${isChinese ? "天" : "d"}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 
@@ -541,28 +556,6 @@ class _ResellDetailScreenState extends State<ResellDetailScreen> {
     );
   }
 
-  Widget _buildCategoryMetric(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '$label: ',
-            style: TextStyle(fontSize: 11, color: color.withValues(alpha: 0.8)),
-          ),
-          Text(
-            value,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildMonthlyChart(bool isChinese, EnhancedResellStats stats) {
     if (stats.monthlyRevenue.isEmpty && stats.monthlySoldCount.isEmpty) {

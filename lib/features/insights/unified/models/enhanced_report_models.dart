@@ -636,6 +636,7 @@ class CategoryPerformance {
   });
 
   int get totalListed => soldCount + listedCount;
+  double get averageListedDays => averageDays;
 }
 
 /// Platform statistics

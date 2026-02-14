@@ -542,12 +542,6 @@ abstract class AppLocalizations {
   /// **'Monthly Progress'**
   String get dashboardMonthlyProgress;
 
-  /// No description provided for @dashboardYearlyProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Yearly Progress'**
-  String get dashboardYearlyProgress;
-
   /// No description provided for @dashboardDeclutteredLabel.
   ///
   /// In en, this message translates to:

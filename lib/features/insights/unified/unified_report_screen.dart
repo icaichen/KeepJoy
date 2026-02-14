@@ -108,22 +108,7 @@ class _UnifiedReportScreenState extends State<UnifiedReportScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isChinese ? '年度总结' : 'Yearly Summary',
-                                    style: ReportTextStyles.screenTitle,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    isChinese ? '整理 · 回忆 · 二手' : 'Declutter · Memories · Resale',
-                                    style: ReportTextStyles.screenSubtitle,
-                                  ),
-                                ],
-                              ),
-                            ),
+                            const SizedBox(), // Spacer
                             _buildYearSelector(),
                           ],
                         ),

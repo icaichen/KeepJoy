@@ -233,9 +233,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardMonthlyProgress => '本月进度';
 
   @override
-  String get dashboardYearlyProgress => '年度进度';
-
-  @override
   String get dashboardDeclutteredLabel => '已整理物品';
 
   @override

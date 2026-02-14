@@ -246,9 +246,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardMonthlyProgress => 'Monthly Progress';
 
   @override
-  String get dashboardYearlyProgress => 'Yearly Progress';
-
-  @override
   String get dashboardDeclutteredLabel => 'Decluttered Items';
 
   @override

@@ -5,6 +5,7 @@ import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
+import 'package:keepjoy_app/features/insights/unified/models/enhanced_report_models.dart';
 
 enum TrendMetric {
   soldItems('已售物品', 'Sold Items'),
@@ -32,27 +33,9 @@ class ResellAnalysisReportScreen extends StatefulWidget {
       _ResellAnalysisReportScreenState();
 }
 
-enum CategoryMetric {
-  revenue,
-  successRate,
-  avgListedDays;
-
-  String label(bool isChinese) {
-    switch (this) {
-      case CategoryMetric.revenue:
-        return isChinese ? '交易金额' : 'Revenue';
-      case CategoryMetric.successRate:
-        return isChinese ? '成交率' : 'Sold Rate';
-      case CategoryMetric.avgListedDays:
-        return isChinese ? '平均售出天数' : 'Avg Days to Sell';
-    }
-  }
-}
-
 class _ResellAnalysisReportScreenState
     extends State<ResellAnalysisReportScreen> {
   TrendMetric _selectedMetric = TrendMetric.soldItems;
-  CategoryMetric _selectedCategoryMetric = CategoryMetric.revenue;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -152,50 +135,57 @@ class _ResellAnalysisReportScreenState
     final topPadding = responsive.safeAreaPadding.top;
     final currencySymbol = isChinese ? '¥' : '\$';
 
-    // Calculate metrics
+    // Calculate metrics using EnhancedResellStats
+    // 1. Lifetime stats for total counters
+    final lifetimeStats = EnhancedResellStats.fromItems(
+      widget.resellItems,
+      widget.declutteredItems,
+    );
+
+    // 2. Year stats for trends/charts (to avoid mixing years in Jan/Feb buckets)
+    final now = DateTime.now();
+    final thisYearItems =
+        widget.resellItems.where((item) {
+          // Logic matching EnhancedResellStats grouping
+          final date = item.soldDate ?? item.createdAt;
+          return date.year == now.year;
+        }).toList();
+
+    final yearStats = EnhancedResellStats.fromItems(
+      thisYearItems,
+      widget.declutteredItems,
+    );
+
+    // 3. Hybrid stats for display
+    final stats = EnhancedResellStats(
+      totalItems: lifetimeStats.totalItems,
+      soldCount: lifetimeStats.soldCount,
+      listingCount: lifetimeStats.listingCount,
+      toSellCount: lifetimeStats.toSellCount,
+      totalRevenue: lifetimeStats.totalRevenue,
+      successRate: lifetimeStats.successRate,
+      averageSoldPrice: lifetimeStats.averageSoldPrice,
+      averageListedDays: lifetimeStats.averageListedDays,
+      // Use year stats for monthly distributions (charts)
+      monthlyRevenue: yearStats.monthlyRevenue,
+      monthlySoldCount: yearStats.monthlySoldCount,
+      categoryPerformance: lifetimeStats.categoryPerformance,
+      platformDistribution: lifetimeStats.platformDistribution,
+      trendAnalysis: yearStats.trendAnalysis,
+      topSellingItems: lifetimeStats.topSellingItems,
+      monthlyComparison: yearStats.monthlyComparison,
+    );
+
+    // Keep soldItems for helper methods
     final soldItems = widget.resellItems
         .where((item) => item.status == ResellStatus.sold)
         .toList();
-    final totalSoldItems = soldItems.length;
-
-    // Average transaction price
-    final avgPrice = soldItems.isEmpty
-        ? 0.0
-        : soldItems
-                  .map((item) => item.soldPrice ?? 0.0)
-                  .reduce((a, b) => a + b) /
-              totalSoldItems;
-
-    // Average listed days (sold: created->sold, unsold: created->now)
-    final nowTime = DateTime.now();
-    final avgDays = widget.resellItems.isEmpty
-        ? 0.0
-        : widget.resellItems
-                  .map((item) {
-                    final end =
-                        (item.status == ResellStatus.sold &&
-                            item.soldDate != null)
-                        ? item.soldDate!
-                        : nowTime;
-                    return end.difference(item.createdAt).inDays;
-                  })
-                  .fold<int>(0, (a, b) => a + b) /
-              widget.resellItems.length;
-
-    // Success rate
-    final successRate = widget.resellItems.isEmpty
-        ? 0.0
-        : (totalSoldItems / widget.resellItems.length) * 100;
-
-    // Total revenue
-    final totalRevenue = soldItems.isEmpty
-        ? 0.0
-        : soldItems
-              .map((item) => item.soldPrice ?? 0.0)
-              .reduce((a, b) => a + b);
 
     // Prepare trend data
-    final trendData = _calculateTrendData();
+    final trendData =
+        _selectedMetric == TrendMetric.soldItems
+            ? stats.monthlySoldCount.map((k, v) => MapEntry(k, v.toDouble()))
+            : stats.monthlyRevenue;
     final pageName = isChinese ? '二手洞察' : 'Resale Insights';
 
     return Scaffold(
@@ -275,63 +265,13 @@ class _ResellAnalysisReportScreenState
                         children: [
                           // Metrics Section
 
-                          // Premium Metrics Grid (2x2)
-                          Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildMetricCard(
-                                      context,
-                                      label: isChinese ? '平均交易价' : 'Avg Price',
-                                      value:
-                                          '$currencySymbol${avgPrice.toStringAsFixed(0)}',
-                                      icon: Icons.payments_rounded,
-                                      iconColor: const Color(0xFFFFD93D),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildMetricCard(
-                                      context,
-                                      label: isChinese ? '平均售出天数' : 'Avg Days',
-                                      value: avgDays.toStringAsFixed(0),
-                                      icon: Icons.schedule_rounded,
-                                      iconColor: const Color(0xFF89CFF0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildMetricCard(
-                                      context,
-                                      label: isChinese ? '成交率' : 'Sold Rate',
-                                      value:
-                                          '${successRate.toStringAsFixed(0)}%',
-                                      icon: Icons.check_circle_rounded,
-                                      iconColor: const Color(0xFF5ECFB8),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildMetricCard(
-                                      context,
-                                      label: isChinese
-                                          ? '总收入'
-                                          : 'Total Revenue',
-                                      value:
-                                          '$currencySymbol${totalRevenue.toStringAsFixed(0)}',
-                                      icon:
-                                          Icons.account_balance_wallet_rounded,
-                                      iconColor: const Color(0xFFFF9AA2),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          // Premium Metrics List (Vertical with Charts)
+                          _buildPremiumMetricList(
+                            context,
+                            isChinese,
+                            stats,
+                            soldItems,
+                            currencySymbol,
                           ),
 
                           const SizedBox(height: ReportUI.sectionGap),
@@ -383,7 +323,14 @@ class _ResellAnalysisReportScreenState
                                   ],
                                 ),
                                 const SizedBox(height: 24),
-                                _buildCategoryPerformance(context, isChinese),
+                                _buildCategoryPerformance(
+                                  context,
+                                  isChinese,
+                                  EnhancedResellStats.fromItems(
+                                    widget.resellItems,
+                                    widget.declutteredItems,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -698,6 +645,268 @@ class _ResellAnalysisReportScreenState
     );
   }
 
+  Widget _buildPremiumMetricList(
+    BuildContext context,
+    bool isChinese,
+    EnhancedResellStats stats,
+    List<ResellItem> soldItems,
+    String currencySymbol,
+  ) {
+    final now = DateTime.now();
+    // Generate last 6 months (including current)
+    final months = List.generate(6, (i) {
+      final d = DateTime(now.year, now.month - 5 + i);
+      return d.month;
+    });
+
+    // 1. Revenue Data
+    final revenueData =
+        months.map((m) => stats.monthlyRevenue[m] ?? 0.0).toList();
+    final revenueTrend = stats.trendAnalysis.changePercent;
+
+    // 2. Sell-Through Data (Sold Count)
+    final soldData =
+        months.map((m) => (stats.monthlySoldCount[m] ?? 0).toDouble()).toList();
+    final soldTrend = stats.monthlyComparison.lastMonth > 0
+        ? ((stats.monthlyComparison.thisMonth -
+                    stats.monthlyComparison.lastMonth) /
+                stats.monthlyComparison.lastMonth *
+                100)
+        : (stats.monthlyComparison.thisMonth > 0 ? 100.0 : 0.0);
+
+    // 3. Avg Price Data
+    final avgPriceData = months.map((m) {
+      final rev = stats.monthlyRevenue[m] ?? 0.0;
+      final count = stats.monthlySoldCount[m] ?? 0;
+      return count > 0 ? rev / count : 0.0;
+    }).toList();
+    final currentAvgPrice = avgPriceData.last;
+    final prevAvgPrice = avgPriceData[4]; // 2nd to last
+    final avgPriceTrend = prevAvgPrice > 0
+        ? ((currentAvgPrice - prevAvgPrice) / prevAvgPrice * 100)
+        : (currentAvgPrice > 0 ? 100.0 : 0.0);
+
+    // 4. Days to Sell Data
+    final monthlyAvgDays = <int, double>{};
+    for (final m in months) {
+      final itemsInMonth = soldItems
+          .where(
+            (item) => item.soldDate != null && item.soldDate!.month == m,
+          )
+          .toList();
+      if (itemsInMonth.isNotEmpty) {
+        final totalDays = itemsInMonth.fold(
+          0,
+          (sum, item) => sum + item.soldDate!.difference(item.createdAt).inDays,
+        );
+        monthlyAvgDays[m] = totalDays / itemsInMonth.length;
+      } else {
+        monthlyAvgDays[m] = 0.0;
+      }
+    }
+    final daysData = months.map((m) => monthlyAvgDays[m] ?? 0.0).toList();
+    final currentDays = daysData.last;
+    final prevDays = daysData[4];
+    final daysTrend = prevDays > 0
+        ? ((currentDays - prevDays) / prevDays * 100)
+        : 0.0;
+
+    return Column(
+      children: [
+        _buildNewStyleMetricCard(
+          context,
+          title: isChinese ? '总收入' : 'Total Revenue',
+          value: '$currencySymbol${stats.totalRevenue.toStringAsFixed(0)}',
+          icon: Icons.attach_money_rounded,
+          color: const Color(0xFF6366F1), // Indigo/Blue
+          trend: revenueTrend,
+          chartData: revenueData,
+        ),
+        const SizedBox(height: 12),
+        _buildNewStyleMetricCard(
+          context,
+          title: isChinese ? '售出率' : 'Sell-Through Rate',
+          value: '${stats.successRate.toStringAsFixed(0)}%',
+          icon: Icons.speed_rounded,
+          color: const Color(0xFF10B981), // Emerald/Green
+          trend: soldTrend,
+          chartData: soldData,
+        ),
+        const SizedBox(height: 12),
+        _buildNewStyleMetricCard(
+          context,
+          title: isChinese ? '平均售价' : 'Avg. Price',
+          value: '$currencySymbol${stats.averageSoldPrice.toStringAsFixed(2)}',
+          icon: Icons.local_offer_rounded,
+          color: const Color(0xFF8B5CF6), // Violet/Purple
+          trend: avgPriceTrend,
+          chartData: avgPriceData,
+        ),
+        const SizedBox(height: 12),
+        _buildNewStyleMetricCard(
+          context,
+          title: isChinese ? '售出天数' : 'Days to Sell',
+          value:
+              '${stats.averageListedDays.toStringAsFixed(0)} ${isChinese ? '天' : 'Days'}',
+          icon: Icons.hourglass_empty_rounded,
+          color: const Color(0xFFF97316), // Orange
+          trend: daysTrend,
+          chartData: daysData,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewStyleMetricCard(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required double trend,
+    required List<double> chartData,
+  }) {
+    final trendText = '${trend.abs().toStringAsFixed(0)}%';
+    Color badgeColor;
+    Color badgeTextColor;
+    IconData badgeIcon;
+
+    if (trend.abs() < 1) {
+      badgeColor = const Color(0xFFF3F4F6);
+      badgeTextColor = const Color(0xFF6B7280);
+      badgeIcon = Icons.remove;
+    } else if (trend > 0) {
+      badgeColor = const Color(0xFFECFDF5);
+      badgeTextColor = const Color(0xFF10B981);
+      badgeIcon = Icons.trending_up_rounded;
+    } else {
+      badgeColor = const Color(0xFFFEF2F2);
+      badgeTextColor = const Color(0xFFEF4444);
+      badgeIcon = Icons.trending_down_rounded;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            offset: const Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          // Icon
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+
+          // Title & Value
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    color: Color(0xFF111827),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Right Side: Badge & Chart
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Trend Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: badgeColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (badgeIcon != Icons.remove)
+                      Icon(badgeIcon, size: 14, color: badgeTextColor),
+                    if (badgeIcon != Icons.remove) const SizedBox(width: 2),
+                    Text(
+                      trendText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: badgeTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Mini Chart
+              SizedBox(
+                height: 24,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: _buildChartBars(chartData, color),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildChartBars(List<double> data, Color color) {
+    if (data.isEmpty) return [];
+    final max = data.reduce((a, b) => a > b ? a : b);
+    final safeMax = max == 0 ? 1.0 : max;
+
+    return data.map((value) {
+      final height = (value / safeMax * 24).clamp(4.0, 24.0);
+      return Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: Container(
+          width: 6,
+          height: height,
+          decoration: BoxDecoration(
+            color: color.withOpacity(
+              value == 0 ? 0.2 : (0.4 + (value / safeMax) * 0.6).clamp(0.0, 1.0),
+            ),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   // Helper method to get category from declutter item ID
   DeclutterCategory? _getCategoryForResellItem(ResellItem resellItem) {
     try {
@@ -711,267 +920,172 @@ class _ResellAnalysisReportScreenState
   }
 
   // Build category performance widget
-  Widget _buildCategoryPerformance(BuildContext context, bool isChinese) {
-    // Calculate category data for ALL categories
-    final categoryData = <DeclutterCategory, Map<String, dynamic>>{};
-
-    // Initialize all categories with zeros
-    for (final category in DeclutterCategory.values) {
-      categoryData[category] = {
-        'totalRevenue': 0.0,
-        'totalCount': 0,
-        'soldCount': 0,
-        'totalListedDays': 0.0,
-      };
-    }
-
-    // Fill in actual data
-    for (final resellItem in widget.resellItems) {
-      final category = _getCategoryForResellItem(resellItem);
-      if (category == null) continue;
-
-      categoryData[category]!['totalCount'] += 1;
-
-      // Days listed: sold uses售出日期，未售用当前日期
-      final listedDays =
-          (resellItem.status == ResellStatus.sold &&
-              resellItem.soldDate != null)
-          ? resellItem.soldDate!.difference(resellItem.createdAt).inDays
-          : DateTime.now().difference(resellItem.createdAt).inDays;
-      categoryData[category]!['totalListedDays'] += listedDays;
-
-      if (resellItem.status == ResellStatus.sold &&
-          resellItem.soldPrice != null) {
-        categoryData[category]!['soldCount'] += 1;
-        categoryData[category]!['totalRevenue'] += resellItem.soldPrice!;
-      }
-    }
-
-    // Find max values for scaling
-    double maxRevenue = 0;
-    double maxAvgDays = 0;
-    for (final data in categoryData.values) {
-      if (data['totalRevenue'] > maxRevenue) {
-        maxRevenue = data['totalRevenue'];
-      }
-      final totalCount = data['totalCount'] as int;
-      if (totalCount > 0) {
-        final avgDays = (data['totalListedDays'] as double) / totalCount;
-        if (avgDays > maxAvgDays) {
-          maxAvgDays = avgDays;
-        }
-      }
-    }
-    // Ensure maxRevenue is at least 1 to avoid division by zero
-    if (maxRevenue == 0) maxRevenue = 1;
-    if (maxAvgDays == 0) maxAvgDays = 1;
-
-    // Filter out categories with 0 items for cleaner view
-    final activeCategories = DeclutterCategory.values.where((c) {
-      return (categoryData[c]!['totalCount'] as int) > 0;
-    }).toList();
-
-    // Sort accordingly
-    if (_selectedCategoryMetric == CategoryMetric.revenue) {
-      activeCategories.sort(
-        (a, b) => (categoryData[b]!['totalRevenue'] as double).compareTo(
-          categoryData[a]!['totalRevenue'] as double,
+  Widget _buildCategoryPerformance(
+    BuildContext context,
+    bool isChinese,
+    EnhancedResellStats stats,
+  ) {
+    if (stats.categoryPerformance.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
+          ),
         ),
       );
-    } else if (_selectedCategoryMetric == CategoryMetric.successRate) {
-      activeCategories.sort((a, b) {
-        final countA = categoryData[a]!['totalCount'] as int;
-        final soldA = categoryData[a]!['soldCount'] as int;
-        final rateA = countA > 0 ? soldA / countA : 0.0;
-
-        final countB = categoryData[b]!['totalCount'] as int;
-        final soldB = categoryData[b]!['soldCount'] as int;
-        final rateB = countB > 0 ? soldB / countB : 0.0;
-        return rateB.compareTo(rateA);
-      });
-    } else {
-      // Average days
-      activeCategories.sort((a, b) {
-        final countA = categoryData[a]!['totalCount'] as int;
-        final daysA = categoryData[a]!['totalListedDays'] as double;
-        final avgA = countA > 0 ? daysA / countA : 0.0;
-
-        final countB = categoryData[b]!['totalCount'] as int;
-        final daysB = categoryData[b]!['totalListedDays'] as double;
-        final avgB = countB > 0 ? daysB / countB : 0.0;
-        return avgA.compareTo(avgB); // Fast to slow
-      });
     }
+
+    final sortedCategories = stats.categoryPerformance.values.toList()
+      ..sort((a, b) => b.successRate.compareTo(a.successRate));
+
+    // Calculate max volume for scaling
+    int maxVolume = 0;
+    for (final perf in sortedCategories) {
+      if (perf.totalListed > maxVolume) maxVolume = perf.totalListed;
+    }
+    if (maxVolume == 0) maxVolume = 1;
 
     return Column(
       children: [
-        // Metric selector (Matching Trend Analysis style)
-        Row(
-          children: [
-            SizedBox(
-              width: 60,
-              child: Text(
-                isChinese ? '指标' : 'Metric',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B7280),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<CategoryMetric>(
-                    value: _selectedCategoryMetric,
-                    isExpanded: true,
-                    isDense: true,
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: Color(0xFF6B7280),
-                    ),
-                    dropdownColor: Colors.white,
-                    focusColor: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedCategoryMetric = value;
-                        });
-                      }
-                    },
-                    items: CategoryMetric.values
-                        .map(
-                          (metric) => DropdownMenuItem<CategoryMetric>(
-                            value: metric,
-                            child: Text(
-                              metric.label(isChinese),
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF111827),
-                                  ),
-                            ),
-                          ),
-                        )
-                        .toList(),
+        // Table Header
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: Text(
+                  isChinese ? '品类 & 量级' : 'CATEGORY & VOLUME',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF9CA3AF),
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: activeCategories.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final category = activeCategories[index];
-            final data = categoryData[category]!;
-            final revenue = data['totalRevenue'] as double;
-            final totalCount = data['totalCount'] as int;
-            final soldCount = data['soldCount'] as int;
-            final successRate = totalCount > 0
-                ? (soldCount / totalCount * 100)
-                : 0.0;
-            final avgDays = totalCount > 0
-                ? (data['totalListedDays'] as double) / totalCount
-                : 0.0;
-
-            // Calculate bar width based on selected metric
-            double barValue;
-            String valueText;
-            List<Color> barColors;
-
-            if (_selectedCategoryMetric == CategoryMetric.revenue) {
-              barValue = maxRevenue > 0 ? revenue / maxRevenue : 0;
-              valueText = '$_currencySymbol${revenue.toStringAsFixed(0)}';
-              barColors = const [Color(0xFFFFD93D), Color(0xFFFFB703)];
-            } else if (_selectedCategoryMetric == CategoryMetric.successRate) {
-              barValue = successRate / 100;
-              valueText = '${successRate.toStringAsFixed(0)}%';
-              barColors = const [Color(0xFF5ECFB8), Color(0xFF34D399)];
-            } else {
-              barValue = (avgDays / maxAvgDays).clamp(0.0, 1.0);
-              valueText = isChinese
-                  ? '${avgDays.toStringAsFixed(0)} 天'
-                  : '${avgDays.toStringAsFixed(0)} d';
-              barColors = const [Color(0xFF89CFF0), Color(0xFF60A5FA)];
-            }
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 3, // Thinner accent
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: barColors[0],
-                            borderRadius: BorderRadius.circular(1.5),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          category.label(context),
-                          style: ReportTextStyles.body.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13, // Slightly smaller text
-                            color: const Color(0xFF374151),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      valueText,
-                      style: ReportTextStyles.statValueSmall.copyWith(
-                        fontSize: 13, // Matches label size
-                      ),
-                    ),
-                  ],
+              Expanded(
+                flex: 2,
+                child: Text(
+                  isChinese ? '成交率' : 'STR %',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF9CA3AF),
+                    letterSpacing: 0.5,
+                  ),
                 ),
-                const SizedBox(height: 6), // Tighter spacing
-                Stack(
-                  children: [
-                    Container(
-                      height: 5, // Thinner bar
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    FractionallySizedBox(
-                      widthFactor: barValue.clamp(0.05, 1.0),
-                      child: Container(
-                        height: 5,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: barColors),
-                          borderRadius: BorderRadius.circular(999),
+              ),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  isChinese ? '平均天数' : 'AVG DAYS',
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF9CA3AF),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1, color: Color(0xFFF3F4F6)),
+        const SizedBox(height: 16),
+
+        // List Items
+        ...sortedCategories.map((perf) {
+          final volumeRatio = perf.totalListed / maxVolume;
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start, // Align to top
+              children: [
+                // Category & Volume
+                Expanded(
+                  flex: 4,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChinese
+                            ? perf.category.chinese
+                            : perf.category.english,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      // Volume Bar
+                      Container(
+                        height: 6,
+                        width: 100, // Fixed width base for the bar container
+                        alignment: Alignment.centerLeft,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: FractionallySizedBox(
+                          widthFactor: volumeRatio.clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFF89CFF0,
+                              ), // Light Blue to match app theme
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // STR %
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 40, // Match height of left column roughly
+                    child: Text(
+                      '${perf.successRate.toStringAsFixed(0)}%',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
                     ),
-                  ],
+                  ),
+                ),
+
+                // AVG DAYS
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    height: 40, // Match height of left column roughly
+                    child: Text(
+                      perf.averageListedDays.toStringAsFixed(0),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ),
                 ),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        }),
       ],
     );
   }
@@ -1821,97 +1935,7 @@ class _ResellAnalysisReportScreenState
     );
   }
 
-  // Helper method to build insight row
 
-  Widget _buildMetricCard(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    return Container(
-      height: 100,
-      padding: const EdgeInsets.all(16),
-      decoration: ReportUI.statCardDecoration,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 18, color: iconColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(label, style: ReportTextStyles.label),
-                const SizedBox(height: 4),
-                AutoScaleText(
-                  value,
-                  style: ReportTextStyles.statValueLarge.copyWith(fontSize: 22),
-                  maxLines: 1,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Map<int, double> _calculateTrendData() {
-    final now = DateTime.now();
-    final monthlyData = <int, List<double>>{};
-
-    // Initialize all 12 months with empty lists
-    for (int i = 1; i <= 12; i++) {
-      monthlyData[i] = [];
-    }
-
-    // Group data by month (year to date - January to current month)
-    for (final item in widget.resellItems) {
-      if (item.status != ResellStatus.sold || item.soldDate == null) continue;
-      // Only include items sold this year
-      if (item.soldDate!.year == now.year) {
-        final month = item.soldDate!.month; // 1-12
-        switch (_selectedMetric) {
-          case TrendMetric.soldItems:
-            monthlyData[month]!.add(1);
-            break;
-          case TrendMetric.resellValue:
-            if (item.soldPrice != null) {
-              monthlyData[month]!.add(item.soldPrice!);
-            }
-            break;
-        }
-      }
-    }
-
-    // Calculate aggregate values for all 12 months
-    final result = <int, double>{};
-    monthlyData.forEach((month, values) {
-      if (values.isNotEmpty) {
-        if (_selectedMetric == TrendMetric.soldItems) {
-          result[month] = values.length.toDouble(); // Total count
-        } else {
-          result[month] = values.reduce((a, b) => a + b); // Total value
-        }
-      } else {
-        // Set zero for months with no data
-        result[month] = 0.0;
-      }
-    });
-
-    return result;
-  }
 }
 
 // Trend chart painter
