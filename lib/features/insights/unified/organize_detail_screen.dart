@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/features/insights/unified/models/enhanced_report_models.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
@@ -13,6 +14,8 @@ class OrganizeDetailScreen extends StatefulWidget {
 }
 
 class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
+  bool _showJoyPercent = true;
+
   @override
   Widget build(BuildContext context) {
     final isChinese = Localizations.localeOf(context).languageCode.startsWith('zh');
@@ -61,7 +64,7 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          isChinese ? '整理统计' : 'Organize Stats',
+                          isChinese ? '年度洞察' : 'Yearly Insights',
                           style: ReportTextStyles.screenTitle,
                         ),
                         const SizedBox(height: 4),
@@ -89,12 +92,17 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildSection(
+                  isChinese ? '整理热力图' : 'Declutter Heatmap',
+                  _buildHeatmapSection(isChinese, widget.data),
+                ),
+                const SizedBox(height: 16),
+                _buildSection(
                   isChinese ? '月度趋势' : 'Monthly Trend',
                   _buildMonthlyChart(isChinese, stats),
                 ),
                 const SizedBox(height: 16),
                 _buildSection(
-                  isChinese ? '心动率分析' : 'Joy Rate Analysis',
+                  isChinese ? '心动趋势图' : 'Joy Trend Chart',
                   _buildJoyRateAnalysis(isChinese, stats),
                 ),
                 const SizedBox(height: 16),
@@ -103,11 +111,10 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
                   _buildEfficiencyAnalysis(isChinese, stats),
                 ),
                 const SizedBox(height: 16),
-                if (widget.data.yearlyDeepCleaningSessions.isNotEmpty)
-                  DeepCleaningAnalysisCard(
-                    sessions: widget.data.yearlyDeepCleaningSessions,
-                    title: isChinese ? '深度清洁分析' : 'Deep Cleaning Analysis',
-                  ),
+                DeepCleaningAnalysisCard(
+                  sessions: widget.data.yearlyDeepCleaningSessions,
+                  title: isChinese ? '深度清洁分析' : 'Deep Cleaning Analysis',
+                ),
                 const SizedBox(height: 32),
               ]),
             ),
@@ -115,6 +122,82 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildHeatmapSection(bool isChinese, EnhancedUnifiedReportData data) {
+    final activity = <int, int>{};
+    // Initialize with 0
+    for (int i = 1; i <= 12; i++) {
+      activity[i] = 0;
+    }
+
+    // Add declutter items
+    for (final item in data.yearlyDeclutteredItems) {
+      activity[item.createdAt.month] = (activity[item.createdAt.month] ?? 0) + 1;
+    }
+
+    // Add deep cleaning sessions
+    for (final session in data.yearlyDeepCleaningSessions) {
+      activity[session.startTime.month] = (activity[session.startTime.month] ?? 0) + 1;
+    }
+
+    return Column(
+      children: [
+        // First row (Jan-Jun)
+        Row(
+          children: List.generate(6, (index) {
+            final month = index + 1;
+            return _buildHeatmapCell(context, month, activity[month] ?? 0, isChinese);
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+        // Second row (Jul-Dec)
+        Row(
+          children: List.generate(6, (index) {
+            final month = index + 7;
+            return _buildHeatmapCell(context, month, activity[month] ?? 0, isChinese);
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeatmapCell(BuildContext context, int month, int count, bool isChinese) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 32,
+              decoration: BoxDecoration(
+                color: _getHeatmapColor(count),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              isChinese ? '$month月' : _getMonthAbbrev(month),
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getHeatmapColor(int count) {
+    if (count == 0) return const Color(0xFFF3F4F6); // gray-100
+    if (count < 3) return const Color(0xFFD1FAE5); // green-100
+    if (count < 7) return const Color(0xFF6EE7B7); // green-300
+    if (count < 15) return const Color(0xFF34D399); // green-400
+    return const Color(0xFF10B981); // green-500
+  }
+
+  String _getMonthAbbrev(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
   }
 
   Widget _buildStatRow(bool isChinese, EnhancedDeclutterStats stats) {
@@ -305,170 +388,560 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
   }
 
   Widget _buildJoyRateAnalysis(bool isChinese, EnhancedDeclutterStats stats) {
-    if (stats.joyLevelDistribution.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
-        ),
-      );
+    // Calculate monthly joy percentages
+    final monthlyJoyPercent = <int, double>{};
+    final monthlyJoyCount = stats.monthlyJoyClicks;
+    
+    for (int month = 1; month <= 12; month++) {
+      final total = stats.monthlyDistribution[month] ?? 0;
+      final joyCount = monthlyJoyCount[month] ?? 0;
+      monthlyJoyPercent[month] = total > 0 ? (joyCount / total * 100) : 0.0;
     }
 
-    final sortedJoyLevels = stats.joyLevelDistribution.entries.toList()
-      ..sort((a, b) => b.key.compareTo(a.key));
-    final total = sortedJoyLevels.fold<int>(0, (sum, e) => sum + e.value);
+    // Calculate average joy rate (excluding months with no data)
+    final monthsWithData = monthlyJoyPercent.values
+        .where((v) => v > 0)
+        .toList();
+    final avgJoyPercent = monthsWithData.isEmpty
+        ? 0.0
+        : monthsWithData.reduce((a, b) => a + b) / monthsWithData.length;
 
-    final joyColors = {
-      5: const Color(0xFFFFD93D),
-      4: const Color(0xFFFFE066),
-      3: const Color(0xFFFFEB99),
-      2: const Color(0xFFFFF0B3),
-      1: const Color(0xFFFFF5CC),
-    };
+    // Calculate total joy count
+    final totalJoyCount = stats.joyCount;
+
+    // Determine trend (compare recent 3 months vs older 3 months)
+    final now = DateTime.now();
+    // Use data year or current year if matching
+    final dataYear = widget.data.year;
+    final isCurrentYear = dataYear == now.year;
+    final currentMonth = isCurrentYear ? now.month : 12;
+    
+    String trendText;
+    String trendIcon;
+    Color trendColor;
+
+    if (currentMonth >= 4) { // Need at least 3 months for recent avg
+      // Average of most recent 3 months of data
+      final month1 = monthlyJoyPercent[currentMonth] ?? 0;
+      final month2 = monthlyJoyPercent[currentMonth - 1] ?? 0;
+      final month3 = monthlyJoyPercent[currentMonth - 2] ?? 0;
+      final recentAvg = (month1 + month2 + month3) / 3;
+
+      // Average of first 3 months (January-March)
+      final olderAvg =
+          ((monthlyJoyPercent[1] ?? 0) +
+              (monthlyJoyPercent[2] ?? 0) +
+              (monthlyJoyPercent[3] ?? 0)) /
+          3;
+
+      if (recentAvg > olderAvg) {
+        trendText = isChinese ? '上升' : 'Rising';
+        trendIcon = '↑';
+        trendColor = const Color(0xFF4CAF50);
+      } else if (recentAvg < olderAvg) {
+        trendText = isChinese ? '下降' : 'Falling';
+        trendIcon = '↓';
+        trendColor = const Color(0xFFF44336);
+      } else {
+        trendText = isChinese ? '稳定' : 'Stable';
+        trendIcon = '→';
+        trendColor = const Color(0xFF9E9E9E);
+      }
+    } else {
+      trendText = isChinese ? '暂无' : 'N/A';
+      trendIcon = '—';
+      trendColor = const Color(0xFF9E9E9E);
+    }
 
     return Column(
-      children: sortedJoyLevels.map((entry) {
-        final percentage = total > 0 ? (entry.value / total * 100).toStringAsFixed(1) : '0.0';
-        final color = joyColors[entry.key] ?? const Color(0xFFE5E7EB);
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.star, size: 12, color: entry.key >= 4 ? Colors.orange : Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${entry.key}',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: total > 0 ? entry.value / total : 0,
-                    backgroundColor: const Color(0xFFE5E7EB),
-                    valueColor: AlwaysStoppedAnimation(color),
-                    minHeight: 8,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '${entry.value} ($percentage%)',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildEfficiencyAnalysis(bool isChinese, EnhancedDeclutterStats stats) {
-    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF5ECFB8).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5ECFB8),
-                  borderRadius: BorderRadius.circular(30),
+        // Title with inline info
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
+                    style: ReportTextStyles.sectionSubtitle,
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(
+                Icons.info_outline_rounded,
+                size: 20,
+                color: Color(0xFF9CA3AF),
+              ),
+              tooltip: isChinese ? '数据说明' : 'Data info',
+              onPressed: () => _showJoyInfo(context, isChinese),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // Metric dropdown for Joy Rate vs Joy Count
+        Row(
+          children: [
+            SizedBox(
+              width: 60,
+              child: Text(
+                isChinese ? '指标' : 'Metric',
+                style: ReportTextStyles.body.copyWith(
+                  color: const Color(0xFF6B7280),
+                  fontWeight: FontWeight.w500,
                 ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        stats.averageProcessingDays.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<bool>(
+                    value: _showJoyPercent,
+                    isExpanded: true,
+                    isDense: true,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Color(0xFF6B7280),
+                    ),
+                    dropdownColor: Colors.white,
+                    focusColor: Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _showJoyPercent = value;
+                        });
+                      }
+                    },
+                    items: [
+                      DropdownMenuItem<bool>(
+                        value: true,
+                        child: Text(
+                          isChinese ? '心动率' : 'Joy Rate',
+                          style: ReportTextStyles.body.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF111827),
+                          ),
                         ),
                       ),
-                      Text(
-                        isChinese ? '天' : 'days',
-                        style: const TextStyle(fontSize: 10, color: Colors.white70),
+                      DropdownMenuItem<bool>(
+                        value: false,
+                        child: Text(
+                          isChinese ? '心动次数' : 'Joy Count',
+                          style: ReportTextStyles.body.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF111827),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isChinese ? '平均处理时间' : 'Avg Processing Time',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      isChinese 
-                          ? '从创建到处理的平均天数'
-                          : 'Average days from creation to processing',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        // Chart (always show with 12 months)
+        SizedBox(
+          height: 250,
+          child: CustomPaint(
+            size: const Size(double.infinity, 250),
+            painter: _JoyTrendChartPainter(
+              monthlyData: _showJoyPercent
+                  ? monthlyJoyPercent
+                  : monthlyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
+              maxMonths: 12,
+              isPercent: _showJoyPercent,
+              colorScheme: Theme.of(context).colorScheme,
+              isChinese: isChinese,
+            ),
           ),
         ),
-        const SizedBox(height: 16),
-        if (stats.topCategories.isNotEmpty)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                isChinese ? '主要分类' : 'Top Categories',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: stats.topCategories.take(5).map((cat) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF5ECFB8).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF5ECFB8).withValues(alpha: 0.3)),
-                    ),
-                    child: Text(
-                      isChinese ? cat.category.chinese : cat.category.english,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF374151)),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
+
+        const SizedBox(height: 20),
+
+        // Summary stats
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildStatItem(
+              context,
+              label: isChinese ? '平均心动率' : 'Avg Joy Rate',
+              value: '${avgJoyPercent.toStringAsFixed(0)}%',
+              color: const Color(0xFF5ECFB8),
+            ),
+            _buildStatItem(
+              context,
+              label: isChinese ? '总心动次数' : 'Total Joy Count',
+              value: totalJoyCount.toString(),
+              color: const Color(0xFFFFD93D),
+            ),
+            _buildStatItem(
+              context,
+              label: isChinese ? '趋势分析' : 'Trend Analysis',
+              value: '$trendIcon $trendText',
+              color: trendColor,
+            ),
+          ],
+        ),
       ],
     );
   }
 
+  Widget _buildEfficiencyAnalysis(bool isChinese, EnhancedDeclutterStats stats) {
+    final efficiency = stats.efficiency;
+    
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildEfficiencyCard(
+                isChinese ? '平均处理时长' : 'Avg Processing Time',
+                '${efficiency.averageDays.toStringAsFixed(1)} ${isChinese ? "天" : "days"}',
+                Icons.timer_outlined,
+                const Color(0xFF89CFF0),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildEfficiencyCard(
+                isChinese ? '月均处理' : 'Monthly Avg',
+                '${efficiency.monthlyRate.toStringAsFixed(1)}',
+                Icons.speed_outlined,
+                const Color(0xFF5ECFB8),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEfficiencyCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF111827),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF6B7280),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            color: Color(0xFF6B7280),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showJoyInfo(BuildContext context, bool isChinese) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isChinese ? '心动' : 'Joy',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  isChinese ? '数据统计说明' : 'How it\'s measured',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildInfoBox(
+                  context,
+                  isChinese
+                      ? '心动量化了您在整理每一件物品时的情感联结。心动率越高，代表您的整理过程越具有正向情感和成就感。'
+                      : 'Joy quantifies the emotional connection as you declutter each item. A higher joy rate indicates more positive energy and accomplishment in your journey.',
+                ),
+                const SizedBox(height: 16),
+                _buildInfoBox(
+                  context,
+                  isChinese
+                      ? '心动率 = 产生心动感的物品数 ÷ 所有记录心动状态的物品数。'
+                      : 'Joy Rate = Count of Joyful items ÷ Total items with joy assessment.',
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoBox(BuildContext context, String text) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF4B5563),
+          height: 1.5,
+        ),
+      ),
+    );
+  }
 }
+
+class _JoyTrendChartPainter extends CustomPainter {
+  final Map<int, double> monthlyData;
+  final int maxMonths;
+  final bool isPercent;
+  final ColorScheme colorScheme;
+  final bool isChinese;
+
+  _JoyTrendChartPainter({
+    required this.monthlyData,
+    required this.maxMonths,
+    required this.isPercent,
+    required this.colorScheme,
+    required this.isChinese,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final padding = 20.0;
+    final chartWidth = size.width - padding * 2;
+    final chartHeight = size.height - padding * 2;
+    
+    // Calculate max value for scaling
+    double maxValue;
+    if (isPercent) {
+      maxValue = 100.0;
+    } else {
+      final maxRaw = monthlyData.values.isEmpty
+          ? 0
+          : monthlyData.values.reduce((a, b) => a > b ? a : b);
+      // Ensure we have at least some range, e.g. 5 if everything is 0
+      double baseMax = maxRaw == 0 ? 5.0 : maxRaw.toDouble();
+      // Add headroom (e.g. 20%) and round up to nice number
+      baseMax = baseMax * 1.2;
+      maxValue = baseMax < 5 ? 5.0 : baseMax;
+    }
+
+    // Draw background lines
+    final linePaint = Paint()
+      ..color = Colors.grey.withValues(alpha: 0.1)
+      ..strokeWidth = 1;
+      
+    final steps = 5;
+    final stepHeight = chartHeight / steps;
+    
+    for (int i = 0; i <= steps; i++) {
+      final y = padding + i * stepHeight;
+      canvas.drawLine(
+        Offset(padding, y),
+        Offset(size.width - padding, y),
+        linePaint,
+      );
+      
+      // Draw Y-axis labels
+      final value = maxValue * (steps - i) / steps;
+      
+      final textSpan = TextSpan(
+        text: isPercent ? '${value.toInt()}%' : value.toStringAsFixed(0),
+        style: const TextStyle(color: Colors.grey, fontSize: 10),
+      );
+      final textPainter = TextPainter(
+        text: textSpan,
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(0, y - 6));
+    }
+    
+    // Draw data line
+    if (monthlyData.isEmpty) return;
+    
+    final path = Path();
+    final points = <Offset>[];
+    
+    final xStep = chartWidth / (maxMonths - 1);
+    
+    for (int i = 1; i <= maxMonths; i++) {
+      final x = padding + (i - 1) * xStep;
+      final value = monthlyData[i] ?? 0;
+      // Clamp value to prevent drawing outside chart area if data somehow exceeds 100%
+      final safeValue = value > maxValue ? maxValue : value;
+      final y = padding + chartHeight - (safeValue / maxValue * chartHeight);
+      
+      if (i == 1) {
+        path.moveTo(x, y);
+      } else {
+        path.cubicTo(
+          x - xStep / 2, points.last.dy,
+          x - xStep / 2, y,
+          x, y
+        );
+      }
+      points.add(Offset(x, y));
+    }
+    
+    // Draw gradient area
+    final gradientPath = Path.from(path);
+    gradientPath.lineTo(points.last.dx, padding + chartHeight);
+    gradientPath.lineTo(padding, padding + chartHeight);
+    gradientPath.close();
+    
+    final gradient = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        const Color(0xFF5ECFB8).withValues(alpha: 0.3),
+        const Color(0xFF5ECFB8).withValues(alpha: 0.0),
+      ],
+    );
+    
+    final paint = Paint()
+      ..shader = gradient.createShader(Rect.fromLTWH(padding, padding, chartWidth, chartHeight));
+      
+    canvas.drawPath(gradientPath, paint);
+    
+    // Draw line
+    final strokePaint = Paint()
+      ..color = const Color(0xFF5ECFB8)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+      
+    canvas.drawPath(path, strokePaint);
+    
+    // Draw dots
+    final dotPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+      
+    final dotBorderPaint = Paint()
+      ..color = const Color(0xFF5ECFB8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+      
+    for (final point in points) {
+      canvas.drawCircle(point, 4, dotPaint);
+      canvas.drawCircle(point, 4, dotBorderPaint);
+    }
+    
+    // Draw X-axis labels
+    for (int i = 1; i <= maxMonths; i += 2) { // Show every other month
+      final x = padding + (i - 1) * xStep;
+      String label;
+      if (isChinese) {
+        label = '$i月';
+      } else {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        label = months[i - 1];
+      }
+      
+      final textSpan = TextSpan(
+        text: label,
+        style: const TextStyle(color: Colors.grey, fontSize: 10),
+      );
+      final textPainter = TextPainter(
+        text: textSpan,
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(x - textPainter.width / 2, size.height - 15));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _JoyTrendChartPainter oldDelegate) {
+    return oldDelegate.monthlyData != monthlyData ||
+        oldDelegate.isPercent != isPercent;
+  }
+}
+

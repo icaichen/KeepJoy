@@ -153,7 +153,7 @@ class _UnifiedReportScreenState extends State<UnifiedReportScreen> {
                 const SizedBox(height: 16),
                 _buildDimensionCard(
                   context: context,
-                  title: isChinese ? '整理统计' : 'Declutter Stats',
+                  title: isChinese ? '年度洞察' : 'Yearly Insights',
                   subtitle: isChinese 
                       ? '${reportData.declutterStats.totalItems} 件 · 心动率 ${reportData.declutterStats.joyRate.toStringAsFixed(0)}%'
                       : '${reportData.declutterStats.totalItems} items · ${reportData.declutterStats.joyRate.toStringAsFixed(0)}% joy',
@@ -164,7 +164,7 @@ class _UnifiedReportScreenState extends State<UnifiedReportScreen> {
                 const SizedBox(height: 12),
                 _buildDimensionCard(
                   context: context,
-                  title: isChinese ? '回忆统计' : 'Memory Stats',
+                  title: isChinese ? '年度记忆' : 'Yearly Memories',
                   subtitle: isChinese
                       ? '${reportData.memoryStats.totalCount} 个回忆'
                       : '${reportData.memoryStats.totalCount} memories',
@@ -175,7 +175,7 @@ class _UnifiedReportScreenState extends State<UnifiedReportScreen> {
                 const SizedBox(height: 12),
                 _buildDimensionCard(
                   context: context,
-                  title: isChinese ? '二手统计' : 'Resale Stats',
+                  title: isChinese ? '二手洞察' : 'Resell Insights',
                   subtitle: isChinese
                       ? '售出 ${reportData.resellStats.soldCount} 件 · 收入 ${reportData.resellStats.totalRevenue.toStringAsFixed(0)}'
                       : '${reportData.resellStats.soldCount} sold · ${reportData.resellStats.totalRevenue.toStringAsFixed(0)} revenue',

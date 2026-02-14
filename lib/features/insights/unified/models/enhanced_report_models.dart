@@ -64,6 +64,7 @@ class EnhancedDeclutterStats {
   final int joyCount;
   final Map<DeclutterCategory, int> categoryDistribution;
   final Map<int, int> monthlyDistribution;
+  final Map<int, int> monthlyJoyClicks; // Month -> Count of Joy clicks (joyLevel >= 6)
   
   // Enhanced metrics
   final Map<PurchaseReview, int> purchaseReviewDistribution;
@@ -84,6 +85,7 @@ class EnhancedDeclutterStats {
     required this.joyCount,
     required this.categoryDistribution,
     required this.monthlyDistribution,
+    required this.monthlyJoyClicks,
     required this.purchaseReviewDistribution,
     required this.joyLevelDistribution,
     required this.averageProcessingDays,
@@ -95,6 +97,7 @@ class EnhancedDeclutterStats {
   factory EnhancedDeclutterStats.fromItems(List<DeclutterItem> items) {
     final categoryDistribution = <DeclutterCategory, int>{};
     final monthlyDistribution = <int, int>{};
+    final monthlyJoyClicks = <int, int>{};
     final purchaseReviewDistribution = <PurchaseReview, int>{};
     final joyLevelDistribution = <int, int>{};
     final categoryByMonth = <DeclutterCategory, Map<int, int>>{};
@@ -131,9 +134,16 @@ class EnhancedDeclutterStats {
       // Joy level
       if (item.joyLevel != null) {
         totalWithJoy++;
-        if (item.joyLevel! >= 6) joyCount++;
+        if (item.joyLevel! >= 4) joyCount++;
         joyLevelDistribution[item.joyLevel!] = 
             (joyLevelDistribution[item.joyLevel!] ?? 0) + 1;
+        
+        // Count actual "Joy" clicks (joyLevel >= 6 as per legacy logic)
+        // Note: Legacy code uses >= 6 for "Joy" clicks in quick declutter
+        if (item.joyLevel! >= 6) {
+          monthlyJoyClicks[item.createdAt.month] = 
+              (monthlyJoyClicks[item.createdAt.month] ?? 0) + 1;
+        }
       }
 
       // Purchase review
@@ -189,6 +199,7 @@ class EnhancedDeclutterStats {
       joyCount: joyCount,
       categoryDistribution: categoryDistribution,
       monthlyDistribution: monthlyDistribution,
+      monthlyJoyClicks: monthlyJoyClicks,
       purchaseReviewDistribution: purchaseReviewDistribution,
       joyLevelDistribution: joyLevelDistribution,
       averageProcessingDays: avgProcessingDays,
@@ -252,6 +263,8 @@ class EnhancedMemoryStats {
   final int tagsCount;
   final int favoriteCount;
   final Map<String, int> emotionDistribution;
+  final Map<String, int> categoryDistribution;
+  final Map<String, Map<String, int>> categoryEmotionDistribution;
   final Map<String, int> tagDistribution;
   final Map<int, int> hourlyDistribution;
   final Map<int, int> monthlyCount;
@@ -269,6 +282,8 @@ class EnhancedMemoryStats {
     required this.tagsCount,
     required this.favoriteCount,
     required this.emotionDistribution,
+    required this.categoryDistribution,
+    required this.categoryEmotionDistribution,
     required this.tagDistribution,
     required this.hourlyDistribution,
     required this.monthlyCount,
@@ -277,6 +292,8 @@ class EnhancedMemoryStats {
 
   factory EnhancedMemoryStats.fromMemories(List<Memory> memories) {
     final emotionDistribution = <String, int>{};
+    final categoryDistribution = <String, int>{};
+    final categoryEmotionDistribution = <String, Map<String, int>>{};
     final tagDistribution = <String, int>{};
     final hourlyDistribution = <int, int>{};
     final monthlyCount = <int, int>{};
@@ -307,6 +324,18 @@ class EnhancedMemoryStats {
       if (memory.sentiment != null) {
         final emotion = memory.sentiment.toString().split('.').last;
         emotionDistribution[emotion] = (emotionDistribution[emotion] ?? 0) + 1;
+      }
+
+      // Category
+      if (memory.category != null && memory.category!.isNotEmpty) {
+        categoryDistribution[memory.category!] = (categoryDistribution[memory.category!] ?? 0) + 1;
+        
+        if (memory.sentiment != null) {
+          final emotion = memory.sentiment.toString().split('.').last;
+          categoryEmotionDistribution.putIfAbsent(memory.category!, () => {});
+          categoryEmotionDistribution[memory.category!]![emotion] = 
+              (categoryEmotionDistribution[memory.category!]![emotion] ?? 0) + 1;
+        }
       }
 
       // Hourly distribution
@@ -340,6 +369,8 @@ class EnhancedMemoryStats {
       tagsCount: tagDistribution.length,
       favoriteCount: favoriteCount,
       emotionDistribution: emotionDistribution,
+      categoryDistribution: categoryDistribution,
+      categoryEmotionDistribution: categoryEmotionDistribution,
       tagDistribution: tagDistribution,
       hourlyDistribution: hourlyDistribution,
       monthlyCount: monthlyCount,
