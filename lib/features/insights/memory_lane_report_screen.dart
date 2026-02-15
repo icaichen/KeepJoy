@@ -144,6 +144,13 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
     final topPadding = responsive.safeAreaPadding.top;
+    final expandedHeaderHeight =
+        responsive.totalTwoLineHeaderHeight +
+        (responsive.isSmallDevice ? 6 : 0);
+    final headerTitleSize = responsive.isSmallDevice
+        ? (responsive.titleFontSize + 2)
+        : responsive.largeTitleFontSize;
+    final headerSubtitle = isChinese ? '回忆趋势一览' : 'Memory at a glance';
     final pageName = l10n.dashboardMemoryLaneTitle;
     final memories = _filteredMemories();
 
@@ -162,7 +169,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 // Content
                 Column(
                   children: [
-                    SizedBox(height: responsive.totalTwoLineHeaderHeight),
+                    SizedBox(height: expandedHeaderHeight),
 
                     // Main Report Content
                     Padding(
@@ -254,12 +261,12 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 return Opacity(opacity: headerOpacity, child: child);
               },
               child: Container(
-                height: responsive.totalTwoLineHeaderHeight,
+                height: expandedHeaderHeight,
                 padding: EdgeInsets.only(
                   left: horizontalPadding,
                   right: horizontalPadding,
-                  top: topPadding + 12,
-                  bottom: 12,
+                  top: topPadding + 10,
+                  bottom: 8,
                 ),
                 child: Row(
                   children: [
@@ -271,18 +278,20 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                           Text(
                             pageName,
                             style: TextStyle(
-                              fontSize: responsive.largeTitleFontSize,
+                              fontSize: headerTitleSize,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF111827),
                               letterSpacing: -0.5,
                               height: 1.2,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            l10n.dashboardMemoryLaneSubtitle,
+                            headerSubtitle,
                             style: TextStyle(
-                              fontSize: responsive.bodyFontSize,
+                              fontSize: responsive.captionFontSize + 1,
                               color: const Color(0xFF6B7280),
                               height: 1.2,
                             ),

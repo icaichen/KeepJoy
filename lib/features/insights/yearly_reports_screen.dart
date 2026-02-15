@@ -561,85 +561,81 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     return dailyCounts;
   }
 
-  List<DateTime?> _buildPaddedHeatmapDays(
-    DateTime start,
-    DateTime endExclusive,
-  ) {
-    final paddedDays = <DateTime?>[];
-    final startDate = _toDateOnly(start);
-    final endDate = _toDateOnly(endExclusive.subtract(const Duration(days: 1)));
-
-    // Sunday-first layout (like GitHub contributions)
-    final leadingBlanks = startDate.weekday % 7;
-    paddedDays.addAll(List<DateTime?>.filled(leadingBlanks, null));
-
-    for (
-      DateTime day = startDate;
-      !day.isAfter(endDate);
-      day = day.add(const Duration(days: 1))
-    ) {
-      paddedDays.add(day);
+  String _shortWeekdayLabel(DateTime day, bool isChinese) {
+    if (isChinese) {
+      const labels = ['一', '二', '三', '四', '五', '六', '日'];
+      return labels[day.weekday - 1];
     }
-
-    final remainder = paddedDays.length % 7;
-    if (remainder != 0) {
-      paddedDays.addAll(List<DateTime?>.filled(7 - remainder, null));
-    }
-
-    return paddedDays;
+    const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    return labels[day.weekday - 1];
   }
 
-  Map<int, String> _buildMonthMarkers(
-    List<DateTime?> paddedDays,
-    bool isChinese,
-  ) {
-    final markers = <int, String>{};
-    for (int i = 0; i < paddedDays.length; i++) {
-      final day = paddedDays[i];
-      if (day == null || day.day > 7) continue;
-      final week = i ~/ 7;
-      markers.putIfAbsent(
-        week,
-        () => isChinese ? '${day.month}月' : _getMonthAbbrev(day.month, false),
+  List<_TrendPoint> _buildDeclutterTrendPoints({
+    required bool isChinese,
+    required DateTime rangeStart,
+    required Map<DateTime, int> dailyActivityCounts,
+  }) {
+    if (_selectedRange == _ReportRange.yearly) {
+      final year = rangeStart.year;
+      return List.generate(12, (index) {
+        final month = index + 1;
+        int total = 0;
+        dailyActivityCounts.forEach((date, count) {
+          if (date.year == year && date.month == month) {
+            total += count;
+          }
+        });
+        return _TrendPoint(
+          label: isChinese ? '$month月' : _getMonthAbbrev(month, false),
+          count: total,
+        );
+      });
+    }
+
+    final pointCount = _selectedRange == _ReportRange.days7 ? 7 : 30;
+    final start = _selectedRange == _ReportRange.days7
+        ? _todayStart.subtract(const Duration(days: 6))
+        : _todayStart.subtract(const Duration(days: 29));
+    final points = <_TrendPoint>[];
+
+    for (int i = 0; i < pointCount; i++) {
+      final day = start.add(Duration(days: i));
+      final dateOnly = _toDateOnly(day);
+      points.add(
+        _TrendPoint(
+          label: _selectedRange == _ReportRange.days7
+              ? _shortWeekdayLabel(day, isChinese)
+              : '${day.month}/${day.day}',
+          count: dailyActivityCounts[dateOnly] ?? 0,
+        ),
       );
     }
-    return markers;
+    return points;
   }
 
-  Widget _buildDeclutterHeatmapCard({
+  Widget _buildDeclutterTrendCard({
     required BuildContext context,
     required bool isChinese,
     required DateTime rangeStart,
-    required DateTime rangeEndExclusive,
     required Map<DateTime, int> dailyActivityCounts,
   }) {
-    final responsive = context.responsive;
-    final cellSize = responsive.isSmallDevice ? 10.0 : 11.0;
-    final cellGap = 3.0;
-    final dayLabels = isChinese
-        ? const ['日', '一', '二', '三', '四', '五', '六']
-        : const ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    final paddedDays = _buildPaddedHeatmapDays(rangeStart, rangeEndExclusive);
-    final weekCount = paddedDays.length ~/ 7;
-    final monthMarkers = _buildMonthMarkers(paddedDays, isChinese);
-    final activeDays = dailyActivityCounts.values
-        .where((count) => count > 0)
-        .length;
-
-    DateTime? peakDay;
-    int peakCount = 0;
-    for (final entry in dailyActivityCounts.entries) {
-      if (entry.value > peakCount) {
-        peakCount = entry.value;
-        peakDay = entry.key;
-      }
-    }
-
-    final peakText = peakDay == null
-        ? (isChinese ? '暂无活跃高峰' : 'No active peak yet')
+    final points = _buildDeclutterTrendPoints(
+      isChinese: isChinese,
+      rangeStart: rangeStart,
+      dailyActivityCounts: dailyActivityCounts,
+    );
+    final labels = points.map((point) => point.label).toList();
+    final values = points.map((point) => point.count.toDouble()).toList();
+    final total = values.fold<double>(0, (sum, value) => sum + value);
+    final activeCount = points.where((point) => point.count > 0).length;
+    final _TrendPoint? peakPoint = points.isEmpty
+        ? null
+        : points.reduce((a, b) => a.count >= b.count ? a : b);
+    final peakText = (peakPoint == null || peakPoint.count == 0)
+        ? (isChinese ? '暂无高峰' : 'No peak')
         : (isChinese
-              ? '${peakDay.month}月${peakDay.day}日 · $peakCount 次'
-              : '${peakDay.month}/${peakDay.day} · $peakCount actions');
+              ? '高峰 ${peakPoint.label} (${peakPoint.count})'
+              : 'Peak ${peakPoint.label} (${peakPoint.count})');
 
     return Container(
       padding: const EdgeInsets.all(ReportUI.contentPadding),
@@ -654,171 +650,49 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isChinese ? '整理热力图' : 'Declutter Heatmap',
+                      isChinese ? '整理趋势' : 'Declutter Trend',
                       style: ReportTextStyles.sectionHeader,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isChinese
-                          ? '像 GitHub 一样按天展示整理活跃度，颜色越深代表越活跃。'
-                          : 'GitHub-style daily activity map where darker cells mean higher activity.',
+                      isChinese ? '查看整理变化。' : 'Activity over time.',
                       style: ReportTextStyles.sectionSubtitle,
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: const Icon(
-                  Icons.info_outline_rounded,
-                  size: 20,
-                  color: Color(0xFF9CA3AF),
-                ),
-                tooltip: isChinese ? '数据说明' : 'Data info',
-                onPressed: () => _showHeatmapLegendDialog(context),
-              ),
             ],
           ),
-          const SizedBox(height: 14),
-          SizedBox(
-            height: cellSize * 7 + cellGap * 6 + 28,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 16,
-                  child: Column(
-                    children: List.generate(7, (row) {
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          bottom: row == 6 ? 0 : cellGap,
-                        ),
-                        child: SizedBox(
-                          height: cellSize,
-                          child: Text(
-                            row.isEven ? dayLabels[row] : '',
-                            style: ReportTextStyles.chartAxisLabel.copyWith(
-                              fontSize: 9,
-                              color: const Color(0xFF9CA3AF),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: List.generate(weekCount, (week) {
-                            return Container(
-                              width:
-                                  cellSize +
-                                  (week == weekCount - 1 ? 0 : cellGap),
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                monthMarkers[week] ?? '',
-                                style: ReportTextStyles.chartAxisLabel.copyWith(
-                                  fontSize: 9,
-                                  color: const Color(0xFF94A3B8),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: List.generate(weekCount, (week) {
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                right: week == weekCount - 1 ? 0 : cellGap,
-                              ),
-                              child: Column(
-                                children: List.generate(7, (row) {
-                                  final day = paddedDays[week * 7 + row];
-                                  final count = day == null
-                                      ? 0
-                                      : (dailyActivityCounts[day] ?? 0);
-                                  return Padding(
-                                    padding: EdgeInsets.only(
-                                      bottom: row == 6 ? 0 : cellGap,
-                                    ),
-                                    child: Container(
-                                      width: cellSize,
-                                      height: cellSize,
-                                      decoration: BoxDecoration(
-                                        color: day == null
-                                            ? Colors.transparent
-                                            : _getHeatmapColor(context, count),
-                                        borderRadius: BorderRadius.circular(
-                                          2.5,
-                                        ),
-                                        border: day == null
-                                            ? null
-                                            : Border.all(
-                                                color: const Color(0xFFFFFFFF),
-                                                width: 0.5,
-                                              ),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              ),
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          const SizedBox(height: 10),
+          if (total == 0)
+            Container(
+              height: 200,
+              alignment: Alignment.center,
+              decoration: ReportUI.statCardDecoration,
+              child: Text(
+                isChinese ? '暂无整理数据' : 'No declutter data',
+                style: ReportTextStyles.body,
+              ),
+            )
+          else
+            SizedBox(
+              height: 210,
+              child: _buildDeclutterLineChart(labels: labels, values: values),
             ),
-          ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           Row(
             children: [
-              Text(
-                isChinese ? '少' : 'Less',
-                style: ReportTextStyles.chartAxisLabel.copyWith(
-                  color: const Color(0xFF94A3B8),
-                ),
-              ),
-              const SizedBox(width: 6),
-              ...[0, 2, 5, 8, 12].map((level) {
-                return Container(
-                  width: 11,
-                  height: 11,
-                  margin: const EdgeInsets.only(right: 4),
-                  decoration: BoxDecoration(
-                    color: _getHeatmapColor(context, level),
-                    borderRadius: BorderRadius.circular(2.5),
-                  ),
-                );
-              }),
-              Text(
-                isChinese ? '多' : 'More',
-                style: ReportTextStyles.chartAxisLabel.copyWith(
-                  color: const Color(0xFF94A3B8),
-                ),
-              ),
-              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   isChinese
-                      ? '$activeDays 天有整理记录 · 高峰：$peakText'
-                      : '$activeDays active days · Peak: $peakText',
+                      ? '$activeCount/${points.length} 活跃 · $peakText'
+                      : '$activeCount/${points.length} active · $peakText',
                   style: ReportTextStyles.chartAxisLabel.copyWith(
                     fontSize: 10,
                     color: const Color(0xFF6B7280),
                   ),
                   textAlign: TextAlign.end,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -826,6 +700,44 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDeclutterLineChart({
+    required List<String> labels,
+    required List<double> values,
+  }) {
+    final bool dense = labels.length > 12;
+    final int mid = (labels.length / 2).floor();
+
+    return Column(
+      children: [
+        Expanded(
+          child: CustomPaint(
+            painter: _DeclutterTrendPainter(values: values),
+            child: const SizedBox.expand(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Text(labels.first, style: ReportTextStyles.chartAxisLabel),
+            const Spacer(),
+            Text(labels[mid], style: ReportTextStyles.chartAxisLabel),
+            const Spacer(),
+            Text(labels.last, style: ReportTextStyles.chartAxisLabel),
+          ],
+        ),
+        if (dense) ...[
+          const SizedBox(height: 2),
+          Text(
+            '· · ·',
+            style: ReportTextStyles.chartAxisLabel.copyWith(
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -1017,6 +929,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       context,
     ).languageCode.toLowerCase().startsWith('zh');
     final l10n = AppLocalizations.of(context)!;
+    final headerSubtitle = isChinese ? '整理进度一览' : 'Declutter at a glance';
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
     final topPadding = responsive.safeAreaPadding.top;
@@ -1175,8 +1088,8 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                   ? '整理成果分布'
                                   : 'Declutter Outcomes',
                               subtitle: isChinese
-                                  ? '展示物品在保留、转售、捐赠、回收与丢弃之间的去向分布。'
-                                  : 'Shows how items are routed across keep, resale, donate, recycle, and discard.',
+                                  ? '物品去向一览。'
+                                  : 'Where items went.',
                               keptLabel: DeclutterStatus.keep.label(context),
                               resellLabel: DeclutterStatus.resell.label(
                                 context,
@@ -1200,9 +1113,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              isChinese
-                                  ? '查看深度整理投入与各区域变化'
-                                  : 'Understand deep cleaning effort by area',
+                              isChinese ? '看大扫除投入与变化。' : 'Effort and progress.',
                               style: ReportTextStyles.sectionSubtitle,
                             ),
                             const SizedBox(height: 12),
@@ -1210,18 +1121,17 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               sessions: yearlySessions,
                               title: isChinese ? '数据概览' : 'Session Overview',
                               subtitle: isChinese
-                                  ? '汇总大扫除次数、物品、区域与总投入时长'
-                                  : 'Snapshot of sessions, items, areas, and total time spent',
+                                  ? '次数、物品、区域、时长。'
+                                  : 'Sessions, items, areas, time.',
                               emptyStateMessage:
                                   l10n.reportNoDeepCleaningRecords,
                               onDeleteSession: widget.onDeleteSession,
                             ),
                             const SizedBox(height: 16),
-                            _buildDeclutterHeatmapCard(
+                            _buildDeclutterTrendCard(
                               context: context,
                               isChinese: isChinese,
                               rangeStart: rangeStart,
-                              rangeEndExclusive: rangeEndExclusive,
                               dailyActivityCounts: dailyActivityCounts,
                             ),
                             const SizedBox(height: 16),
@@ -1371,10 +1281,12 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               letterSpacing: -0.5,
                               height: 1.2,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            l10n.dashboardYearlyReportsSubtitle,
+                            headerSubtitle,
                             style: TextStyle(
                               fontSize: responsive.bodyFontSize,
                               color: const Color(0xFF6B7280),
@@ -1555,87 +1467,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
         : '$itemCount items processed, roughly equal to clearing $wardrobes wardrobes.';
   }
 
-  Color _getHeatmapColor(BuildContext context, int count) {
-    return ReportUI.getHeatmapColor(count);
-  }
-
-  void _showHeatmapLegendDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.45),
-      builder: (dialogContext) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n.reportActivityLevels,
-                      style: AppTypography.titleMedium.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF111827),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(dialogContext),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildLegendItem(
-                  context,
-                  isChinese ? '无活动 (0)' : 'None (0)',
-                  0,
-                ),
-                _buildLegendItem(context, '1-3', 2),
-                _buildLegendItem(context, '4-6', 5),
-                _buildLegendItem(context, '7-9', 8),
-                _buildLegendItem(context, '10+', 12),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLegendItem(BuildContext context, String label, int count) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: _getHeatmapColor(context, count),
-              borderRadius: BorderRadius.circular(6),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Text(
-            label,
-            style: AppTypography.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _getMonthAbbrev(int month, bool isChinese) {
     if (isChinese) {
       return '$month月';
@@ -1741,9 +1572,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isChinese
-                          ? '观察心动指数在不同阶段的起伏变化'
-                          : 'See how your joy index evolves over time',
+                      isChinese ? '查看心动变化。' : 'Track joy over time.',
                       style: ReportTextStyles.sectionSubtitle,
                     ),
                   ],
@@ -1940,5 +1769,88 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     }
     if (count == 0) return 0;
     return total / count;
+  }
+}
+
+class _TrendPoint {
+  const _TrendPoint({required this.label, required this.count});
+
+  final String label;
+  final int count;
+}
+
+class _DeclutterTrendPainter extends CustomPainter {
+  _DeclutterTrendPainter({required this.values});
+
+  final List<double> values;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.isEmpty) return;
+
+    final maxValue = values.reduce(math.max);
+    final safeMax = maxValue <= 0 ? 1.0 : maxValue;
+    final chartTop = 8.0;
+    final chartBottom = size.height - 14.0;
+    final chartHeight = chartBottom - chartTop;
+    final stepX = values.length > 1 ? size.width / (values.length - 1) : 0.0;
+
+    final gridPaint = Paint()
+      ..color = const Color(0xFFE5E7EB)
+      ..strokeWidth = 1;
+    for (int i = 0; i < 3; i++) {
+      final y = chartTop + (chartHeight / 2) * i;
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    final linePath = Path();
+    final areaPath = Path();
+    final points = <Offset>[];
+    for (int i = 0; i < values.length; i++) {
+      final ratio = (values[i] / safeMax).clamp(0.0, 1.0);
+      final x = stepX * i;
+      final y = chartBottom - chartHeight * ratio;
+      final point = Offset(x, y);
+      points.add(point);
+      if (i == 0) {
+        linePath.moveTo(x, y);
+        areaPath.moveTo(x, chartBottom);
+        areaPath.lineTo(x, y);
+      } else {
+        linePath.lineTo(x, y);
+        areaPath.lineTo(x, y);
+      }
+    }
+    areaPath
+      ..lineTo(points.last.dx, chartBottom)
+      ..close();
+
+    final fillPaint = Paint()
+      ..color = const Color(0xFF2563EB).withValues(alpha: 0.10)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(areaPath, fillPaint);
+
+    final linePaint = Paint()
+      ..color = const Color(0xFF2563EB)
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(linePath, linePaint);
+
+    for (final point in points) {
+      canvas.drawCircle(point, 3.5, Paint()..color = const Color(0xFF2563EB));
+      canvas.drawCircle(point, 2.0, Paint()..color = Colors.white);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DeclutterTrendPainter oldDelegate) {
+    if (identical(values, oldDelegate.values)) return false;
+    if (values.length != oldDelegate.values.length) return true;
+    for (int i = 0; i < values.length; i++) {
+      if (values[i] != oldDelegate.values[i]) return true;
+    }
+    return false;
   }
 }

@@ -3437,8 +3437,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       sessions: sessionsThisMonth,
       title: l10n.deepCleaningAnalysisTitle,
       subtitle: isChinese
-          ? '汇总本月大扫除次数、物品、区域与投入时长'
-          : 'Monthly summary of sessions, items, areas, and time invested',
+          ? '本月次数、物品、区域、时长。'
+          : 'This month: sessions, items, areas, time.',
       emptyStateMessage: isChinese
           ? '本月还没有大扫除记录，开始一次专注的整理吧。'
           : 'No deep cleaning records yet this month. Start your first focused session.',
