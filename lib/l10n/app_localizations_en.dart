@@ -258,16 +258,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardResellReportSubtitle => 'Track resale performance';
 
   @override
-  String get dashboardMemoryLaneTitle => 'Annual Memory';
+  String get dashboardMemoryLaneTitle => 'Memory Report';
 
   @override
-  String get dashboardMemoryLaneSubtitle => 'Revisit your yearly highlights';
+  String get dashboardMemoryLaneSubtitle => 'Review your memory highlights';
 
   @override
-  String get dashboardYearlyReportsTitle => 'Year in Review';
+  String get dashboardYearlyReportsTitle => 'Declutter Report';
 
   @override
-  String get dashboardYearlyReportsSubtitle => 'See year-round insights';
+  String get dashboardYearlyReportsSubtitle =>
+      'See declutter progress and outcomes';
 
   @override
   String get dashboardCurrentStreakTitle => 'Current Streak';
@@ -1455,7 +1456,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create and cherish memories of items you let go';
 
   @override
-  String get featureMemoryLane => 'Annual Memory';
+  String get featureMemoryLane => 'Memory Report';
 
   @override
   String get featureMemoryLaneDesc =>
@@ -2182,7 +2183,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskCompleted => 'Task completed';
 
   @override
-  String get yearlyReportsTitle => 'Year in Review';
+  String get yearlyReportsTitle => 'Declutter Report';
 
   @override
   String get reportPeakActivity => 'Peak Activity';

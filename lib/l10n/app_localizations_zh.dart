@@ -245,16 +245,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dashboardResellReportSubtitle => '查看上架和成交表现，统计回收金额';
 
   @override
-  String get dashboardMemoryLaneTitle => '年度记忆';
+  String get dashboardMemoryLaneTitle => '回忆报告';
 
   @override
   String get dashboardMemoryLaneSubtitle => '重温这一年的闪光时刻';
 
   @override
-  String get dashboardYearlyReportsTitle => '年度洞察';
+  String get dashboardYearlyReportsTitle => '整理报告';
 
   @override
-  String get dashboardYearlyReportsSubtitle => '查看全年数据，了解年度进度';
+  String get dashboardYearlyReportsSubtitle => '查看整理数据，了解阶段进度';
 
   @override
   String get dashboardCurrentStreakTitle => '当前连击';
@@ -528,7 +528,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reportSessionData => '整理数据';
 
   @override
-  String get appTitle => '喜物(KeepJoy)';
+  String get appTitle => '喜物';
 
   @override
   String get home => '首页';
@@ -1243,7 +1243,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get helpAndSupport => '帮助与支持';
 
   @override
-  String get aboutApp => '关于 喜物(KeepJoy)';
+  String get aboutApp => '关于喜物';
 
   @override
   String get privacyPolicy => '隐私政策';
@@ -1252,17 +1252,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get termsOfService => '服务条款';
 
   @override
-  String get rateApp => '评价 喜物(KeepJoy)';
+  String get rateApp => '评价喜物';
 
   @override
-  String get shareApp => '分享 喜物(KeepJoy)';
+  String get shareApp => '分享喜物';
 
   @override
-  String get notificationsPermissionDenied =>
-      '目前无法启用通知，请到系统设置中为 喜物(KeepJoy) 开启通知权限。';
+  String get notificationsPermissionDenied => '目前无法启用通知，请到系统设置中为喜物开启通知权限。';
 
   @override
-  String get reminderGeneralTitle => '喜物(KeepJoy) 温馨提醒';
+  String get reminderGeneralTitle => '喜物温馨提醒';
 
   @override
   String get reminderJoyNudge1 => '花一点时间感谢一件物品，来一场 Joy Dedclutter 吧？';
@@ -1289,7 +1288,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get memoryNoDescription => '这段回忆目前还没有补充说明。';
 
   @override
-  String get premiumRequiredTitle => '喜物(KeepJoy) 高级版';
+  String get premiumRequiredTitle => '喜物高级版';
 
   @override
   String get premiumRequiredMessage => '7 天试用已结束，升级即可继续使用大扫除流程、完整报表与提醒功能。';
@@ -1304,13 +1303,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumMembership => '高级会员';
 
   @override
-  String get premiumMembershipDescription => '解锁年度报告、年度记忆、二手追踪与更深入的洞察。';
+  String get premiumMembershipDescription => '解锁整理报告、回忆报告、二手追踪与更深入的洞察。';
 
   @override
-  String get upgradeToPremium => '升级为 喜物(KeepJoy) 高级版';
+  String get upgradeToPremium => '升级为喜物高级版';
 
   @override
-  String get paywallTitle => '喜物(KeepJoy) 高级版';
+  String get paywallTitle => '喜物高级版';
 
   @override
   String get paywallDescription => '选择一个订阅方案，解锁完整的轻盈整理工具。';
@@ -1328,7 +1327,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get paywallRestorePurchases => '恢复购买';
 
   @override
-  String get paywallPurchaseSuccess => '高级版已解锁，尽情享用 喜物(KeepJoy)！';
+  String get paywallPurchaseSuccess => '高级版已解锁，尽情享用喜物！';
 
   @override
   String get paywallPurchaseFailure => '无法完成购买，请稍后再试。';
@@ -1398,7 +1397,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get featureMemoriesPageDesc => '记录并珍藏你的断舍离回忆';
 
   @override
-  String get featureMemoryLane => '年度记忆';
+  String get featureMemoryLane => '回忆报告';
 
   @override
   String get featureMemoryLaneDesc => '生成年度回顾，串联每次整理的照片与高光时刻';
@@ -2005,7 +2004,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get signUpSuccess => '注册成功';
 
   @override
-  String get welcomeToKeepJoy => '欢迎来到 喜物(KeepJoy)';
+  String get welcomeToKeepJoy => '欢迎来到喜物';
 
   @override
   String get resetPassword => '重置密码';
@@ -2103,7 +2102,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get taskCompleted => '任务已完成';
 
   @override
-  String get yearlyReportsTitle => '年度洞察';
+  String get yearlyReportsTitle => '整理报告';
 
   @override
   String get reportPeakActivity => '峰值活动';

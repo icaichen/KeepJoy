@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,15 @@ class _PaywallPageState extends State<PaywallPage> {
     super.initState();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final offerings = context.read<SubscriptionProvider>().currentOffering;
+    if (offerings != null) {
+      Future.microtask(() => _preparePackagesIfNeeded(offerings));
+    }
+  }
+
   Future<void> _checkTrialEligibility(List<Package> packages) async {
     try {
       // Get product identifiers
@@ -32,19 +42,21 @@ class _PaywallPageState extends State<PaywallPage> {
           .map((p) => p.storeProduct.identifier)
           .toList();
 
-      print('🔍 [DEBUG] Checking trial eligibility for products: $productIds');
+      debugPrint(
+        '🔍 [DEBUG] Checking trial eligibility for products: $productIds',
+      );
 
       // Check eligibility for all products
       final eligibility =
           await Purchases.checkTrialOrIntroductoryPriceEligibility(productIds);
 
-      print('🔍 [DEBUG] Trial eligibility result: $eligibility');
+      debugPrint('🔍 [DEBUG] Trial eligibility result: $eligibility');
 
       // Log each product's eligibility status
       eligibility.forEach((productId, status) {
-        print('🔍 [DEBUG] Product: $productId');
-        print('   - Status: ${status.status}');
-        print('   - Description: ${status.description}');
+        debugPrint('🔍 [DEBUG] Product: $productId');
+        debugPrint('   - Status: ${status.status}');
+        debugPrint('   - Description: ${status.description}');
       });
 
       if (mounted) {
@@ -53,7 +65,7 @@ class _PaywallPageState extends State<PaywallPage> {
         });
       }
     } catch (e) {
-      print('❌ [DEBUG] Error checking trial eligibility: $e');
+      debugPrint('❌ [DEBUG] Error checking trial eligibility: $e');
     }
   }
 
@@ -75,21 +87,72 @@ class _PaywallPageState extends State<PaywallPage> {
 
     _preparedOfferingId = current.identifier;
 
-    // 检查试用资格并默认选中年度包
+    // 检查试用资格并默认选中年付（其次月付、终身）
     await _checkTrialEligibility(packages);
 
-    final annualPackage = packages.firstWhere(
-      (p) =>
-          p.storeProduct.identifier.contains('yearly') ||
-          p.storeProduct.identifier.contains('annual'),
-      orElse: () => packages.first,
-    );
+    Package? annualPackage;
+    Package? monthlyPackage;
+    Package? annualTrialPackage;
+    Package? monthlyTrialPackage;
+    Package? lifetimePackage;
+    for (final package in packages) {
+      if (_isAnnualPackage(package)) {
+        annualPackage ??= package;
+        if (_hasTrialPhase(package)) {
+          annualTrialPackage ??= package;
+        }
+      } else if (_isMonthlyPackage(package)) {
+        monthlyPackage ??= package;
+        if (_hasTrialPhase(package)) {
+          monthlyTrialPackage ??= package;
+        }
+      } else if (_isLifetimePackage(package)) {
+        lifetimePackage ??= package;
+      }
+    }
+    final defaultPackage = defaultTargetPlatform == TargetPlatform.android
+        ? (annualTrialPackage ??
+              monthlyTrialPackage ??
+              annualPackage ??
+              monthlyPackage ??
+              lifetimePackage ??
+              packages.first)
+        : (annualPackage ??
+              monthlyPackage ??
+              lifetimePackage ??
+              packages.first);
 
     if (mounted) {
       setState(() {
-        _selectedPackage = annualPackage;
+        _selectedPackage = defaultPackage;
       });
     }
+  }
+
+  bool _isAnnualPackage(Package package) {
+    final productId = package.storeProduct.identifier.toLowerCase();
+    return package.packageType == PackageType.annual ||
+        productId.contains('yearly') ||
+        productId.contains('annual');
+  }
+
+  bool _isMonthlyPackage(Package package) {
+    final productId = package.storeProduct.identifier.toLowerCase();
+    return package.packageType == PackageType.monthly ||
+        productId.contains('monthly') ||
+        productId.contains('month');
+  }
+
+  bool _isLifetimePackage(Package package) {
+    final productId = package.storeProduct.identifier.toLowerCase();
+    final packageId = package.identifier.toLowerCase();
+    return package.packageType == PackageType.lifetime ||
+        productId.contains('lifetime') ||
+        productId.contains('forever') ||
+        productId.contains('one_time') ||
+        productId.contains('onetime') ||
+        packageId.contains('lifetime') ||
+        packageId.contains('forever');
   }
 
   @override
@@ -97,11 +160,6 @@ class _PaywallPageState extends State<PaywallPage> {
     final l10n = AppLocalizations.of(context)!;
     final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
     final offerings = subscriptionProvider.currentOffering;
-
-    // 当新套餐加载完成时，补齐试用资格检查与默认套餐选择
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _preparePackagesIfNeeded(offerings);
-    });
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -203,7 +261,7 @@ class _PaywallPageState extends State<PaywallPage> {
                         // Subscribe Button
                         SizedBox(
                           width: double.infinity,
-                          height: 64,
+                          height: 54,
                           child: ElevatedButton(
                             onPressed: _isProcessing || _selectedPackage == null
                                 ? null
@@ -211,7 +269,7 @@ class _PaywallPageState extends State<PaywallPage> {
                             style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.zero,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(32),
+                                borderRadius: BorderRadius.circular(27),
                               ),
                               elevation: 0,
                               disabledBackgroundColor: const Color(0xFFE5E7EB),
@@ -228,14 +286,14 @@ class _PaywallPageState extends State<PaywallPage> {
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
                                 ),
-                                borderRadius: BorderRadius.circular(32),
+                                borderRadius: BorderRadius.circular(27),
                               ),
                               child: Container(
                                 alignment: Alignment.center,
                                 child: _isProcessing
                                     ? const SizedBox(
-                                        height: 28,
-                                        width: 28,
+                                        height: 24,
+                                        width: 24,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 3,
                                           valueColor:
@@ -247,9 +305,9 @@ class _PaywallPageState extends State<PaywallPage> {
                                     : Text(
                                         _getButtonText(l10n),
                                         style: const TextStyle(
-                                          fontSize: 20,
+                                          fontSize: 17,
                                           fontWeight: FontWeight.w700,
-                                          letterSpacing: 0.5,
+                                          letterSpacing: 0.2,
                                         ),
                                       ),
                               ),
@@ -289,76 +347,50 @@ class _PaywallPageState extends State<PaywallPage> {
 
     final product = _selectedPackage!.storeProduct;
     final productId = product.identifier;
+    if (_isLifetimePackage(_selectedPackage!)) {
+      return isChinese ? '解锁终身版' : 'Unlock Lifetime';
+    }
 
-    print('🔍 [DEBUG] Getting button text for product: $productId');
-    print('   - Has introductoryPrice: ${product.introductoryPrice != null}');
+    debugPrint('🔍 [DEBUG] Getting button text for product: $productId');
+    debugPrint(
+      '   - Has introductoryPrice: ${product.introductoryPrice != null}',
+    );
     if (product.introductoryPrice != null) {
       final intro = product.introductoryPrice!;
-      print('   - Intro price: ${intro.price}');
-      print('   - Intro period: ${intro.periodNumberOfUnits} ${intro.periodUnit}');
+      debugPrint('   - Intro price: ${intro.price}');
+      debugPrint(
+        '   - Intro period: ${intro.periodNumberOfUnits} ${intro.periodUnit}',
+      );
     }
 
     // Check trial eligibility first
     final isEligible = _isEligibleForTrial(productId);
-    print('   - Is eligible for trial: $isEligible');
-    print('   - Eligibility map: $_eligibilityMap');
+    debugPrint('   - Is eligible for trial: $isEligible');
+    debugPrint('   - Eligibility map: $_eligibilityMap');
 
-    // Only show trial text if user is eligible AND product has trial
-    if (isEligible && product.introductoryPrice != null) {
-      final intro = product.introductoryPrice!;
-      if (intro.periodNumberOfUnits > 0) {
-        print('   ✅ Showing trial button');
-        return _formatTrialCta(intro, isChinese);
+    final shouldShowTrial = _shouldShowTrialCta(_selectedPackage!);
+    final trialDays = _getTrialDays(_selectedPackage!);
+    if (shouldShowTrial) {
+      debugPrint('   ✅ Showing trial button');
+      if (trialDays != null && trialDays > 0) {
+        return isChinese ? '开始$trialDays天免费试用' : 'Start $trialDays-Day Trial';
       }
+      return isChinese ? '开始免费试用' : 'Start Free Trial';
     }
 
     // For ineligible users or products without trials, show subscribe button
-    print('   ⚠️ Showing regular subscribe button (no trial)');
+    debugPrint('   ⚠️ Showing regular subscribe button (no trial)');
     return isChinese ? '订阅' : 'Subscribe';
   }
 
-  String _formatTrialCta(
-    IntroductoryPrice intro,
-    bool isChinese,
-  ) {
-    int days;
-    switch (intro.periodUnit) {
-      case PeriodUnit.day:
-        days = intro.periodNumberOfUnits;
-        break;
-      case PeriodUnit.week:
-        days = intro.periodNumberOfUnits * 7;
-        break;
-      case PeriodUnit.month:
-        // 用 30 天近似，主要用于 CTA 文案
-        days = intro.periodNumberOfUnits * 30;
-        break;
-      case PeriodUnit.year:
-        days = intro.periodNumberOfUnits * 365;
-        break;
-      case PeriodUnit.unknown:
-      default:
-        days = intro.periodNumberOfUnits;
-        break;
-    }
-
-    return isChinese
-        ? '开始${days}天免费试用'
-        : 'Start ${days}-Day Trial';
-  }
-
-  String _getBillingText(
-    Package package,
-    bool isAnnual,
-    AppLocalizations l10n,
-  ) {
+  String _getBillingText(Package package, AppLocalizations l10n) {
+    final isAnnual = _isAnnualPackage(package);
+    final isLifetime = _isLifetimePackage(package);
     final productId = package.storeProduct.identifier;
     final isEligible = _isEligibleForTrial(productId);
-    final hasTrial =
-        package.storeProduct.introductoryPrice != null &&
-        package.storeProduct.introductoryPrice!.periodNumberOfUnits > 0;
+    final hasTrial = _hasTrialPhase(package);
 
-    // Show trial billing text only if eligible for trial
+    // Show trial billing text only if eligible for trial (iOS)
     if (isEligible && hasTrial) {
       return isAnnual
           ? l10n.billedYearlyAfterTrial
@@ -369,9 +401,104 @@ class _PaywallPageState extends State<PaywallPage> {
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
+    if (isLifetime) {
+      return isChinese
+          ? '一次性付款，永久解锁全部高级功能'
+          : 'One-time payment, lifetime premium access';
+    }
+    if (defaultTargetPlatform == TargetPlatform.android && hasTrial) {
+      return isChinese
+          ? (isAnnual ? '试用资格将在结算页确认，之后按年计费' : '试用资格将在结算页确认，之后按月计费')
+          : (isAnnual
+                ? 'Trial eligibility confirmed at checkout, then billed yearly'
+                : 'Trial eligibility confirmed at checkout, then billed monthly');
+    }
     return isAnnual
         ? (isChinese ? '立即按年计费' : 'Billed yearly')
         : (isChinese ? '立即按月计费' : 'Billed monthly');
+  }
+
+  bool _hasTrialPhase(Package package) {
+    if (_isLifetimePackage(package)) return false;
+    final intro = package.storeProduct.introductoryPrice;
+    final hasIntro = intro != null && intro.periodNumberOfUnits > 0;
+    final hasAndroidTrialPeriod = _getAndroidTrialPeriod(package) != null;
+    return hasIntro || hasAndroidTrialPeriod;
+  }
+
+  bool _shouldShowTrialCta(Package package) {
+    if (!_hasTrialPhase(package)) return false;
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      // RevenueCat Android intro eligibility is always "unknown",
+      // so we rely on configured free trial phase instead.
+      return true;
+    }
+    return _isEligibleForTrial(package.storeProduct.identifier);
+  }
+
+  int? _getTrialDays(Package package) {
+    final intro = package.storeProduct.introductoryPrice;
+    if (intro != null && intro.periodNumberOfUnits > 0) {
+      return _periodToDays(intro.periodUnit, intro.periodNumberOfUnits);
+    }
+
+    final period = _getAndroidTrialPeriod(package);
+    if (period == null || period.value <= 0) {
+      return null;
+    }
+    return _periodToDays(period.unit, period.value);
+  }
+
+  Period? _getAndroidTrialPeriod(Package package) {
+    final product = package.storeProduct;
+    final options = <SubscriptionOption>[
+      if (product.defaultOption != null) product.defaultOption!,
+      ...?product.subscriptionOptions,
+    ];
+
+    for (final option in options) {
+      final freePeriod = option.freePhase?.billingPeriod;
+      if (freePeriod != null && freePeriod.value > 0) {
+        return freePeriod;
+      }
+
+      final intro = option.introPhase;
+      if (intro != null &&
+          intro.price.amountMicros == 0 &&
+          intro.billingPeriod != null &&
+          intro.billingPeriod!.value > 0) {
+        return intro.billingPeriod;
+      }
+
+      for (final phase in option.pricingPhases) {
+        final phasePeriod = phase.billingPeriod;
+        if (phasePeriod == null || phasePeriod.value <= 0) {
+          continue;
+        }
+        final isFreeTrialMode =
+            phase.offerPaymentMode == OfferPaymentMode.freeTrial;
+        final isFreeByPrice = phase.price.amountMicros == 0;
+        if (isFreeTrialMode || isFreeByPrice) {
+          return phasePeriod;
+        }
+      }
+    }
+    return null;
+  }
+
+  int _periodToDays(PeriodUnit unit, int value) {
+    switch (unit) {
+      case PeriodUnit.day:
+        return value;
+      case PeriodUnit.week:
+        return value * 7;
+      case PeriodUnit.month:
+        return value * 30;
+      case PeriodUnit.year:
+        return value * 365;
+      case PeriodUnit.unknown:
+        return value;
+    }
   }
 
   bool _isEligibleForTrial(String productId) {
@@ -500,229 +627,215 @@ class _PaywallPageState extends State<PaywallPage> {
       );
     }
 
-    // Sort packages: annual first, then monthly
+    // Sort packages: annual -> lifetime -> monthly -> others
     final sortedPackages = List<Package>.from(packages);
     sortedPackages.sort((a, b) {
-      final aIsAnnual =
-          a.storeProduct.identifier.contains('yearly') ||
-          a.storeProduct.identifier.contains('annual');
-      final bIsAnnual =
-          b.storeProduct.identifier.contains('yearly') ||
-          b.storeProduct.identifier.contains('annual');
+      int rank(Package package) {
+        if (_isAnnualPackage(package)) return 0;
+        if (_isLifetimePackage(package)) return 1;
+        if (_isMonthlyPackage(package)) return 2;
+        return 3;
+      }
 
-      if (aIsAnnual && !bIsAnnual) return -1;
-      if (!aIsAnnual && bIsAnnual) return 1;
+      final rankDiff = rank(a).compareTo(rank(b));
+      if (rankDiff != 0) return rankDiff;
       return 0;
     });
 
     // Calculate savings if both annual and monthly exist
     double? savingsPercent;
-    if (sortedPackages.length >= 2) {
-      final annualPackage = sortedPackages[0];
-      final monthlyPackage = sortedPackages[1];
-
-      // Extract prices (this is simplified, actual implementation may vary)
+    Package? annualPackage;
+    Package? monthlyPackage;
+    for (final package in sortedPackages) {
+      if (annualPackage == null && _isAnnualPackage(package)) {
+        annualPackage = package;
+      }
+      if (monthlyPackage == null && _isMonthlyPackage(package)) {
+        monthlyPackage = package;
+      }
+    }
+    if (annualPackage != null && monthlyPackage != null) {
       final annualPrice = annualPackage.storeProduct.price;
       final monthlyPrice = monthlyPackage.storeProduct.price;
-
       if (monthlyPrice > 0) {
         final annualMonthlyEquivalent = monthlyPrice * 12;
         savingsPercent =
             ((annualMonthlyEquivalent - annualPrice) /
-            annualMonthlyEquivalent *
-            100);
+                    annualMonthlyEquivalent *
+                    100)
+                .clamp(0, 100);
       }
     }
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: sortedPackages.take(2).map((package) {
-          final product = package.storeProduct;
-          final isAnnual =
-              product.identifier.contains('yearly') ||
-              product.identifier.contains('annual');
-          final isSelected = _selectedPackage?.identifier == package.identifier;
-          final isFirst = sortedPackages.indexOf(package) == 0;
+    Widget buildCard(Package package, {required bool showSavingsBadge}) {
+      final product = package.storeProduct;
+      final isAnnual = _isAnnualPackage(package);
+      final isLifetime = _isLifetimePackage(package);
+      final isSelected = _selectedPackage?.identifier == package.identifier;
+      final isChinese = Localizations.localeOf(
+        context,
+      ).languageCode.toLowerCase().startsWith('zh');
+      final periodLabel = isLifetime
+          ? (isChinese ? '一次性' : 'one-time')
+          : (isAnnual
+                ? (isChinese ? '/年' : '/yr')
+                : (isChinese ? '/月' : '/mo'));
+      final planName = isLifetime
+          ? (isChinese ? '终身方案' : 'LIFETIME')
+          : (isAnnual
+                ? l10n.annualPlan.toUpperCase()
+                : l10n.monthlyPlan.toUpperCase());
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedPackage = package;
-                });
-              },
-              child: Container(
-                margin: EdgeInsets.only(
-                  left: isFirst ? 0 : 6,
-                  right: isFirst ? 6 : 0,
-                ),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF8B5CF6)
-                        : const Color(0xFFE5E7EB),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Stack(
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedPackage = package;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFF8B5CF6)
+                  : const Color(0xFFE5E7EB),
+              width: isSelected ? 2 : 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Checkmark for selected
-                    if (isSelected)
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          width: 28,
-                          height: 28,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF10B981),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                    Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        // Savings badge - always takes space
-                        Container(
-                          height: 24,
-                          alignment: Alignment.centerLeft,
-                          child: (isAnnual && savingsPercent != null)
-                              ? Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    l10n.savePercent(
-                                      savingsPercent.round().toString(),
-                                    ),
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // Plan name
                         Text(
-                          isAnnual
-                              ? l10n.annualPlan.toUpperCase()
-                              : l10n.monthlyPlan.toUpperCase(),
+                          planName,
                           style: const TextStyle(
-                            fontSize: 22,
+                            fontSize: 12,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF111827),
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Price
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: product.priceString.split('.')[0],
-                                style: const TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF111827),
-                                  height: 1,
-                                ),
-                              ),
-                              if (product.priceString.contains('.'))
-                                TextSpan(
-                                  text: '.${product.priceString.split('.')[1]}',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF111827),
-                                  ),
-                                ),
-                              TextSpan(
-                                text: isAnnual
-                                    ? l10n.perYear.toUpperCase()
-                                    : l10n.perMonth.toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Original price - always takes space
-                        Container(
-                          height: 20,
-                          margin: const EdgeInsets.only(top: 4),
-                          alignment: Alignment.centerLeft,
-                          child:
-                              (isAnnual &&
-                                  savingsPercent != null &&
-                                  sortedPackages.length >= 2)
-                              ? Text(
-                                  '\$${(sortedPackages[1].storeProduct.price * 12).toStringAsFixed(2)}${l10n.perYear.toUpperCase()}',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF9CA3AF),
-                                    decoration: TextDecoration.lineThrough,
-                                  ),
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-
-                        const Spacer(),
-
-                        // Billing info
-                        Text(
-                          _getBillingText(package, isAnnual, l10n),
-                          style: const TextStyle(
-                            fontSize: 13,
                             color: Color(0xFF6B7280),
-                            height: 1.3,
+                            letterSpacing: 0.4,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (showSavingsBadge && savingsPercent != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE7F8F0),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              l10n.savePercent(
+                                savingsPercent.round().toString(),
+                              ),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF059669),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            product.priceString,
+                            style: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF111827),
+                              height: 1.0,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          periodLabel,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _getBillingText(package, l10n),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                        height: 1.25,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-            ),
-          );
-        }).toList(),
-      ),
+              const SizedBox(width: 12),
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF10B981)
+                      : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFD1D5DB),
+                    width: 2,
+                  ),
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check, size: 14, color: Colors.white)
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final displayedPackages = sortedPackages.take(3).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < displayedPackages.length; i++) ...[
+          buildCard(
+            displayedPackages[i],
+            showSavingsBadge: _isAnnualPackage(displayedPackages[i]),
+          ),
+          if (i != displayedPackages.length - 1) const SizedBox(height: 10),
+        ],
+      ],
     );
   }
 
@@ -891,10 +1004,18 @@ class _PaywallPageState extends State<PaywallPage> {
           if (!mounted) return;
         } else {
           // Show regular success message for non-trial purchases
+          final isChinese = Localizations.localeOf(
+            context,
+          ).languageCode.toLowerCase().startsWith('zh');
+          final isLifetimePurchase = _isLifetimePackage(_selectedPackage!);
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.subscriptionSuccess),
+              content: Text(
+                isLifetimePurchase
+                    ? (isChinese ? '终身版已解锁！' : 'Lifetime unlocked!')
+                    : AppLocalizations.of(context)!.subscriptionSuccess,
+              ),
               backgroundColor: const Color(0xFF10B981),
             ),
           );
@@ -965,14 +1086,18 @@ class _PaywallPageState extends State<PaywallPage> {
         if (hasActiveEntitlement || provider.isPremium) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.paywallRestoreSuccess),
+              content: Text(
+                AppLocalizations.of(context)!.paywallRestoreSuccess,
+              ),
               backgroundColor: const Color(0xFF10B981),
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.paywallRestoreFailure),
+              content: Text(
+                AppLocalizations.of(context)!.paywallRestoreFailure,
+              ),
               backgroundColor: const Color(0xFFEF4444),
             ),
           );

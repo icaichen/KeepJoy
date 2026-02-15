@@ -33,7 +33,7 @@ class AppFeedbackService {
     final locale = PlatformDispatcher.instance.locale;
     final isChinese = locale.languageCode.toLowerCase().startsWith('zh');
     final text = isChinese
-        ? '我在用 KeepJoy 整理和管理物品，你也可以试试：${AppLinks.shareUrl}'
+        ? '我在用喜物整理和管理物品，你也可以试试：${AppLinks.shareUrl}'
         : 'I am using KeepJoy to declutter with joy. Try it too: ${AppLinks.shareUrl}';
 
     try {

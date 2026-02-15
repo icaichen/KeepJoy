@@ -7,5 +7,5 @@
 /* Microphone Permission */
 "NSMicrophoneUsageDescription" = "此应用需要访问麦克风以录制视频。";
 
-"CFBundleDisplayName" = "喜物(KeepJoy)";
+"CFBundleDisplayName" = "喜物";
 "CFBundleName" = "喜物";

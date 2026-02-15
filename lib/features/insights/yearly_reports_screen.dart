@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:ui' as ui;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +13,6 @@ import 'package:keepjoy_app/theme/typography.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
-import 'package:keepjoy_app/features/insights/unified/unified_reports.dart';
 import 'package:keepjoy_app/models/memory.dart';
 
 class YearlyReportsScreen extends StatefulWidget {
@@ -36,9 +35,109 @@ class YearlyReportsScreen extends StatefulWidget {
   State<YearlyReportsScreen> createState() => _YearlyReportsScreenState();
 }
 
+enum _ReportRange { days7, days30, yearly }
+
 class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
-  bool _showJoyPercent = true; // true = Joy Rate, false = Joy Count
   final ScrollController _scrollController = ScrollController();
+  _ReportRange _selectedRange = _ReportRange.yearly;
+
+  DateTime get _todayStart {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  DateTime get _rangeStart {
+    final now = DateTime.now();
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+        return _todayStart.subtract(const Duration(days: 6));
+      case _ReportRange.days30:
+        return _todayStart.subtract(const Duration(days: 29));
+      case _ReportRange.yearly:
+        return DateTime(now.year, 1, 1);
+    }
+  }
+
+  DateTime get _rangeEndExclusive {
+    final now = DateTime.now();
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+      case _ReportRange.days30:
+        return _todayStart.add(const Duration(days: 1));
+      case _ReportRange.yearly:
+        return DateTime(now.year + 1, 1, 1);
+    }
+  }
+
+  String _rangeLabel(bool isChinese) {
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+        return isChinese ? '最近7天' : 'Last 7 Days';
+      case _ReportRange.days30:
+        return isChinese ? '最近30天' : 'Last 30 Days';
+      case _ReportRange.yearly:
+        return isChinese ? '每年' : 'Yearly';
+    }
+  }
+
+  void _showRangeSelector(bool isChinese) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        Widget buildOption(_ReportRange range, String label) {
+          final selected = _selectedRange == range;
+          return ListTile(
+            title: Text(
+              label,
+              style: ReportTextStyles.body.copyWith(
+                color: ReportUI.primaryTextColor,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            trailing: selected
+                ? const Icon(Icons.check_rounded, color: Color(0xFF0EA5E9))
+                : null,
+            onTap: () {
+              setState(() => _selectedRange = range);
+              Navigator.pop(sheetContext);
+            },
+          );
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD1D5DB),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 8),
+              buildOption(
+                _ReportRange.days7,
+                isChinese ? '最近7天' : 'Last 7 Days',
+              ),
+              buildOption(
+                _ReportRange.days30,
+                isChinese ? '最近30天' : 'Last 30 Days',
+              ),
+              buildOption(_ReportRange.yearly, isChinese ? '每年' : 'Yearly'),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   void _showSessionDetail(
     BuildContext context,
@@ -79,7 +178,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
             return Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: Colors.white,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(32),
                 ),
@@ -91,9 +190,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                      color: const Color(0xFFD1D5DB),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -441,35 +538,293 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
-  Widget _buildHeatmapCell(BuildContext context, DateTime date, int activity) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              height: 48,
-              decoration: BoxDecoration(
-                color: _getHeatmapColor(context, activity),
-                borderRadius: BorderRadius.circular(12),
+  DateTime _toDateOnly(DateTime value) {
+    return DateTime(value.year, value.month, value.day);
+  }
+
+  Map<DateTime, int> _buildDailyActivityCounts(
+    List<DeclutterItem> items,
+    List<DeepCleaningSession> sessions,
+  ) {
+    final dailyCounts = <DateTime, int>{};
+
+    for (final item in items) {
+      final date = _toDateOnly(item.createdAt);
+      dailyCounts[date] = (dailyCounts[date] ?? 0) + 1;
+    }
+
+    for (final session in sessions) {
+      final date = _toDateOnly(session.startTime);
+      dailyCounts[date] = (dailyCounts[date] ?? 0) + 1;
+    }
+
+    return dailyCounts;
+  }
+
+  List<DateTime?> _buildPaddedHeatmapDays(
+    DateTime start,
+    DateTime endExclusive,
+  ) {
+    final paddedDays = <DateTime?>[];
+    final startDate = _toDateOnly(start);
+    final endDate = _toDateOnly(endExclusive.subtract(const Duration(days: 1)));
+
+    // Sunday-first layout (like GitHub contributions)
+    final leadingBlanks = startDate.weekday % 7;
+    paddedDays.addAll(List<DateTime?>.filled(leadingBlanks, null));
+
+    for (
+      DateTime day = startDate;
+      !day.isAfter(endDate);
+      day = day.add(const Duration(days: 1))
+    ) {
+      paddedDays.add(day);
+    }
+
+    final remainder = paddedDays.length % 7;
+    if (remainder != 0) {
+      paddedDays.addAll(List<DateTime?>.filled(7 - remainder, null));
+    }
+
+    return paddedDays;
+  }
+
+  Map<int, String> _buildMonthMarkers(
+    List<DateTime?> paddedDays,
+    bool isChinese,
+  ) {
+    final markers = <int, String>{};
+    for (int i = 0; i < paddedDays.length; i++) {
+      final day = paddedDays[i];
+      if (day == null || day.day > 7) continue;
+      final week = i ~/ 7;
+      markers.putIfAbsent(
+        week,
+        () => isChinese ? '${day.month}月' : _getMonthAbbrev(day.month, false),
+      );
+    }
+    return markers;
+  }
+
+  Widget _buildDeclutterHeatmapCard({
+    required BuildContext context,
+    required bool isChinese,
+    required DateTime rangeStart,
+    required DateTime rangeEndExclusive,
+    required Map<DateTime, int> dailyActivityCounts,
+  }) {
+    final responsive = context.responsive;
+    final cellSize = responsive.isSmallDevice ? 10.0 : 11.0;
+    final cellGap = 3.0;
+    final dayLabels = isChinese
+        ? const ['日', '一', '二', '三', '四', '五', '六']
+        : const ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    final paddedDays = _buildPaddedHeatmapDays(rangeStart, rangeEndExclusive);
+    final weekCount = paddedDays.length ~/ 7;
+    final monthMarkers = _buildMonthMarkers(paddedDays, isChinese);
+    final activeDays = dailyActivityCounts.values
+        .where((count) => count > 0)
+        .length;
+
+    DateTime? peakDay;
+    int peakCount = 0;
+    for (final entry in dailyActivityCounts.entries) {
+      if (entry.value > peakCount) {
+        peakCount = entry.value;
+        peakDay = entry.key;
+      }
+    }
+
+    final peakText = peakDay == null
+        ? (isChinese ? '暂无活跃高峰' : 'No active peak yet')
+        : (isChinese
+              ? '${peakDay.month}月${peakDay.day}日 · $peakCount 次'
+              : '${peakDay.month}/${peakDay.day} · $peakCount actions');
+
+    return Container(
+      padding: const EdgeInsets.all(ReportUI.contentPadding),
+      decoration: ReportUI.cardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isChinese ? '整理热力图' : 'Declutter Heatmap',
+                      style: ReportTextStyles.sectionHeader,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      isChinese
+                          ? '像 GitHub 一样按天展示整理活跃度，颜色越深代表越活跃。'
+                          : 'GitHub-style daily activity map where darker cells mean higher activity.',
+                      style: ReportTextStyles.sectionSubtitle,
+                    ),
+                  ],
+                ),
               ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(
+                  Icons.info_outline_rounded,
+                  size: 20,
+                  color: Color(0xFF9CA3AF),
+                ),
+                tooltip: isChinese ? '数据说明' : 'Data info',
+                onPressed: () => _showHeatmapLegendDialog(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: cellSize * 7 + cellGap * 6 + 28,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 16,
+                  child: Column(
+                    children: List.generate(7, (row) {
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: row == 6 ? 0 : cellGap,
+                        ),
+                        child: SizedBox(
+                          height: cellSize,
+                          child: Text(
+                            row.isEven ? dayLabels[row] : '',
+                            style: ReportTextStyles.chartAxisLabel.copyWith(
+                              fontSize: 9,
+                              color: const Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: List.generate(weekCount, (week) {
+                            return Container(
+                              width:
+                                  cellSize +
+                                  (week == weekCount - 1 ? 0 : cellGap),
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                monthMarkers[week] ?? '',
+                                style: ReportTextStyles.chartAxisLabel.copyWith(
+                                  fontSize: 9,
+                                  color: const Color(0xFF94A3B8),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: List.generate(weekCount, (week) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                right: week == weekCount - 1 ? 0 : cellGap,
+                              ),
+                              child: Column(
+                                children: List.generate(7, (row) {
+                                  final day = paddedDays[week * 7 + row];
+                                  final count = day == null
+                                      ? 0
+                                      : (dailyActivityCounts[day] ?? 0);
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: row == 6 ? 0 : cellGap,
+                                    ),
+                                    child: Container(
+                                      width: cellSize,
+                                      height: cellSize,
+                                      decoration: BoxDecoration(
+                                        color: day == null
+                                            ? Colors.transparent
+                                            : _getHeatmapColor(context, count),
+                                        borderRadius: BorderRadius.circular(
+                                          2.5,
+                                        ),
+                                        border: day == null
+                                            ? null
+                                            : Border.all(
+                                                color: const Color(0xFFFFFFFF),
+                                                width: 0.5,
+                                              ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              _getMonthAbbrev(
-                date.month,
-                AppLocalizations.of(context)!.localeName == 'zh',
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Text(
+                isChinese ? '少' : 'Less',
+                style: ReportTextStyles.chartAxisLabel.copyWith(
+                  color: const Color(0xFF94A3B8),
+                ),
               ),
-              style: AppTypography.labelSmall.copyWith(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                fontSize: 10,
+              const SizedBox(width: 6),
+              ...[0, 2, 5, 8, 12].map((level) {
+                return Container(
+                  width: 11,
+                  height: 11,
+                  margin: const EdgeInsets.only(right: 4),
+                  decoration: BoxDecoration(
+                    color: _getHeatmapColor(context, level),
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                );
+              }),
+              Text(
+                isChinese ? '多' : 'More',
+                style: ReportTextStyles.chartAxisLabel.copyWith(
+                  color: const Color(0xFF94A3B8),
+                ),
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isChinese
+                      ? '$activeDays 天有整理记录 · 高峰：$peakText'
+                      : '$activeDays active days · Peak: $peakText',
+                  style: ReportTextStyles.chartAxisLabel.copyWith(
+                    fontSize: 10,
+                    color: const Color(0xFF6B7280),
+                  ),
+                  textAlign: TextAlign.end,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -496,7 +851,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
           builder: (builderContext, scrollController) {
             return Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: Colors.white,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(32),
                 ),
@@ -508,9 +863,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                      color: const Color(0xFFD1D5DB),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -666,117 +1019,72 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
-    final headerHeight = responsive.totalTwoLineHeaderHeight + 12;
     final topPadding = responsive.safeAreaPadding.top;
 
-    final now = DateTime.now();
-    final yearStart = DateTime(now.year, 1, 1);
-    final nextYearStart = DateTime(now.year + 1, 1, 1);
-    final pageName = l10n.yearlyReportsTitle;
+    final rangeStart = _rangeStart;
+    final rangeEndExclusive = _rangeEndExclusive;
 
-    // Calculate past 12 months activity (for heatmap)
-    final past12MonthsActivity = <String, int>{};
-    String? mostActiveMonth;
-    int mostActiveCount = 0;
-    int peakActivity = 0;
-
-    for (int i = 11; i >= 0; i--) {
-      final monthDate = DateTime(now.year, now.month - i, 1);
-      final monthStart = DateTime(monthDate.year, monthDate.month, 1);
-      final monthEnd = monthDate.month == 12
-          ? DateTime(monthDate.year + 1, 1, 1)
-          : DateTime(monthDate.year, monthDate.month + 1, 1);
-
-      final count =
-          widget.declutteredItems
-              .where(
-                (item) =>
-                    item.createdAt.isAfter(
-                      monthStart.subtract(const Duration(days: 1)),
-                    ) &&
-                    item.createdAt.isBefore(monthEnd),
-              )
-              .length +
-          widget.deepCleaningSessions
-              .where(
-                (session) =>
-                    session.startTime.isAfter(
-                      monthStart.subtract(const Duration(days: 1)),
-                    ) &&
-                    session.startTime.isBefore(monthEnd),
-              )
-              .length;
-
-      final monthKey = '${monthDate.year}-${monthDate.month}';
-      past12MonthsActivity[monthKey] = count;
-
-      if (count > mostActiveCount) {
-        mostActiveCount = count;
-        mostActiveMonth = _getMonthName(monthDate.month, isChinese);
-      }
-
-      if (count > peakActivity) {
-        peakActivity = count;
-      }
+    bool inRange(DateTime value, DateTime start, DateTime endExclusive) {
+      return !value.isBefore(start) && value.isBefore(endExclusive);
     }
 
-    // Calculate longest streak
-    int longestStreak = 0;
-    int currentStreak = 0;
-    for (int i = 11; i >= 0; i--) {
-      final monthDate = DateTime(now.year, now.month - i, 1);
-      final monthKey = '${monthDate.year}-${monthDate.month}';
-      final count = past12MonthsActivity[monthKey] ?? 0;
-
-      if (count > 0) {
-        currentStreak++;
-        if (currentStreak > longestStreak) {
-          longestStreak = currentStreak;
-        }
-      } else {
-        currentStreak = 0;
-      }
-    }
-
-    // Calculate yearly stats
     final yearlyItems = widget.declutteredItems
-        .where(
-          (item) =>
-              !item.createdAt.isBefore(yearStart) &&
-              item.createdAt.isBefore(nextYearStart),
-        )
+        .where((item) => inRange(item.createdAt, rangeStart, rangeEndExclusive))
         .toList();
 
     final yearlySessions = widget.deepCleaningSessions
         .where(
           (session) =>
-              !session.startTime.isBefore(yearStart) &&
-              session.startTime.isBefore(nextYearStart),
+              inRange(session.startTime, rangeStart, rangeEndExclusive),
         )
         .toList();
 
-    final yearlySoldItems = widget.resellItems
-        .where(
-          (item) =>
-              item.soldPrice != null &&
-              item.soldDate != null &&
-              !item.soldDate!.isBefore(yearStart) &&
-              item.soldDate!.isBefore(nextYearStart),
-        )
-        .toList();
-    final yearlyResellValue = yearlySoldItems.fold<double>(
-      0.0,
-      (sum, item) => sum + (item.soldPrice ?? 0.0),
+    final dailyActivityCounts = _buildDailyActivityCounts(
+      yearlyItems,
+      yearlySessions,
     );
-    final localeName = Localizations.localeOf(context).toString();
-    final currencySymbol = isChinese ? '¥' : '\$';
-    final currencyFormatter = NumberFormat.compactCurrency(
-      locale: localeName,
-      symbol: currencySymbol,
-      decimalDigits: 0,
+    final previousRangeDuration = rangeEndExclusive.difference(rangeStart);
+    final previousRangeEnd = rangeStart;
+    final previousRangeStart = previousRangeEnd.subtract(previousRangeDuration);
+
+    int rangeItems(DateTime start, DateTime endExclusive) => widget
+        .declutteredItems
+        .where((item) => inRange(item.createdAt, start, endExclusive))
+        .length;
+    int rangeSessions(DateTime start, DateTime endExclusive) => widget
+        .deepCleaningSessions
+        .where((session) => inRange(session.startTime, start, endExclusive))
+        .length;
+    int rangeAreas(DateTime start, DateTime endExclusive) => widget
+        .deepCleaningSessions
+        .where((session) => inRange(session.startTime, start, endExclusive))
+        .map((session) => session.area.trim())
+        .where((area) => area.isNotEmpty)
+        .toSet()
+        .length;
+    final actionsTrend = _percentChange(
+      current:
+          (rangeSessions(rangeStart, rangeEndExclusive) +
+                  rangeItems(rangeStart, rangeEndExclusive))
+              .toDouble(),
+      previous:
+          (rangeSessions(previousRangeStart, previousRangeEnd) +
+                  rangeItems(previousRangeStart, previousRangeEnd))
+              .toDouble(),
     );
-    final yearlyResellValueDisplay = currencyFormatter.format(
-      yearlyResellValue,
+    final itemsTrend = _percentChange(
+      current: rangeItems(rangeStart, rangeEndExclusive).toDouble(),
+      previous: rangeItems(previousRangeStart, previousRangeEnd).toDouble(),
+    );
+    final yearlyAreas = yearlySessions
+        .map((session) => session.area.trim())
+        .where((area) => area.isNotEmpty)
+        .toSet()
+        .length;
+    final totalActions = yearlyItems.length + yearlySessions.length;
+    final areasTrend = _percentChange(
+      current: rangeAreas(rangeStart, rangeEndExclusive).toDouble(),
+      previous: rangeAreas(previousRangeStart, previousRangeEnd).toDouble(),
     );
 
     return Scaffold(
@@ -789,62 +1097,17 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
             physics: const BouncingScrollPhysics(),
             child: Stack(
               children: [
-                // Gradient background that scrolls
+                // Background removed for consistency
                 Container(
                   height: 800,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF89CFF0), // Blue
-                        Color(0xFFE6F4F9), // Light blue
-                        Color(0xFFF5F5F7),
-                      ],
-                      stops: [0.0, 0.25, 0.45],
-                    ),
-                  ),
+                  color: const Color(0xFFF5F5F7), // Standard background
                 ),
                 // Content on top
                 SizedBox(
                   width: double.infinity,
                   child: Column(
                     children: [
-                      // Top spacing + title
-                      SizedBox(
-                        height: headerHeight,
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: horizontalPadding,
-                            right: horizontalPadding,
-                            top: topPadding + 28,
-                            bottom: 8,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      l10n.dashboardYearlyReportsTitle,
-                                      style: ReportTextStyles.screenTitle,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      l10n.dashboardYearlyReportsSubtitle,
-                                      style: ReportTextStyles.screenSubtitle,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      SizedBox(height: responsive.totalTwoLineHeaderHeight),
 
                       // Content
                       Padding(
@@ -857,206 +1120,63 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Year-to-date metrics summary
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildAchievementCard(
-                                    context: context,
-                                    icon: Icons.auto_awesome_outlined,
-                                    iconColor: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                    value: yearlySessions.length.toString(),
-                                    label: l10n.dashboardSessionsLabel,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildAchievementCard(
-                                    context: context,
-                                    icon: Icons.inventory_2_outlined,
-                                    iconColor: Theme.of(
-                                      context,
-                                    ).colorScheme.secondary,
-                                    value: yearlyItems.length.toString(),
-                                    label: l10n.reportItemsCleaned,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildAchievementCard(
-                                    context: context,
-                                    icon: Icons.payments_outlined,
-                                    iconColor: Theme.of(
-                                      context,
-                                    ).colorScheme.tertiary,
-                                    value: yearlyResellValueDisplay,
-                                    label: l10n.reportTotalRevenue,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 8),
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                const spacing = 10.0;
+                                final cardWidth =
+                                    (constraints.maxWidth - spacing * 2) / 3;
+                                return Wrap(
+                                  spacing: spacing,
+                                  runSpacing: spacing,
+                                  children: [
+                                    SizedBox(
+                                      width: cardWidth,
+                                      child: _buildCompactTopMetricCard(
+                                        title: isChinese ? '整理次数' : 'Sessions',
+                                        value: totalActions.toString(),
+                                        trend: actionsTrend,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: cardWidth,
+                                      child: _buildCompactTopMetricCard(
+                                        title: l10n.reportItemsCleaned,
+                                        value: yearlyItems.length.toString(),
+                                        trend: itemsTrend,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: cardWidth,
+                                      child: _buildCompactTopMetricCard(
+                                        title: l10n.dashboardAreasClearedLabel,
+                                        value: yearlyAreas.toString(),
+                                        trend: areasTrend,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
-                            const SizedBox(height: 20),
-
-                            // Declutter Heatmap (Past 12 months)
-                            Container(
-                              padding: const EdgeInsets.all(
-                                ReportUI.contentPadding,
+                            const SizedBox(height: 10),
+                            Text(
+                              _buildDeclutterHintText(
+                                isChinese: isChinese,
+                                itemCount: yearlyItems.length,
                               ),
-                              decoration: ReportUI.cardDecoration,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l10n.reportMemoryHeatmap,
-                                    style: ReportTextStyles.sectionHeader,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    l10n.reportActivityThisYear,
-                                    style: ReportTextStyles.sectionSubtitle,
-                                  ),
-                                  const SizedBox(height: 32),
-
-                                  // Heatmap Grid
-                                  Column(
-                                    children: [
-                                      // First row
-                                      Row(
-                                        children: List.generate(6, (index) {
-                                          final monthDate = DateTime(
-                                            now.year,
-                                            now.month - (11 - index),
-                                            1,
-                                          );
-                                          final monthKey =
-                                              '${monthDate.year}-${monthDate.month}';
-                                          final activity =
-                                              past12MonthsActivity[monthKey] ??
-                                              0;
-                                          return _buildHeatmapCell(
-                                            context,
-                                            monthDate,
-                                            activity,
-                                          );
-                                        }),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      // Second row
-                                      Row(
-                                        children: List.generate(6, (index) {
-                                          final monthDate = DateTime(
-                                            now.year,
-                                            now.month - (5 - index),
-                                            1,
-                                          );
-                                          final monthKey =
-                                              '${monthDate.year}-${monthDate.month}';
-                                          final activity =
-                                              past12MonthsActivity[monthKey] ??
-                                              0;
-                                          return _buildHeatmapCell(
-                                            context,
-                                            monthDate,
-                                            activity,
-                                          );
-                                        }),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 24),
-
-                                  // Color legend
-                                  Row(
-                                    children: [
-                                      Text(
-                                        l10n.reportLess,
-                                        style: ReportTextStyles.label,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      ...List.generate(5, (index) {
-                                        return Container(
-                                          width: 16,
-                                          height: 16,
-                                          margin: const EdgeInsets.symmetric(
-                                            horizontal: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: _getHeatmapColor(
-                                              context,
-                                              (index * 3) + 1,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                        );
-                                      }),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        l10n.reportMore,
-                                        style: ReportTextStyles.label,
-                                      ),
-                                      const Spacer(),
-                                      IconButton(
-                                        visualDensity: VisualDensity.compact,
-                                        onPressed: () =>
-                                            _showHeatmapLegendDialog(context),
-                                        icon: Icon(
-                                          Icons.info_outline,
-                                          size: 18,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 24),
-
-                                  // Statistics - All in one row
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildHeatmapStatCard(
-                                          context: context,
-                                          title: l10n.reportMostActiveMonth,
-                                          value: mostActiveMonth ?? 'N/A',
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: _buildHeatmapStatCard(
-                                          context: context,
-                                          title: l10n.reportLongestStreak,
-                                          value: isChinese
-                                              ? '$longestStreak 个月'
-                                              : '$longestStreak months',
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: _buildHeatmapStatCard(
-                                          context: context,
-                                          title: l10n.reportTotalItems,
-                                          value: '$peakActivity ${l10n.items}',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              style: ReportTextStyles.sectionSubtitle.copyWith(
+                                color: const Color(0xFF9CA3AF),
                               ),
                             ),
-                            const SizedBox(height: 20),
-
+                            const SizedBox(height: 24),
                             DeclutterResultsDistributionCard(
                               items: yearlyItems,
-                              title: l10n.reportYearToDateOutcomes,
-                              subtitle: l10n.reportActivityThisYear,
+                              title: isChinese
+                                  ? '整理成果分布'
+                                  : 'Declutter Outcomes',
+                              subtitle: isChinese
+                                  ? '展示物品在保留、转售、捐赠、回收与丢弃之间的去向分布。'
+                                  : 'Shows how items are routed across keep, resale, donate, recycle, and discard.',
                               keptLabel: DeclutterStatus.keep.label(context),
                               resellLabel: DeclutterStatus.resell.label(
                                 context,
@@ -1073,27 +1193,40 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                               totalItemsLabel: l10n.totalItemsDecluttered,
                               isChinese: isChinese,
                             ),
-                            const SizedBox(height: ReportUI.sectionGap),
-
-                            // Clean Sweep Analysis (Yearly)
+                            const SizedBox(height: 16),
+                            Text(
+                              isChinese ? '深度大扫除' : 'Clean Sweep',
+                              style: ReportTextStyles.sectionHeader,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              isChinese
+                                  ? '查看深度整理投入与各区域变化'
+                                  : 'Understand deep cleaning effort by area',
+                              style: ReportTextStyles.sectionSubtitle,
+                            ),
+                            const SizedBox(height: 12),
                             DeepCleaningAnalysisCard(
                               sessions: yearlySessions,
-                              title: l10n.reportCleanSweepTitle,
+                              title: isChinese ? '数据概览' : 'Session Overview',
+                              subtitle: isChinese
+                                  ? '汇总大扫除次数、物品、区域与总投入时长'
+                                  : 'Snapshot of sessions, items, areas, and total time spent',
                               emptyStateMessage:
                                   l10n.reportNoDeepCleaningRecords,
                               onDeleteSession: widget.onDeleteSession,
                             ),
-                            const SizedBox(height: ReportUI.sectionGap),
-
-                            // Joy Index Trend
-                            _buildJoyIndexCard(context, isChinese),
-                            const SizedBox(height: ReportUI.sectionGap),
-
-                            // Your Joyful Journey (Yearly Insights)
-                            if (_hasYearlyActivity())
-                              _buildYearlyInsightsCard(isChinese),
-                            if (_hasYearlyActivity())
-                              const SizedBox(height: ReportUI.sectionGap),
+                            const SizedBox(height: 16),
+                            _buildDeclutterHeatmapCard(
+                              context: context,
+                              isChinese: isChinese,
+                              rangeStart: rangeStart,
+                              rangeEndExclusive: rangeEndExclusive,
+                              dailyActivityCounts: dailyActivityCounts,
+                            ),
+                            const SizedBox(height: 16),
+                            _buildJoyIndexCard(context, isChinese, yearlyItems),
+                            const SizedBox(height: 24),
 
                             const SizedBox(height: 32),
                           ],
@@ -1105,9 +1238,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               ],
             ),
           ),
-
-          // Real header that appears when scrolling is complete
-          // Real header - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
@@ -1118,45 +1248,173 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                 final scrollOffset = _scrollController.hasClients
                     ? _scrollController.offset
                     : 0.0;
-                final scrollProgress = (scrollOffset / headerHeight).clamp(
-                  0.0,
-                  1.0,
-                );
-                final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                final scrollProgress =
+                    (scrollOffset / responsive.twoLineHeaderContentHeight)
+                        .clamp(0.0, 1.0);
+                final collapsedHeaderOpacity = scrollProgress >= 1.0
+                    ? 1.0
+                    : 0.0;
                 return IgnorePointer(
-                  ignoring: realHeaderOpacity < 0.5,
-                  child: Opacity(opacity: realHeaderOpacity, child: child),
+                  ignoring: collapsedHeaderOpacity < 0.5,
+                  child: Opacity(opacity: collapsedHeaderOpacity, child: child),
                 );
               },
               child: Container(
                 height: responsive.collapsedHeaderHeight,
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  topPadding + 6,
+                  horizontalPadding,
+                  8,
+                ),
                 decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: Color(0xFFF5F5F7),
                   border: Border(
                     bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
                   ),
                 ),
-                child: Stack(
+                child: Row(
                   children: [
-                    // Back button
-                    Positioned(
-                      left: 0,
-                      top: topPadding,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_rounded),
-                        onPressed: () => Navigator.pop(context),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.arrow_back_ios_rounded),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        l10n.dashboardYearlyReportsTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: responsive.titleFontSize,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
-                    // Centered title
-                    Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: topPadding),
-                        child: Text(
-                          pageName,
-                          style: AppTypography.titleMedium.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
+                    const SizedBox(width: 8),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _showRangeSelector(isChinese),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: ReportUI.statCardDecoration.copyWith(
+                          color: Colors.white,
+                          boxShadow: const [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 15,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _rangeLabel(isChinese),
+                              style: ReportTextStyles.label.copyWith(
+                                color: ReportUI.secondaryTextColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress =
+                    (scrollOffset / responsive.twoLineHeaderContentHeight)
+                        .clamp(0.0, 1.0);
+                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+                return Opacity(opacity: headerOpacity, child: child);
+              },
+              child: Container(
+                height: responsive.totalTwoLineHeaderHeight,
+                padding: EdgeInsets.only(
+                  left: horizontalPadding,
+                  right: horizontalPadding,
+                  top: topPadding + 12,
+                  bottom: 12,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            l10n.dashboardYearlyReportsTitle,
+                            style: TextStyle(
+                              fontSize: responsive.largeTitleFontSize,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                              letterSpacing: -0.5,
+                              height: 1.2,
+                            ),
                           ),
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.dashboardYearlyReportsSubtitle,
+                            style: TextStyle(
+                              fontSize: responsive.bodyFontSize,
+                              color: const Color(0xFF6B7280),
+                              height: 1.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _showRangeSelector(isChinese),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 9,
+                        ),
+                        decoration: ReportUI.statCardDecoration.copyWith(
+                          color: Colors.white,
+                          boxShadow: const [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _rangeLabel(isChinese),
+                              style: ReportTextStyles.label.copyWith(
+                                color: ReportUI.secondaryTextColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -1205,36 +1463,96 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     );
   }
 
-  Widget _buildHeatmapStatCard({
-    required BuildContext context,
+  double _percentChange({required double current, required double previous}) {
+    if (previous == 0) {
+      return current > 0 ? 100 : 0;
+    }
+    return ((current - previous) / previous) * 100;
+  }
+
+  Widget _buildCompactTopMetricCard({
     required String title,
     required String value,
+    required double trend,
   }) {
+    final isNearZero = trend.abs() < 1;
+    final isPositive = trend > 0;
+    final trendText = isNearZero ? '0%' : '${trend.abs().toStringAsFixed(0)}%';
+    final trendTextColor = isNearZero
+        ? const Color(0xFF94A3B8)
+        : (isPositive ? const Color(0xFF16A34A) : const Color(0xFFEF4444));
+    final trendIcon = isNearZero
+        ? Icons.trending_flat_rounded
+        : (isPositive
+              ? Icons.trending_up_rounded
+              : Icons.trending_down_rounded);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: ReportUI.statCardDecoration,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: ReportTextStyles.label,
-          ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              textAlign: TextAlign.center,
-              style: ReportTextStyles.statValueSmall,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ReportUI.borderSideColor, width: 1),
+        boxShadow: ReportUI.lightShadow,
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      child: SizedBox(
+        height: 102,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: ReportTextStyles.body.copyWith(
+                color: const Color(0xFF6B7280),
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: ReportTextStyles.metricValueMedium.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.8,
+              ),
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Icon(trendIcon, size: 18, color: trendTextColor),
+                const SizedBox(width: 4),
+                Text(
+                  trendText,
+                  style: ReportTextStyles.body.copyWith(
+                    color: trendTextColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  String _buildDeclutterHintText({
+    required bool isChinese,
+    required int itemCount,
+  }) {
+    if (itemCount <= 0) {
+      return isChinese
+          ? '从一件小物开始，整理趋势会在这里慢慢清晰。'
+          : 'Start with one item and your declutter trend will build here.';
+    }
+    final wardrobes = math.max(1, (itemCount / 40).ceil());
+    return isChinese
+        ? '已处理 $itemCount 件物品，约等于清空 $wardrobes 个标准衣柜。'
+        : '$itemCount items processed, roughly equal to clearing $wardrobes wardrobes.';
   }
 
   Color _getHeatmapColor(BuildContext context, int count) {
@@ -1246,9 +1564,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     final isChinese = l10n.localeName.toLowerCase().startsWith('zh');
     showDialog(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
@@ -1265,7 +1584,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                       l10n.reportActivityLevels,
                       style: AppTypography.titleMedium.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: const Color(0xFF111827),
                       ),
                     ),
                     IconButton(
@@ -1338,119 +1657,71 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
     return months[month - 1];
   }
 
-  String _getMonthName(int month, bool isChinese) {
-    if (isChinese) {
-      return '$month月';
-    }
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return months[month - 1];
-  }
+  Widget _buildJoyIndexCard(
+    BuildContext context,
+    bool isChinese,
+    List<DeclutterItem> items,
+  ) {
+    final isYearlyRange = _selectedRange == _ReportRange.yearly;
+    final labels = <String>[];
+    final values = <double>[];
 
-  Widget _buildJoyIndexCard(BuildContext context, bool isChinese) {
-    final l10n = AppLocalizations.of(context)!;
-    // Calculate joy index trend year-to-date (January to current month)
-    final now = DateTime.now();
-
-    // Initialize all 12 months (1-12)
-    final monthlyJoyData = <int, List<int>>{}; // month -> list of joy levels
-    final monthlyJoyCount = <int, int>{}; // month -> count of joy clicks
-    final monthlyTotalCount =
-        <int, int>{}; // month -> items answered joy question
-
-    for (int month = 1; month <= 12; month++) {
-      monthlyJoyData[month] = [];
-      monthlyJoyCount[month] = 0;
-      monthlyTotalCount[month] = 0;
-    }
-
-    for (final item in widget.declutteredItems) {
-      // Only include items from current year AND only quick declutter items that have a joy answer
-      if (item.createdAt.year == now.year && item.joyLevel != null) {
-        final month = item.createdAt.month; // 1-12
-
-        monthlyTotalCount[month] = (monthlyTotalCount[month] ?? 0) + 1;
-
-        if (item.joyLevel! >= 6) {
-          monthlyJoyData.putIfAbsent(month, () => []).add(item.joyLevel!);
-          monthlyJoyCount[month] = (monthlyJoyCount[month] ?? 0) + 1;
+    if (isYearlyRange) {
+      for (int month = 1; month <= 12; month++) {
+        final count = items
+            .where((item) => item.joyLevel != null && item.joyLevel! >= 6)
+            .where((item) => item.createdAt.month == month)
+            .length
+            .toDouble();
+        labels.add(_getMonthAbbrev(month, isChinese));
+        values.add(count);
+      }
+    } else {
+      if (_selectedRange == _ReportRange.days7) {
+        final start = _todayStart.subtract(const Duration(days: 6));
+        for (int i = 0; i < 7; i++) {
+          final day = start.add(Duration(days: i));
+          final dayEnd = day.add(const Duration(days: 1));
+          final count = items
+              .where((item) => item.joyLevel != null && item.joyLevel! >= 6)
+              .where(
+                (item) =>
+                    !item.createdAt.isBefore(day) &&
+                    item.createdAt.isBefore(dayEnd),
+              )
+              .length
+              .toDouble();
+          final dayLabel = '${day.month}/${day.day}';
+          labels.add(dayLabel);
+          values.add(count);
+        }
+      } else {
+        final start = _todayStart.subtract(const Duration(days: 29));
+        const bucketCount = 6;
+        const bucketSizeDays = 5;
+        for (int bucket = 0; bucket < bucketCount; bucket++) {
+          final bucketStart = start.add(
+            Duration(days: bucket * bucketSizeDays),
+          );
+          final bucketEnd = bucket == bucketCount - 1
+              ? _todayStart.add(const Duration(days: 1))
+              : bucketStart.add(const Duration(days: bucketSizeDays));
+          final count = items
+              .where((item) => item.joyLevel != null && item.joyLevel! >= 6)
+              .where(
+                (item) =>
+                    !item.createdAt.isBefore(bucketStart) &&
+                    item.createdAt.isBefore(bucketEnd),
+              )
+              .length
+              .toDouble();
+          labels.add('${bucketStart.month}/${bucketStart.day}');
+          values.add(count);
         }
       }
     }
 
-    // Calculate monthly joy rate for all 12 months
-    final monthlyJoyPercent = <int, double>{};
-    for (int month = 1; month <= 12; month++) {
-      final total = monthlyTotalCount[month] ?? 0;
-      final joyCount = monthlyJoyCount[month] ?? 0;
-      monthlyJoyPercent[month] = total > 0 ? (joyCount / total * 100) : 0.0;
-    }
-
-    // Calculate average joy rate (excluding months with no data)
-    final monthsWithData = monthlyJoyPercent.values
-        .where((v) => v > 0)
-        .toList();
-    final avgJoyPercent = monthsWithData.isEmpty
-        ? 0.0
-        : monthsWithData.reduce((a, b) => a + b) / monthsWithData.length;
-
-    // Calculate total joy count
-    final itemsWithJoy = widget.declutteredItems
-        .where((item) => item.createdAt.year == now.year)
-        .where((item) => item.joyLevel != null && item.joyLevel! >= 6)
-        .toList();
-    final totalJoyCount = itemsWithJoy.length;
-
-    // Determine trend (compare recent 3 months vs older 3 months)
-    String trendText;
-    String trendIcon;
-    Color trendColor;
-
-    if (now.month >= 6) {
-      // Average of most recent 3 months
-      final month1 = monthlyJoyPercent[now.month] ?? 0;
-      final month2 = monthlyJoyPercent[now.month - 1] ?? 0;
-      final month3 = monthlyJoyPercent[now.month - 2] ?? 0;
-      final recentAvg = (month1 + month2 + month3) / 3;
-
-      // Average of first 3 months (January-March)
-      final olderAvg =
-          (monthlyJoyPercent[1]! +
-              monthlyJoyPercent[2]! +
-              monthlyJoyPercent[3]!) /
-          3;
-
-      if (recentAvg > olderAvg) {
-        trendText = isChinese ? '上升' : 'Rising';
-        trendIcon = '↑';
-        trendColor = const Color(0xFF4CAF50);
-      } else if (recentAvg < olderAvg) {
-        trendText = isChinese ? '下降' : 'Falling';
-        trendIcon = '↓';
-        trendColor = const Color(0xFFF44336);
-      } else {
-        trendText = isChinese ? '稳定' : 'Stable';
-        trendIcon = '→';
-        trendColor = const Color(0xFF9E9E9E);
-      }
-    } else {
-      trendText = isChinese ? '暂无' : 'N/A';
-      trendIcon = '—';
-      trendColor = const Color(0xFF9E9E9E);
-    }
-
+    final totalJoyCount = values.fold<double>(0, (sum, value) => sum + value);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(ReportUI.contentPadding),
@@ -1458,7 +1729,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title with inline info
           Row(
             children: [
               Expanded(
@@ -1471,7 +1741,9 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isChinese ? '年度心动轨迹概览' : 'Annual joy trajectory overview',
+                      isChinese
+                          ? '观察心动指数在不同阶段的起伏变化'
+                          : 'See how your joy index evolves over time',
                       style: ReportTextStyles.sectionSubtitle,
                     ),
                   ],
@@ -1490,150 +1762,81 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // Metric dropdown for Joy Rate vs Joy Count
-          Row(
-            children: [
-              SizedBox(
-                width: 60,
-                child: Text(
-                  isChinese ? '指标' : 'Metric',
-                  style: ReportTextStyles.body.copyWith(
-                    color: const Color(0xFF6B7280),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+          const SizedBox(height: 16),
+          if (totalJoyCount == 0)
+            Container(
+              height: 210,
+              alignment: Alignment.center,
+              decoration: ReportUI.statCardDecoration,
+              child: Text(
+                isChinese ? '暂无心动数据' : 'No joy data yet',
+                style: ReportTextStyles.body,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<bool>(
-                      value: _showJoyPercent,
-                      isExpanded: true,
-                      isDense: true,
-                      icon: const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: Color(0xFF6B7280),
-                      ),
-                      dropdownColor: Colors.white,
-                      focusColor: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _showJoyPercent = value;
-                          });
-                        }
-                      },
-                      items: [
-                        DropdownMenuItem<bool>(
-                          value: true,
-                          child: Text(
-                            isChinese ? '心动率' : 'Joy Rate',
-                            style: ReportTextStyles.body.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                          ),
-                        ),
-                        DropdownMenuItem<bool>(
-                          value: false,
-                          child: Text(
-                            isChinese ? '心动次数' : 'Joy Count',
-                            style: ReportTextStyles.body.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // Chart (always show with 12 months)
-          SizedBox(
-            height: 250,
-            child: CustomPaint(
-              size: const Size(double.infinity, 250),
-              painter: _JoyTrendChartPainter(
-                monthlyData: _showJoyPercent
-                    ? monthlyJoyPercent
-                    : monthlyJoyCount.map((k, v) => MapEntry(k, v.toDouble())),
-                maxMonths: 12,
-                isPercent: _showJoyPercent,
-                colorScheme: Theme.of(context).colorScheme,
-                l10n: l10n,
-              ),
+            )
+          else
+            SizedBox(
+              height: 220,
+              child: _buildJoyBarChart(labels: labels, values: values),
             ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Summary stats
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem(
-                context,
-                label: l10n.reportAverageJoyRate,
-                value: '${avgJoyPercent.toStringAsFixed(0)}%',
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              _buildStatItem(
-                context,
-                label: l10n.reportTotalJoyCount,
-                value: totalJoyCount.toString(),
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              _buildStatItem(
-                context,
-                label: l10n.reportTrendAnalysis,
-                value: '$trendIcon $trendText',
-                color: trendColor,
-              ),
-            ],
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required Color color,
+  Widget _buildJoyBarChart({
+    required List<String> labels,
+    required List<double> values,
   }) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: AppTypography.labelSmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+    var maxValue = 0.0;
+    for (final v in values) {
+      if (v > maxValue) maxValue = v;
+    }
+    final safeMax = maxValue <= 0 ? 1.0 : maxValue;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: List.generate(values.length, (index) {
+        final value = values[index];
+        final ratio = (value / safeMax).clamp(0.0, 1.0);
+        final barHeight = (ratio * 128).clamp(10.0, 128.0);
+        final barColor = value <= 0
+            ? const Color(0xFFE5E7EB)
+            : Color.lerp(
+                const Color(0xFFFBCFE8),
+                const Color(0xFFEC4899),
+                ratio,
+              )!;
+
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  value.toStringAsFixed(0),
+                  style: ReportTextStyles.chartValueLabel,
+                ),
+                const SizedBox(height: 5),
+                Container(
+                  height: barHeight,
+                  decoration: BoxDecoration(
+                    color: barColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  labels[index],
+                  style: ReportTextStyles.chartAxisLabel.copyWith(
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: AppTypography.titleMedium.copyWith(
-            fontWeight: FontWeight.w800,
-            color: color,
-          ),
-        ),
-      ],
+        );
+      }),
     );
   }
 
@@ -1643,9 +1846,10 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
 
     showDialog<void>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
@@ -1662,7 +1866,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                       l10n.reportJoy,
                       style: AppTypography.titleMedium.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: const Color(0xFF111827),
                       ),
                     ),
                     IconButton(
@@ -1676,7 +1880,7 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                   isChinese ? '数据统计说明' : 'How it\'s measured',
                   style: AppTypography.titleSmall.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: const Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -1706,406 +1910,35 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: const Color(0xFFF4F6FB),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         text,
         style: AppTypography.bodySmall.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
+          color: const Color(0xFF374151),
           height: 1.5,
         ),
       ),
     );
   }
 
-  bool _hasYearlyActivity() {
-    final now = DateTime.now();
-    final yearStart = DateTime(now.year, 1, 1);
-
-    final hasDecluttered = widget.declutteredItems.any(
-      (item) =>
-          item.createdAt.isAfter(yearStart.subtract(const Duration(days: 1))),
-    );
-
-    final hasResold = widget.resellItems.any(
-      (item) =>
-          item.status == ResellStatus.sold &&
-          item.soldDate != null &&
-          item.soldDate!.isAfter(yearStart.subtract(const Duration(days: 1))),
-    );
-
-    final hasSessions = widget.deepCleaningSessions.any(
-      (session) => session.startTime.isAfter(
-        yearStart.subtract(const Duration(days: 1)),
-      ),
-    );
-
-    return hasDecluttered || hasResold || hasSessions;
-  }
-
-  Widget _buildYearlyInsightsCard(bool isChinese) {
-    // Calculate YEARLY metrics
-    final now = DateTime.now();
-    final yearStart = DateTime(now.year, 1, 1);
-
-    // Count decluttered items this year
-    final declutteredThisYear = widget.declutteredItems
-        .where(
-          (item) => item.createdAt.isAfter(
-            yearStart.subtract(const Duration(days: 1)),
-          ),
-        )
-        .length;
-
-    // Count resold items this year
-    final resoldThisYear = widget.resellItems
-        .where(
-          (item) =>
-              item.status == ResellStatus.sold &&
-              item.soldDate != null &&
-              item.soldDate!.isAfter(
-                yearStart.subtract(const Duration(days: 1)),
-              ),
-        )
-        .length;
-
-    // Count deep cleaning sessions this year
-    final sessionsThisYear = widget.deepCleaningSessions
-        .where(
-          (session) => session.startTime.isAfter(
-            yearStart.subtract(const Duration(days: 1)),
-          ),
-        )
-        .length;
-
-    // Calculate total time spent cleaning (in hours)
-    final totalMinutes =
-        widget.deepCleaningSessions
-            .where(
-              (session) => session.startTime.isAfter(
-                yearStart.subtract(const Duration(days: 1)),
-              ),
-            )
-            .fold(0, (sum, session) => sum + (session.elapsedSeconds ?? 0)) ~/
-        60;
-
-    // Build list of insights to display
-    final insights = <Widget>[];
-
-    // Add decluttered items insight if there are any
-    if (declutteredThisYear > 0) {
-      final spaceCubicFeet = (declutteredThisYear * 0.5).toStringAsFixed(1);
-      insights.add(
-        _buildInsightRow(
-          icon: Icons.inventory_2_rounded,
-          iconColor: const Color(0xFF5ECFB8),
-          text: isChinese
-              ? '你为 $declutteredThisYear 件物品找到了新的归宿，为生活腾出了约 $spaceCubicFeet 立方英尺的空间，感受到更多呼吸的自由！'
-              : 'You found new homes for $declutteredThisYear items, creating ~$spaceCubicFeet cubic feet of breathing room in your space!',
-        ),
-      );
-    }
-
-    // Add resold items insight if there are any
-    if (resoldThisYear > 0) {
-      final co2SavedKg = (resoldThisYear * 5).toStringAsFixed(0);
-      insights.add(
-        _buildInsightRow(
-          icon: Icons.eco_rounded,
-          iconColor: const Color(0xFF10B981),
-          text: isChinese
-              ? '通过转售 $resoldThisYear 件物品，你让它们继续带来快乐，同时减少了约 $co2SavedKg kg 的碳排放。真是美好的循环！'
-              : 'By reselling $resoldThisYear items, you extended their joy to others while saving ~$co2SavedKg kg of CO₂. What a beautiful cycle!',
-        ),
-      );
-    }
-
-    // Add cleaning sessions insight if there are any
-    if (sessionsThisYear > 0) {
-      final totalHours = (totalMinutes / 60).toStringAsFixed(1);
-      insights.add(
-        _buildInsightRow(
-          icon: Icons.cleaning_services_rounded,
-          iconColor: const Color(0xFFB794F6),
-          text: isChinese
-              ? '完成了 $sessionsThisYear 次大扫除，投入了 $totalHours 小时的时间。每一次整理都是对自己的温柔对待。'
-              : 'You completed $sessionsThisYear tidying sessions, investing $totalHours hours in caring for your space and yourself.',
-        ),
-      );
-    }
-
-    if (insights.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EA)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            isChinese ? '你的美好改变' : 'Your Joyful Journey',
-            style: ReportTextStyles.sectionHeader,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isChinese ? '今年的精彩足迹' : 'Your highlights this year',
-            style: ReportTextStyles.sectionSubtitle,
-          ),
-          const SizedBox(height: 20),
-          ...insights.map(
-            (insight) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: insight,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInsightRow({
-    required IconData icon,
-    required Color iconColor,
-    required String text,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              text,
-              style: ReportTextStyles.body.copyWith(
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF374151),
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _JoyTrendChartPainter extends CustomPainter {
-  final Map<int, double> monthlyData;
-  final int maxMonths;
-  final bool isPercent;
-  final ColorScheme colorScheme;
-  final AppLocalizations l10n;
-
-  _JoyTrendChartPainter({
-    required this.monthlyData,
-    required this.maxMonths,
-    required this.isPercent,
-    required this.colorScheme,
-    required this.l10n,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (monthlyData.isEmpty) return;
-
-    final primaryColor = colorScheme.primary;
-    final onSurfaceVariantColor = colorScheme.onSurfaceVariant;
-    final outlineColor = colorScheme.outlineVariant;
-
-    final linePaint = Paint()
-      ..color = primaryColor
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final fillPaint = Paint()
-      ..color = primaryColor.withValues(alpha: 0.1)
-      ..style = PaintingStyle.fill;
-
-    final dotPaint = Paint()
-      ..color = primaryColor
-      ..style = PaintingStyle.fill;
-
-    final gridPaint = Paint()
-      ..color = outlineColor.withValues(alpha: 0.5)
-      ..strokeWidth = 1;
-
-    final textPainter = TextPainter(textDirection: ui.TextDirection.ltr);
-
-    const leftPadding = 40.0;
-    const rightPadding = 20.0;
-    const topPadding = 20.0;
-    const bottomPadding = 40.0;
-    final chartWidth = size.width - leftPadding - rightPadding;
-    final chartHeight = size.height - topPadding - bottomPadding;
-
-    double maxValue;
-    if (isPercent) {
-      maxValue = 100.0;
-    } else {
-      final maxRaw = monthlyData.values.isEmpty
-          ? 0
-          : monthlyData.values.reduce((a, b) => a > b ? a : b);
-      maxValue = maxRaw == 0 ? 5 : maxRaw.toDouble();
-      maxValue = (maxValue * 1.25).clamp(5.0, double.infinity);
-    }
-
-    // Draw grid lines and labels
-    for (int i = 0; i <= 5; i++) {
-      final y = topPadding + (chartHeight * i / 5);
-      canvas.drawLine(
-        Offset(leftPadding, y),
-        Offset(size.width - rightPadding, y),
-        gridPaint,
-      );
-
-      final value = maxValue * (5 - i) / 5;
-      textPainter.text = TextSpan(
-        text: value.toStringAsFixed(0),
-        style: AppTypography.labelSmall.copyWith(
-          color: onSurfaceVariantColor,
-          fontSize: 10,
-        ),
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          leftPadding - textPainter.width - 12,
-          y - textPainter.height / 2,
-        ),
-      );
-    }
-
-    final points = <Offset>[];
-    for (int month = 1; month <= 12; month++) {
-      final value = monthlyData[month] ?? 0.0;
-      final x = leftPadding + (chartWidth * (month - 1) / 11);
-      final normalizedValue = value / maxValue;
-      final y = topPadding + (chartHeight * (1 - normalizedValue));
-      points.add(Offset(x, y));
-    }
-
-    if (points.isEmpty) return;
-
-    // Draw fill
-    final fillPath = Path();
-    fillPath.moveTo(points.first.dx, size.height - bottomPadding);
-    fillPath.lineTo(points.first.dx, points.first.dy);
-    for (int i = 0; i < points.length - 1; i++) {
-      final current = points[i];
-      final next = points[i + 1];
-      fillPath.cubicTo(
-        current.dx + (next.dx - current.dx) / 3,
-        current.dy,
-        current.dx + 2 * (next.dx - current.dx) / 3,
-        next.dy,
-        next.dx,
-        next.dy,
-      );
-    }
-    fillPath.lineTo(points.last.dx, size.height - bottomPadding);
-    fillPath.close();
-    canvas.drawPath(fillPath, fillPaint);
-
-    // Draw line
-    final linePath = Path();
-    linePath.moveTo(points.first.dx, points.first.dy);
-    for (int i = 0; i < points.length - 1; i++) {
-      final current = points[i];
-      final next = points[i + 1];
-      linePath.cubicTo(
-        current.dx + (next.dx - current.dx) / 3,
-        current.dy,
-        current.dx + 2 * (next.dx - current.dx) / 3,
-        next.dy,
-        next.dx,
-        next.dy,
-      );
-    }
-    canvas.drawPath(linePath, linePaint);
-
-    // Draw dots and labels
-    for (int i = 0; i < points.length; i++) {
-      final point = points[i];
-
-      // Only draw dots for every 3 months or if it has non-zero value to keep it clean
-      if (i % 2 == 0 || monthlyData[i + 1] != 0) {
-        canvas.drawCircle(point, 5, dotPaint);
-        canvas.drawCircle(point, 3, Paint()..color = colorScheme.surface);
+  double _averageAreaImprovement(List<DeepCleaningSession> sessions) {
+    double total = 0;
+    int count = 0;
+    for (final s in sessions) {
+      if (s.beforeMessinessIndex != null &&
+          s.afterMessinessIndex != null &&
+          s.beforeMessinessIndex! > 0) {
+        final improve =
+            (s.beforeMessinessIndex! - s.afterMessinessIndex!) /
+            s.beforeMessinessIndex! *
+            100;
+        total += improve;
+        count++;
       }
-
-      final monthName = _getMonthAbbrev(i + 1, l10n.localeName == 'zh');
-      textPainter.text = TextSpan(
-        text: monthName,
-        style: AppTypography.labelSmall.copyWith(
-          color: onSurfaceVariantColor,
-          fontSize: 9,
-        ),
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          point.dx - textPainter.width / 2,
-          size.height - bottomPadding + 10,
-        ),
-      );
     }
+    if (count == 0) return 0;
+    return total / count;
   }
-
-  String _getMonthAbbrev(int month, bool isChinese) {
-    if (isChinese) {
-      return '$month月';
-    }
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

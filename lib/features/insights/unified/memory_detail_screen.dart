@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/features/insights/unified/models/enhanced_report_models.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
+import 'package:keepjoy_app/models/declutter_item.dart';
 
 class MemoryDetailScreen extends StatelessWidget {
   final EnhancedUnifiedReportData data;
@@ -9,7 +10,9 @@ class MemoryDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context).languageCode.startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.startsWith('zh');
     final stats = data.memoryStats;
 
     return Scaffold(
@@ -26,7 +29,11 @@ class MemoryDetailScreen extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFF89CFF0), Color(0xFFF0F9FF), ReportUI.backgroundColor],
+                      colors: [
+                        Color(0xFF89CFF0),
+                        Color(0xFFF0F9FF),
+                        ReportUI.backgroundColor,
+                      ],
                       stops: [0.0, 0.35, 0.65],
                     ),
                   ),
@@ -48,14 +55,17 @@ class MemoryDetailScreen extends StatelessWidget {
                                   color: Colors.white.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(Icons.arrow_back_ios_new, size: 18),
+                                child: const Icon(
+                                  Icons.arrow_back_ios_new,
+                                  size: 18,
+                                ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          isChinese ? '年度记忆' : 'Yearly Memories',
+                          isChinese ? '回忆报告' : 'Memory Report',
                           style: ReportTextStyles.screenTitle,
                         ),
                         const SizedBox(height: 4),
@@ -88,8 +98,8 @@ class MemoryDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildSection(
-                  isChinese ? '情感/分类' : 'Emotion by Category',
-                  _buildEmotionByCategory(isChinese, stats),
+                  isChinese ? '分类统计' : 'Category Statistics',
+                  _buildCategoryStats(isChinese, stats),
                 ),
                 const SizedBox(height: 16),
                 _buildSection(
@@ -171,7 +181,12 @@ class MemoryDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard({required IconData icon, required Color iconColor, required String value, required String label}) {
+  Widget _buildStatCard({
+    required IconData icon,
+    required Color iconColor,
+    required String value,
+    required String label,
+  }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -211,7 +226,10 @@ class MemoryDetailScreen extends StatelessWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
+          ),
         ),
       );
     }
@@ -239,10 +257,16 @@ class MemoryDetailScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Expanded(child: Text(item.$1, style: const TextStyle(fontSize: 14))),
+              Expanded(
+                child: Text(item.$1, style: const TextStyle(fontSize: 14)),
+              ),
               Text(
                 '${item.$2} ($percentage%)',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: item.$3),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: item.$3,
+                ),
               ),
             ],
           ),
@@ -256,167 +280,226 @@ class MemoryDetailScreen extends StatelessWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
+          ),
         ),
       );
     }
 
-    final sortedEmotions = stats.emotionDistribution.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final total = sortedEmotions.fold<int>(0, (sum, e) => sum + e.value);
 
     final emotionColors = {
-      'happy': const Color(0xFFFFD93D),
-      'joy': const Color(0xFFFFD93D),
-      'sad': const Color(0xFF89CFF0),
+      'happy': const Color(0xFF5ECFB8), // Teal (Joy/Happy)
+      'joy': const Color(0xFF5ECFB8), // Teal
+      'love': const Color(0xFFB794F6), // Purple
+      'nostalgia': const Color(0xFF89CFF0), // Blue
+      'adventure': const Color(0xFFFFD93D), // Yellow
+      'grateful': const Color(0xFFFFA07A), // Orange
+      'peaceful': const Color(0xFFE0E7FF), // Light Indigo
+      'sad': const Color(0xFF9CA3AF),
       'angry': const Color(0xFFFF9AA2),
-      'calm': const Color(0xFF5ECFB8),
+      'calm': const Color(0xFFE0E7FF),
       'excited': const Color(0xFFFFA07A),
       'neutral': const Color(0xFF9CA3AF),
     };
 
-    return Row(
-      children: [
-        // Pie Chart
-        SizedBox(
-          width: 120,
-          height: 120,
-          child: CustomPaint(
-            painter: _EmotionPieChartPainter(
-              emotions: sortedEmotions,
-              total: total,
-              colors: emotionColors,
-            ),
-          ),
-        ),
-        const SizedBox(width: 24),
-        // Legend
-        Expanded(
-          child: Column(
-            children: sortedEmotions.take(5).map((entry) {
-              final percentage = (entry.value / total * 100).toStringAsFixed(1);
-              final color = emotionColors[entry.key.toLowerCase()] ?? const Color(0xFFB794F6);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _getEmotionName(entry.key, isChinese),
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    Text(
-                      '$percentage%',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmotionByCategory(bool isChinese, EnhancedMemoryStats stats) {
-    if (stats.categoryEmotionDistribution.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
-        ),
-      );
-    }
-
-    final sortedCategories = stats.categoryEmotionDistribution.keys.toList()
-      ..sort((a, b) => (stats.categoryDistribution[b] ?? 0).compareTo(stats.categoryDistribution[a] ?? 0));
-
-    final emotionColors = {
-      'happy': const Color(0xFFFFD93D),
-      'joy': const Color(0xFFFFD93D),
-      'sad': const Color(0xFF89CFF0),
-      'angry': const Color(0xFFFF9AA2),
-      'calm': const Color(0xFF5ECFB8),
-      'excited': const Color(0xFFFFA07A),
-      'neutral': const Color(0xFF9CA3AF),
-    };
+    final dominant = sortedEmotions.first;
+    final dominantPercentage =
+        (dominant.value / total * 100).toStringAsFixed(0) + '%';
+    final dominantLabel = _getEmotionName(
+      dominant.key,
+      isChinese,
+    ).toUpperCase();
+    final dominantColor =
+        emotionColors[dominant.key.toLowerCase()] ?? const Color(0xFFB794F6);
 
     return Column(
-      children: sortedCategories.take(5).map((category) {
-        final emotions = stats.categoryEmotionDistribution[category]!;
-        final sortedEmotions = emotions.entries.toList()
-          ..sort((a, b) => b.value.compareTo(a.value));
-        final total = sortedEmotions.fold<int>(0, (sum, e) => sum + e.value);
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                category,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 8,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Row(
-                    children: sortedEmotions.map((entry) {
-                      final flex = (entry.value / total * 100).round();
-                      if (flex == 0) return const SizedBox.shrink();
-                      final color = emotionColors[entry.key.toLowerCase()] ?? const Color(0xFFB794F6);
-                      return Expanded(
-                        flex: flex,
-                        child: Container(color: color),
-                      );
-                    }).toList(),
-                  ),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          isChinese ? '今年情绪概览' : 'This year’s emotional overview',
+          style: ReportTextStyles.sectionSubtitle,
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            // Pie Chart
+            SizedBox(
+              width: 140,
+              height: 140,
+              child: CustomPaint(
+                painter: _EmotionPieChartPainter(
+                  emotions: sortedEmotions,
+                  total: total,
+                  colors: emotionColors,
+                  centerValue: dominantPercentage,
+                  centerLabel: dominantLabel,
+                  centerColor: dominantColor,
                 ),
               ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 8,
-                children: sortedEmotions.take(3).map((entry) {
-                  final percentage = (entry.value / total * 100).toStringAsFixed(0);
+            ),
+            const SizedBox(width: 24),
+            // Legend
+            Expanded(
+              child: Column(
+                children: sortedEmotions.take(4).map((entry) {
+                  final percentage = (entry.value / total * 100).toStringAsFixed(1);
                   final color = emotionColors[entry.key.toLowerCase()] ?? const Color(0xFFB794F6);
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${_getEmotionName(entry.key, isChinese)} $percentage%',
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
-                      ),
-                    ],
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _getEmotionName(entry.key, isChinese),
+                            style: ReportTextStyles.legendLabel,
+                          ),
+                        ),
+                        Text(
+                          '$percentage%',
+                          style: ReportTextStyles.legendLabel.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }).toList(),
               ),
-            ],
+            ),
+          ],
+        ),
+      ],
+    );
+      ],
+
+  Widget _buildCategoryStats(bool isChinese, EnhancedMemoryStats stats) {
+    if (stats.categoryDistribution.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
           ),
+        ),
+      );
+    }
+
+    final categoryCounts = <DeclutterCategory, int>{};
+    // Initialize with 0
+    for (final category in DeclutterCategory.values) {
+      categoryCounts[category] = 0;
+    }
+
+    // Map string keys to enum
+    stats.categoryDistribution.forEach((key, count) {
+      final declutterCategory = DeclutterCategory.values.firstWhere(
+        (cat) => cat.name == key || cat.english == key || cat.chinese == key,
+        orElse: () => DeclutterCategory.miscellaneous,
+      );
+      categoryCounts[declutterCategory] =
+          (categoryCounts[declutterCategory] ?? 0) + count;
+    });
+
+    final sortedCategories = categoryCounts.keys.toList()
+      ..sort((a, b) => categoryCounts[b]!.compareTo(categoryCounts[a]!));
+
+    final colors = [
+      const Color(0xFF3B82F6), // Blue
+      const Color(0xFFF97316), // Orange
+      const Color(0xFF60A5FA), // Light Blue
+      const Color(0xFFFBBF24), // Yellow
+      const Color(0xFF10B981), // Green
+      const Color(0xFF8B5CF6), // Purple
+      const Color(0xFFEC4899), // Pink
+      const Color(0xFF6B7280), // Gray
+    ];
+
+    // Calculate max count for bar scaling
+    final maxCount = categoryCounts.values.isEmpty
+        ? 1
+        : categoryCounts.values.reduce((a, b) => a > b ? a : b);
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 24,
+        mainAxisSpacing: 24,
+        childAspectRatio: 2.5,
+      ),
+      itemCount: sortedCategories.length,
+      itemBuilder: (context, index) {
+        final category = sortedCategories[index];
+        final count = categoryCounts[category] ?? 0;
+        final barValue = maxCount == 0
+            ? 0.0
+            : (count / maxCount).clamp(0.0, 1.0);
+        final color = colors[index % colors.length];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  category.label(context).toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF6B7280),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Stack(
+              children: [
+                Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: barValue,
+                  child: Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         );
-      }).toList(),
+      },
     );
   }
 
@@ -429,24 +512,31 @@ class MemoryDetailScreen extends StatelessWidget {
       'calm': isChinese ? '平静' : 'Calm',
       'excited': isChinese ? '兴奋' : 'Excited',
       'neutral': isChinese ? '中性' : 'Neutral',
+      'love': isChinese ? '有爱' : 'Love',
+      'nostalgia': isChinese ? '怀旧' : 'Nostalgia',
+      'adventure': isChinese ? '冒险' : 'Adventure',
+      'grateful': isChinese ? '感恩' : 'Grateful',
+      'peaceful': isChinese ? '宁静' : 'Peaceful',
     };
     return names[key.toLowerCase()] ?? key;
   }
-
 
   Widget _buildTagAnalysis(bool isChinese, EnhancedMemoryStats stats) {
     if (stats.tagDistribution.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
+          ),
         ),
       );
     }
 
     final sortedTags = stats.tagDistribution.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    
+
     final maxCount = sortedTags.first.value;
     final minCount = sortedTags.last.value;
     final range = maxCount - minCount;
@@ -488,13 +578,16 @@ class MemoryDetailScreen extends StatelessWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
+          ),
         ),
       );
     }
 
-    final maxValue = stats.hourlyDistribution.values.isEmpty 
-        ? 1 
+    final maxValue = stats.hourlyDistribution.values.isEmpty
+        ? 1
         : stats.hourlyDistribution.values.reduce((a, b) => a > b ? a : b);
 
     return SizedBox(
@@ -503,20 +596,27 @@ class MemoryDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: List.generate(24, (hour) {
           final value = stats.hourlyDistribution[hour] ?? 0;
-          final height = maxValue > 0 ? (value / maxValue * 100).toDouble() : 0.0;
-          
+          final height = maxValue > 0
+              ? (value / maxValue * 100).toDouble()
+              : 0.0;
+
           return Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (hour % 6 == 0) 
-                  Text('$hour', style: const TextStyle(fontSize: 8, color: Colors.grey)),
+                if (hour % 6 == 0)
+                  Text(
+                    '$hour',
+                    style: const TextStyle(fontSize: 8, color: Colors.grey),
+                  ),
                 const SizedBox(height: 4),
                 Container(
                   height: height > 0 ? height : 2,
                   margin: const EdgeInsets.symmetric(horizontal: 1),
                   decoration: BoxDecoration(
-                    color: value > 0 ? const Color(0xFFFFA07A) : const Color(0xFFE5E7EB),
+                    color: value > 0
+                        ? const Color(0xFFFFA07A)
+                        : const Color(0xFFE5E7EB),
                     borderRadius: BorderRadius.circular(1),
                   ),
                 ),
@@ -533,14 +633,30 @@ class MemoryDetailScreen extends StatelessWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
+          ),
         ),
       );
     }
 
     final maxValue = stats.monthlyCount.values.reduce((a, b) => a > b ? a : b);
-    final months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-    
+    final months = [
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      '11',
+      '12',
+    ];
+
     // Trend info
     final comparison = stats.monthlyComparison;
     final isUp = comparison.thisMonth >= comparison.lastMonth;
@@ -549,6 +665,14 @@ class MemoryDetailScreen extends StatelessWidget {
 
     return Column(
       children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            isChinese ? '全年每月新增回忆' : 'Monthly additions across the year',
+            style: ReportTextStyles.sectionSubtitle,
+          ),
+        ),
+        const SizedBox(height: 12),
         // Integrated Trend Info
         Container(
           margin: const EdgeInsets.only(bottom: 24),
@@ -581,13 +705,19 @@ class MemoryDetailScreen extends StatelessWidget {
                     Text(
                       '$diffText ${isChinese ? "较上月" : "vs last month"} · '
                       '${comparison.totalSold} ${isChinese ? "年度总计" : "total this year"}',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                      ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF89CFF0),
                   borderRadius: BorderRadius.circular(16),
@@ -612,8 +742,10 @@ class MemoryDetailScreen extends StatelessWidget {
             children: months.asMap().entries.map((entry) {
               final month = int.parse(entry.value);
               final value = stats.monthlyCount[month] ?? 0;
-              final height = maxValue > 0 ? (value / maxValue * 80).toDouble() : 0.0;
-              
+              final height = maxValue > 0
+                  ? (value / maxValue * 80).toDouble()
+                  : 0.0;
+
               return Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -621,19 +753,27 @@ class MemoryDetailScreen extends StatelessWidget {
                     if (value > 0)
                       Text(
                         '$value',
-                        style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     const SizedBox(height: 4),
                     Container(
                       height: height > 0 ? height : 4,
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                       decoration: BoxDecoration(
-                        color: value > 0 ? const Color(0xFF89CFF0) : const Color(0xFFE5E7EB),
+                        color: value > 0
+                            ? const Color(0xFF89CFF0)
+                            : const Color(0xFFE5E7EB),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(isChinese ? '${entry.value}月' : entry.value, style: const TextStyle(fontSize: 10)),
+                    Text(
+                      isChinese ? '${entry.value}月' : entry.value,
+                      style: const TextStyle(fontSize: 10),
+                    ),
                   ],
                 ),
               );
@@ -649,11 +789,17 @@ class _EmotionPieChartPainter extends CustomPainter {
   final List<MapEntry<String, int>> emotions;
   final int total;
   final Map<String, Color> colors;
+  final String centerValue;
+  final String centerLabel;
+  final Color centerColor;
 
   _EmotionPieChartPainter({
     required this.emotions,
     required this.total,
     required this.colors,
+    required this.centerValue,
+    required this.centerLabel,
+    required this.centerColor,
   });
 
   @override
@@ -667,13 +813,13 @@ class _EmotionPieChartPainter extends CustomPainter {
     for (var entry in emotions) {
       final sweepAngle = (entry.value / total) * 2 * 3.14159;
       final color = colors[entry.key.toLowerCase()] ?? const Color(0xFFB794F6);
-      
+
       final paint = Paint()
         ..style = PaintingStyle.fill
         ..color = color;
 
       canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
-      
+
       // Draw border
       final borderPaint = Paint()
         ..style = PaintingStyle.stroke
@@ -684,11 +830,54 @@ class _EmotionPieChartPainter extends CustomPainter {
       startAngle += sweepAngle;
     }
 
-    // Draw center hole for donut effect (optional, looks better)
+    // Draw center hole for donut effect
     final holePaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white; // Or background color
-    canvas.drawCircle(center, radius * 0.5, holePaint);
+      ..color = Colors.white;
+    canvas.drawCircle(
+      center,
+      radius * 0.6,
+      holePaint,
+    ); // Increased hole size for text
+
+    // Draw Center Text
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+
+    // Percentage
+    textPainter.text = TextSpan(
+      text: centerValue,
+      style: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: centerColor,
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        center.dx - textPainter.width / 2,
+        center.dy - textPainter.height / 2 - 8,
+      ),
+    );
+
+    // Label
+    textPainter.text = TextSpan(
+      text: centerLabel,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: centerColor.withValues(alpha: 0.8),
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(center.dx - textPainter.width / 2, center.dy + 8),
+    );
   }
 
   @override

@@ -4,7 +4,7 @@ import 'package:keepjoy_app/theme/typography.dart';
 class ReportUI {
   // Colors
   static const Color backgroundColor = Color(0xFFF5F5F7);
-  static const Color borderSideColor = Color(0xFFE5E7EA);
+  static const Color borderSideColor = Color(0xFFE9EDF2);
   static const Color primaryTextColor = Color(0xFF111827);
   static const Color secondaryTextColor = Color(0xFF6B7280);
   static const Color labelTextColor = Color(0xFF9CA3AF);
@@ -19,9 +19,14 @@ class ReportUI {
   // Shadows
   static List<BoxShadow> cardShadow = [
     const BoxShadow(
-      color: Color(0x08000000),
-      blurRadius: 12,
-      offset: Offset(0, 4),
+      color: Color(0x10000000),
+      blurRadius: 18,
+      offset: Offset(0, 8),
+    ),
+    const BoxShadow(
+      color: Color(0x06000000),
+      blurRadius: 6,
+      offset: Offset(0, 2),
     ),
   ];
 
@@ -64,6 +69,7 @@ class ReportUI {
     color: const Color(0xFFF9FAFB),
     borderRadius: BorderRadius.circular(statCardRadius),
     border: Border.all(color: borderSideColor),
+    boxShadow: lightShadow,
   );
 
   // Heatmap Colors
@@ -126,4 +132,49 @@ class ReportTextStyles {
   // Body text for descriptions/insights
   static TextStyle get body =>
       AppTypography.bodyMedium.copyWith(color: ReportUI.secondaryTextColor);
+
+  // Compact legend labels
+  static TextStyle get legendLabel => AppTypography.bodySmall.copyWith(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    color: ReportUI.secondaryTextColor,
+  );
+
+  // Category names in analytical lists
+  static TextStyle get categoryTitle => AppTypography.bodyLarge.copyWith(
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    color: ReportUI.primaryTextColor,
+    height: 1.3,
+  );
+
+  // Secondary metric text in list rows
+  static TextStyle get metricMeta => AppTypography.bodySmall.copyWith(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    color: ReportUI.secondaryTextColor,
+  );
+
+  // Mid-size numeric values used in side columns
+  static TextStyle get metricValueMedium =>
+      AppTypography.headlineSmall.copyWith(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: ReportUI.primaryTextColor,
+        letterSpacing: -0.3,
+      );
+
+  // Chart value labels above bars
+  static TextStyle get chartValueLabel => AppTypography.labelSmall.copyWith(
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+    color: const Color(0xFF64748B),
+  );
+
+  // Chart axis labels below bars
+  static TextStyle get chartAxisLabel => AppTypography.labelSmall.copyWith(
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    color: const Color(0xFF64748B),
+  );
 }

@@ -1,8 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:keepjoy_app/l10n/app_localizations.dart';
-import 'package:keepjoy_app/theme/typography.dart';
-import 'package:keepjoy_app/widgets/glass_container.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
@@ -18,9 +16,119 @@ class MemoryLaneReportScreen extends StatefulWidget {
   State<MemoryLaneReportScreen> createState() => _MemoryLaneReportScreenState();
 }
 
+enum _ReportRange { days7, days30, yearly }
+
 class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
   final ScrollController _scrollController = ScrollController();
+  _ReportRange _selectedRange = _ReportRange.yearly;
   AppLocalizations get l10n => AppLocalizations.of(context)!;
+
+  DateTime get _todayStart {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  DateTime get _rangeStart {
+    final now = DateTime.now();
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+        return _todayStart.subtract(const Duration(days: 6));
+      case _ReportRange.days30:
+        return _todayStart.subtract(const Duration(days: 29));
+      case _ReportRange.yearly:
+        return DateTime(now.year, 1, 1);
+    }
+  }
+
+  DateTime get _rangeEndExclusive {
+    final now = DateTime.now();
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+      case _ReportRange.days30:
+        return _todayStart.add(const Duration(days: 1));
+      case _ReportRange.yearly:
+        return DateTime(now.year + 1, 1, 1);
+    }
+  }
+
+  String _rangeLabel(bool isChinese) {
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+        return isChinese ? '最近7天' : 'Last 7 Days';
+      case _ReportRange.days30:
+        return isChinese ? '最近30天' : 'Last 30 Days';
+      case _ReportRange.yearly:
+        return isChinese ? '每年' : 'Yearly';
+    }
+  }
+
+  List<Memory> _filteredMemories() {
+    final start = _rangeStart;
+    final end = _rangeEndExclusive;
+    return widget.memories.where((memory) {
+      return !memory.createdAt.isBefore(start) &&
+          memory.createdAt.isBefore(end);
+    }).toList();
+  }
+
+  void _showRangeSelector(bool isChinese) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        Widget buildOption(_ReportRange range, String label) {
+          final selected = _selectedRange == range;
+          return ListTile(
+            title: Text(
+              label,
+              style: ReportTextStyles.body.copyWith(
+                color: ReportUI.primaryTextColor,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            trailing: selected
+                ? const Icon(Icons.check_rounded, color: Color(0xFF0EA5E9))
+                : null,
+            onTap: () {
+              setState(() => _selectedRange = range);
+              Navigator.pop(sheetContext);
+            },
+          );
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD1D5DB),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 8),
+              buildOption(
+                _ReportRange.days7,
+                isChinese ? '最近7天' : 'Last 7 Days',
+              ),
+              buildOption(
+                _ReportRange.days30,
+                isChinese ? '最近30天' : 'Last 30 Days',
+              ),
+              buildOption(_ReportRange.yearly, isChinese ? '每年' : 'Yearly'),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -30,19 +138,17 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final isChinese = Localizations.localeOf(
       context,
     ).languageCode.toLowerCase().startsWith('zh');
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
-    final headerHeight = responsive.totalTwoLineHeaderHeight + 12;
     final topPadding = responsive.safeAreaPadding.top;
-    final colorScheme = Theme.of(context).colorScheme;
     final pageName = l10n.dashboardMemoryLaneTitle;
+    final memories = _filteredMemories();
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: const Color(0xFFF5F5F7),
       body: Stack(
         children: [
           // Scrollable content
@@ -51,81 +157,36 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             physics: const BouncingScrollPhysics(),
             child: Stack(
               children: [
-                // Gradient background that scrolls
-                Container(
-                  height: 800,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: ReportUI.memoryHeaderGradient,
-                      stops: const [0.0, 0.25, 0.45],
-                    ),
-                  ),
-                ),
-                // Content on top
+                // Background
+                Container(height: 800, color: const Color(0xFFF5F5F7)),
+                // Content
                 Column(
                   children: [
-                    // Top spacing + title
-                    SizedBox(
-                      height: headerHeight,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: horizontalPadding,
-                          right: horizontalPadding,
-                          top: topPadding + 28,
-                          bottom: 8,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Large title on the left
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  pageName,
-                                  style: ReportTextStyles.screenTitle,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  l10n.dashboardMemoryLaneSubtitle,
-                                  style: ReportTextStyles.screenSubtitle,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    SizedBox(height: responsive.totalTwoLineHeaderHeight),
 
-                    // Content sections
+                    // Main Report Content
                     Padding(
                       padding: EdgeInsets.fromLTRB(
                         horizontalPadding,
                         24,
                         horizontalPadding,
-                        0,
+                        36,
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // 1. Category Statistics (moved to top)
-                          _buildEmotionByCategory(context, isChinese),
+                          _buildEmotionDistribution(
+                            context,
+                            isChinese,
+                            memories,
+                          ),
                           const SizedBox(height: ReportUI.sectionGap),
-
-                          // 2. Memory Heatmap
-                          _buildMemoryHeatmap(context, isChinese),
+                          _buildEmotionByCategory(context, isChinese, memories),
                           const SizedBox(height: ReportUI.sectionGap),
-
-                          // 3. Emotion Distribution (moved under heatmap)
-                          _buildEmotionDistribution(context, isChinese),
+                          _buildMemoryHeatmap(context, isChinese, memories),
                           const SizedBox(height: ReportUI.sectionGap),
-
-                          // 4. Time Markers
-                          _buildTimeMarkers(context, isChinese),
-                          const SizedBox(height: ReportUI.sectionGap),
+                          _buildTimeMarkers(context, isChinese, memories),
+                          const SizedBox(height: 32),
                         ],
                       ),
                     ),
@@ -134,8 +195,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               ],
             ),
           ),
-
-          // Real header that appears when scrolling is complete - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
@@ -146,44 +205,122 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 final scrollOffset = _scrollController.hasClients
                     ? _scrollController.offset
                     : 0.0;
-                final scrollProgress = (scrollOffset / headerHeight).clamp(
-                  0.0,
-                  1.0,
-                );
-                final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                final scrollProgress =
+                    (scrollOffset / responsive.twoLineHeaderContentHeight)
+                        .clamp(0.0, 1.0);
+                final collapsedHeaderOpacity = scrollProgress >= 1.0
+                    ? 1.0
+                    : 0.0;
                 return IgnorePointer(
-                  ignoring: realHeaderOpacity < 0.5,
-                  child: Opacity(opacity: realHeaderOpacity, child: child),
+                  ignoring: collapsedHeaderOpacity < 0.5,
+                  child: Opacity(opacity: collapsedHeaderOpacity, child: child),
                 );
               },
               child: Container(
                 height: responsive.collapsedHeaderHeight,
+                padding: EdgeInsets.only(top: topPadding),
+                alignment: Alignment.center,
                 decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: Color(0xFFF5F5F7),
                   border: Border(
                     bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
                   ),
                 ),
-                child: Stack(
+                child: Text(
+                  pageName,
+                  style: TextStyle(
+                    fontSize: responsive.titleFontSize,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress =
+                    (scrollOffset / responsive.twoLineHeaderContentHeight)
+                        .clamp(0.0, 1.0);
+                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+                return Opacity(opacity: headerOpacity, child: child);
+              },
+              child: Container(
+                height: responsive.totalTwoLineHeaderHeight,
+                padding: EdgeInsets.only(
+                  left: horizontalPadding,
+                  right: horizontalPadding,
+                  top: topPadding + 12,
+                  bottom: 12,
+                ),
+                child: Row(
                   children: [
-                    // Back button
-                    Positioned(
-                      left: 0,
-                      top: topPadding,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_rounded),
-                        onPressed: () => Navigator.pop(context),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            pageName,
+                            style: TextStyle(
+                              fontSize: responsive.largeTitleFontSize,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                              letterSpacing: -0.5,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.dashboardMemoryLaneSubtitle,
+                            style: TextStyle(
+                              fontSize: responsive.bodyFontSize,
+                              color: const Color(0xFF6B7280),
+                              height: 1.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
-                    // Centered title
-                    Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: topPadding),
-                        child: Text(
-                          pageName,
-                          style: ReportTextStyles.sectionHeader.copyWith(
-                            color: Colors.black87,
-                          ),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _showRangeSelector(isChinese),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 9,
+                        ),
+                        decoration: ReportUI.statCardDecoration.copyWith(
+                          color: Colors.white,
+                          boxShadow: const [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _rangeLabel(isChinese),
+                              style: ReportTextStyles.label.copyWith(
+                                color: ReportUI.secondaryTextColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -197,46 +334,66 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     );
   }
 
-  // 1. PIE CHART for emotions
-  Widget _buildEmotionDistribution(BuildContext context, bool isChinese) {
+  // 1. EMOTION DISTRIBUTION (Pie + Legend)
+  Widget _buildEmotionDistribution(
+    BuildContext context,
+    bool isChinese,
+    List<Memory> memories,
+  ) {
     final sentimentCounts = <MemorySentiment, int>{};
-    for (final memory in widget.memories) {
+    for (final memory in memories) {
       if (memory.sentiment != null) {
         sentimentCounts[memory.sentiment!] =
             (sentimentCounts[memory.sentiment!] ?? 0) + 1;
       }
     }
 
+    // Updated palette to match screenshot
+    final emotionColors = {
+      'happy': const Color(0xFF5ECFB8), // Teal
+      'joy': const Color(0xFF5ECFB8), // Teal
+      'love': const Color(0xFFB794F6), // Purple
+      'nostalgia': const Color(0xFF89CFF0), // Blue
+      'adventure': const Color(0xFFFFD93D), // Yellow
+      'grateful': const Color(0xFFFFA07A), // Orange
+      'peaceful': const Color(0xFFE0E7FF), // Light Indigo
+      'sad': const Color(0xFF9CA3AF),
+      'angry': const Color(0xFFFF9AA2),
+      'calm': const Color(0xFFE0E7FF),
+      'excited': const Color(0xFFFFA07A),
+      'neutral': const Color(0xFF9CA3AF),
+    };
+
     final emotions = [
+      {
+        'sentiment': MemorySentiment.happy,
+        'label': MemorySentiment.happy.label(context),
+        'color': emotionColors['happy']!,
+      },
       {
         'sentiment': MemorySentiment.love,
         'label': MemorySentiment.love.label(context),
-        'color': const Color(0xFFFF9AA2),
+        'color': emotionColors['love']!,
       },
       {
         'sentiment': MemorySentiment.nostalgia,
         'label': MemorySentiment.nostalgia.label(context),
-        'color': const Color(0xFFFFD93D),
+        'color': emotionColors['nostalgia']!,
       },
       {
         'sentiment': MemorySentiment.adventure,
         'label': MemorySentiment.adventure.label(context),
-        'color': const Color(0xFF89CFF0),
-      },
-      {
-        'sentiment': MemorySentiment.happy,
-        'label': MemorySentiment.happy.label(context),
-        'color': const Color(0xFFFFA07A),
+        'color': emotionColors['adventure']!,
       },
       {
         'sentiment': MemorySentiment.grateful,
         'label': MemorySentiment.grateful.label(context),
-        'color': const Color(0xFF5ECFB8),
+        'color': emotionColors['grateful']!,
       },
       {
         'sentiment': MemorySentiment.peaceful,
         'label': MemorySentiment.peaceful.label(context),
-        'color': const Color(0xFFB794F6),
+        'color': emotionColors['peaceful']!,
       },
     ];
 
@@ -245,6 +402,33 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       (sum, count) => sum + count,
     );
     final hasData = totalCount > 0;
+
+    // Calculate dominant emotion for center text
+    String centerValue = '0%';
+    String centerLabel = '';
+    Color centerColor = const Color(0xFFB794F6);
+
+    if (hasData) {
+      MemorySentiment? maxSentiment;
+      int maxCount = 0;
+      for (final entry in sentimentCounts.entries) {
+        if (entry.value > maxCount) {
+          maxCount = entry.value;
+          maxSentiment = entry.key;
+        }
+      }
+
+      if (maxSentiment != null) {
+        centerValue = '${((maxCount / totalCount) * 100).toStringAsFixed(0)}%';
+        centerLabel = maxSentiment.label(context);
+        // Find color
+        final emotionEntry = emotions.firstWhere(
+          (e) => e['sentiment'] == maxSentiment,
+          orElse: () => {'color': const Color(0xFFB794F6)},
+        );
+        centerColor = emotionEntry['color'] as Color;
+      }
+    }
 
     return Container(
       width: double.infinity,
@@ -263,86 +447,144 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
             style: ReportTextStyles.sectionSubtitle,
           ),
           const SizedBox(height: 24),
-          Center(
-            child: SizedBox(
-              height: 220,
-              width: 220,
-              child: CustomPaint(
-                painter: _EmotionPieChartPainter(
-                  emotions: emotions,
-                  sentimentCounts: sentimentCounts,
-                  totalCount: totalCount,
-                  hasData: hasData,
-                  isChinese: isChinese,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Pie Chart
+              SizedBox(
+                width: 140,
+                height: 140,
+                child: CustomPaint(
+                  painter: _EmotionPieChartPainter(
+                    emotions: emotions,
+                    sentimentCounts: sentimentCounts,
+                    totalCount: totalCount,
+                    hasData: hasData,
+                    centerValue: centerValue,
+                    centerLabel: centerLabel,
+                    centerColor: centerColor,
+                  ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildEmotionLegend(
-            emotions: emotions,
-            sentimentCounts: sentimentCounts,
-            totalCount: totalCount,
-            isChinese: isChinese,
-            context: context,
+              const SizedBox(width: 32),
+              // Legend
+              Expanded(
+                child: Column(
+                  children: emotions.map((emotion) {
+                    final sentiment = emotion['sentiment'] as MemorySentiment;
+                    final count = sentimentCounts[sentiment] ?? 0;
+
+                    final percentage = totalCount == 0
+                        ? 0.0
+                        : (count / totalCount * 100);
+                    final color = emotion['color'] as Color;
+                    final label = emotion['label'] as String;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              label,
+                              style: ReportTextStyles.legendLabel.copyWith(
+                                color: const Color(0xFF374151),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '${percentage.toStringAsFixed(0)}%',
+                            style: ReportTextStyles.legendLabel.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // 2. MONTHLY HEATMAP (12 squares for 12 months, 2 rows x 6 cols)
-  Widget _buildMemoryHeatmap(BuildContext context, bool isChinese) {
-    final monthlyData = <String, int>{};
+  // 2. ACTIVITY BAR CHART
+  Widget _buildMemoryHeatmap(
+    BuildContext context,
+    bool isChinese,
+    List<Memory> memories,
+  ) {
+    final isYearly = _selectedRange == _ReportRange.yearly;
+    final labels = <String>[];
+    final counts = <int>[];
 
-    for (final memory in widget.memories) {
-      final monthKey =
-          '${memory.createdAt.year}-${memory.createdAt.month.toString().padLeft(2, '0')}';
-      monthlyData[monthKey] = (monthlyData[monthKey] ?? 0) + 1;
-    }
-
-    int maxCount = 0;
-    monthlyData.forEach((month, count) {
-      if (count > maxCount) maxCount = count;
-    });
-
-    // Calculate stats
-    String? mostActiveMonth;
-    int maxMonthCount = 0;
-    monthlyData.forEach((month, count) {
-      if (count > maxMonthCount) {
-        maxMonthCount = count;
-        mostActiveMonth = month;
+    if (isYearly) {
+      for (var month = 1; month <= 12; month++) {
+        final count = memories
+            .where((memory) => memory.createdAt.month == month)
+            .length;
+        labels.add(isChinese ? '$month月' : _getMonthAbbrev(month));
+        counts.add(count);
       }
-    });
-
-    // Calculate longest streak (year to date)
-    final now = DateTime.now();
-    int longestStreak = 0;
-    int currentStreak = 0;
-
-    for (int month = 1; month <= now.month; month++) {
-      final monthKey = '${now.year}-${month.toString().padLeft(2, '0')}';
-      if ((monthlyData[monthKey] ?? 0) > 0) {
-        currentStreak++;
-        if (currentStreak > longestStreak) {
-          longestStreak = currentStreak;
+    } else {
+      if (_selectedRange == _ReportRange.days7) {
+        final start = _todayStart.subtract(const Duration(days: 6));
+        for (var i = 0; i < 7; i++) {
+          final day = start.add(Duration(days: i));
+          final dayEnd = day.add(const Duration(days: 1));
+          final count = memories
+              .where(
+                (memory) =>
+                    !memory.createdAt.isBefore(day) &&
+                    memory.createdAt.isBefore(dayEnd),
+              )
+              .length;
+          final dayLabel = '${day.month}/${day.day}';
+          labels.add(dayLabel);
+          counts.add(count);
         }
       } else {
-        currentStreak = 0;
+        final start = _todayStart.subtract(const Duration(days: 29));
+        const bucketCount = 6;
+        const bucketSizeDays = 5;
+        for (var bucket = 0; bucket < bucketCount; bucket++) {
+          final bucketStart = start.add(
+            Duration(days: bucket * bucketSizeDays),
+          );
+          final bucketEnd = bucket == bucketCount - 1
+              ? _todayStart.add(const Duration(days: 1))
+              : bucketStart.add(const Duration(days: bucketSizeDays));
+          final count = memories
+              .where(
+                (memory) =>
+                    !memory.createdAt.isBefore(bucketStart) &&
+                    memory.createdAt.isBefore(bucketEnd),
+              )
+              .length;
+          labels.add('${bucketStart.month}/${bucketStart.day}');
+          counts.add(count);
+        }
       }
     }
 
-    String formatMostActiveLabel() {
-      if (mostActiveMonth == null) return isChinese ? '暂无' : 'N/A';
-      final parts = mostActiveMonth!.split('-');
-      if (parts.length < 2) return mostActiveMonth!;
-      final month = int.tryParse(parts[1]);
-      if (month == null) return mostActiveMonth!;
-      return isChinese ? '$month月' : _getMonthAbbrev(month);
-    }
+    final maxCount = counts.isEmpty ? 0 : counts.fold<int>(0, math.max);
+    final peakIndex = counts.indexWhere((count) => count == maxCount);
+    const chartHeight = 180.0;
 
-    // Premium Grid Heatmap
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(ReportUI.contentPadding),
@@ -351,256 +593,91 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isChinese ? '回忆热力图' : 'Memory Heatmap',
+            isChinese ? '回忆趋势' : 'Memory Trend',
             style: ReportTextStyles.sectionHeader,
           ),
           const SizedBox(height: 4),
           Text(
-            isChinese ? '本年度活动' : 'Activity this year',
+            isChinese ? '查看回忆记录随时间的变化节奏' : 'See memory frequency over time',
             style: ReportTextStyles.sectionSubtitle,
           ),
-          const SizedBox(height: 24),
-
-          // 2 rows of 6 months each
-          Column(
-            children: [
-              // First row (months 1-6: January to June)
-              Row(
-                children: List.generate(6, (index) {
-                  final month = index + 1; // 1-6
-                  final monthDate = DateTime(now.year, month, 1);
-                  final monthKey =
-                      '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
-                  final count = monthlyData[monthKey] ?? 0;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: ReportUI.getHeatmapColor(count),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: count > 0
-                                  ? [
-                                      BoxShadow(
-                                        color: ReportUI.getHeatmapColor(
-                                          count,
-                                        ).withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isChinese
-                                ? '${monthDate.month}月'
-                                : _getMonthAbbrev(monthDate.month),
-                            style: ReportTextStyles.label.copyWith(
-                              fontSize: 10,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 16),
-              // Second row (months 7-12: July to December)
-              Row(
-                children: List.generate(6, (index) {
-                  final month = index + 7; // 7-12
-                  final monthDate = DateTime(now.year, month, 1);
-                  final monthKey =
-                      '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}';
-                  final count = monthlyData[monthKey] ?? 0;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: ReportUI.getHeatmapColor(count),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: count > 0
-                                  ? [
-                                      BoxShadow(
-                                        color: ReportUI.getHeatmapColor(
-                                          count,
-                                        ).withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isChinese
-                                ? '${monthDate.month}月'
-                                : _getMonthAbbrev(monthDate.month),
-                            style: ReportTextStyles.label.copyWith(
-                              fontSize: 10,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Legend & Info
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: chartHeight,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Legend
-                Row(
-                  children: [
-                    Text(
-                      isChinese ? '少' : 'Less',
-                      style: ReportTextStyles.label.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ...List.generate(5, (index) {
-                      return Container(
-                        width: 14,
-                        height: 14,
-                        margin: const EdgeInsets.symmetric(horizontal: 2),
-                        decoration: BoxDecoration(
-                          color: ReportUI.getHeatmapColor(
-                            index == 0 ? 0 : index * 3,
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      );
-                    }),
-                    const SizedBox(width: 8),
-                    Text(
-                      isChinese ? '多' : 'More',
-                      style: ReportTextStyles.label.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(counts.length, (index) {
+                final count = counts[index];
+                final ratio = maxCount == 0 ? 0.0 : (count / maxCount);
+                final barHeight = maxCount == 0
+                    ? 8.0
+                    : (ratio * (chartHeight - 42)).clamp(8.0, chartHeight - 42);
+                final barColor = count == 0
+                    ? const Color(0xFFE5E7EB)
+                    : Color.lerp(
+                        const Color(0xFFBFDBFE),
+                        const Color(0xFF2563EB),
+                        ratio,
+                      )!;
 
-                // Info Button (Restored)
-                IconButton(
-                  onPressed: () => _showHeatmapLegendDialog(context, isChinese),
-                  icon: const Icon(Icons.info_outline_rounded, size: 20),
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  tooltip: isChinese ? '颜色说明' : 'Color Scale Info',
-                ),
-              ],
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          '$count',
+                          style: ReportTextStyles.chartValueLabel.copyWith(
+                            color: count > 0
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFF94A3B8),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          height: barHeight,
+                          decoration: BoxDecoration(
+                            color: barColor,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: index == peakIndex && count > 0
+                                  ? const Color(0xFF1D4ED8)
+                                  : Colors.transparent,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          labels[index],
+                          style: ReportTextStyles.chartAxisLabel,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
             ),
           ),
-          const SizedBox(height: 24),
-
-          // Statistics (Preserved but styled)
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  title: l10n.reportMostActiveLabel,
-                  value: formatMostActiveLabel(),
-                  context: context,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatCard(
-                  title: l10n.reportLongestStreak,
-                  value: isChinese
-                      ? '$longestStreak 个月'
-                      : '$longestStreak months',
-                  context: context,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatCard(
-                  title: l10n.reportPeakActivity,
-                  value: isChinese
-                      ? '$maxMonthCount 次'
-                      : '$maxMonthCount entries',
-                  context: context,
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard({
-    required BuildContext context,
-    required String title,
-    required String value,
-  }) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 100),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: ReportUI.statCardDecoration,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: ReportTextStyles.label,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: ReportTextStyles.statValueSmall,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 3. HORIZONTAL BAR CHART by category
-  Widget _buildEmotionByCategory(BuildContext context, bool isChinese) {
-    // Initialize all categories with 0 count
+  // 3. CATEGORY STATISTICS
+  Widget _buildEmotionByCategory(
+    BuildContext context,
+    bool isChinese,
+    List<Memory> memories,
+  ) {
     final categoryCounts = <DeclutterCategory, int>{};
     for (final category in DeclutterCategory.values) {
       categoryCounts[category] = 0;
     }
 
-    // Count memories by category
-    for (final memory in widget.memories) {
+    for (final memory in memories) {
       if (memory.category != null && memory.category!.isNotEmpty) {
         final catValue = memory.category!;
-        // Find matching enum category (match enum name/english/chinese)
         final declutterCategory = DeclutterCategory.values.firstWhere(
           (cat) =>
               cat.name == catValue ||
@@ -613,9 +690,24 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       }
     }
 
-    // Sort categories by count (descending)
     final sortedCategories = categoryCounts.keys.toList()
       ..sort((a, b) => categoryCounts[b]!.compareTo(categoryCounts[a]!));
+
+    // Calculate max count for bar scaling
+    final maxCount = categoryCounts.values.isEmpty
+        ? 1
+        : categoryCounts.values.reduce(math.max);
+
+    final colors = [
+      const Color(0xFF3B82F6), // Blue
+      const Color(0xFFF97316), // Orange
+      const Color(0xFF60A5FA), // Light Blue
+      const Color(0xFFFBBF24), // Yellow
+      const Color(0xFF10B981), // Green
+      const Color(0xFF8B5CF6), // Purple
+      const Color(0xFFEC4899), // Pink
+      const Color(0xFF6B7280), // Gray
+    ];
 
     return Container(
       width: double.infinity,
@@ -625,16 +717,19 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isChinese ? '分类统计' : 'Category Stats',
+            isChinese ? '回忆分类统计' : 'Memory Category Statistics',
             style: ReportTextStyles.sectionHeader,
           ),
           const SizedBox(height: 4),
           Text(
-            isChinese ? '各类别的回忆数量' : 'Memories by category',
+            isChinese
+                ? '了解不同物品品类承载的回忆分布'
+                : 'Understand which item categories hold most memories',
             style: ReportTextStyles.sectionSubtitle,
           ),
-          const SizedBox(height: 20),
-          if (sortedCategories.isEmpty)
+          const SizedBox(height: 4),
+
+          if (sortedCategories.every((c) => (categoryCounts[c] ?? 0) == 0))
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
@@ -644,119 +739,96 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
                 ),
               ),
             )
-          else ...[
-            ListView.separated(
+          else
+            GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 8,
+                childAspectRatio: 3.4,
+              ),
               itemCount: sortedCategories.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final category = sortedCategories[index];
                 final count = categoryCounts[category] ?? 0;
-                final maxCount = categoryCounts.values.isEmpty
-                    ? 1
-                    : categoryCounts.values.reduce((a, b) => a > b ? a : b);
+                // Skip if count is 0? The screenshot showed all categories, or top ones.
+                // Let's show all for now as per "Category Statistics" section usually implies full view or top view.
+                // If the user wants to hide 0s, we can filter. But grid looks better filled.
+
                 final barValue = maxCount == 0
                     ? 0.0
                     : (count / maxCount).clamp(0.0, 1.0);
+                final color = colors[index % colors.length];
 
-                Widget rankWidget;
-                if (index == 0) {
-                  rankWidget = const Icon(
-                    Icons.emoji_events_rounded,
-                    size: 20,
-                    color: Color(0xFFFFD700),
-                  );
-                } else if (index == 1) {
-                  rankWidget = const Icon(
-                    Icons.emoji_events_rounded,
-                    size: 20,
-                    color: Color(0xFFC0C0C0),
-                  );
-                } else if (index == 2) {
-                  rankWidget = const Icon(
-                    Icons.emoji_events_rounded,
-                    size: 20,
-                    color: Color(0xFFCD7F32),
-                  );
-                } else {
-                  rankWidget = Text(
-                    '${index + 1}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[500],
-                    ),
-                  );
-                }
-
-                return Row(
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 32, child: Center(child: rankWidget)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                category.label(context),
-                                style: ReportTextStyles.body.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF111827),
-                                ),
-                              ),
-                              Text(
-                                '$count',
-                                style: ReportTextStyles.statValueSmall.copyWith(
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          category.label(context),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF6B7280),
+                            letterSpacing: 0.2,
                           ),
-                          const SizedBox(height: 6),
-                          Stack(
-                            children: [
-                              Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF3F4F6),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              ),
-                              FractionallySizedBox(
-                                widthFactor: barValue,
-                                child: Container(
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary
-                                        .withValues(alpha: 0.75),
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                ),
-                              ),
-                            ],
+                        ),
+                        Text(
+                          '$count',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: color,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Stack(
+                      children: [
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F4F6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        FractionallySizedBox(
+                          widthFactor: barValue,
+                          child: Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 );
               },
             ),
-          ],
         ],
       ),
     );
   }
 
-  // 4. TIME MARKERS (Timeline Design)
-  Widget _buildTimeMarkers(BuildContext context, bool isChinese) {
-    final sortedMemories = widget.memories.isEmpty
+  // 4. ANNUAL MEMORY (Time Markers, Redesigned)
+  Widget _buildTimeMarkers(
+    BuildContext context,
+    bool isChinese,
+    List<Memory> memories,
+  ) {
+    final sortedMemories = memories.isEmpty
         ? <Memory>[]
-        : (List<Memory>.from(widget.memories)
+        : (List<Memory>.from(memories)
             ..sort((a, b) => a.createdAt.compareTo(b.createdAt)));
 
     Memory? firstMemory = sortedMemories.isNotEmpty
@@ -769,7 +841,7 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
     // Find longest story (by description length)
     Memory? longestStory;
     int maxLength = 0;
-    for (final memory in widget.memories) {
+    for (final memory in memories) {
       final length =
           (memory.description?.length ?? 0) + (memory.notes?.length ?? 0);
       if (length > maxLength) {
@@ -783,30 +855,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         ? latestMemory.createdAt.difference(firstMemory.createdAt).inDays
         : 0;
 
-    // Check if we have enough data to show a timeline
-    if (widget.memories.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(ReportUI.contentPadding),
-        decoration: ReportUI.cardDecoration,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isChinese ? '时光印记' : 'Time Markers',
-              style: ReportTextStyles.sectionHeader,
-            ),
-            const SizedBox(height: 24),
-            Center(
-              child: Text(
-                isChinese ? '暂无回忆' : 'No memories yet',
-                style: ReportTextStyles.body,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     return Container(
       padding: const EdgeInsets.all(ReportUI.contentPadding),
       decoration: ReportUI.cardDecoration,
@@ -814,167 +862,200 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isChinese ? '时光印记' : 'Time Markers',
+            isChinese ? '回忆长廊' : 'Memory Gallery',
             style: ReportTextStyles.sectionHeader,
           ),
           const SizedBox(height: 4),
           Text(
-            l10n.reportPreciousMoments,
+            isChinese
+                ? '把值得珍藏的片段，串成一条温柔而清晰的时间线。'
+                : 'A gentle, clear timeline of the moments worth keeping.',
             style: ReportTextStyles.sectionSubtitle,
           ),
           const SizedBox(height: 24),
 
-          // Timeline Items
-          _buildTimelineItem(
-            context,
-            icon: Icons.flag_rounded,
-            color: const Color(0xFF10B981), // Green
-            label: l10n.reportFirstMemoryLabel,
-            title: firstMemory!.title,
-            date: _formatDate(firstMemory.createdAt, isChinese),
-            isLast: longestStory == null && latestMemory == firstMemory,
-          ),
-
-          if (longestStory != null &&
-              longestStory != firstMemory &&
-              longestStory != latestMemory)
-            _buildTimelineItem(
-              context,
-              icon: Icons.history_edu_rounded,
-              color: const Color(0xFFF59E0B), // Amber
-              label: l10n.reportLongestStoryLabel,
-              title: longestStory.title,
-              date: _formatDate(longestStory.createdAt, isChinese),
-              isLast: false,
-            ),
-
-          if (latestMemory != firstMemory)
-            _buildTimelineItem(
-              context,
-              icon: Icons.auto_awesome_rounded,
-              color: const Color(0xFF8B5CF6), // Purple
-              label: l10n.reportLatestMemoryLabel,
-              title: latestMemory!.title,
-              date: _formatDate(latestMemory.createdAt, isChinese),
-              isLast: true,
-            ),
-
-          const SizedBox(height: 16),
-
-          // Journey Summary Footer
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: ReportUI.statCardDecoration,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.timelapse_rounded,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+          if (memories.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Text(
+                  isChinese ? '暂无回忆记录' : 'No memory records yet',
+                  style: ReportTextStyles.body,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l10n.reportMemoryJourneyDetail(
-                      totalDays.toString(),
-                      widget.memories.length.toString(),
-                    ),
-                    style: ReportTextStyles.body.copyWith(
-                      fontSize: 13,
-                      color: const Color(0xFF4B5563),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
+              ),
+            )
+          else ...[
+            // Build timeline entries
+            ..._buildTimelineEntries(
+              context,
+              isChinese: isChinese,
+              memories: memories,
+              firstMemory: firstMemory!,
+              latestMemory: latestMemory!,
+              longestStory: longestStory,
+              totalDays: totalDays,
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildTimelineItem(
+  List<Widget> _buildTimelineEntries(
     BuildContext context, {
-    required IconData icon,
-    required Color color,
-    required String label,
-    required String title,
-    required String date,
-    required bool isLast,
+    required bool isChinese,
+    required List<Memory> memories,
+    required Memory firstMemory,
+    required Memory latestMemory,
+    Memory? longestStory,
+    required int totalDays,
   }) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Column(
+    final accent = const Color(0xFF6F92C9);
+    final items = <_TimelineItem>[
+      _TimelineItem(
+        label: l10n.reportFirstMemoryLabel,
+        title: firstMemory.title,
+        date: _formatDate(firstMemory.createdAt, isChinese),
+        icon: Icons.flag_rounded,
+      ),
+    ];
+
+    if (longestStory != null &&
+        longestStory != firstMemory &&
+        longestStory != latestMemory) {
+      items.add(
+        _TimelineItem(
+          label: l10n.reportLongestStoryLabel,
+          title: longestStory.title,
+          date: _formatDate(longestStory.createdAt, isChinese),
+          icon: Icons.history_edu_rounded,
+        ),
+      );
+    }
+
+    if (latestMemory != firstMemory) {
+      items.add(
+        _TimelineItem(
+          label: l10n.reportLatestMemoryLabel,
+          title: latestMemory.title,
+          date: _formatDate(latestMemory.createdAt, isChinese),
+          icon: Icons.auto_awesome_rounded,
+        ),
+      );
+    }
+
+    final widgets = <Widget>[];
+
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+      final isLast = i == items.length - 1;
+
+      widgets.add(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: color.withValues(alpha: 0.2),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(icon, size: 18, color: color),
-              ),
-              if (!isLast)
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB),
-                      borderRadius: BorderRadius.circular(1),
+              // Timeline rail
+              SizedBox(
+                width: 28,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: accent,
+                        shape: BoxShape.circle,
+                      ),
                     ),
+                    if (!isLast)
+                      Expanded(
+                        child: Container(
+                          width: 2,
+                          color: ReportUI.borderSideColor,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Content
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(bottom: isLast ? 0 : 16),
+                  padding: const EdgeInsets.all(14),
+                  decoration: ReportUI.statCardDecoration,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(item.icon, size: 14, color: accent),
+                          const SizedBox(width: 6),
+                          Text(
+                            item.label,
+                            style: ReportTextStyles.label.copyWith(
+                              color: accent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        item.title,
+                        style: ReportTextStyles.body.copyWith(
+                          color: ReportUI.primaryTextColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.date,
+                        style: ReportTextStyles.label.copyWith(
+                          color: ReportUI.secondaryTextColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
             ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                bottom: 24.0,
-              ), // Spacing between items
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: ReportTextStyles.label.copyWith(
-                      color: color,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    title,
-                    style: ReportTextStyles.body.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    date,
-                    style: ReportTextStyles.label.copyWith(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
+        ),
+      );
+    }
+
+    // Journey summary at bottom
+    widgets.add(const SizedBox(height: 14));
+    widgets.add(
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: ReportUI.statCardDecoration,
+        child: Row(
+          children: [
+            Icon(Icons.timelapse_rounded, size: 18, color: accent),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l10n.reportMemoryJourneyDetail(
+                  totalDays.toString(),
+                  memories.length.toString(),
+                ),
+                style: ReportTextStyles.body.copyWith(
+                  color: ReportUI.primaryTextColor,
+                  fontSize: 13,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+
+    return widgets;
   }
 
   String _formatDate(DateTime date, bool isChinese) {
@@ -996,108 +1077,6 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
       'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
-
-  Color _getHeatmapColorByCount(int count) {
-    // Same logic as _getHeatmapColor for legend consistency
-    if (count == 0) {
-      return const Color(0xFFE5E7EB); // Gray
-    } else if (count <= 3) {
-      return const Color(0xFFD4E9F7); // Very light blue
-    } else if (count <= 6) {
-      return const Color(0xFFA8D8F0); // Light blue
-    } else if (count <= 9) {
-      return const Color(0xFF7BC8E8); // Medium blue
-    } else {
-      return const Color(0xFF4FB8E0); // Dark blue (for 10+)
-    }
-  }
-
-  void _showHeatmapLegendDialog(BuildContext context, bool isChinese) {
-    final colorScheme = Theme.of(context).colorScheme;
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: GlassContainer(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    AppTypography.titleSmall(
-                      isChinese ? '活动等级说明' : 'Activity Levels',
-                      context: context,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      icon: const Icon(Icons.close_rounded, size: 20),
-                      color: colorScheme.onSurfaceVariant,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                ...[
-                  {'range': isChinese ? '无活动 (0)' : 'None (0)', 'count': 0},
-                  {
-                    'range': isChinese ? '轻度活跃 (1-3)' : 'Light (1-3)',
-                    'count': 2,
-                  },
-                  {
-                    'range': isChinese ? '中度活跃 (4-6)' : 'Moderate (4-6)',
-                    'count': 5,
-                  },
-                  {
-                    'range': isChinese ? '高度活跃 (7-9)' : 'High (7-9)',
-                    'count': 8,
-                  },
-                  {
-                    'range': isChinese ? '非常活跃 (10+)' : 'Very High (10+)',
-                    'count': 10,
-                  },
-                ].map((item) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: _getHeatmapColorByCount(
-                              item['count'] as int,
-                            ).withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: AppTypography.bodySmall(
-                            item['range'] as String,
-                            context: context,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   String _getMonthAbbrev(int month) {
@@ -1158,6 +1137,8 @@ class _MemoryLaneReportScreenState extends State<MemoryLaneReportScreen> {
               emotions: slices,
               sentimentCounts: sentimentCounts,
               totalCount: totalCount,
+              hasData: hasData,
+              isChinese: isChinese,
             ),
           ),
           AnimatedSwitcher(
@@ -1677,23 +1658,26 @@ class _CategoryVerticalBarChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-// Donut Chart Painter for Emotion Distribution
 class _EmotionDonutPainter extends CustomPainter {
   final List<Map<String, dynamic>> emotions;
   final Map<MemorySentiment, int> sentimentCounts;
   final int totalCount;
+  final bool hasData;
+  final bool isChinese;
 
   _EmotionDonutPainter({
     required this.emotions,
     required this.sentimentCounts,
     required this.totalCount,
+    required this.hasData,
+    required this.isChinese,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    final strokeWidth = radius * 0.32;
+    final strokeWidth = radius * 0.25;
     final rect = Rect.fromCircle(
       center: center,
       radius: radius - strokeWidth / 2,
@@ -1702,13 +1686,11 @@ class _EmotionDonutPainter extends CustomPainter {
     final basePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
-      ..color = const Color(0xFFE7EAF6);
+      ..color = const Color(0xFFE0F7FA).withValues(alpha: 0.5);
 
     canvas.drawArc(rect, 0, math.pi * 2, false, basePaint);
 
-    if (totalCount == 0) {
-      return;
-    }
+    if (!hasData || totalCount <= 0) return;
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
@@ -1721,16 +1703,9 @@ class _EmotionDonutPainter extends CustomPainter {
       final sentiment = emotion['sentiment'] as MemorySentiment;
       final count = sentimentCounts[sentiment] ?? 0;
       if (count <= 0) continue;
+
       final sweepAngle = (count / totalCount) * math.pi * 2;
-      if (sweepAngle <= 0) continue;
-
-      final color = emotion['color'] as Color;
-      paint.shader = SweepGradient(
-        startAngle: startAngle,
-        endAngle: startAngle + sweepAngle,
-        colors: [color.withValues(alpha: 0.65), color],
-      ).createShader(rect);
-
+      paint.color = emotion['color'] as Color;
       canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
       startAngle += sweepAngle;
     }
@@ -1740,153 +1715,130 @@ class _EmotionDonutPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
+class _TimelineItem {
+  final String label;
+  final String title;
+  final String date;
+  final IconData icon;
+
+  _TimelineItem({
+    required this.label,
+    required this.title,
+    required this.date,
+    required this.icon,
+  });
+}
+
 class _EmotionPieChartPainter extends CustomPainter {
   final List<Map<String, dynamic>> emotions;
   final Map<MemorySentiment, int> sentimentCounts;
   final int totalCount;
   final bool hasData;
-  final bool isChinese;
+  final String centerValue;
+  final String centerLabel;
+  final Color centerColor;
 
   _EmotionPieChartPainter({
     required this.emotions,
     required this.sentimentCounts,
     required this.totalCount,
     required this.hasData,
-    required this.isChinese,
+    required this.centerValue,
+    required this.centerLabel,
+    required this.centerColor,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = math.min(size.width, size.height) / 2;
+    final rect = Rect.fromCircle(center: center, radius: radius);
 
     if (!hasData) {
       final grayPaint = Paint()
         ..color = const Color(0xFFE5E7EB)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(center, radius, grayPaint);
+
+      // Draw center hole
+      final holePaint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = Colors.white;
+      canvas.drawCircle(center, radius * 0.6, holePaint);
       return;
     }
 
-    // Shadow for slices
-    final sliceShadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.08)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-
-    // Prepare data
-    final maxCount = sentimentCounts.values.isEmpty
-        ? 0
-        : sentimentCounts.values.reduce((a, b) => a > b ? a : b);
     double startAngle = -math.pi / 2;
-    const baseGapAngle = 0.03; // ~1.7°
 
     for (final emotion in emotions) {
       final sentiment = emotion['sentiment'] as MemorySentiment;
       final count = sentimentCounts[sentiment] ?? 0;
       final color = emotion['color'] as Color;
+
       if (count <= 0) continue;
 
       final sweepAngle = (count / totalCount) * 2 * math.pi;
-      if (sweepAngle <= baseGapAngle) {
-        startAngle += sweepAngle;
-        continue;
-      }
-
-      final midAngle = startAngle + sweepAngle / 2;
-      // Explode distance proportional to slice size
-      final explodeFactor = (count / totalCount).clamp(0.0, 1.0);
-      final explodeDist = radius * (0.018 + 0.03 * explodeFactor);
-      final dx = explodeDist * math.cos(midAngle);
-      final dy = explodeDist * math.sin(midAngle);
-
-      // Slight scale for largest slice
-      final scale = maxCount > 0 ? (0.94 + 0.08 * (count / maxCount)) : 1.0;
-      final sliceRadius = radius * scale;
-      final sliceRect = Rect.fromCircle(center: center, radius: sliceRadius);
-
-      final gapAngle = baseGapAngle;
-      final effectiveStart = startAngle + gapAngle / 2;
-      final effectiveSweep = sweepAngle - gapAngle;
-
-      canvas.save();
-      canvas.translate(dx, dy);
-
-      canvas.drawArc(
-        sliceRect,
-        effectiveStart,
-        effectiveSweep,
-        true,
-        sliceShadowPaint,
-      );
 
       final paint = Paint()
-        ..color = color
-        ..style = PaintingStyle.fill;
-      canvas.drawArc(sliceRect, effectiveStart, effectiveSweep, true, paint);
+        ..style = PaintingStyle.fill
+        ..color = color;
 
-      // Percentage inside slice
-      final percent = ((count / totalCount) * 100).toStringAsFixed(
-        ((count / totalCount) * 100) >= 10 ? 0 : 1,
-      );
-      final innerRadius = sliceRadius * 0.58;
-      final innerOffset = Offset(
-        center.dx + innerRadius * math.cos(midAngle),
-        center.dy + innerRadius * math.sin(midAngle),
-      );
-      final innerTextPainter = TextPainter(
-        text: TextSpan(
-          text: '$percent%',
-          style: TextStyle(
-            color:
-                Color.lerp(color, Colors.black, 0.35) ??
-                color.withValues(alpha: 0.9),
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      innerTextPainter.layout();
-      innerTextPainter.paint(
-        canvas,
-        Offset(
-          innerOffset.dx - innerTextPainter.width / 2,
-          innerOffset.dy - innerTextPainter.height / 2,
-        ),
-      );
+      canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
 
-      // Outside title matching percentage tint
-      final labelRadius = sliceRadius * 1.05;
-      final labelOffset = Offset(
-        center.dx + labelRadius * math.cos(midAngle),
-        center.dy + labelRadius * math.sin(midAngle),
-      );
-      final titleColor =
-          innerTextPainter.text!.style?.color ??
-          (Color.lerp(color, Colors.black, 0.35) ??
-              color.withValues(alpha: 0.9));
-      final labelPainter = TextPainter(
-        text: TextSpan(
-          text: emotion['label'] as String,
-          style: TextStyle(
-            color: titleColor,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      labelPainter.layout(maxWidth: radius);
-      final isRight = math.cos(midAngle) >= 0;
-      final labelPos = Offset(
-        labelOffset.dx - (isRight ? 0 : labelPainter.width),
-        labelOffset.dy - labelPainter.height / 2,
-      );
-      labelPainter.paint(canvas, labelPos);
+      // Draw border
+      final borderPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..color = Colors.white
+        ..strokeWidth = 2;
+      canvas.drawArc(rect, startAngle, sweepAngle, true, borderPaint);
 
-      canvas.restore();
       startAngle += sweepAngle;
     }
+
+    // Draw center hole for donut effect
+    final holePaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white;
+    canvas.drawCircle(center, radius * 0.6, holePaint);
+
+    // Draw Center Text
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+
+    // Percentage
+    textPainter.text = TextSpan(
+      text: centerValue,
+      style: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: centerColor,
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        center.dx - textPainter.width / 2,
+        center.dy - textPainter.height / 2 - 8,
+      ),
+    );
+
+    // Label
+    textPainter.text = TextSpan(
+      text: centerLabel,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: centerColor.withValues(alpha: 0.8),
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(center.dx - textPainter.width / 2, center.dy + 8),
+    );
   }
 
   @override

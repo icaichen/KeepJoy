@@ -1,22 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
 import 'package:keepjoy_app/models/resell_item.dart';
-import 'package:keepjoy_app/widgets/auto_scale_text.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
 import 'package:keepjoy_app/l10n/app_localizations.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
 import 'package:keepjoy_app/features/insights/unified/models/enhanced_report_models.dart';
 
-enum TrendMetric {
-  soldItems('已售物品', 'Sold Items'),
-  resellValue('二手收益', 'Resale Earnings');
-
-  const TrendMetric(this.chinese, this.english);
-  final String chinese;
-  final String english;
-
-  String label(bool isChinese) => isChinese ? chinese : english;
-}
+enum _ReportRange { days7, days30, yearly }
 
 class ResellAnalysisReportScreen extends StatefulWidget {
   const ResellAnalysisReportScreen({
@@ -35,7 +25,7 @@ class ResellAnalysisReportScreen extends StatefulWidget {
 
 class _ResellAnalysisReportScreenState
     extends State<ResellAnalysisReportScreen> {
-  TrendMetric _selectedMetric = TrendMetric.soldItems;
+  _ReportRange _selectedRange = _ReportRange.yearly;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -44,83 +34,269 @@ class _ResellAnalysisReportScreenState
     super.dispose();
   }
 
-  Widget _buildTrendSummary(
-    BuildContext context,
-    bool isChinese,
-    Map<int, double> trendData,
-  ) {
+  DateTime get _todayStart {
     final now = DateTime.now();
-    final soldThisYear = widget.resellItems
-        .where(
-          (item) =>
-              item.status == ResellStatus.sold &&
-              item.createdAt.year == now.year,
-        )
-        .length;
-    final monthsElapsed = now.month;
-    final avgPerMonth = monthsElapsed > 0
-        ? (soldThisYear / monthsElapsed)
-        : 0.0;
+    return DateTime(now.year, now.month, now.day);
+  }
 
-    // Compute trend: compare recent 3 months vs previous 3 months
-    // Trend: this month vs last month (by sold date)
-    final currentMonthValue = trendData[now.month] ?? 0.0;
-    final prevMonthValue = now.month > 1
-        ? (trendData[now.month - 1] ?? 0.0)
-        : 0.0;
-    final changePercent = prevMonthValue > 0
-        ? ((currentMonthValue - prevMonthValue) / prevMonthValue) * 100
-        : (currentMonthValue > 0 ? 100.0 : 0.0);
-    final trendUp = changePercent >= 0;
+  DateTime get _rangeStart {
+    final now = DateTime.now();
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+        return _todayStart.subtract(const Duration(days: 6));
+      case _ReportRange.days30:
+        return _todayStart.subtract(const Duration(days: 29));
+      case _ReportRange.yearly:
+        return DateTime(now.year, 1, 1);
+    }
+  }
 
-    Widget pill(String label, String value) {
-      return Expanded(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: ReportUI.statCardDecoration,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: ReportTextStyles.label),
-              const SizedBox(height: 6),
-              Text(
-                value,
-                style: ReportTextStyles.statValueSmall,
-                textAlign: TextAlign.center,
+  DateTime get _rangeEndExclusive {
+    final now = DateTime.now();
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+      case _ReportRange.days30:
+        return _todayStart.add(const Duration(days: 1));
+      case _ReportRange.yearly:
+        return DateTime(now.year + 1, 1, 1);
+    }
+  }
+
+  bool _inSelectedRange(DateTime date) {
+    return !date.isBefore(_rangeStart) && date.isBefore(_rangeEndExclusive);
+  }
+
+  String _rangeLabel(bool isChinese) {
+    switch (_selectedRange) {
+      case _ReportRange.days7:
+        return isChinese ? '最近7天' : 'Last 7 Days';
+      case _ReportRange.days30:
+        return isChinese ? '最近30天' : 'Last 30 Days';
+      case _ReportRange.yearly:
+        return isChinese ? '每年' : 'Yearly';
+    }
+  }
+
+  List<ResellItem> get _filteredResellItems {
+    return widget.resellItems.where((item) {
+      final baseDate = item.soldDate ?? item.createdAt;
+      return _inSelectedRange(baseDate);
+    }).toList();
+  }
+
+  void _showRangeSelector(bool isChinese) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        Widget buildOption(_ReportRange range, String label) {
+          final selected = _selectedRange == range;
+          return ListTile(
+            title: Text(
+              label,
+              style: ReportTextStyles.body.copyWith(
+                color: ReportUI.primaryTextColor,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
+            ),
+            trailing: selected
+                ? const Icon(Icons.check_rounded, color: Color(0xFF2563EB))
+                : null,
+            onTap: () {
+              setState(() => _selectedRange = range);
+              Navigator.pop(sheetContext);
+            },
+          );
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD1D5DB),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 8),
+              buildOption(
+                _ReportRange.days7,
+                isChinese ? '最近7天' : 'Last 7 Days',
+              ),
+              buildOption(
+                _ReportRange.days30,
+                isChinese ? '最近30天' : 'Last 30 Days',
+              ),
+              buildOption(_ReportRange.yearly, isChinese ? '每年' : 'Yearly'),
+              const SizedBox(height: 8),
             ],
           ),
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: ReportUI.statCardDecoration,
-      child: Row(
-        children: [
-          pill(isChinese ? '已售件数' : 'Sold Items', soldThisYear.toString()),
-          const SizedBox(width: 12),
-          pill(
-            isChinese ? '月均售出' : 'Avg / Month',
-            avgPerMonth.toStringAsFixed(1),
-          ),
-          const SizedBox(width: 12),
-          pill(
-            isChinese ? '趋势' : 'Trend',
-            trendUp
-                ? '+${changePercent.abs().toStringAsFixed(changePercent.abs() >= 10 ? 0 : 1)}%'
-                : '-${changePercent.abs().toStringAsFixed(changePercent.abs() >= 10 ? 0 : 1)}%',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  String get _currencySymbol {
-    final locale = Localizations.localeOf(context);
-    final isZh = locale.languageCode.toLowerCase().startsWith('zh');
-    return isZh ? '¥' : '\$';
+  // Chart Data Class
+  static const _chartBlue = Color(0xFF2563EB);
+  static const _chartTeal = Color(0xFF14B8A6);
+
+  List<_ChartDataPoint> _getChartData() {
+    final now = DateTime.now();
+    final points = <_ChartDataPoint>[];
+    final dataSource = _filteredResellItems;
+
+    if (_selectedRange == _ReportRange.days7) {
+      // Last 7 days
+      for (int i = 6; i >= 0; i--) {
+        final date = now.subtract(Duration(days: i));
+        // Simple day grouping
+        final dayItems = dataSource.where((item) {
+          if (item.status != ResellStatus.sold || item.soldDate == null) {
+            return false;
+          }
+          return item.soldDate!.year == date.year &&
+              item.soldDate!.month == date.month &&
+              item.soldDate!.day == date.day;
+        }).toList();
+
+        final revenue = dayItems.fold(
+          0.0,
+          (sum, item) => sum + (item.soldPrice ?? 0),
+        );
+        final volume = dayItems.length.toDouble();
+
+        // Weekday labels (Mon, Tue, etc.)
+        const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        // Or localized
+        const weekdaysZh = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+        final isZh = Localizations.localeOf(
+          context,
+        ).languageCode.toLowerCase().startsWith('zh');
+        final label = isZh
+            ? weekdaysZh[date.weekday - 1]
+            : weekdays[date.weekday - 1];
+
+        points.add(
+          _ChartDataPoint(label: label, revenue: revenue, volume: volume),
+        );
+      }
+    } else if (_selectedRange == _ReportRange.days30) {
+      // Aggregate into 6 buckets (5 days each) for a cleaner 30-day trend.
+      final rangeStart = _todayStart.subtract(const Duration(days: 29));
+      const bucketCount = 6;
+      const bucketSizeDays = 5;
+      for (int bucket = 0; bucket < bucketCount; bucket++) {
+        final bucketStart = rangeStart.add(
+          Duration(days: bucket * bucketSizeDays),
+        );
+        final bucketEnd = bucket == bucketCount - 1
+            ? _todayStart.add(const Duration(days: 1))
+            : bucketStart.add(const Duration(days: bucketSizeDays));
+        final bucketItems = dataSource.where((item) {
+          if (item.status != ResellStatus.sold || item.soldDate == null) {
+            return false;
+          }
+          final soldAt = item.soldDate!;
+          return !soldAt.isBefore(bucketStart) && soldAt.isBefore(bucketEnd);
+        }).toList();
+
+        final revenue = bucketItems.fold(
+          0.0,
+          (sum, item) => sum + (item.soldPrice ?? 0),
+        );
+        final volume = bucketItems.length.toDouble();
+
+        points.add(
+          _ChartDataPoint(
+            label: '${bucketStart.month}/${bucketStart.day}',
+            revenue: revenue,
+            volume: volume,
+          ),
+        );
+      }
+    } else {
+      // 1Y - Monthly data
+      // We already have monthly stats in EnhancedResellStats but need to regenerate here to ensure consistent structure
+      // or use the existing logic. Let's rebuild for dual axis structure.
+      for (int i = 1; i <= 12; i++) {
+        final monthItems = dataSource.where((item) {
+          if (item.status != ResellStatus.sold || item.soldDate == null) {
+            return false;
+          }
+          return item.soldDate!.year == now.year && item.soldDate!.month == i;
+        }).toList();
+
+        final revenue = monthItems.fold(
+          0.0,
+          (sum, item) => sum + (item.soldPrice ?? 0),
+        );
+        final volume = monthItems.length.toDouble();
+
+        points.add(
+          _ChartDataPoint(label: '$i月', revenue: revenue, volume: volume),
+        );
+      }
+    }
+
+    return points;
+  }
+
+  Widget _buildChartLegend(bool isChinese) {
+    return Row(
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: _chartBlue,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isChinese ? '收入' : 'Revenue',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: _chartBlue,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: _chartTeal,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isChinese ? '销量' : 'Volume',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: _chartTeal,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -131,62 +307,22 @@ class _ResellAnalysisReportScreenState
     ).languageCode.toLowerCase().startsWith('zh');
     final responsive = context.responsive;
     final horizontalPadding = responsive.horizontalPadding;
-    final headerHeight = responsive.totalTwoLineHeaderHeight + 12;
     final topPadding = responsive.safeAreaPadding.top;
     final currencySymbol = isChinese ? '¥' : '\$';
 
-    // Calculate metrics using EnhancedResellStats
-    // 1. Lifetime stats for total counters
-    final lifetimeStats = EnhancedResellStats.fromItems(
-      widget.resellItems,
+    final filteredResellItems = _filteredResellItems;
+    final stats = EnhancedResellStats.fromItems(
+      filteredResellItems,
       widget.declutteredItems,
     );
 
-    // 2. Year stats for trends/charts (to avoid mixing years in Jan/Feb buckets)
-    final now = DateTime.now();
-    final thisYearItems =
-        widget.resellItems.where((item) {
-          // Logic matching EnhancedResellStats grouping
-          final date = item.soldDate ?? item.createdAt;
-          return date.year == now.year;
-        }).toList();
-
-    final yearStats = EnhancedResellStats.fromItems(
-      thisYearItems,
-      widget.declutteredItems,
-    );
-
-    // 3. Hybrid stats for display
-    final stats = EnhancedResellStats(
-      totalItems: lifetimeStats.totalItems,
-      soldCount: lifetimeStats.soldCount,
-      listingCount: lifetimeStats.listingCount,
-      toSellCount: lifetimeStats.toSellCount,
-      totalRevenue: lifetimeStats.totalRevenue,
-      successRate: lifetimeStats.successRate,
-      averageSoldPrice: lifetimeStats.averageSoldPrice,
-      averageListedDays: lifetimeStats.averageListedDays,
-      // Use year stats for monthly distributions (charts)
-      monthlyRevenue: yearStats.monthlyRevenue,
-      monthlySoldCount: yearStats.monthlySoldCount,
-      categoryPerformance: lifetimeStats.categoryPerformance,
-      platformDistribution: lifetimeStats.platformDistribution,
-      trendAnalysis: yearStats.trendAnalysis,
-      topSellingItems: lifetimeStats.topSellingItems,
-      monthlyComparison: yearStats.monthlyComparison,
-    );
-
-    // Keep soldItems for helper methods
-    final soldItems = widget.resellItems
+    final soldItems = filteredResellItems
         .where((item) => item.status == ResellStatus.sold)
         .toList();
 
     // Prepare trend data
-    final trendData =
-        _selectedMetric == TrendMetric.soldItems
-            ? stats.monthlySoldCount.map((k, v) => MapEntry(k, v.toDouble()))
-            : stats.monthlyRevenue;
-    final pageName = isChinese ? '二手洞察' : 'Resale Insights';
+    final chartPoints = _getChartData();
+    final pageName = l10n.dashboardResellReportTitle;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
@@ -198,381 +334,265 @@ class _ResellAnalysisReportScreenState
             physics: const BouncingScrollPhysics(),
             child: Stack(
               children: [
-                // Gradient background that scrolls
+                // Background removed for consistency
                 Container(
                   height: 800,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFFFFD93D), // Yellow
-                        Color(0xFFFFF9E6), // Light yellow
-                        Color(0xFFF5F5F7),
-                      ],
-                      stops: [0.0, 0.25, 0.45],
-                    ),
-                  ),
+                  color: const Color(0xFFF5F5F7), // Standard background
                 ),
                 // Content on top
                 Column(
                   children: [
-                    // Top spacing + title
-                    SizedBox(
-                      height: headerHeight,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: horizontalPadding,
-                          right: horizontalPadding,
-                          top: topPadding + 28,
-                          bottom: 8,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Large title on the left
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  pageName,
-                                  style: ReportTextStyles.screenTitle,
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  l10n.dashboardResellReportSubtitle,
-                                  style: ReportTextStyles.screenSubtitle,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Content
+                    SizedBox(height: responsive.totalTwoLineHeaderHeight),
                     Padding(
                       padding: EdgeInsets.fromLTRB(
                         horizontalPadding,
-                        24,
+                        16,
                         horizontalPadding,
                         0,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Metrics Section
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Metrics Section
 
-                          // Premium Metrics List (Vertical with Charts)
-                          _buildPremiumMetricList(
-                            context,
-                            isChinese,
-                            stats,
-                            soldItems,
-                            currencySymbol,
-                          ),
+                              // Premium Metrics List (Vertical with Charts)
+                              _buildPremiumMetricList(
+                                context,
+                                isChinese,
+                                stats,
+                                soldItems,
+                                currencySymbol,
+                              ),
 
-                          const SizedBox(height: ReportUI.sectionGap),
+                              const SizedBox(height: ReportUI.sectionGap),
 
-                          // Category Performance Analysis
-                          Container(
-                            decoration: ReportUI.cardDecoration,
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            isChinese
-                                                ? '品类表现分析'
-                                                : 'Category Performance',
-                                            style:
-                                                ReportTextStyles.sectionHeader,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            isChinese
-                                                ? '各品类的成交金额、成交率与平均售出天数'
-                                                : 'Revenue, sold rate, and avg days to sell',
-                                            style: ReportTextStyles
-                                                .sectionSubtitle,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () =>
-                                          _showCategoryInfo(context, isChinese),
-                                      icon: const Icon(
-                                        Icons.info_outline_rounded,
-                                        size: 20,
-                                        color: Color(0xFF9CA3AF),
-                                      ),
-                                      tooltip: isChinese ? '数据说明' : 'Info',
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 24),
-                                _buildCategoryPerformance(
-                                  context,
-                                  isChinese,
-                                  EnhancedResellStats.fromItems(
-                                    widget.resellItems,
-                                    widget.declutteredItems,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: ReportUI.sectionGap),
-
-                          // Trend Analysis Section
-                          Container(
-                            decoration: ReportUI.cardDecoration,
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            isChinese
-                                                ? '趋势分析'
-                                                : 'Trend Analysis',
-                                            style:
-                                                ReportTextStyles.sectionHeader,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            isChinese
-                                                ? '转卖表现随时间的变化趋势'
-                                                : 'Resale performance over time',
-                                            style: ReportTextStyles
-                                                .sectionSubtitle,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () =>
-                                          _showTrendInfo(context, isChinese),
-                                      icon: const Icon(
-                                        Icons.info_outline_rounded,
-                                        size: 20,
-                                        color: Color(0xFF9CA3AF),
-                                      ),
-                                      tooltip: isChinese ? '数据说明' : 'Info',
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Metric selector
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 60,
-                                      child: Text(
-                                        isChinese ? '指标' : 'Metric',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: const Color(0xFF6B7280),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 8,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFF5F5F5),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton<TrendMetric>(
-                                            value: _selectedMetric,
-                                            isExpanded: true,
-                                            isDense: true,
-                                            icon: const Icon(
-                                              Icons.keyboard_arrow_down_rounded,
-                                              color: Color(0xFF6B7280),
-                                            ),
-                                            dropdownColor: Colors.white,
-                                            focusColor: Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                            onChanged: (value) {
-                                              if (value != null) {
-                                                setState(() {
-                                                  _selectedMetric = value;
-                                                });
-                                              }
-                                            },
-                                            items: TrendMetric.values
-                                                .map(
-                                                  (metric) =>
-                                                      DropdownMenuItem<
-                                                        TrendMetric
-                                                      >(
-                                                        value: metric,
-                                                        child: Text(
-                                                          metric.label(
-                                                            isChinese,
-                                                          ),
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .bodyMedium
-                                                              ?.copyWith(
-                                                                fontSize: 14,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color:
-                                                                    const Color(
-                                                                      0xFF111827,
-                                                                    ),
-                                                              ),
-                                                        ),
-                                                      ),
-                                                )
-                                                .toList(),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 24),
-
-                                // Chart (always show, even with no data)
-                                ClipRect(
-                                  child: SizedBox(
-                                    height: 250,
-                                    width: double.infinity,
-                                    child: CustomPaint(
-                                      size: const Size(double.infinity, 250),
-                                      painter: _TrendChartPainter(
-                                        trendData: trendData,
-                                        selectedMetric: _selectedMetric,
-                                        isChinese: isChinese,
-                                        currencySymbol: _currencySymbol,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                _buildTrendSummary(
-                                  context,
-                                  isChinese,
-                                  trendData,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: ReportUI.sectionGap),
-
-                          // 30+ Days Unsold Items
-                          Container(
-                            decoration: ReportUI.cardDecoration,
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+                              // Category Performance Analysis
+                              Container(
+                                decoration: ReportUI.cardDecoration,
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            isChinese
-                                                ? '超过30天未售出统计'
-                                                : '30+ Days Unsold',
-                                            style:
-                                                ReportTextStyles.sectionHeader,
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                isChinese
+                                                    ? '品类表现分析'
+                                                    : 'Category Performance',
+                                                style: ReportTextStyles
+                                                    .sectionHeader,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                isChinese
+                                                    ? '各品类的成交金额、成交率与平均售出天数'
+                                                    : 'Revenue, sold rate, and avg days to sell',
+                                                style: ReportTextStyles
+                                                    .sectionSubtitle,
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            isChinese
-                                                ? '各品类超过30天的件数'
-                                                : 'Count by category (30+ days unsold)',
-                                            style: ReportTextStyles
-                                                .sectionSubtitle,
+                                        ),
+                                        IconButton(
+                                          onPressed: () => _showCategoryInfo(
+                                            context,
+                                            isChinese,
                                           ),
-                                        ],
-                                      ),
+                                          icon: const Icon(
+                                            Icons.info_outline_rounded,
+                                            size: 20,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
+                                          tooltip: isChinese ? '数据说明' : 'Info',
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ],
                                     ),
-                                    IconButton(
-                                      onPressed: () =>
-                                          _showUnsoldInfo(context, isChinese),
-                                      icon: const Icon(
-                                        Icons.info_outline_rounded,
-                                        size: 20,
-                                        color: Color(0xFF9CA3AF),
-                                      ),
-                                      tooltip: isChinese ? '数据说明' : 'Info',
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
+                                    const SizedBox(height: 18),
+                                    _buildCategoryPerformance(
+                                      context,
+                                      isChinese,
+                                      stats,
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 24),
-                                _buildUnsoldItems(context, isChinese),
-                              ],
-                            ),
-                          ),
+                              ),
 
-                          const SizedBox(height: ReportUI.sectionGap),
+                              const SizedBox(height: ReportUI.sectionGap),
 
-                          // 交易洞察 Summary Section
-                          Container(
-                            decoration: ReportUI.cardDecoration,
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isChinese ? '交易洞察' : 'Transaction Insights',
-                                  style: ReportTextStyles.sectionHeader,
+                              // Trend Analysis Section
+                              Container(
+                                decoration: ReportUI.cardDecoration,
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                isChinese
+                                                    ? '趋势分析'
+                                                    : 'Trend Analysis',
+                                                style: ReportTextStyles
+                                                    .sectionHeader,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                isChinese
+                                                    ? '成交金额与销量随时间的变化'
+                                                    : 'Revenue and sold volume over time',
+                                                style: ReportTextStyles
+                                                    .sectionSubtitle,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () => _showTrendInfo(
+                                            context,
+                                            isChinese,
+                                          ),
+                                          icon: const Icon(
+                                            Icons.info_outline_rounded,
+                                            size: 20,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
+                                          tooltip: isChinese ? '数据说明' : 'Info',
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Legend
+                                    _buildChartLegend(isChinese),
+                                    const SizedBox(height: 12),
+
+                                    // Chart (always show, even with no data)
+                                    ClipRect(
+                                      child: SizedBox(
+                                        height: 180,
+                                        width: double.infinity,
+                                        child: CustomPaint(
+                                          size: const Size(
+                                            double.infinity,
+                                            180,
+                                          ),
+                                          painter: _DualTrendChartPainter(
+                                            dataPoints: chartPoints,
+                                            isChinese: isChinese,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 20),
-                                _buildTransactionInsights(context, isChinese),
-                              ],
-                            ),
-                          ),
+                              ),
 
-                          const SizedBox(height: ReportUI.sectionGap),
+                              const SizedBox(height: ReportUI.sectionGap),
+
+                              // 30+ Days Unsold Items
+                              Container(
+                                decoration: ReportUI.cardDecoration,
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                isChinese
+                                                    ? '超过30天未售出统计'
+                                                    : '30+ Days Unsold',
+                                                style: ReportTextStyles
+                                                    .sectionHeader,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                isChinese
+                                                    ? '各品类超过30天的件数'
+                                                    : 'Count by category (30+ days unsold)',
+                                                style: ReportTextStyles
+                                                    .sectionSubtitle,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () => _showUnsoldInfo(
+                                            context,
+                                            isChinese,
+                                          ),
+                                          icon: const Icon(
+                                            Icons.info_outline_rounded,
+                                            size: 20,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
+                                          tooltip: isChinese ? '数据说明' : 'Info',
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 18),
+                                    _buildUnsoldItems(
+                                      context,
+                                      isChinese,
+                                      filteredResellItems,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: ReportUI.sectionGap),
+
+                              // 交易洞察 Summary Section
+                              Container(
+                                decoration: ReportUI.cardDecoration,
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      isChinese
+                                          ? '交易洞察'
+                                          : 'Transaction Insights',
+                                      style: ReportTextStyles.sectionHeader,
+                                    ),
+                                    const SizedBox(height: 14),
+                                    _buildTransactionInsights(
+                                      context,
+                                      isChinese,
+                                      filteredResellItems,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 32),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -581,9 +601,6 @@ class _ResellAnalysisReportScreenState
               ],
             ),
           ),
-
-          // Real header that appears when scrolling is complete
-          // Real header - only this rebuilds on scroll
           Positioned(
             top: 0,
             left: 0,
@@ -594,44 +611,173 @@ class _ResellAnalysisReportScreenState
                 final scrollOffset = _scrollController.hasClients
                     ? _scrollController.offset
                     : 0.0;
-                final scrollProgress = (scrollOffset / headerHeight).clamp(
-                  0.0,
-                  1.0,
-                );
-                final realHeaderOpacity = scrollProgress >= 1.0 ? 1.0 : 0.0;
+                final scrollProgress =
+                    (scrollOffset / responsive.twoLineHeaderContentHeight)
+                        .clamp(0.0, 1.0);
+                final collapsedHeaderOpacity = scrollProgress >= 1.0
+                    ? 1.0
+                    : 0.0;
                 return IgnorePointer(
-                  ignoring: realHeaderOpacity < 0.5,
-                  child: Opacity(opacity: realHeaderOpacity, child: child),
+                  ignoring: collapsedHeaderOpacity < 0.5,
+                  child: Opacity(opacity: collapsedHeaderOpacity, child: child),
                 );
               },
               child: Container(
                 height: responsive.collapsedHeaderHeight,
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  topPadding + 6,
+                  horizontalPadding,
+                  8,
+                ),
                 decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: Color(0xFFF5F5F7),
                   border: Border(
                     bottom: BorderSide(color: Color(0xFFE5E5EA), width: 0.5),
                   ),
                 ),
-                child: Stack(
+                child: Row(
                   children: [
-                    // Back button
-                    Positioned(
-                      left: 0,
-                      top: topPadding,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_rounded),
-                        onPressed: () => Navigator.pop(context),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.arrow_back_ios_rounded),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        pageName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: responsive.titleFontSize,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
-                    // Centered title
-                    Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: topPadding),
-                        child: Text(
-                          pageName,
-                          style: ReportTextStyles.sectionHeader.copyWith(
-                            color: Colors.black87,
+                    const SizedBox(width: 8),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _showRangeSelector(isChinese),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: ReportUI.statCardDecoration.copyWith(
+                          color: Colors.white,
+                          boxShadow: const [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 15,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _rangeLabel(isChinese),
+                              style: ReportTextStyles.label.copyWith(
+                                color: ReportUI.secondaryTextColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ListenableBuilder(
+              listenable: _scrollController,
+              builder: (context, child) {
+                final scrollOffset = _scrollController.hasClients
+                    ? _scrollController.offset
+                    : 0.0;
+                final scrollProgress =
+                    (scrollOffset / responsive.twoLineHeaderContentHeight)
+                        .clamp(0.0, 1.0);
+                final headerOpacity = (1.0 - scrollProgress).clamp(0.0, 1.0);
+                return Opacity(opacity: headerOpacity, child: child);
+              },
+              child: Container(
+                height: responsive.totalTwoLineHeaderHeight,
+                padding: EdgeInsets.only(
+                  left: horizontalPadding,
+                  right: horizontalPadding,
+                  top: topPadding + 12,
+                  bottom: 12,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            pageName,
+                            style: TextStyle(
+                              fontSize: responsive.largeTitleFontSize,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                              letterSpacing: -0.5,
+                              height: 1.2,
+                            ),
                           ),
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.dashboardResellReportSubtitle,
+                            style: TextStyle(
+                              fontSize: responsive.bodyFontSize,
+                              color: const Color(0xFF6B7280),
+                              height: 1.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _showRangeSelector(isChinese),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 9,
+                        ),
+                        decoration: ReportUI.statCardDecoration.copyWith(
+                          color: Colors.white,
+                          boxShadow: const [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _rangeLabel(isChinese),
+                              style: ReportTextStyles.label.copyWith(
+                                color: ReportUI.secondaryTextColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -660,18 +806,20 @@ class _ResellAnalysisReportScreenState
     });
 
     // 1. Revenue Data
-    final revenueData =
-        months.map((m) => stats.monthlyRevenue[m] ?? 0.0).toList();
+    final revenueData = months
+        .map((m) => stats.monthlyRevenue[m] ?? 0.0)
+        .toList();
     final revenueTrend = stats.trendAnalysis.changePercent;
 
     // 2. Sell-Through Data (Sold Count)
-    final soldData =
-        months.map((m) => (stats.monthlySoldCount[m] ?? 0).toDouble()).toList();
+    final soldData = months
+        .map((m) => (stats.monthlySoldCount[m] ?? 0).toDouble())
+        .toList();
     final soldTrend = stats.monthlyComparison.lastMonth > 0
         ? ((stats.monthlyComparison.thisMonth -
-                    stats.monthlyComparison.lastMonth) /
-                stats.monthlyComparison.lastMonth *
-                100)
+                  stats.monthlyComparison.lastMonth) /
+              stats.monthlyComparison.lastMonth *
+              100)
         : (stats.monthlyComparison.thisMonth > 0 ? 100.0 : 0.0);
 
     // 3. Avg Price Data
@@ -690,9 +838,7 @@ class _ResellAnalysisReportScreenState
     final monthlyAvgDays = <int, double>{};
     for (final m in months) {
       final itemsInMonth = soldItems
-          .where(
-            (item) => item.soldDate != null && item.soldDate!.month == m,
-          )
+          .where((item) => item.soldDate != null && item.soldDate!.month == m)
           .toList();
       if (itemsInMonth.isNotEmpty) {
         final totalDays = itemsInMonth.fold(
@@ -718,40 +864,41 @@ class _ResellAnalysisReportScreenState
           title: isChinese ? '总收入' : 'Total Revenue',
           value: '$currencySymbol${stats.totalRevenue.toStringAsFixed(0)}',
           icon: Icons.attach_money_rounded,
-          color: const Color(0xFF6366F1), // Indigo/Blue
+          color: const Color(0xFF2563EB),
           trend: revenueTrend,
           chartData: revenueData,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         _buildNewStyleMetricCard(
           context,
-          title: isChinese ? '售出率' : 'Sell-Through Rate',
+          title: isChinese ? '成交率' : 'Sell-Through Rate',
           value: '${stats.successRate.toStringAsFixed(0)}%',
           icon: Icons.speed_rounded,
-          color: const Color(0xFF10B981), // Emerald/Green
+          color: const Color(0xFF14B8A6),
           trend: soldTrend,
           chartData: soldData,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         _buildNewStyleMetricCard(
           context,
           title: isChinese ? '平均售价' : 'Avg. Price',
           value: '$currencySymbol${stats.averageSoldPrice.toStringAsFixed(2)}',
           icon: Icons.local_offer_rounded,
-          color: const Color(0xFF8B5CF6), // Violet/Purple
+          color: const Color(0xFF9333EA),
           trend: avgPriceTrend,
           chartData: avgPriceData,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         _buildNewStyleMetricCard(
           context,
           title: isChinese ? '售出天数' : 'Days to Sell',
           value:
-              '${stats.averageListedDays.toStringAsFixed(0)} ${isChinese ? '天' : 'Days'}',
-          icon: Icons.hourglass_empty_rounded,
-          color: const Color(0xFFF97316), // Orange
+              '${stats.averageListedDays.toStringAsFixed(0)}${isChinese ? '天' : ' Days'}',
+          icon: Icons.hourglass_bottom_rounded,
+          color: const Color(0xFFF97316),
           trend: daysTrend,
           chartData: daysData,
+          inverseTrend: true,
         ),
       ],
     );
@@ -765,146 +912,167 @@ class _ResellAnalysisReportScreenState
     required Color color,
     required double trend,
     required List<double> chartData,
+    bool inverseTrend = false,
   }) {
-    final trendText = '${trend.abs().toStringAsFixed(0)}%';
-    Color badgeColor;
-    Color badgeTextColor;
-    IconData badgeIcon;
+    final isNearZero = trend.abs() < 1;
+    final isPositive = trend > 0;
+    final isNegative = trend < 0;
+    final isGood = inverseTrend ? isNegative : isPositive;
 
-    if (trend.abs() < 1) {
-      badgeColor = const Color(0xFFF3F4F6);
-      badgeTextColor = const Color(0xFF6B7280);
-      badgeIcon = Icons.remove;
-    } else if (trend > 0) {
-      badgeColor = const Color(0xFFECFDF5);
-      badgeTextColor = const Color(0xFF10B981);
-      badgeIcon = Icons.trending_up_rounded;
-    } else {
-      badgeColor = const Color(0xFFFEF2F2);
-      badgeTextColor = const Color(0xFFEF4444);
-      badgeIcon = Icons.trending_down_rounded;
-    }
+    final trendText = isNearZero ? '0%' : '${trend.abs().toStringAsFixed(0)}%';
+    final trendTextColor = isNearZero
+        ? const Color(0xFF94A3B8)
+        : (isGood ? const Color(0xFF14B8A6) : const Color(0xFFEF4444));
+    final trendIcon = isNearZero
+        ? Icons.trending_flat_rounded
+        : (isPositive
+              ? Icons.trending_up_rounded
+              : Icons.trending_down_rounded);
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            offset: const Offset(0, 2),
-            blurRadius: 8,
-          ),
-        ],
+        border: Border.all(color: ReportUI.borderSideColor, width: 1),
+        boxShadow: ReportUI.lightShadow,
       ),
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          // Icon
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 16),
-
-          // Title & Value
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF6B7280),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: Color(0xFF111827),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Right Side: Badge & Chart
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Trend Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: badgeColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (badgeIcon != Icons.remove)
-                      Icon(badgeIcon, size: 14, color: badgeTextColor),
-                    if (badgeIcon != Icons.remove) const SizedBox(width: 2),
-                    Text(
-                      trendText,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: badgeTextColor,
-                      ),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      child: SizedBox(
+        height: 58,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(11),
                     ),
-                  ],
-                ),
+                    child: Icon(icon, size: 17, color: color),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          title,
+                          style: ReportTextStyles.body.copyWith(
+                            color: const Color(0xFF64748B),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 0),
+                        Text(
+                          value,
+                          style: ReportTextStyles.metricValueMedium.copyWith(
+                            color: ReportUI.primaryTextColor,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-
-              // Mini Chart
-              SizedBox(
-                height: 24,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: _buildChartBars(chartData, color),
-                ),
+            ),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 106,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: trendTextColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(trendIcon, size: 14, color: trendTextColor),
+                        const SizedBox(width: 2),
+                        Text(
+                          trendText,
+                          style: ReportTextStyles.label.copyWith(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: trendTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    height: 20,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: _buildChartBars(chartData, color),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   List<Widget> _buildChartBars(List<double> data, Color color) {
     if (data.isEmpty) return [];
-    final max = data.reduce((a, b) => a > b ? a : b);
+    final normalizedData = data.length <= 6
+        ? data
+        : data.sublist(data.length - 6);
+    final max = normalizedData.reduce((a, b) => a > b ? a : b);
     final safeMax = max == 0 ? 1.0 : max;
+    const barMaxHeight = 20.0;
+    const minHeight = 6.0;
 
-    return data.map((value) {
-      final height = (value / safeMax * 24).clamp(4.0, 24.0);
-      return Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Container(
-          width: 6,
-          height: height,
-          decoration: BoxDecoration(
-            color: color.withOpacity(
-              value == 0 ? 0.2 : (0.4 + (value / safeMax) * 0.6).clamp(0.0, 1.0),
+    return List.generate(normalizedData.length, (i) {
+      final value = normalizedData[i];
+      final height = (value / safeMax * barMaxHeight).clamp(
+        minHeight,
+        barMaxHeight,
+      );
+      // Lighter on the left, darker on the right (last bar most prominent)
+      final t = (i + 1) / normalizedData.length;
+      final opacity = value == 0 ? 0.2 : (0.35 + t * 0.65).clamp(0.0, 1.0);
+      return Expanded(
+        child: Padding(
+          padding: EdgeInsets.only(
+            right: i == normalizedData.length - 1 ? 0 : 4,
+          ),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: height,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: opacity),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            borderRadius: BorderRadius.circular(2),
           ),
         ),
       );
-    }).toList();
+    });
   }
 
   // Helper method to get category from declutter item ID
@@ -938,148 +1106,117 @@ class _ResellAnalysisReportScreenState
     }
 
     final sortedCategories = stats.categoryPerformance.values.toList()
-      ..sort((a, b) => b.successRate.compareTo(a.successRate));
+      ..sort((a, b) => b.revenue.compareTo(a.revenue));
 
-    // Calculate max volume for scaling
-    int maxVolume = 0;
-    for (final perf in sortedCategories) {
-      if (perf.totalListed > maxVolume) maxVolume = perf.totalListed;
+    final currencySymbol = isChinese ? '¥' : '\$';
+
+    String compactAmount(double value) {
+      if (value >= 1000) {
+        return '$currencySymbol${(value / 1000).toStringAsFixed(1)}k';
+      }
+      return '$currencySymbol${value.toStringAsFixed(0)}';
     }
-    if (maxVolume == 0) maxVolume = 1;
 
+    final rateLabel = isChinese ? '成交率' : 'STR';
     return Column(
       children: [
-        // Table Header
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 4,
-                child: Text(
-                  isChinese ? '品类 & 量级' : 'CATEGORY & VOLUME',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF9CA3AF),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  isChinese ? '成交率' : 'STR %',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF9CA3AF),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  isChinese ? '平均天数' : 'AVG DAYS',
-                  textAlign: TextAlign.end,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF9CA3AF),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Divider(height: 1, color: Color(0xFFF3F4F6)),
-        const SizedBox(height: 16),
-
-        // List Items
-        ...sortedCategories.map((perf) {
-          final volumeRatio = perf.totalListed / maxVolume;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20),
+        ...List.generate(sortedCategories.length, (index) {
+          final perf = sortedCategories[index];
+          final str = perf.successRate.clamp(0, 100).toDouble();
+          return Container(
+            padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+            decoration: BoxDecoration(
+              border: index == sortedCategories.length - 1
+                  ? null
+                  : const Border(
+                      bottom: BorderSide(color: Color(0xFFEAECEF), width: 1),
+                    ),
+            ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start, // Align to top
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Category & Volume
                 Expanded(
-                  flex: 4,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        isChinese
-                            ? perf.category.chinese
-                            : perf.category.english,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Volume Bar
-                      Container(
-                        height: 6,
-                        width: 100, // Fixed width base for the bar container
-                        alignment: Alignment.centerLeft,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: FractionallySizedBox(
-                          widthFactor: volumeRatio.clamp(0.0, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(
-                                0xFF89CFF0,
-                              ), // Light Blue to match app theme
-                              borderRadius: BorderRadius.circular(3),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              perf.category.label(context),
+                              style: ReportTextStyles.categoryTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(999),
+                              child: LinearProgressIndicator(
+                                value: str / 100,
+                                minHeight: 12,
+                                backgroundColor: const Color(0xFFE7ECF3),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color.lerp(
+                                        const Color(0xFF8FB0E7),
+                                        const Color(0xFF1D4ED8),
+                                        str / 100,
+                                      ) ??
+                                      const Color(0xFF2563EB),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.bolt_rounded,
+                            size: 14,
+                            color: Color(0xFF14B8A6),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${perf.successRate.toStringAsFixed(0)}% $rateLabel',
+                            style: ReportTextStyles.metricMeta,
+                          ),
+                          const SizedBox(width: 14),
+                          const Icon(
+                            Icons.schedule_rounded,
+                            size: 14,
+                            color: Color(0xFFFB923C),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${perf.averageDays.toStringAsFixed(0)}${isChinese ? '天均' : 'd Avg'}',
+                            style: ReportTextStyles.metricMeta,
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-
-                // STR %
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    alignment: Alignment.center,
-                    height: 40, // Match height of left column roughly
-                    child: Text(
-                      '${perf.successRate.toStringAsFixed(0)}%',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
+                const SizedBox(width: 14),
+                SizedBox(
+                  width: 86,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        compactAmount(perf.revenue),
+                        style: ReportTextStyles.metricValueMedium,
                       ),
-                    ),
-                  ),
-                ),
-
-                // AVG DAYS
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    alignment: Alignment.centerRight,
-                    height: 40, // Match height of left column roughly
-                    child: Text(
-                      perf.averageListedDays.toStringAsFixed(0),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
+                      const SizedBox(height: 2),
+                      Text(
+                        isChinese ? '成交额' : 'VOLUME',
+                        style: ReportTextStyles.label.copyWith(
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -1091,12 +1228,16 @@ class _ResellAnalysisReportScreenState
   }
 
   // Build unsold items widget
-  Widget _buildUnsoldItems(BuildContext context, bool isChinese) {
+  Widget _buildUnsoldItems(
+    BuildContext context,
+    bool isChinese,
+    List<ResellItem> resellItems,
+  ) {
     final now = DateTime.now();
     final categoryUnsoldCount = <DeclutterCategory, int>{};
 
     // Calculate unsold items by category (30+ days)
-    for (final resellItem in widget.resellItems) {
+    for (final resellItem in resellItems) {
       if (resellItem.status != ResellStatus.sold) {
         final daysListed = now.difference(resellItem.createdAt).inDays;
         if (daysListed > 30) {
@@ -1198,10 +1339,14 @@ class _ResellAnalysisReportScreenState
     );
   }
 
-  // Build transaction insights summary (Redesigned as Highlights)
-  Widget _buildTransactionInsights(BuildContext context, bool isChinese) {
+  // Build transaction insights summary
+  Widget _buildTransactionInsights(
+    BuildContext context,
+    bool isChinese,
+    List<ResellItem> resellItems,
+  ) {
     final currencySymbol = isChinese ? '¥' : '\$';
-    final soldItems = widget.resellItems
+    final soldItems = resellItems
         .where((item) => item.status == ResellStatus.sold)
         .toList();
 
@@ -1289,139 +1434,87 @@ class _ResellAnalysisReportScreenState
     });
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInsightHero(
-          title: isChinese ? '最高成交' : 'Top Sale',
-          value: '$currencySymbol${topSaleItem.soldPrice?.toStringAsFixed(0)}',
-          subtitle: getItemTitle(topSaleItem),
-          icon: Icons.emoji_events_rounded,
-          iconColor: const Color(0xFFFFB703),
+        _buildInsightRow(
+          context,
+          isChinese ? '最高成交' : 'Top Sale',
+          '$currencySymbol${topSaleItem.soldPrice?.toStringAsFixed(0)}',
+          getItemTitle(topSaleItem),
+          const Color(0xFFFFB703),
         ),
-        const SizedBox(height: 12),
-        _buildInsightMiniRow(
-          title: isChinese ? '最快卖出' : 'Fastest Flip',
-          value: '$minDays ${isChinese ? '天' : 'days'}',
-          subtitle: fastestItem != null ? getItemTitle(fastestItem) : '-',
-          icon: Icons.flash_on_rounded,
-          iconColor: const Color(0xFFFF5252),
+        _buildInsightRow(
+          context,
+          isChinese ? '最快卖出' : 'Fastest Flip',
+          '$minDays ${isChinese ? '天' : 'days'}',
+          fastestItem != null ? getItemTitle(fastestItem) : '-',
+          const Color(0xFFFF5252),
         ),
-        const SizedBox(height: 8),
-        _buildInsightMiniRow(
-          title: isChinese ? '最佳品类' : 'Best Category',
-          value: bestCategory?.label(context) ?? '-',
-          subtitle: '$currencySymbol${maxCategoryRevenue.toStringAsFixed(0)}',
-          icon: Icons.category_rounded,
-          iconColor: const Color(0xFF3B82F6),
+        _buildInsightRow(
+          context,
+          isChinese ? '最佳品类' : 'Best Category',
+          bestCategory?.label(context) ?? '-',
+          '$currencySymbol${maxCategoryRevenue.toStringAsFixed(0)}',
+          const Color(0xFF3B82F6),
         ),
-        const SizedBox(height: 8),
-        _buildInsightMiniRow(
-          title: isChinese ? '最佳月份' : 'Best Month',
-          value: '$bestMonth ${isChinese ? '月' : 'Month'}',
-          subtitle: '$currencySymbol${maxMonthRevenue.toStringAsFixed(0)}',
-          icon: Icons.calendar_month_rounded,
-          iconColor: const Color(0xFF10B981),
+        _buildInsightRow(
+          context,
+          isChinese ? '最佳月份' : 'Best Month',
+          '$bestMonth ${isChinese ? '月' : 'Month'}',
+          '$currencySymbol${maxMonthRevenue.toStringAsFixed(0)}',
+          const Color(0xFF10B981),
+          isLast: true,
         ),
       ],
     );
   }
 
-  Widget _buildInsightHero({
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-    required Color iconColor,
+  Widget _buildInsightRow(
+    BuildContext context,
+    String title,
+    String value,
+    String note,
+    Color accent, {
+    bool isLast = false,
   }) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: ReportUI.statCardDecoration,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: isLast
+            ? null
+            : const Border(
+                bottom: BorderSide(color: Color(0xFFEAECEF), width: 1),
+              ),
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, size: 24, color: iconColor),
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(top: 6),
+            decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: ReportTextStyles.label),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   value,
-                  style: ReportTextStyles.statValueLarge.copyWith(fontSize: 26),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  style: ReportTextStyles.metricValueMedium.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  subtitle,
+                  note,
                   style: ReportTextStyles.sectionSubtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInsightMiniRow({
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: ReportUI.statCardDecoration,
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 16, color: iconColor),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              title,
-              style: ReportTextStyles.label,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 10),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 140),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  value,
-                  style: ReportTextStyles.statValueSmall,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: ReportTextStyles.sectionSubtitle,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
                 ),
               ],
             ),
@@ -1444,6 +1537,7 @@ class _ResellAnalysisReportScreenState
 
     showDialog(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.white,
@@ -1586,6 +1680,7 @@ class _ResellAnalysisReportScreenState
 
     showDialog(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.white,
@@ -1767,6 +1862,7 @@ class _ResellAnalysisReportScreenState
 
     showDialog(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.white,
@@ -1934,120 +2030,138 @@ class _ResellAnalysisReportScreenState
       },
     );
   }
-
-
 }
 
-// Trend chart painter
-class _TrendChartPainter extends CustomPainter {
-  final Map<int, double> trendData;
-  final TrendMetric selectedMetric;
-  final bool isChinese;
-  final String currencySymbol;
+class _ChartDataPoint {
+  final String label;
+  final double revenue;
+  final double volume;
 
-  _TrendChartPainter({
-    required this.trendData,
-    required this.selectedMetric,
-    required this.isChinese,
-    required this.currencySymbol,
+  _ChartDataPoint({
+    required this.label,
+    required this.revenue,
+    required this.volume,
   });
+}
+
+class _DualTrendChartPainter extends CustomPainter {
+  final List<_ChartDataPoint> dataPoints;
+  final bool isChinese;
+
+  static const _chartBlue = Color(0xFF2563EB);
+  static const _chartTeal = Color(0xFF14B8A6);
+
+  _DualTrendChartPainter({required this.dataPoints, required this.isChinese});
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (trendData.isEmpty) return;
+    if (dataPoints.isEmpty) return;
 
-    final paint = Paint()
-      ..color = const Color(0xFFFFD93D)
+    final paintRevenue = Paint()
+      ..color = _chartBlue
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillPaint = Paint()
-      ..color = const Color(0xFFFFD93D).withValues(alpha: 0.1)
+    final paintVolume = Paint()
+      ..color = _chartTeal
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final dotPaintRevenue = Paint()
+      ..color = _chartBlue
       ..style = PaintingStyle.fill;
 
-    final dotPaint = Paint()
-      ..color = const Color(0xFFFFD93D)
+    final dotPaintVolume = Paint()
+      ..color = _chartTeal
       ..style = PaintingStyle.fill;
 
     final gridPaint = Paint()
       ..color = const Color(0xFFE0E0E0)
       ..strokeWidth = 1;
 
+    final dottedGridPaint = Paint()
+      ..color = const Color(0xFFEEEEEE)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
     final axisPaint = Paint()
-      ..color = const Color(0xFF9E9E9E)
-      ..strokeWidth = 2;
+      ..color = const Color(0xFFEEEEEE)
+      ..strokeWidth = 1;
 
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
-      textAlign: TextAlign.right, // Right-align Y-axis labels
+      textAlign: TextAlign.center,
     );
 
-    String formatLabel(double value) {
-      if (selectedMetric == TrendMetric.resellValue) {
-        return '$currencySymbol${value.toStringAsFixed(0)}';
-      }
-      return value.toStringAsFixed(0);
-    }
-
-    // Find max value first (ensure at least 1 to avoid division by zero)
-    double maxValue = trendData.values.reduce((a, b) => a > b ? a : b);
-    if (maxValue == 0) {
-      maxValue = 5; // default minimum
-    } else {
-      maxValue = maxValue * 1.25;
-    }
-
-    // Calculate required left padding based on max label width
-    textPainter.text = TextSpan(
-      text: formatLabel(maxValue),
-      style: const TextStyle(
-        color: Color(0xFF9E9E9E),
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-    textPainter.layout();
-    final maxLabelWidth = textPainter.width;
-    final leftPadding = maxLabelWidth + 12.0; // Label width + gap
-
-    // Dimensions with space for Y-axis labels
-    const rightPadding = 20.0;
+    // Layout constants
+    const bottomPadding = 30.0;
     const topPadding = 20.0;
-    const bottomPadding = 40.0;
+    const leftPadding = 10.0;
+    const rightPadding = 10.0;
+
     final chartWidth = size.width - leftPadding - rightPadding;
     final chartHeight = size.height - topPadding - bottomPadding;
 
-    // Draw Y-axis
-    canvas.drawLine(
-      Offset(leftPadding, topPadding),
-      Offset(leftPadding, size.height - bottomPadding),
-      axisPaint,
-    );
+    // Draw Grid Lines (Horizontal)
+    // 4 grid lines
+    for (int i = 0; i <= 3; i++) {
+      final y = topPadding + (chartHeight * i / 3);
 
-    // Draw X-axis
-    canvas.drawLine(
-      Offset(leftPadding, size.height - bottomPadding),
-      Offset(size.width - rightPadding, size.height - bottomPadding),
-      axisPaint,
-    );
-
-    // Draw horizontal grid lines and Y-axis labels
-    for (int i = 0; i <= 5; i++) {
-      final y = topPadding + (chartHeight * i / 5);
-      canvas.drawLine(
+      // Draw dashed line
+      _drawDashedLine(
+        canvas,
         Offset(leftPadding, y),
         Offset(size.width - rightPadding, y),
-        gridPaint,
+        dottedGridPaint,
       );
+    }
 
-      // Y-axis labels - corrected to show values from max at top to 0 at bottom
-      final value = maxValue * (5 - i) / 5;
+    // Determine Min/Max for Scaling
+    // We normalize both Revenue and Volume to 0.0 - 1.0 range for the chart
+    double maxRevenue = 0;
+    double maxVolume = 0;
+
+    for (var point in dataPoints) {
+      if (point.revenue > maxRevenue) maxRevenue = point.revenue;
+      if (point.volume > maxVolume) maxVolume = point.volume;
+    }
+
+    // Avoid division by zero
+    if (maxRevenue == 0) maxRevenue = 100;
+    if (maxVolume == 0) maxVolume = 10;
+
+    // Add some headroom
+    maxRevenue *= 1.2;
+    maxVolume *= 1.2;
+
+    // Calculate Points
+    final revenuePoints = <Offset>[];
+    final volumePoints = <Offset>[];
+
+    final interval = chartWidth / (dataPoints.length - 1);
+
+    for (int i = 0; i < dataPoints.length; i++) {
+      final x = leftPadding + (i * interval);
+
+      // Revenue Y
+      final yRevenue =
+          topPadding + chartHeight * (1 - (dataPoints[i].revenue / maxRevenue));
+      revenuePoints.add(Offset(x, yRevenue));
+
+      // Volume Y
+      final yVolume =
+          topPadding + chartHeight * (1 - (dataPoints[i].volume / maxVolume));
+      volumePoints.add(Offset(x, yVolume));
+
+      // Draw X-Axis Label
       textPainter.text = TextSpan(
-        text: formatLabel(value),
+        text: dataPoints[i].label,
         style: const TextStyle(
-          color: Color(0xFF9E9E9E),
+          color: Color(0xFF9CA3AF),
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
@@ -2055,107 +2169,108 @@ class _TrendChartPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(
         canvas,
-        Offset(leftPadding - textPainter.width - 8, y - textPainter.height / 2),
+        Offset(x - textPainter.width / 2, size.height - 15),
       );
     }
 
-    // Prepare data points for all 12 months (1-12, January to December)
-    final points = <Offset>[];
-    final labels = <String>[];
+    // Draw Smooth Curves
+    _drawSmoothPath(canvas, revenuePoints, paintRevenue);
+    _drawSmoothDashedPath(canvas, volumePoints, paintVolume);
 
-    for (int month = 1; month <= 12; month++) {
-      final value = trendData[month] ?? 0.0;
+    // Draw dots on top if not too many points
+    // if (dataPoints.length <= 12) {
+    //   for (var p in revenuePoints) {
+    //     canvas.drawCircle(p, 4, Colors.white as Paint); // white bg
+    //     canvas.drawCircle(p, 4, Paint()..color = Colors.white);
+    //     canvas.drawCircle(p, 2.5, dotPaintRevenue);
+    //   }
+    //   for (var p in volumePoints) {
+    //      canvas.drawCircle(p, 4, Paint()..color = Colors.white);
+    //      canvas.drawCircle(p, 2.5, dotPaintVolume);
+    //   }
+    // }
+  }
 
-      final x = leftPadding + (chartWidth * (month - 1) / 11);
-      final normalizedValue = value / maxValue;
-      final y = topPadding + (chartHeight * (1 - normalizedValue));
-
-      points.add(Offset(x, y));
-      labels.add('$month');
+  void _drawDashedLine(Canvas canvas, Offset p1, Offset p2, Paint paint) {
+    const dashWidth = 4.0;
+    const dashSpace = 4.0;
+    double startX = p1.dx;
+    while (startX < p2.dx) {
+      canvas.drawLine(
+        Offset(startX, p1.dy),
+        Offset(startX + dashWidth, p1.dy),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
     }
+  }
 
+  void _drawSmoothPath(Canvas canvas, List<Offset> points, Paint paint) {
     if (points.isEmpty) return;
 
-    // Draw filled area
-    final fillPath = Path();
-    fillPath.moveTo(points.first.dx, size.height - bottomPadding);
-    fillPath.lineTo(points.first.dx, points.first.dy);
+    final path = Path();
+    path.moveTo(points.first.dx, points.first.dy);
 
     for (int i = 0; i < points.length - 1; i++) {
-      final current = points[i];
-      final next = points[i + 1];
-      final controlPoint1 = Offset(
-        current.dx + (next.dx - current.dx) / 3,
-        current.dy,
-      );
-      final controlPoint2 = Offset(
-        current.dx + 2 * (next.dx - current.dx) / 3,
-        next.dy,
-      );
-      fillPath.cubicTo(
+      final p0 = points[i];
+      final p1 = points[i + 1];
+
+      // Cubic bezier for smoothness
+      final controlPoint1 = Offset(p0.dx + (p1.dx - p0.dx) / 2, p0.dy);
+      final controlPoint2 = Offset(p0.dx + (p1.dx - p0.dx) / 2, p1.dy);
+
+      path.cubicTo(
         controlPoint1.dx,
         controlPoint1.dy,
         controlPoint2.dx,
         controlPoint2.dy,
-        next.dx,
-        next.dy,
+        p1.dx,
+        p1.dy,
       );
     }
 
-    fillPath.lineTo(points.last.dx, size.height - bottomPadding);
-    fillPath.close();
-    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, paint);
+  }
 
-    // Draw line
-    final linePath = Path();
-    linePath.moveTo(points.first.dx, points.first.dy);
+  void _drawSmoothDashedPath(Canvas canvas, List<Offset> points, Paint paint) {
+    if (points.isEmpty) return;
+
+    final path = Path();
+    path.moveTo(points.first.dx, points.first.dy);
 
     for (int i = 0; i < points.length - 1; i++) {
-      final current = points[i];
-      final next = points[i + 1];
-      final controlPoint1 = Offset(
-        current.dx + (next.dx - current.dx) / 3,
-        current.dy,
-      );
-      final controlPoint2 = Offset(
-        current.dx + 2 * (next.dx - current.dx) / 3,
-        next.dy,
-      );
-      linePath.cubicTo(
+      final p0 = points[i];
+      final p1 = points[i + 1];
+
+      final controlPoint1 = Offset(p0.dx + (p1.dx - p0.dx) / 2, p0.dy);
+      final controlPoint2 = Offset(p0.dx + (p1.dx - p0.dx) / 2, p1.dy);
+
+      path.cubicTo(
         controlPoint1.dx,
         controlPoint1.dy,
         controlPoint2.dx,
         controlPoint2.dy,
-        next.dx,
-        next.dy,
+        p1.dx,
+        p1.dy,
       );
     }
 
-    canvas.drawPath(linePath, paint);
+    // Draw dashed path manually or using a library logic
+    // Since native canvas doesn't support dashed path easily, we can simulate or just draw solid for now.
+    // The design shows dotted/dashed.
+    // Let's iterate the path metrics to draw dashes.
 
-    // Draw dots and labels
-    for (int i = 0; i < points.length; i++) {
-      final point = points[i];
+    final pathMetrics = path.computeMetrics();
+    for (final metric in pathMetrics) {
+      var distance = 0.0;
+      const dashWidth = 4.0;
+      const dashSpace = 4.0;
 
-      canvas.drawCircle(point, 6, dotPaint);
-      canvas.drawCircle(point, 3, Paint()..color = Colors.white);
-
-      textPainter.text = TextSpan(
-        text: labels[i],
-        style: const TextStyle(
-          color: Color(0xFF9E9E9E),
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          point.dx - textPainter.width / 2,
-          size.height - bottomPadding + 10,
-        ),
-      );
+      while (distance < metric.length) {
+        final segment = metric.extractPath(distance, distance + dashWidth);
+        canvas.drawPath(segment, paint);
+        distance += dashWidth + dashSpace;
+      }
     }
   }
 

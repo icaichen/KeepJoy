@@ -58,7 +58,7 @@ android {
             dimension = "market"
             applicationIdSuffix = ".china"
             versionNameSuffix = "-china"
-            resValue("string", "app_name", "喜物(KeepJoy)")
+            resValue("string", "app_name", "喜物")
         }
         create("global") {
             dimension = "market"

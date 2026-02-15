@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:keepjoy_app/features/insights/unified/models/enhanced_report_models.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
@@ -18,7 +17,9 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context).languageCode.startsWith('zh');
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.startsWith('zh');
     final stats = widget.data.declutterStats;
 
     return Scaffold(
@@ -35,7 +36,11 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFF5ECFB8), Color(0xFFE6FFFA), ReportUI.backgroundColor],
+                      colors: [
+                        Color(0xFF5ECFB8),
+                        Color(0xFFE6FFFA),
+                        ReportUI.backgroundColor,
+                      ],
                       stops: [0.0, 0.35, 0.65],
                     ),
                   ),
@@ -57,14 +62,17 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
                                   color: Colors.white.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(Icons.arrow_back_ios_new, size: 18),
+                                child: const Icon(
+                                  Icons.arrow_back_ios_new,
+                                  size: 18,
+                                ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          isChinese ? '年度洞察' : 'Yearly Insights',
+                          isChinese ? '整理报告' : 'Declutter Report',
                           style: ReportTextStyles.screenTitle,
                         ),
                         const SizedBox(height: 4),
@@ -133,12 +141,14 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
 
     // Add declutter items
     for (final item in data.yearlyDeclutteredItems) {
-      activity[item.createdAt.month] = (activity[item.createdAt.month] ?? 0) + 1;
+      activity[item.createdAt.month] =
+          (activity[item.createdAt.month] ?? 0) + 1;
     }
 
     // Add deep cleaning sessions
     for (final session in data.yearlyDeepCleaningSessions) {
-      activity[session.startTime.month] = (activity[session.startTime.month] ?? 0) + 1;
+      activity[session.startTime.month] =
+          (activity[session.startTime.month] ?? 0) + 1;
     }
 
     return Column(
@@ -147,7 +157,12 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
         Row(
           children: List.generate(6, (index) {
             final month = index + 1;
-            return _buildHeatmapCell(context, month, activity[month] ?? 0, isChinese);
+            return _buildHeatmapCell(
+              context,
+              month,
+              activity[month] ?? 0,
+              isChinese,
+            );
           }).toList(),
         ),
         const SizedBox(height: 8),
@@ -155,14 +170,24 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
         Row(
           children: List.generate(6, (index) {
             final month = index + 7;
-            return _buildHeatmapCell(context, month, activity[month] ?? 0, isChinese);
+            return _buildHeatmapCell(
+              context,
+              month,
+              activity[month] ?? 0,
+              isChinese,
+            );
           }).toList(),
         ),
       ],
     );
   }
 
-  Widget _buildHeatmapCell(BuildContext context, int month, int count, bool isChinese) {
+  Widget _buildHeatmapCell(
+    BuildContext context,
+    int month,
+    int count,
+    bool isChinese,
+  ) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(4),
@@ -196,7 +221,20 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
   }
 
   String _getMonthAbbrev(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[month - 1];
   }
 
@@ -256,7 +294,12 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
     );
   }
 
-  Widget _buildStatCard({required IconData icon, required Color iconColor, required String value, required String label}) {
+  Widget _buildStatCard({
+    required IconData icon,
+    required Color iconColor,
+    required String value,
+    required String label,
+  }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -295,7 +338,10 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
+          ),
         ),
       );
     }
@@ -328,7 +374,11 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
               ),
               Text(
                 '${entry.value} ($percentage%)',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF5ECFB8)),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF5ECFB8),
+                ),
               ),
             ],
           ),
@@ -342,13 +392,31 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(isChinese ? '暂无数据' : 'No data', style: ReportTextStyles.body),
+          child: Text(
+            isChinese ? '暂无数据' : 'No data',
+            style: ReportTextStyles.body,
+          ),
         ),
       );
     }
 
-    final maxValue = stats.monthlyDistribution.values.reduce((a, b) => a > b ? a : b);
-    final months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+    final maxValue = stats.monthlyDistribution.values.reduce(
+      (a, b) => a > b ? a : b,
+    );
+    final months = [
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      '11',
+      '12',
+    ];
 
     return SizedBox(
       height: 120,
@@ -357,8 +425,10 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
         children: months.asMap().entries.map((entry) {
           final month = int.parse(entry.value);
           final value = stats.monthlyDistribution[month] ?? 0;
-          final height = maxValue > 0 ? (value / maxValue * 80).toDouble() : 0.0;
-          
+          final height = maxValue > 0
+              ? (value / maxValue * 80).toDouble()
+              : 0.0;
+
           return Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -366,19 +436,27 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
                 if (value > 0)
                   Text(
                     '$value',
-                    style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 const SizedBox(height: 4),
                 Container(
                   height: height > 0 ? height : 4,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: BoxDecoration(
-                    color: value > 0 ? const Color(0xFF5ECFB8) : const Color(0xFFE5E7EB),
+                    color: value > 0
+                        ? const Color(0xFF5ECFB8)
+                        : const Color(0xFFE5E7EB),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(isChinese ? '${entry.value}月' : entry.value, style: const TextStyle(fontSize: 10)),
+                Text(
+                  isChinese ? '${entry.value}月' : entry.value,
+                  style: const TextStyle(fontSize: 10),
+                ),
               ],
             ),
           );
@@ -391,7 +469,7 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
     // Calculate monthly joy percentages
     final monthlyJoyPercent = <int, double>{};
     final monthlyJoyCount = stats.monthlyJoyClicks;
-    
+
     for (int month = 1; month <= 12; month++) {
       final total = stats.monthlyDistribution[month] ?? 0;
       final joyCount = monthlyJoyCount[month] ?? 0;
@@ -415,12 +493,13 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
     final dataYear = widget.data.year;
     final isCurrentYear = dataYear == now.year;
     final currentMonth = isCurrentYear ? now.month : 12;
-    
+
     String trendText;
     String trendIcon;
     Color trendColor;
 
-    if (currentMonth >= 4) { // Need at least 3 months for recent avg
+    if (currentMonth >= 4) {
+      // Need at least 3 months for recent avg
       // Average of most recent 3 months of data
       final month1 = monthlyJoyPercent[currentMonth] ?? 0;
       final month2 = monthlyJoyPercent[currentMonth - 1] ?? 0;
@@ -603,9 +682,12 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
     );
   }
 
-  Widget _buildEfficiencyAnalysis(bool isChinese, EnhancedDeclutterStats stats) {
+  Widget _buildEfficiencyAnalysis(
+    bool isChinese,
+    EnhancedDeclutterStats stats,
+  ) {
     final efficiency = stats.efficiency;
-    
+
     return Column(
       children: [
         Row(
@@ -633,7 +715,12 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
     );
   }
 
-  Widget _buildEfficiencyCard(String label, String value, IconData icon, Color color) {
+  Widget _buildEfficiencyCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -656,10 +743,7 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF6B7280),
-            ),
+            style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
           ),
         ],
       ),
@@ -676,10 +760,7 @@ class _OrganizeDetailScreenState extends State<OrganizeDetailScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Color(0xFF6B7280),
-          ),
+          style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
         ),
         const SizedBox(height: 8),
         Text(
@@ -796,7 +877,7 @@ class _JoyTrendChartPainter extends CustomPainter {
     final padding = 20.0;
     final chartWidth = size.width - padding * 2;
     final chartHeight = size.height - padding * 2;
-    
+
     // Calculate max value for scaling
     double maxValue;
     if (isPercent) {
@@ -816,10 +897,10 @@ class _JoyTrendChartPainter extends CustomPainter {
     final linePaint = Paint()
       ..color = Colors.grey.withValues(alpha: 0.1)
       ..strokeWidth = 1;
-      
+
     final steps = 5;
     final stepHeight = chartHeight / steps;
-    
+
     for (int i = 0; i <= steps; i++) {
       final y = padding + i * stepHeight;
       canvas.drawLine(
@@ -827,10 +908,10 @@ class _JoyTrendChartPainter extends CustomPainter {
         Offset(size.width - padding, y),
         linePaint,
       );
-      
+
       // Draw Y-axis labels
       final value = maxValue * (steps - i) / steps;
-      
+
       final textSpan = TextSpan(
         text: isPercent ? '${value.toInt()}%' : value.toStringAsFixed(0),
         style: const TextStyle(color: Colors.grey, fontSize: 10),
@@ -842,40 +923,36 @@ class _JoyTrendChartPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(canvas, Offset(0, y - 6));
     }
-    
+
     // Draw data line
     if (monthlyData.isEmpty) return;
-    
+
     final path = Path();
     final points = <Offset>[];
-    
+
     final xStep = chartWidth / (maxMonths - 1);
-    
+
     for (int i = 1; i <= maxMonths; i++) {
       final x = padding + (i - 1) * xStep;
       final value = monthlyData[i] ?? 0;
       // Clamp value to prevent drawing outside chart area if data somehow exceeds 100%
       final safeValue = value > maxValue ? maxValue : value;
       final y = padding + chartHeight - (safeValue / maxValue * chartHeight);
-      
+
       if (i == 1) {
         path.moveTo(x, y);
       } else {
-        path.cubicTo(
-          x - xStep / 2, points.last.dy,
-          x - xStep / 2, y,
-          x, y
-        );
+        path.cubicTo(x - xStep / 2, points.last.dy, x - xStep / 2, y, x, y);
       }
       points.add(Offset(x, y));
     }
-    
+
     // Draw gradient area
     final gradientPath = Path.from(path);
     gradientPath.lineTo(points.last.dx, padding + chartHeight);
     gradientPath.lineTo(padding, padding + chartHeight);
     gradientPath.close();
-    
+
     final gradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
@@ -884,47 +961,63 @@ class _JoyTrendChartPainter extends CustomPainter {
         const Color(0xFF5ECFB8).withValues(alpha: 0.0),
       ],
     );
-    
+
     final paint = Paint()
-      ..shader = gradient.createShader(Rect.fromLTWH(padding, padding, chartWidth, chartHeight));
-      
+      ..shader = gradient.createShader(
+        Rect.fromLTWH(padding, padding, chartWidth, chartHeight),
+      );
+
     canvas.drawPath(gradientPath, paint);
-    
+
     // Draw line
     final strokePaint = Paint()
       ..color = const Color(0xFF5ECFB8)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-      
+
     canvas.drawPath(path, strokePaint);
-    
+
     // Draw dots
     final dotPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
-      
+
     final dotBorderPaint = Paint()
       ..color = const Color(0xFF5ECFB8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-      
+
     for (final point in points) {
       canvas.drawCircle(point, 4, dotPaint);
       canvas.drawCircle(point, 4, dotBorderPaint);
     }
-    
+
     // Draw X-axis labels
-    for (int i = 1; i <= maxMonths; i += 2) { // Show every other month
+    for (int i = 1; i <= maxMonths; i += 2) {
+      // Show every other month
       final x = padding + (i - 1) * xStep;
       String label;
       if (isChinese) {
         label = '$i月';
       } else {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
         label = months[i - 1];
       }
-      
+
       final textSpan = TextSpan(
         text: label,
         style: const TextStyle(color: Colors.grey, fontSize: 10),
@@ -934,7 +1027,10 @@ class _JoyTrendChartPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       );
       textPainter.layout();
-      textPainter.paint(canvas, Offset(x - textPainter.width / 2, size.height - 15));
+      textPainter.paint(
+        canvas,
+        Offset(x - textPainter.width / 2, size.height - 15),
+      );
     }
   }
 
@@ -944,4 +1040,3 @@ class _JoyTrendChartPainter extends CustomPainter {
         oldDelegate.isPercent != isPercent;
   }
 }
-

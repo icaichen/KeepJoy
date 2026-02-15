@@ -197,6 +197,23 @@ class _KeepJoyAppState extends State<KeepJoyApp> with WidgetsBindingObserver {
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+          scaffoldBackgroundColor: const Color(0xFFF5F5F7),
+          bottomSheetTheme: const BottomSheetThemeData(
+            backgroundColor: Colors.white,
+            modalBackgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            dragHandleColor: Color(0xFFD1D5DB),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+          ),
+          dialogTheme: const DialogThemeData(
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(24)),
+            ),
+          ),
           fontFamily: AppTypography.primaryFont,
           fontFamilyFallback: AppTypography.chineseFallbacks,
           textTheme: AppTypography.textTheme,
@@ -2857,9 +2874,9 @@ class _HomeScreenState extends State<_HomeScreen> {
                 ),
                 padding: EdgeInsets.only(top: topPadding),
                 alignment: Alignment.center,
-                child: const Text(
-                  'KeepJoy',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)?.appTitle ?? 'KeepJoy',
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,

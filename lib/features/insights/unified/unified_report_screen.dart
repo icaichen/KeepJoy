@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:keepjoy_app/features/insights/unified/models/enhanced_report_models.dart';
-import 'package:keepjoy_app/features/insights/unified/organize_detail_screen.dart';
-import 'package:keepjoy_app/features/insights/unified/memory_detail_screen.dart';
-import 'package:keepjoy_app/features/insights/unified/resell_detail_screen.dart';
+import 'package:keepjoy_app/features/insights/memory_lane_report_screen.dart';
+import 'package:keepjoy_app/features/insights/resell_analysis_report_screen.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
-import 'package:keepjoy_app/utils/responsive_utils.dart';
+import 'package:keepjoy_app/features/insights/yearly_reports_screen.dart';
 import 'package:keepjoy_app/models/declutter_item.dart';
-import 'package:keepjoy_app/models/resell_item.dart';
-import 'package:keepjoy_app/models/memory.dart';
 import 'package:keepjoy_app/models/deep_cleaning_session.dart';
+import 'package:keepjoy_app/models/memory.dart';
+import 'package:keepjoy_app/models/resell_item.dart';
+import 'package:keepjoy_app/utils/responsive_utils.dart';
 
-class UnifiedReportScreen extends StatefulWidget {
-  final List<DeclutterItem> declutteredItems;
-  final List<ResellItem> resellItems;
-  final List<Memory> memories;
-  final List<DeepCleaningSession> deepCleaningSessions;
-
+class UnifiedReportScreen extends StatelessWidget {
   const UnifiedReportScreen({
     super.key,
     required this.declutteredItems,
@@ -24,246 +18,208 @@ class UnifiedReportScreen extends StatefulWidget {
     required this.deepCleaningSessions,
   });
 
-  @override
-  State<UnifiedReportScreen> createState() => _UnifiedReportScreenState();
-}
-
-class _UnifiedReportScreenState extends State<UnifiedReportScreen> {
-  late int _selectedYear;
-  late List<int> _availableYears;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeYears();
-  }
-
-  void _initializeYears() {
-    final now = DateTime.now();
-    final years = <int>{now.year};
-    
-    for (final item in widget.declutteredItems) {
-      years.add(item.createdAt.year);
-    }
-    for (final item in widget.resellItems) {
-      years.add(item.createdAt.year);
-    }
-    for (final memory in widget.memories) {
-      years.add(memory.createdAt.year);
-    }
-    for (final session in widget.deepCleaningSessions) {
-      years.add(session.startTime.year);
-    }
-    
-    _availableYears = years.toList()..sort((a, b) => b.compareTo(a));
-    _selectedYear = now.year;
-  }
-
-  EnhancedUnifiedReportData get _reportData => EnhancedUnifiedReportData(
-    declutteredItems: widget.declutteredItems,
-    resellItems: widget.resellItems,
-    memories: widget.memories,
-    deepCleaningSessions: widget.deepCleaningSessions,
-    year: _selectedYear,
-  );
+  final List<DeclutterItem> declutteredItems;
+  final List<ResellItem> resellItems;
+  final List<Memory> memories;
+  final List<DeepCleaningSession> deepCleaningSessions;
 
   @override
   Widget build(BuildContext context) {
+    final isChinese = Localizations.localeOf(
+      context,
+    ).languageCode.toLowerCase().startsWith('zh');
     final responsive = context.responsive;
-    final isChinese = Localizations.localeOf(context).languageCode.startsWith('zh');
-    final reportData = _reportData;
-    final topPadding = responsive.safeAreaPadding.top;
     final horizontalPadding = responsive.horizontalPadding;
-    
+
+    final soldCount = resellItems
+        .where((item) => item.status == ResellStatus.sold)
+        .length;
+    final totalRevenue = resellItems
+        .where((item) => item.status == ResellStatus.sold)
+        .fold<double>(0, (sum, item) => sum + (item.soldPrice ?? 0));
+    final areaCount = deepCleaningSessions
+        .map((session) => session.area.trim())
+        .where((area) => area.isNotEmpty)
+        .toSet()
+        .length;
+
     return Scaffold(
       backgroundColor: ReportUI.backgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(
-            child: Stack(
-              children: [
-                Container(
-                  height: topPadding + 220,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFFB794F6),
-                        Color(0xFFF3EBFF),
-                        ReportUI.backgroundColor,
-                      ],
-                      stops: [0.0, 0.35, 0.65],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            20,
+            horizontalPadding,
+            32,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE5E7EA)),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 16,
+                        color: Color(0xFF111827),
+                      ),
                     ),
                   ),
-                ),
-                SafeArea(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 28),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const SizedBox(), // Spacer
-                            _buildYearSelector(),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        _buildStatRow(context, isChinese, reportData),
-                      ],
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                isChinese ? '整理洞察报告' : 'Declutter Insight Report',
+                style: ReportTextStyles.screenTitle,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isChinese
+                    ? '选择你要查看的报告分区'
+                    : 'Choose a report section to continue',
+                style: ReportTextStyles.screenSubtitle,
+              ),
+              const SizedBox(height: 18),
+              _buildReportEntry(
+                context: context,
+                icon: Icons.home_repair_service_rounded,
+                color: const Color(0xFF14B8A6),
+                title: isChinese ? '整理报告' : 'Declutter Report',
+                subtitle: isChinese
+                    ? '共 ${declutteredItems.length} 件 · $areaCount 个区域'
+                    : '${declutteredItems.length} items · $areaCount areas',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => YearlyReportsScreen(
+                        declutteredItems: declutteredItems,
+                        resellItems: resellItems,
+                        deepCleaningSessions: deepCleaningSessions,
+                        memories: memories,
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildReportEntry(
+                context: context,
+                icon: Icons.sell_rounded,
+                color: const Color(0xFFF59E0B),
+                title: isChinese ? '二手洞察' : 'Resell Insights',
+                subtitle: isChinese
+                    ? '售出 $soldCount 件 · 收入 ¥${totalRevenue.toStringAsFixed(0)}'
+                    : '$soldCount sold · \$${totalRevenue.toStringAsFixed(0)} revenue',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ResellAnalysisReportScreen(
+                        resellItems: resellItems,
+                        declutteredItems: declutteredItems,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildReportEntry(
+                context: context,
+                icon: Icons.photo_library_rounded,
+                color: const Color(0xFF8E88E8),
+                title: isChinese ? '回忆报告' : 'Memory Report',
+                subtitle: isChinese
+                    ? '${memories.length} 条回忆'
+                    : '${memories.length} memories',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          MemoryLaneReportScreen(memories: memories),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-          SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const SizedBox(height: 8),
-                Text(
-                  isChinese ? '详细数据' : 'Details',
-                  style: ReportTextStyles.sectionHeader,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  isChinese ? '查看各维度完整分析' : 'View complete analysis',
-                  style: ReportTextStyles.sectionSubtitle,
-                ),
-                const SizedBox(height: 16),
-                _buildDimensionCard(
-                  context: context,
-                  title: isChinese ? '年度洞察' : 'Yearly Insights',
-                  subtitle: isChinese 
-                      ? '${reportData.declutterStats.totalItems} 件 · 心动率 ${reportData.declutterStats.joyRate.toStringAsFixed(0)}%'
-                      : '${reportData.declutterStats.totalItems} items · ${reportData.declutterStats.joyRate.toStringAsFixed(0)}% joy',
-                  icon: Icons.inventory_2_outlined,
-                  color: const Color(0xFF5ECFB8),
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OrganizeDetailScreen(data: reportData))),
-                ),
-                const SizedBox(height: 12),
-                _buildDimensionCard(
-                  context: context,
-                  title: isChinese ? '年度记忆' : 'Yearly Memories',
-                  subtitle: isChinese
-                      ? '${reportData.memoryStats.totalCount} 个回忆'
-                      : '${reportData.memoryStats.totalCount} memories',
-                  icon: Icons.photo_library_outlined,
-                  color: const Color(0xFFB794F6),
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MemoryDetailScreen(data: reportData))),
-                ),
-                const SizedBox(height: 12),
-                _buildDimensionCard(
-                  context: context,
-                  title: isChinese ? '二手洞察' : 'Resell Insights',
-                  subtitle: isChinese
-                      ? '售出 ${reportData.resellStats.soldCount} 件 · 收入 ${reportData.resellStats.totalRevenue.toStringAsFixed(0)}'
-                      : '${reportData.resellStats.soldCount} sold · ${reportData.resellStats.totalRevenue.toStringAsFixed(0)} revenue',
-                  icon: Icons.payments_outlined,
-                  color: const Color(0xFFFFD93D),
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ResellDetailScreen(data: reportData))),
-                ),
-                const SizedBox(height: 32),
-              ]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildYearSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: _selectedYear,
-          isDense: true,
-          icon: const Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.black87),
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
-          items: _availableYears.map((year) => DropdownMenuItem(value: year, child: Text('$year'))).toList(),
-          onChanged: (value) {
-            if (value != null) setState(() => _selectedYear = value);
-          },
         ),
       ),
     );
   }
 
-  Widget _buildStatRow(BuildContext context, bool isChinese, EnhancedUnifiedReportData reportData) {
-    return Row(
-      children: [
-        Expanded(child: _buildStatCard(Icons.inventory_2_outlined, const Color(0xFF5ECFB8), '${reportData.declutterStats.totalItems}', isChinese ? '整理' : 'Declutter')),
-        const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(Icons.photo_library_outlined, const Color(0xFFB794F6), '${reportData.memoryStats.totalCount}', isChinese ? '回忆' : 'Memories')),
-        const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(Icons.payments_outlined, const Color(0xFFFFD93D), reportData.resellStats.totalRevenue.toStringAsFixed(0), isChinese ? '收入' : 'Revenue')),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(IconData icon, Color color, String value, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: ReportUI.statCardDecoration,
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 8),
-          Text(value, style: ReportTextStyles.statValueSmall),
-          const SizedBox(height: 2),
-          Text(label, style: ReportTextStyles.label),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDimensionCard({
+  Widget _buildReportEntry({
     required BuildContext context,
-    required String title,
-    required String subtitle,
     required IconData icon,
     required Color color,
+    required String title,
+    required String subtitle,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: ReportUI.cardDecoration,
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Ink(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EA)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(icon, size: 20, color: color),
               ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: ReportTextStyles.categoryTitle.copyWith(
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: ReportTextStyles.sectionSubtitle,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
-          ],
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: Color(0xFF94A3B8),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -569,25 +569,25 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardMemoryLaneTitle.
   ///
   /// In en, this message translates to:
-  /// **'Annual Memory'**
+  /// **'Memory Report'**
   String get dashboardMemoryLaneTitle;
 
   /// No description provided for @dashboardMemoryLaneSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Revisit your yearly highlights'**
+  /// **'Review your memory highlights'**
   String get dashboardMemoryLaneSubtitle;
 
   /// No description provided for @dashboardYearlyReportsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Year in Review'**
+  /// **'Declutter Report'**
   String get dashboardYearlyReportsTitle;
 
   /// No description provided for @dashboardYearlyReportsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'See year-round insights'**
+  /// **'See declutter progress and outcomes'**
   String get dashboardYearlyReportsSubtitle;
 
   /// No description provided for @dashboardCurrentStreakTitle.
@@ -2757,7 +2757,7 @@ abstract class AppLocalizations {
   /// No description provided for @featureMemoryLane.
   ///
   /// In en, this message translates to:
-  /// **'Annual Memory'**
+  /// **'Memory Report'**
   String get featureMemoryLane;
 
   /// No description provided for @featureMemoryLaneDesc.
@@ -4107,7 +4107,7 @@ abstract class AppLocalizations {
   /// No description provided for @yearlyReportsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Year in Review'**
+  /// **'Declutter Report'**
   String get yearlyReportsTitle;
 
   /// No description provided for @reportPeakActivity.

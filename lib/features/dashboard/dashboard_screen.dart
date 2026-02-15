@@ -24,7 +24,6 @@ import 'package:keepjoy_app/widgets/modern_dialog.dart';
 import 'package:keepjoy_app/features/insights/deep_cleaning_analysis_card.dart';
 import 'package:keepjoy_app/features/insights/widgets/report_ui_constants.dart';
 import 'package:keepjoy_app/utils/responsive_utils.dart';
-import 'package:keepjoy_app/features/dashboard/widgets/yearly_progress_card.dart';
 import 'package:keepjoy_app/features/dashboard/widgets/active_session_card.dart';
 
 class _ModeMeta {
@@ -1949,15 +1948,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      l10n.dashboardCurrentStreakTitle,
-                                      style: const TextStyle(
-                                        fontFamily: 'SF Pro Display',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF111827),
+                                    Expanded(
+                                      child: Text(
+                                        l10n.dashboardCurrentStreakTitle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTypography.titleSmall
+                                            .copyWith(
+                                              fontSize:
+                                                  responsive.titleFontSize - 2,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF111827),
+                                            ),
                                       ),
                                     ),
+                                    const SizedBox(width: 12),
                                     Container(
                                       width: 36,
                                       height: 36,
@@ -1991,9 +1996,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 // Subtitle
                                 Text(
                                   l10n.dashboardStreakSubtitle,
-                                  style: const TextStyle(
-                                    fontFamily: 'SF Pro Text',
-                                    fontSize: 14,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    fontSize: responsive.bodyFontSize - 1,
                                     fontWeight: FontWeight.w500,
                                     color: Color(0xFF6B7280),
                                   ),
@@ -2077,9 +2083,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 12),
                               Text(
                                 _formatQuote(quoteOfDay),
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 16,
+                                style: AppTypography.bodyLarge.copyWith(
+                                  fontSize: responsive.bodyFontSize + 1,
                                   fontWeight: FontWeight.w400,
                                   color: Color(0xDE000000),
                                   letterSpacing: 0,
@@ -2091,8 +2096,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Text(
                                 '- ${_getQuoteAttribution(quoteOfDay)}',
                                 style: AppTypography.quoteAttribution.copyWith(
+                                  fontSize: responsive.captionFontSize + 1,
                                   color: const Color(0xFF757575),
                                 ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -2117,19 +2125,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Text(
                                 l10n.joyCheck,
-                                style: AppTypography.cardTitle.black87,
+                                style: AppTypography.titleMedium.copyWith(
+                                  fontSize: responsive.titleFontSize - 1,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF111827),
+                                ),
                               ),
                               const SizedBox(height: 6),
                               Text(
                                 l10n.whatBroughtYouJoy,
-                                style: const TextStyle(
-                                  fontFamily: 'SF Pro Text',
-                                  fontSize: 16,
+                                style: AppTypography.bodyMedium.copyWith(
+                                  fontSize: responsive.bodyFontSize + 1,
                                   fontWeight: FontWeight.w400,
                                   color: Color(0xFF6B7280),
                                   letterSpacing: 0,
                                   height: 1.5,
                                 ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 14),
@@ -2710,100 +2723,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 24),
 
-                // Yearly Progress Section wrapping report cards
+                // Report hub section
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: horizontalPadding,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-
-                      Column(
-                        children: [
-                          _wrapPremiumCard(
-                            context,
-                            YearlyProgressCard(
-                              icon: Icons.trending_up_rounded,
-                              iconColor: const Color(0xFFFFD93D),
-                              gradientColors: const [
-                                Color(0xFFFFD93D),
-                                Color(0xFFFFF9E6),
-                              ],
-                              title: l10n.dashboardResellReportTitle,
-                              subtitle: l10n.dashboardResellReportSubtitle,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ResellAnalysisReportScreen(
-                                          resellItems: widget.resellItems,
-                                          declutteredItems:
-                                              widget.declutteredItems,
-                                        ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _wrapPremiumCard(
-                            context,
-                            YearlyProgressCard(
-                              icon: Icons.photo_library_rounded,
-                              iconColor: const Color(0xFFB794F6),
-                              gradientColors: const [
-                                Color(0xFFB794F6),
-                                Color(0xFFF3EBFF),
-                              ],
-                              title: l10n.dashboardMemoryLaneTitle,
-                              subtitle: l10n.dashboardMemoryLaneSubtitle,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        MemoryLaneReportScreen(
-                                          memories: widget.memories,
-                                        ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _wrapPremiumCard(
-                            context,
-                            YearlyProgressCard(
-                              icon: Icons.calendar_today_rounded,
-                              iconColor: const Color(0xFF89CFF0),
-                              gradientColors: const [
-                                Color(0xFF89CFF0),
-                                Color(0xFFE6F4F9),
-                              ],
-                              title: l10n.dashboardYearlyReportsTitle,
-                              subtitle: l10n.dashboardYearlyReportsSubtitle,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => YearlyReportsScreen(
-                                      declutteredItems: widget.declutteredItems,
-                                      resellItems: widget.resellItems,
-                                      deepCleaningSessions:
-                                          widget.deepCleaningSessions,
-                                      onDeleteSession:
-                                          widget.onDeleteDeepCleaningSession,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  child: _wrapPremiumCard(
+                    context,
+                    _buildReportHubSection(context, isChinese),
                   ),
                 ),
 
@@ -2845,7 +2772,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: EdgeInsets.only(top: topPadding),
                 alignment: Alignment.center,
                 child: Text(
-                  'KeepJoy',
+                  AppLocalizations.of(context)?.appTitle ?? 'KeepJoy',
                   style: TextStyle(
                     fontSize: responsive.titleFontSize,
                     fontWeight: FontWeight.w700,
@@ -2997,8 +2924,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
-
 
   Widget _buildMonthlyInfoRow({
     required IconData icon,
@@ -3248,7 +3173,206 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _openDeclutterReport(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => YearlyReportsScreen(
+          declutteredItems: widget.declutteredItems,
+          resellItems: widget.resellItems,
+          deepCleaningSessions: widget.deepCleaningSessions,
+          memories: widget.memories,
+        ),
+      ),
+    );
+  }
 
+  void _openResellReport(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResellAnalysisReportScreen(
+          resellItems: widget.resellItems,
+          declutteredItems: widget.declutteredItems,
+        ),
+      ),
+    );
+  }
+
+  void _openMemoryReport(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MemoryLaneReportScreen(memories: widget.memories),
+      ),
+    );
+  }
+
+  Widget _buildReportHubSection(BuildContext context, bool isChinese) {
+    final soldCount = widget.resellItems
+        .where((item) => item.status == ResellStatus.sold)
+        .length;
+    final totalRevenue = widget.resellItems
+        .where((item) => item.status == ResellStatus.sold)
+        .fold<double>(0, (sum, item) => sum + (item.soldPrice ?? 0));
+    final areaCount = widget.deepCleaningSessions
+        .map((session) => session.area.trim())
+        .where((area) => area.isNotEmpty)
+        .toSet()
+        .length;
+
+    return Container(
+      width: double.infinity,
+      decoration: ReportUI.cardDecoration,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE9F8F4),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.insights_rounded,
+                  size: 18,
+                  color: Color(0xFF23BFA6),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  isChinese ? '整理洞察报告' : 'Declutter Insight Report',
+                  style: ReportTextStyles.sectionHeader,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            isChinese
+                ? '直接查看三份报告：整理报告、二手洞察、回忆报告。'
+                : 'Open all three reports directly: Declutter, Resell, and Memory.',
+            style: ReportTextStyles.sectionSubtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 14),
+          _buildReportShortcut(
+            context: context,
+            icon: Icons.home_repair_service_rounded,
+            iconColor: const Color(0xFF14B8A6),
+            title: isChinese ? '整理报告' : 'Declutter Report',
+            subtitle: isChinese
+                ? '${widget.declutteredItems.length} 件物品 · $areaCount 个区域'
+                : '${widget.declutteredItems.length} items · $areaCount areas',
+            onTap: () => _openDeclutterReport(context),
+          ),
+          const SizedBox(height: 10),
+          _buildReportShortcut(
+            context: context,
+            icon: Icons.sell_rounded,
+            iconColor: const Color(0xFFF59E0B),
+            title: isChinese ? '二手洞察' : 'Resell Insights',
+            subtitle: isChinese
+                ? '售出 $soldCount 件 · 收入 ¥${totalRevenue.toStringAsFixed(0)}'
+                : '$soldCount sold · \$${totalRevenue.toStringAsFixed(0)} revenue',
+            onTap: () => _openResellReport(context),
+          ),
+          const SizedBox(height: 10),
+          _buildReportShortcut(
+            context: context,
+            icon: Icons.photo_library_rounded,
+            iconColor: const Color(0xFF8E88E8),
+            title: isChinese ? '回忆报告' : 'Memory Report',
+            subtitle: isChinese
+                ? '${widget.memories.length} 条回忆'
+                : '${widget.memories.length} memories',
+            onTap: () => _openMemoryReport(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportShortcut({
+    required BuildContext context,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, size: 18, color: iconColor),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: Color(0xFF9CA3AF),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _wrapPremiumCard(BuildContext context, Widget child) {
     if (widget.hasFullAccess == true) {
@@ -3312,6 +3436,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return DeepCleaningAnalysisCard(
       sessions: sessionsThisMonth,
       title: l10n.deepCleaningAnalysisTitle,
+      subtitle: isChinese
+          ? '汇总本月大扫除次数、物品、区域与投入时长'
+          : 'Monthly summary of sessions, items, areas, and time invested',
       emptyStateMessage: isChinese
           ? '本月还没有大扫除记录，开始一次专注的整理吧。'
           : 'No deep cleaning records yet this month. Start your first focused session.',
