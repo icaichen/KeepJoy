@@ -1071,16 +1071,6 @@ class _YearlyReportsScreenState extends State<YearlyReportsScreen> {
                                 );
                               },
                             ),
-                            const SizedBox(height: 10),
-                            Text(
-                              _buildDeclutterHintText(
-                                isChinese: isChinese,
-                                itemCount: yearlyItems.length,
-                              ),
-                              style: ReportTextStyles.sectionSubtitle.copyWith(
-                                color: const Color(0xFF9CA3AF),
-                              ),
-                            ),
                             const SizedBox(height: 24),
                             DeclutterResultsDistributionCard(
                               items: yearlyItems,
